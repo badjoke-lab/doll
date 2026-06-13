@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi.testclient import TestClient
 
 from doll import __version__
@@ -26,3 +28,12 @@ def test_openapi_documentation_routes_are_disabled() -> None:
 
     assert client.get("/docs").status_code == 404
     assert client.get("/redoc").status_code == 404
+
+
+def test_create_app_has_no_workspace_side_effect(tmp_path: Path) -> None:
+    workspace_root = tmp_path / "workspace"
+
+    app = create_app()
+
+    assert app.title == "doll local API"
+    assert not workspace_root.exists()

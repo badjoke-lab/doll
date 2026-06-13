@@ -27,7 +27,9 @@ def root() -> None:
 def init_command(
     path: Annotated[
         Path | None,
-        typer.Argument(help="Optional workspace path. Uses the platform data directory by default."),
+        typer.Argument(
+            help="Optional workspace path. Uses the platform data directory by default."
+        ),
     ] = None,
     instance_label: Annotated[
         str,

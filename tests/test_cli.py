@@ -6,6 +6,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from pytest import MonkeyPatch
 from typer.testing import CliRunner
 
 from doll import __version__
@@ -76,3 +77,24 @@ def test_python_module_help() -> None:
 
     assert completed.returncode == 0
     assert "personal AI continuity system" in completed.stdout
+
+
+def test_help_version_and_import_do_not_create_default_workspace(
+    tmp_path: Path,
+    monkeypatch: MonkeyPatch,
+) -> None:
+    default_workspace = tmp_path / "default-workspace"
+    import doll.cli as cli_module
+
+    monkeypatch.setattr(
+        cli_module,
+        "initialize_workspace",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("unexpected init")),
+    )
+
+    help_result = runner.invoke(app, ["--help"])
+    version_result = runner.invoke(app, ["version"])
+
+    assert help_result.exit_code == 0
+    assert version_result.exit_code == 0
+    assert not default_workspace.exists()

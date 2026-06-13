@@ -66,6 +66,38 @@ def test_repository_target_is_rejected(tmp_path: Path) -> None:
     assert not target.exists()
 
 
+def test_repository_root_is_rejected(tmp_path: Path) -> None:
+    repository = tmp_path / "doll"
+    (repository / ".git").mkdir(parents=True)
+    (repository / "pyproject.toml").write_text(
+        '[project]\nname = "doll-ai"\n',
+        encoding="utf-8",
+    )
+
+    with pytest.raises(workspace.WorkspacePathError):
+        workspace.initialize_workspace(repository)
+
+    assert sorted(child.name for child in repository.iterdir()) == [".git", "pyproject.toml"]
+
+
+def test_file_target_is_rejected(tmp_path: Path) -> None:
+    target = tmp_path / "workspace-file"
+    target.write_text("not a directory", encoding="utf-8")
+
+    with pytest.raises(workspace.WorkspacePathError):
+        workspace.initialize_workspace(target)
+
+    assert target.read_text(encoding="utf-8") == "not a directory"
+
+
+def test_profile_preference_can_be_heavy_or_auto(tmp_path: Path) -> None:
+    heavy = workspace.initialize_workspace(tmp_path / "heavy", profile_preference="heavy")
+    auto = workspace.initialize_workspace(tmp_path / "auto", profile_preference="auto")
+
+    assert heavy.record.profile_preference == "heavy"
+    assert auto.record.profile_preference == "auto"
+
+
 def test_blank_label_is_rejected(tmp_path: Path) -> None:
     target = tmp_path / "workspace"
 
