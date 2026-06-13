@@ -5,22 +5,35 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import stat
 import tempfile
 import uuid
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
+from enum import StrEnum
 from pathlib import Path
 from typing import Final
 
 from doll import __version__
-from doll.paths import canonical_path, default_workspace_root
+from doll.paths import canonicalize_path, default_workspace_root
 
 WORKSPACE_RECORD_FILE: Final = "workspace.json"
 WORKSPACE_SCHEMA_VERSION: Final = "0.1"
+MINIMAL_WORKSPACE_DIRECTORIES: Final = ("state", "files", "cache")
+_PRIVATE_DIRECTORY_MODE: Final = 0o700
+_PRIVATE_FILE_MODE: Final = 0o600
 
 
 class WorkspaceInitError(ValueError):
     """Raised when a workspace cannot be initialized safely."""
+
+
+class ProfilePreference(StrEnum):
+    """Allowed workspace profile preferences."""
+
+    LITE = "lite"
+    HEAVY = "heavy"
+    AUTO = "auto"
 
 
 @dataclass(frozen=True)
@@ -38,25 +51,39 @@ class WorkspaceRecord:
     instance_label: str
 
 
+@dataclass(frozen=True)
+class WorkspaceInitResult:
+    """Result of initializing a workspace."""
+
+    path: Path
+    record: WorkspaceRecord
+    created_root: bool
+
+
 def create_workspace(
-    target: Path | None = None, *, instance_label: str = "default"
-) -> WorkspaceRecord:
-    """Create a new workspace with an atomic identity record.
+    target: Path | None = None,
+    *,
+    instance_label: str = "default",
+    profile: ProfilePreference = ProfilePreference.LITE,
+) -> WorkspaceInitResult:
+    """Create a new workspace and identity record safely."""
 
-    The target directory must either not exist or be an empty directory. Repository checkouts,
-    duplicate workspaces, and non-empty targets are rejected before durable state is written.
-    If writing the identity record fails, files created by this call are cleaned up.
-    """
-
-    workspace_path = canonical_path(target or default_workspace_root())
-    _reject_repository_checkout(workspace_path)
+    workspace_path = canonicalize_path(target or default_workspace_root())
+    _reject_repository_ancestor(workspace_path)
     _reject_duplicate_workspace(workspace_path)
-    _prepare_empty_target(workspace_path)
-
-    record = _new_workspace_record(instance_label=instance_label)
-    created_record = workspace_path / WORKSPACE_RECORD_FILE
+    created_root = _prepare_empty_root(workspace_path)
+    created_directories: list[Path] = []
+    record_path = workspace_path / WORKSPACE_RECORD_FILE
     temp_path: Path | None = None
+
     try:
+        for directory_name in MINIMAL_WORKSPACE_DIRECTORIES:
+            directory = workspace_path / directory_name
+            directory.mkdir(mode=_PRIVATE_DIRECTORY_MODE)
+            _apply_private_directory_permissions(directory)
+            created_directories.append(directory)
+
+        record = _new_workspace_record(instance_label=instance_label, profile=profile)
         fd, temp_name = tempfile.mkstemp(
             prefix=f".{WORKSPACE_RECORD_FILE}.", suffix=".tmp", dir=workspace_path
         )
@@ -66,17 +93,23 @@ def create_workspace(
             handle.write("\n")
             handle.flush()
             os.fsync(handle.fileno())
-        os.replace(temp_path, created_record)
+        os.chmod(temp_path, _PRIVATE_FILE_MODE)
+        os.replace(temp_path, record_path)
         temp_path = None
     except OSError as exc:
-        if temp_path is not None:
-            temp_path.unlink(missing_ok=True)
-        _cleanup_created_workspace(workspace_path, created_record)
-        raise WorkspaceInitError(f"failed to create workspace identity: {exc}") from exc
-    return record
+        _cleanup_failed_init(
+            workspace_path,
+            record_path=record_path,
+            temp_path=temp_path,
+            created_directories=created_directories,
+            created_root=created_root,
+        )
+        raise WorkspaceInitError(f"failed to create workspace: {exc}") from exc
+
+    return WorkspaceInitResult(path=workspace_path, record=record, created_root=created_root)
 
 
-def _new_workspace_record(*, instance_label: str) -> WorkspaceRecord:
+def _new_workspace_record(*, instance_label: str, profile: ProfilePreference) -> WorkspaceRecord:
     now = datetime.now(UTC).isoformat().replace("+00:00", "Z")
     return WorkspaceRecord(
         workspace_id=str(uuid.uuid4()),
@@ -85,20 +118,23 @@ def _new_workspace_record(*, instance_label: str) -> WorkspaceRecord:
         schema_version=WORKSPACE_SCHEMA_VERSION,
         product_version_created=__version__,
         product_version_last_opened=__version__,
-        profile_preference="lite",
+        profile_preference=profile.value,
         state_revision=0,
         instance_label=instance_label,
     )
 
 
-def _prepare_empty_target(path: Path) -> None:
+def _prepare_empty_root(path: Path) -> bool:
     if path.exists():
         if not path.is_dir():
             raise WorkspaceInitError("workspace target exists and is not a directory")
         if any(path.iterdir()):
             raise WorkspaceInitError("workspace target must be empty")
-        return
-    path.mkdir(parents=True)
+        _apply_private_directory_permissions(path)
+        return False
+    path.mkdir(mode=_PRIVATE_DIRECTORY_MODE, parents=True)
+    _apply_private_directory_permissions(path)
+    return True
 
 
 def _reject_duplicate_workspace(path: Path) -> None:
@@ -106,16 +142,43 @@ def _reject_duplicate_workspace(path: Path) -> None:
         raise WorkspaceInitError("workspace already exists at target")
 
 
-def _reject_repository_checkout(path: Path) -> None:
-    if (path / ".git").exists() or (path / "pyproject.toml").exists():
-        raise WorkspaceInitError("workspace target appears to be a repository checkout")
+def _reject_repository_ancestor(path: Path) -> None:
+    for candidate in (path, *path.parents):
+        if _looks_like_repository(candidate):
+            raise WorkspaceInitError("workspace target must not be inside a repository checkout")
 
 
-def _cleanup_created_workspace(path: Path, record_path: Path) -> None:
-    record_path.unlink(missing_ok=True)
+def _looks_like_repository(path: Path) -> bool:
+    if (path / ".git").exists():
+        return True
+    pyproject = path / "pyproject.toml"
     try:
-        next(path.iterdir())
-    except StopIteration:
-        shutil.rmtree(path, ignore_errors=True)
-    except FileNotFoundError:
-        return
+        return pyproject.is_file()
+    except OSError:
+        return False
+
+
+def _apply_private_directory_permissions(path: Path) -> None:
+    if os.name == "posix":
+        path.chmod(_PRIVATE_DIRECTORY_MODE)
+
+
+def _cleanup_failed_init(
+    workspace_path: Path,
+    *,
+    record_path: Path,
+    temp_path: Path | None,
+    created_directories: list[Path],
+    created_root: bool,
+) -> None:
+    if temp_path is not None:
+        temp_path.unlink(missing_ok=True)
+    record_path.unlink(missing_ok=True)
+    for directory in reversed(created_directories):
+        shutil.rmtree(directory, ignore_errors=True)
+    if created_root:
+        shutil.rmtree(workspace_path, ignore_errors=True)
+    elif workspace_path.exists() and os.name == "posix":
+        current_mode = stat.S_IMODE(workspace_path.stat().st_mode)
+        if current_mode != _PRIVATE_DIRECTORY_MODE:
+            workspace_path.chmod(_PRIVATE_DIRECTORY_MODE)

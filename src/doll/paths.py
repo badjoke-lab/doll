@@ -1,4 +1,4 @@
-"""Platform-aware paths for doll workspaces."""
+"""Platform-aware path helpers for doll."""
 
 from __future__ import annotations
 
@@ -6,25 +6,37 @@ import os
 import platform
 from pathlib import Path
 
+APP_NAME = "doll"
+
 
 def default_workspace_root() -> Path:
-    """Return the platform convention for doll's private workspace root."""
+    """Return doll's platformdirs-style user data directory."""
+
+    return _user_data_path(APP_NAME)
+
+
+def canonicalize_path(path: Path) -> Path:
+    """Return a canonical absolute path without requiring the final path to exist."""
+
+    return path.expanduser().resolve(strict=False)
+
+
+def _user_data_path(app_name: str) -> Path:
+    """Small platformdirs-compatible user data path helper.
+
+    The IMP-002 design uses platformdirs semantics. This helper keeps those semantics local while
+    avoiding import-time filesystem access or additional runtime side effects.
+    """
 
     system = platform.system()
     if system == "Darwin":
-        return Path.home() / "Library" / "Application Support" / "doll"
+        return Path.home() / "Library" / "Application Support" / app_name
     if system == "Windows":
         local_app_data = os.environ.get("LOCALAPPDATA")
         if local_app_data:
-            return Path(local_app_data) / "doll"
-        return Path.home() / "AppData" / "Local" / "doll"
+            return Path(local_app_data) / app_name
+        return Path.home() / "AppData" / "Local" / app_name
     xdg_data_home = os.environ.get("XDG_DATA_HOME")
     if xdg_data_home:
-        return Path(xdg_data_home) / "doll"
-    return Path.home() / ".local" / "share" / "doll"
-
-
-def canonical_path(path: Path) -> Path:
-    """Resolve a path for containment and duplicate checks without requiring it to exist."""
-
-    return path.expanduser().resolve(strict=False)
+        return Path(xdg_data_home) / app_name
+    return Path.home() / ".local" / "share" / app_name

@@ -8,7 +8,7 @@ from typing import Annotated
 import typer
 
 from doll import __version__
-from doll.workspace import WorkspaceInitError, create_workspace
+from doll.workspace import ProfilePreference, WorkspaceInitError, create_workspace
 
 app = typer.Typer(
     name="doll",
@@ -27,27 +27,29 @@ def root() -> None:
 def init_command(
     path: Annotated[
         Path | None,
-        typer.Option(
-            "--path",
-            "-p",
-            help="Workspace directory to initialize; defaults to the platform data directory.",
+        typer.Argument(
+            help="Workspace directory to initialize; defaults to the platform data directory."
         ),
     ] = None,
     instance_label: Annotated[
         str,
         typer.Option(
-            "--label",
+            "--instance-label",
             help="Human-readable label stored in the workspace identity.",
         ),
     ] = "default",
+    profile: Annotated[
+        ProfilePreference,
+        typer.Option("--profile", help="Workspace profile preference."),
+    ] = ProfilePreference.LITE,
 ) -> None:
     """Initialize a private doll workspace."""
 
     try:
-        record = create_workspace(path, instance_label=instance_label)
+        result = create_workspace(path, instance_label=instance_label, profile=profile)
     except WorkspaceInitError as exc:
         raise typer.BadParameter(str(exc)) from exc
-    typer.echo(f"initialized workspace {record.workspace_id}")
+    typer.echo(f"initialized workspace {result.record.workspace_id} at {result.path}")
 
 
 @app.command("version")
