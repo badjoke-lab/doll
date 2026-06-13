@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   quality:
@@ -16,8 +16,6 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -29,22 +27,8 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Resolve dependency lock
-        run: uv lock
-
-      - name: Commit dependency lock when changed
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-        shell: bash
-        run: |
-          if git diff --quiet -- uv.lock; then
-            echo "Dependency lock is already current."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add uv.lock
-          git commit -m "Update uv dependency lock"
-          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
+      - name: Verify dependency lock
+        run: uv lock --check
 
       - name: Install project
         run: uv sync --dev --locked
@@ -86,7 +70,7 @@ jobs:
           enable-cache: true
 
       - name: Install project
-        run: uv sync --dev
+        run: uv sync --dev --locked
 
       - name: Run tests
         run: uv run pytest
