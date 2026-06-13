@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+
+# Tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Build outputs
+build/
+dist/
+
+# Editors and OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# doll local/private data
+/doll-data/
+/.doll/
+*.sqlite
+*.sqlite3
+*.db
+
+# Models, checkpoints, and private datasets
+/models/
+/model-vault/
+/checkpoints/
+/private-datasets/
+*.gguf
+*.safetensors
+*.ckpt
+*.pt
+*.pth
