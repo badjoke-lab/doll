@@ -1,6 +1,6 @@
 # ADR-004: Release gates require evidence
 
-**Status:** Proposed for acceptance with PR-005  
+**Status:** Accepted  
 **Date:** 2026-06-14
 
 ## Context

@@ -1,6 +1,6 @@
 # Development roadmap
 
-**Status:** Draft for acceptance  
+**Status:** Accepted for implementation  
 **Specification version:** 0.1
 
 ## 1. Purpose
@@ -48,15 +48,15 @@ Status at completion of PR-005:
 - acceptance tests defined;
 - roadmap defined.
 
-Remaining Phase 0 work after PR-005:
+Phase 0 is complete when:
 
-1. generate a combined specification document;
-2. run a contradiction and completeness audit;
-3. normalize requirement wording where needed;
-4. freeze specification version 0.1 for implementation;
-5. create the initial implementation issue and PR queue.
+1. the combined specification is generated deterministically;
+2. the contradiction and completeness audit is recorded;
+3. requirement wording and acceptance mappings are reviewed;
+4. specification set 0.1 is accepted for implementation;
+5. the initial implementation issue and PR queue can begin.
 
-No production feature should bypass this baseline.
+No production feature may bypass this baseline. After the v0.1 freeze, implementation starts with IMP-001.
 
 ## 4. Phase 1 — Repository and continuity kernel
 
@@ -228,14 +228,27 @@ Goal: connect local inference without letting the runtime own Doll State.
 
 ### Proposed PR sequence
 
-#### IMP-012 — Runtime adapter contract
+#### IMP-012 — Minimal user-selected document intake
+
+- user-controlled text and Markdown selection;
+- safe external read path;
+- DocumentRecord creation;
+- path and size validation;
+- explicit attachment to the current request;
+- no model-initiated arbitrary filesystem read.
+
+Acceptance focus:
+
+- CONT-P007.
+
+#### IMP-013 — Runtime adapter contract
 
 - adapter protocol;
 - normalized health, inventory, generation, cancellation, and error models;
 - mocked adapter tests;
 - runtime-independent model IDs.
 
-#### IMP-013 — Ollama adapter
+#### IMP-014 — Ollama adapter
 
 - local health check;
 - installed model inventory mapping;
@@ -244,7 +257,7 @@ Goal: connect local inference without letting the runtime own Doll State.
 - no model download;
 - no cloud path.
 
-#### IMP-014 — Model manifests and bindings
+#### IMP-015 — Model manifests and bindings
 
 - ModelManifestRecord;
 - RuntimeManifestRecord;
@@ -253,7 +266,7 @@ Goal: connect local inference without letting the runtime own Doll State.
 - active, previous, fallback status;
 - checksum and provenance fields.
 
-#### IMP-015 — Local conversation path
+#### IMP-016 — Local conversation path
 
 - session orchestration;
 - local API chat path;
@@ -267,7 +280,7 @@ Acceptance focus:
 - CONT-P002;
 - CONT-P004.
 
-#### IMP-016 — Model switch and local fallback
+#### IMP-017 — Model switch and local fallback
 
 - explicit activation;
 - previous binding retention;
@@ -282,7 +295,7 @@ Acceptance focus:
 - CONT-P014;
 - MODEL-006 through MODEL-010.
 
-#### IMP-017 — Offline mode and first continuity drill
+#### IMP-018 — Offline mode and first continuity drill
 
 - network-disabled startup setting;
 - outbound-request guard for core paths;
@@ -305,7 +318,7 @@ Goal: add useful local tools without bypassing security.
 
 ### Proposed PR sequence
 
-#### IMP-018 — Capability Broker core
+#### IMP-019 — Capability Broker core
 
 - versioned capability registry;
 - schema validation;
@@ -318,7 +331,7 @@ Acceptance focus:
 
 - SEC-001 through SEC-005.
 
-#### IMP-019 — Approved local document read
+#### IMP-020 — Approved local document read
 
 - user-selected external text and Markdown;
 - managed copy option;
@@ -330,7 +343,7 @@ Acceptance focus:
 
 - CONT-P007.
 
-#### IMP-020 — Artifact service completion
+#### IMP-021 — Artifact service completion
 
 - artifact versions;
 - project links;
@@ -338,7 +351,7 @@ Acceptance focus:
 - export path through a user-controlled action;
 - no silent overwrite.
 
-#### IMP-021 — Local full-text search
+#### IMP-022 — Local full-text search
 
 - SQLite FTS5;
 - index rebuild;
@@ -504,16 +517,15 @@ An implementation PR is done when:
 - review comments are resolved;
 - main remains recoverable.
 
-## 16. Specification follow-up after PR-005
+## 16. Immediate work after specification v0.1 freeze
 
-The immediate next repository work is:
+The next repository work is:
 
-1. add deterministic specification generation;
-2. generate `DOLL_FINAL_SPEC.md`;
-3. run contradiction and requirement audit;
-4. update documents where contradictions are found;
-5. mark specification set 0.1 accepted for implementation;
-6. open IMP-001.
+1. open IMP-001;
+2. add the Python package and three-operating-system CI skeleton;
+3. implement platform paths and workspace initialization in IMP-002;
+4. implement SQLite state and migrations in IMP-003;
+5. preserve the accepted continuity, security, and recovery boundaries in every implementation PR.
 
 ## 17. Roadmap change control
 

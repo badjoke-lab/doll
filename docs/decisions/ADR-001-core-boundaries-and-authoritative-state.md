@@ -1,6 +1,6 @@
 # ADR-001: Core boundaries and authoritative state
 
-**Status:** Proposed for acceptance with PR-002  
+**Status:** Accepted  
 **Date:** 2026-06-13
 
 ## Context

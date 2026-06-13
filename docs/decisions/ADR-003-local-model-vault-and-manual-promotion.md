@@ -1,6 +1,6 @@
 # ADR-003: Local Model Vault and manual promotion
 
-**Status:** Proposed for acceptance with PR-004  
+**Status:** Accepted  
 **Date:** 2026-06-14
 
 ## Context
