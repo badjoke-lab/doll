@@ -1,0 +1,48 @@
+name: Freeze specification v0.1
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "scripts/freeze_spec_v0_1.py"
+      - ".github/workflows/freeze-spec-v0.1.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  freeze:
+    if: github.event_name == 'workflow_dispatch' || github.head_ref == 'spec/pr-007-audit-freeze'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out pull request branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Apply reviewed freeze changes
+        run: python scripts/freeze_spec_v0_1.py
+
+      - name: Rebuild combined specification
+        run: python scripts/build_final_spec.py
+
+      - name: Commit freeze changes
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "Freeze changes are already applied."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/spec docs/decisions docs/audits DOLL_FINAL_SPEC.md
+          git commit -m "Audit and freeze specification set 0.1"
+          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
