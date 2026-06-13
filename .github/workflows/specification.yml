@@ -10,14 +10,16 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-specification:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
+      - name: Check out pull request branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -26,6 +28,20 @@ jobs:
 
       - name: Build combined specification
         run: python scripts/build_final_spec.py
+
+      - name: Commit generated specification when changed
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        shell: bash
+        run: |
+          if git diff --quiet -- DOLL_FINAL_SPEC.md && git ls-files --error-unmatch DOLL_FINAL_SPEC.md >/dev/null 2>&1; then
+            echo "Generated specification is already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add DOLL_FINAL_SPEC.md
+          git commit -m "Generate combined specification"
+          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
 
       - name: Upload generated specification
         uses: actions/upload-artifact@v4
