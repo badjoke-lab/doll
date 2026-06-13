@@ -1,0 +1,35 @@
+name: Specification
+
+on:
+  pull_request:
+    paths:
+      - "docs/spec/**"
+      - "scripts/build_final_spec.py"
+      - "DOLL_FINAL_SPEC.md"
+      - ".github/workflows/specification.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-specification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build combined specification
+        run: python scripts/build_final_spec.py
+
+      - name: Upload generated specification
+        uses: actions/upload-artifact@v4
+        with:
+          name: doll-final-specification
+          path: DOLL_FINAL_SPEC.md
+          if-no-files-found: error
