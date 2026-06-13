@@ -48,7 +48,7 @@ def test_unrelated_git_repository_is_not_treated_as_doll(tmp_path: Path) -> None
     assert paths.find_doll_repository_ancestor(target) is None
 
 
-def test_unreadable_pyproject_is_ignored(
+def test_unreadable_pyproject_repository_is_rejected(
     tmp_path: Path,
     monkeypatch: MonkeyPatch,
 ) -> None:
@@ -67,4 +67,4 @@ def test_unreadable_pyproject_is_ignored(
 
     monkeypatch.setattr(Path, "read_text", unreadable)
 
-    assert paths.find_doll_repository_ancestor(target) is None
+    assert paths.find_doll_repository_ancestor(target) == repository.resolve()

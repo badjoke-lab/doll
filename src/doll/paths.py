@@ -30,7 +30,7 @@ def find_doll_repository_ancestor(path: Path) -> Path | None:
         try:
             content = pyproject.read_text(encoding="utf-8")
         except OSError:
-            continue
+            return candidate
         if 'name = "doll-ai"' in content:
             return candidate
     return None

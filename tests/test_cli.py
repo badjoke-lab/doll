@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -79,11 +80,7 @@ def test_python_module_help() -> None:
     assert "personal AI continuity system" in completed.stdout
 
 
-def test_help_version_and_import_do_not_create_default_workspace(
-    tmp_path: Path,
-    monkeypatch: MonkeyPatch,
-) -> None:
-    default_workspace = tmp_path / "default-workspace"
+def test_help_and_version_do_not_initialize_workspace(monkeypatch: MonkeyPatch) -> None:
     import doll.cli as cli_module
 
     monkeypatch.setattr(
@@ -97,4 +94,37 @@ def test_help_version_and_import_do_not_create_default_workspace(
 
     assert help_result.exit_code == 0
     assert version_result.exit_code == 0
-    assert not default_workspace.exists()
+
+
+def test_initial_import_and_create_app_have_no_workspace_side_effect(tmp_path: Path) -> None:
+    home = tmp_path / "home"
+    xdg_data_home = tmp_path / "xdg-data"
+    local_app_data = tmp_path / "local-app-data"
+    app_data = tmp_path / "app-data"
+    home.mkdir()
+    xdg_data_home.mkdir()
+    local_app_data.mkdir()
+    app_data.mkdir()
+    environment = {
+        **os.environ,
+        "HOME": str(home),
+        "XDG_DATA_HOME": str(xdg_data_home),
+        "LOCALAPPDATA": str(local_app_data),
+        "APPDATA": str(app_data),
+    }
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import doll; import doll.cli; from doll.api import create_app; create_app()",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=environment,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert not list(tmp_path.rglob("workspace.json"))
+    assert not list(tmp_path.rglob("workspace"))
