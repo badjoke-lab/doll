@@ -1,6 +1,6 @@
 # doll specification index
 
-**Status:** Draft for acceptance  
+**Status:** Accepted for implementation  
 **Specification set version:** 0.1
 
 ## 1. Purpose
@@ -30,6 +30,9 @@ Accepted architecture decisions under `docs/decisions/` explain why major constr
 ## 3. Requirement language
 
 The following terms are normative:
+
+The terms are interpreted case-insensitively in specification set 0.1; future changes SHOULD use uppercase forms for clarity.
+
 
 - **MUST / MUST NOT:** mandatory for the applicable release or claim;
 - **SHOULD / SHOULD NOT:** expected unless a documented reason justifies an exception;

@@ -1,6 +1,6 @@
 # Core architecture and data flow
 
-**Status:** Draft for acceptance  
+**Status:** Accepted for implementation  
 **Specification version:** 0.1  
 **Depends on:** `00-decisions-baseline.md`, `01-product-and-continuity-contract.md`
 

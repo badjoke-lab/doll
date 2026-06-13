@@ -1,6 +1,6 @@
 # Acceptance and Continuity Test Suite
 
-**Status:** Draft for acceptance  
+**Status:** Accepted for implementation  
 **Specification version:** 0.1
 
 ## 1. Purpose

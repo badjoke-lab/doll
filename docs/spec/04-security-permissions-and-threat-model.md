@@ -1,6 +1,6 @@
 # Security, permissions, and threat model
 
-**Status:** Draft for acceptance  
+**Status:** Accepted for implementation  
 **Specification version:** 0.1  
 **Depends on:** `00-decisions-baseline.md`, `01-product-and-continuity-contract.md`, `02-architecture-and-data-flow.md`, `03-doll-state-memory-and-storage.md`
 

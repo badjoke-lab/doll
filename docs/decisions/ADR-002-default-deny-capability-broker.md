@@ -1,6 +1,6 @@
 # ADR-002: Default-deny Capability Broker
 
-**Status:** Proposed for acceptance with PR-003  
+**Status:** Accepted  
 **Date:** 2026-06-13
 
 ## Context

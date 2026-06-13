@@ -10,24 +10,24 @@
 
 ## Included source documents
 
-- `docs/spec/00-index.md` — SHA-256 `6279253fda4c540820cf3c39364330c4df756b9fbae7f225e7e90cf80098faa0`
+- `docs/spec/00-index.md` — SHA-256 `ee3682b4c6ff10c39cdd0eddd5c8b29aec908bfbfa9e4be89d90ca01e32ca642`
 - `docs/spec/00-decisions-baseline.md` — SHA-256 `e2b55bd08610b8f3a696ef43f19502cad25de26e2c8aac3a442b8cf5e4a8439d`
-- `docs/spec/01-product-and-continuity-contract.md` — SHA-256 `ffdcc6f92c11564add247435ed644d8d3e704514a2d481a07eeacf522166cd03`
-- `docs/spec/02-architecture-and-data-flow.md` — SHA-256 `7038107b2f292bf7869adc595b3f11f6d54a7dd84c4cf10545977605f20ed3c6`
-- `docs/spec/03-doll-state-memory-and-storage.md` — SHA-256 `48c9396665dfc823fb349fbc1f3818d33fb52cdd04c799b1407655fc4adc4371`
-- `docs/spec/04-security-permissions-and-threat-model.md` — SHA-256 `5d9511b862cb35e5a5a6724cefb1d43c44004cebb68b2304c24d78306b6a81de`
-- `docs/spec/05-model-vault-lifecycle-evaluation.md` — SHA-256 `88e21e2cc3bf829ffac8605c5bae9467d0905c1f94b1013f629bd4d54bd623e9`
-- `docs/spec/06-platform-install-update-and-recovery.md` — SHA-256 `5066bc5dd8918b0506d3eacc8a8365756cde112f3ab3a5836fa4855d65fe83d1`
-- `docs/spec/07-release-scope-and-profiles.md` — SHA-256 `49f8e73ec23daf075db17858dafb1ca2ad97bea8ea6c3c631aa4b78adc5a7472`
-- `docs/spec/08-acceptance-and-continuity-tests.md` — SHA-256 `d92d06b131df2179588d3dc5f1f9cf66137716f66813133ad7407eb3f2f81a35`
-- `docs/spec/09-development-roadmap.md` — SHA-256 `272d4d71d62d03a49652c9c13a426ae4690d4168b0379ddad92dc2b7de793072`
+- `docs/spec/01-product-and-continuity-contract.md` — SHA-256 `88c123e541d9906938be673f2c4571b890bf7626b7cc637f113ff39185f2c932`
+- `docs/spec/02-architecture-and-data-flow.md` — SHA-256 `fb8d83f910d56dc41884362c1f8cd8e4eb0dae329cdce485b04e47b4bb967d62`
+- `docs/spec/03-doll-state-memory-and-storage.md` — SHA-256 `bcf88145d99c53feb47baceec8419449c8289e6a492ee574dde6a46c60633c76`
+- `docs/spec/04-security-permissions-and-threat-model.md` — SHA-256 `64a5a131d5cdf1610157fb0e0d3b9aba447c35e40410e1b49d538632aa5316d2`
+- `docs/spec/05-model-vault-lifecycle-evaluation.md` — SHA-256 `3011788c55be9232db98bf932d8c859c88ed3d3bc3e603f0d4c3c709f2eb4268`
+- `docs/spec/06-platform-install-update-and-recovery.md` — SHA-256 `b73b6106d28b3fcb740b6d2f8b5dee4935a7a998537e5858395a85170ce85072`
+- `docs/spec/07-release-scope-and-profiles.md` — SHA-256 `2b4c0bdbd0ae8a7d707e35117378b0803426cf401aaf5bc4e048a3ef5ee38605`
+- `docs/spec/08-acceptance-and-continuity-tests.md` — SHA-256 `41a5d3277912ceb1c6e297c99dc858e6ca1ded413ee907ab07a39196a6f785c1`
+- `docs/spec/09-development-roadmap.md` — SHA-256 `e2ed621a451ac00b74ed0ded9d45cfe007f2d90cf638e1732e75074f10100813`
 
 ---
 
 <!-- BEGIN SOURCE: docs/spec/00-index.md -->
 # doll specification index
 
-**Status:** Draft for acceptance  
+**Status:** Accepted for implementation  
 **Specification set version:** 0.1
 
 ## 1. Purpose
@@ -57,6 +57,9 @@ Accepted architecture decisions under `docs/decisions/` explain why major constr
 ## 3. Requirement language
 
 The following terms are normative:
+
+The terms are interpreted case-insensitively in specification set 0.1; future changes SHOULD use uppercase forms for clarity.
+
 
 - **MUST / MUST NOT:** mandatory for the applicable release or claim;
 - **SHOULD / SHOULD NOT:** expected unless a documented reason justifies an exception;
@@ -530,7 +533,7 @@ Unrelated feature pull requests must not quietly alter these decisions.
 <!-- BEGIN SOURCE: docs/spec/01-product-and-continuity-contract.md -->
 # Product definition and Continuity Contract
 
-**Status:** Draft for acceptance  
+**Status:** Accepted for implementation  
 **Specification version:** 0.1  
 **Applies to:** doll core, Lite profile, Heavy profile, later cloud and mobile extensions
 
@@ -986,7 +989,7 @@ No continuity, platform, model, recovery, or safety claim may be promoted as com
 <!-- BEGIN SOURCE: docs/spec/02-architecture-and-data-flow.md -->
 # Core architecture and data flow
 
-**Status:** Draft for acceptance  
+**Status:** Accepted for implementation  
 **Specification version:** 0.1  
 **Depends on:** `00-decisions-baseline.md`, `01-product-and-continuity-contract.md`
 
@@ -1683,7 +1686,7 @@ This architecture specification is acceptable when later detailed specifications
 <!-- BEGIN SOURCE: docs/spec/03-doll-state-memory-and-storage.md -->
 # Doll State, memory, and storage
 
-**Status:** Draft for acceptance  
+**Status:** Accepted for implementation  
 **Specification version:** 0.1  
 **Depends on:** `00-decisions-baseline.md`, `01-product-and-continuity-contract.md`, `02-architecture-and-data-flow.md`
 
@@ -2919,7 +2922,7 @@ This specification is acceptable when the later implementation can prove that:
 <!-- BEGIN SOURCE: docs/spec/04-security-permissions-and-threat-model.md -->
 # Security, permissions, and threat model
 
-**Status:** Draft for acceptance  
+**Status:** Accepted for implementation  
 **Specification version:** 0.1  
 **Depends on:** `00-decisions-baseline.md`, `01-product-and-continuity-contract.md`, `02-architecture-and-data-flow.md`, `03-doll-state-memory-and-storage.md`
 
@@ -3803,7 +3806,7 @@ This specification is acceptable when subsequent implementation can be designed 
 <!-- BEGIN SOURCE: docs/spec/05-model-vault-lifecycle-evaluation.md -->
 # Model Vault, lifecycle, evaluation, and improvement
 
-**Status:** Draft for acceptance  
+**Status:** Accepted for implementation  
 **Specification version:** 0.1  
 **Depends on:** `00-decisions-baseline.md`, `01-product-and-continuity-contract.md`, `02-architecture-and-data-flow.md`, `03-doll-state-memory-and-storage.md`, `04-security-permissions-and-threat-model.md`
 
@@ -4756,7 +4759,7 @@ This specification is acceptable when subsequent implementation can satisfy thes
 <!-- BEGIN SOURCE: docs/spec/06-platform-install-update-and-recovery.md -->
 # Platform, installation, update, and recovery
 
-**Status:** Draft for acceptance  
+**Status:** Accepted for implementation  
 **Specification version:** 0.1  
 **Depends on:** `00-decisions-baseline.md`, `01-product-and-continuity-contract.md`, `02-architecture-and-data-flow.md`, `03-doll-state-memory-and-storage.md`, `04-security-permissions-and-threat-model.md`, `05-model-vault-lifecycle-evaluation.md`
 
@@ -5518,7 +5521,7 @@ This specification is acceptable when subsequent implementation can meet these c
 <!-- BEGIN SOURCE: docs/spec/07-release-scope-and-profiles.md -->
 # Release scope and execution profiles
 
-**Status:** Draft for acceptance  
+**Status:** Accepted for implementation  
 **Specification version:** 0.1
 
 ## 1. Purpose
@@ -5817,7 +5820,7 @@ This specification is acceptable when:
 <!-- BEGIN SOURCE: docs/spec/08-acceptance-and-continuity-tests.md -->
 # Acceptance and Continuity Test Suite
 
-**Status:** Draft for acceptance  
+**Status:** Accepted for implementation  
 **Specification version:** 0.1
 
 ## 1. Purpose
@@ -6279,7 +6282,7 @@ This test specification is accepted when:
 <!-- BEGIN SOURCE: docs/spec/09-development-roadmap.md -->
 # Development roadmap
 
-**Status:** Draft for acceptance  
+**Status:** Accepted for implementation  
 **Specification version:** 0.1
 
 ## 1. Purpose
@@ -6327,15 +6330,15 @@ Status at completion of PR-005:
 - acceptance tests defined;
 - roadmap defined.
 
-Remaining Phase 0 work after PR-005:
+Phase 0 is complete when:
 
-1. generate a combined specification document;
-2. run a contradiction and completeness audit;
-3. normalize requirement wording where needed;
-4. freeze specification version 0.1 for implementation;
-5. create the initial implementation issue and PR queue.
+1. the combined specification is generated deterministically;
+2. the contradiction and completeness audit is recorded;
+3. requirement wording and acceptance mappings are reviewed;
+4. specification set 0.1 is accepted for implementation;
+5. the initial implementation issue and PR queue can begin.
 
-No production feature should bypass this baseline.
+No production feature may bypass this baseline. After the v0.1 freeze, implementation starts with IMP-001.
 
 ## 4. Phase 1 — Repository and continuity kernel
 
@@ -6507,14 +6510,27 @@ Goal: connect local inference without letting the runtime own Doll State.
 
 ### Proposed PR sequence
 
-#### IMP-012 — Runtime adapter contract
+#### IMP-012 — Minimal user-selected document intake
+
+- user-controlled text and Markdown selection;
+- safe external read path;
+- DocumentRecord creation;
+- path and size validation;
+- explicit attachment to the current request;
+- no model-initiated arbitrary filesystem read.
+
+Acceptance focus:
+
+- CONT-P007.
+
+#### IMP-013 — Runtime adapter contract
 
 - adapter protocol;
 - normalized health, inventory, generation, cancellation, and error models;
 - mocked adapter tests;
 - runtime-independent model IDs.
 
-#### IMP-013 — Ollama adapter
+#### IMP-014 — Ollama adapter
 
 - local health check;
 - installed model inventory mapping;
@@ -6523,7 +6539,7 @@ Goal: connect local inference without letting the runtime own Doll State.
 - no model download;
 - no cloud path.
 
-#### IMP-014 — Model manifests and bindings
+#### IMP-015 — Model manifests and bindings
 
 - ModelManifestRecord;
 - RuntimeManifestRecord;
@@ -6532,7 +6548,7 @@ Goal: connect local inference without letting the runtime own Doll State.
 - active, previous, fallback status;
 - checksum and provenance fields.
 
-#### IMP-015 — Local conversation path
+#### IMP-016 — Local conversation path
 
 - session orchestration;
 - local API chat path;
@@ -6546,7 +6562,7 @@ Acceptance focus:
 - CONT-P002;
 - CONT-P004.
 
-#### IMP-016 — Model switch and local fallback
+#### IMP-017 — Model switch and local fallback
 
 - explicit activation;
 - previous binding retention;
@@ -6561,7 +6577,7 @@ Acceptance focus:
 - CONT-P014;
 - MODEL-006 through MODEL-010.
 
-#### IMP-017 — Offline mode and first continuity drill
+#### IMP-018 — Offline mode and first continuity drill
 
 - network-disabled startup setting;
 - outbound-request guard for core paths;
@@ -6584,7 +6600,7 @@ Goal: add useful local tools without bypassing security.
 
 ### Proposed PR sequence
 
-#### IMP-018 — Capability Broker core
+#### IMP-019 — Capability Broker core
 
 - versioned capability registry;
 - schema validation;
@@ -6597,7 +6613,7 @@ Acceptance focus:
 
 - SEC-001 through SEC-005.
 
-#### IMP-019 — Approved local document read
+#### IMP-020 — Approved local document read
 
 - user-selected external text and Markdown;
 - managed copy option;
@@ -6609,7 +6625,7 @@ Acceptance focus:
 
 - CONT-P007.
 
-#### IMP-020 — Artifact service completion
+#### IMP-021 — Artifact service completion
 
 - artifact versions;
 - project links;
@@ -6617,7 +6633,7 @@ Acceptance focus:
 - export path through a user-controlled action;
 - no silent overwrite.
 
-#### IMP-021 — Local full-text search
+#### IMP-022 — Local full-text search
 
 - SQLite FTS5;
 - index rebuild;
@@ -6783,16 +6799,15 @@ An implementation PR is done when:
 - review comments are resolved;
 - main remains recoverable.
 
-## 16. Specification follow-up after PR-005
+## 16. Immediate work after specification v0.1 freeze
 
-The immediate next repository work is:
+The next repository work is:
 
-1. add deterministic specification generation;
-2. generate `DOLL_FINAL_SPEC.md`;
-3. run contradiction and requirement audit;
-4. update documents where contradictions are found;
-5. mark specification set 0.1 accepted for implementation;
-6. open IMP-001.
+1. open IMP-001;
+2. add the Python package and three-operating-system CI skeleton;
+3. implement platform paths and workspace initialization in IMP-002;
+4. implement SQLite state and migrations in IMP-003;
+5. preserve the accepted continuity, security, and recovery boundaries in every implementation PR.
 
 ## 17. Roadmap change control
 

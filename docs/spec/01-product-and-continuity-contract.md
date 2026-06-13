@@ -1,6 +1,6 @@
 # Product definition and Continuity Contract
 
-**Status:** Draft for acceptance  
+**Status:** Accepted for implementation  
 **Specification version:** 0.1  
 **Applies to:** doll core, Lite profile, Heavy profile, later cloud and mobile extensions
 
