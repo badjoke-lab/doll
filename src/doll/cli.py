@@ -14,6 +14,11 @@ app = typer.Typer(
 )
 
 
+@app.callback()
+def root() -> None:
+    """Local management interface for doll."""
+
+
 @app.command("version")
 def version_command() -> None:
     """Print the installed doll version."""
@@ -21,7 +26,7 @@ def version_command() -> None:
     typer.echo(__version__)
 
 
-def main() -> None:  # pragma: no cover - exercised through the installed console entry point.
+def main() -> None:  # pragma: no cover - exercised through installed entry points.
     """Run the doll command-line application."""
 
     app(prog_name="doll")
