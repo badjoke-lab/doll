@@ -8,6 +8,7 @@ from typing import Annotated, cast
 import typer
 
 from doll import __version__
+from doll.state import StateError, initialize_state_repository, open_state_repository
 from doll.workspace import ProfilePreference, WorkspaceError, initialize_workspace
 
 app = typer.Typer(
@@ -16,6 +17,11 @@ app = typer.Typer(
     no_args_is_help=True,
     add_completion=False,
 )
+state_app = typer.Typer(
+    help="Initialize and inspect the local authoritative state repository.",
+    no_args_is_help=True,
+)
+app.add_typer(state_app, name="state")
 
 
 @app.callback()
@@ -58,6 +64,54 @@ def init_command(
 
     typer.echo(f"Workspace initialized: {initialized.root}")
     typer.echo(f"Workspace ID: {initialized.record.workspace_id}")
+
+
+@state_app.command("init")
+def state_init_command(
+    path: Annotated[
+        Path | None,
+        typer.Argument(
+            help="Initialized workspace path. Uses the platform data directory by default."
+        ),
+    ] = None,
+) -> None:
+    """Initialize the SQLite authoritative state repository."""
+
+    try:
+        with initialize_state_repository(path) as repository:
+            status = repository.status()
+    except (WorkspaceError, StateError) as exc:
+        typer.echo(f"state initialization failed: {exc}", err=True)
+        raise typer.Exit(code=2) from exc
+
+    typer.echo("State database initialized.")
+    typer.echo(f"Schema version: {status.schema_version}")
+    typer.echo(f"State revision: {status.state_revision}")
+
+
+@state_app.command("status")
+def state_status_command(
+    path: Annotated[
+        Path | None,
+        typer.Argument(
+            help="Initialized workspace path. Uses the platform data directory by default."
+        ),
+    ] = None,
+) -> None:
+    """Inspect state metadata through a read-only connection."""
+
+    try:
+        with open_state_repository(path, read_only=True) as repository:
+            status = repository.status()
+    except (WorkspaceError, StateError) as exc:
+        typer.echo(f"state inspection failed: {exc}", err=True)
+        raise typer.Exit(code=2) from exc
+
+    typer.echo("State database: ready")
+    typer.echo(f"Schema version: {status.schema_version}")
+    typer.echo(f"State revision: {status.state_revision}")
+    typer.echo(f"Record count: {status.record_count}")
+    typer.echo("Mode: read-only")
 
 
 @app.command("version")
