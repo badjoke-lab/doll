@@ -50,6 +50,7 @@ source = ["doll"]
 
 [tool.coverage.report]
 show_missing = true
+precision = 2
 skip_covered = true
 
 [tool.ruff]
