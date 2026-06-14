@@ -29,9 +29,11 @@ _SECRET_ASSIGNMENT_PATTERN = re.compile(
     r"authorization|cookie|private[_ -]?key|recovery[_ -]?phrase|seed[_ -]?phrase|mnemonic)"
     r"\b\s*[:=]\s*\S+"
 )
+_BEARER_PATTERN = re.compile(r"(?i)\bbearer\s+[A-Za-z0-9._~+/=-]{8,}")
 _JWT_PATTERN = re.compile(
     r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b"
 )
+_POSIX_PATH_PATTERN = re.compile(r"(?<![:\w])/(?:[^/\s]+/)*[^/\s]+")
 _WINDOWS_PATH_PATTERN = re.compile(r"(?i)\b[A-Z]:\\")
 _SECRET_KEYS = frozenset(
     {
@@ -48,6 +50,18 @@ _SECRET_KEYS = frozenset(
         "private_key",
         "recovery_phrase",
         "seed_phrase",
+        "mnemonic",
+        "credential",
+        "credentials",
+    }
+)
+_SECRET_KEY_PARTS = frozenset(
+    {
+        "password",
+        "passwd",
+        "secret",
+        "authorization",
+        "cookie",
         "mnemonic",
         "credential",
         "credentials",
@@ -294,6 +308,8 @@ def _validate_optional_identifier(name: str, value: str | None) -> str | None:
         raise AuditValidationError(f"{name} exceeds {MAX_IDENTIFIER_LENGTH} characters")
     if any(ord(character) < 32 for character in normalized):
         raise AuditValidationError(f"{name} contains control characters")
+    _reject_secret_text(normalized)
+    _reject_local_path(normalized)
     return normalized
 
 
@@ -308,14 +324,7 @@ def _validate_summary(summary: str | None) -> str | None:
             f"audit summary exceeds {MAX_SUMMARY_LENGTH} characters"
         )
     _reject_secret_text(normalized)
-    if "file://" in normalized or "/Users/" in normalized or "/home/" in normalized:
-        raise AuditValidationError(
-            "audit summary must not contain a local absolute path"
-        )
-    if _WINDOWS_PATH_PATTERN.search(normalized):
-        raise AuditValidationError(
-            "audit summary must not contain a local absolute path"
-        )
+    _reject_local_path(normalized)
     return normalized
 
 
@@ -353,7 +362,7 @@ def _validate_metadata_value(value: object) -> None:
             if not isinstance(raw_key, str):
                 raise AuditValidationError("audit metadata keys must be strings")
             normalized_key = raw_key.strip().lower().replace("-", "_").replace(" ", "_")
-            if normalized_key in _SECRET_KEYS:
+            if _is_secret_key(normalized_key):
                 raise AuditValidationError(
                     f"audit metadata contains a prohibited secret-like key: {raw_key}"
                 )
@@ -371,11 +380,42 @@ def _validate_metadata_value(value: object) -> None:
     raise AuditValidationError("audit metadata must be JSON-compatible")
 
 
+def _is_secret_key(normalized_key: str) -> bool:
+    if normalized_key in _SECRET_KEYS:
+        return True
+    parts = set(normalized_key.split("_"))
+    if parts & _SECRET_KEY_PARTS:
+        return True
+    return any(
+        pair <= parts
+        for pair in (
+            {"api", "key"},
+            {"access", "token"},
+            {"refresh", "token"},
+            {"session", "cookie"},
+            {"private", "key"},
+            {"recovery", "phrase"},
+            {"seed", "phrase"},
+        )
+    )
+
+
 def _reject_secret_text(value: str) -> None:
     if "-----BEGIN" in value and "PRIVATE KEY-----" in value:
         raise AuditValidationError("audit data appears to contain private key material")
-    if _SECRET_ASSIGNMENT_PATTERN.search(value) or _JWT_PATTERN.search(value):
+    if (
+        _SECRET_ASSIGNMENT_PATTERN.search(value)
+        or _BEARER_PATTERN.search(value)
+        or _JWT_PATTERN.search(value)
+    ):
         raise AuditValidationError("audit data appears to contain secret material")
+
+
+def _reject_local_path(value: str) -> None:
+    if "file://" in value or _POSIX_PATH_PATTERN.search(value):
+        raise AuditValidationError("audit data must not contain a local absolute path")
+    if _WINDOWS_PATH_PATTERN.search(value):
+        raise AuditValidationError("audit data must not contain a local absolute path")
 
 
 def _reject_nonstandard_json(value: str) -> object:
