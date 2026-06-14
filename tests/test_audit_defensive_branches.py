@@ -78,9 +78,7 @@ def test_defensive_validation_branches(tmp_path: Path) -> None:
         assert event.error_class == "Error"
 
         with pytest.raises(AuditValidationError, match="keys must be strings"):
-            audit._serialize_metadata(
-                cast(dict[str, object], {1: "synthetic"})
-            )
+            audit._serialize_metadata(cast(dict[str, object], {1: "synthetic"}))
         with pytest.raises(AuditValidationError, match="control characters"):
             service.append(
                 action="audit.identifier",
