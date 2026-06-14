@@ -119,13 +119,28 @@ def _apply_migration(connection: sqlite3.Connection, migration: Migration) -> No
         ) from exc
 
 
+def _index_migrations(migrations: Iterable[Migration]) -> dict[int, Migration]:
+    by_from_version: dict[int, Migration] = {}
+    migration_ids: set[str] = set()
+    for migration in migrations:
+        if migration.from_version in by_from_version:
+            raise StateCorruptError(
+                f"multiple migrations start at schema version {migration.from_version}"
+            )
+        if migration.migration_id in migration_ids:
+            raise StateCorruptError(f"duplicate migration id: {migration.migration_id}")
+        by_from_version[migration.from_version] = migration
+        migration_ids.add(migration.migration_id)
+    return by_from_version
+
+
 def apply_migrations(
     connection: sqlite3.Connection,
     migrations: Iterable[Migration] = MIGRATIONS,
 ) -> int:
     """Apply ordered pending migrations and return the resulting schema version."""
 
-    by_from_version = {migration.from_version: migration for migration in migrations}
+    by_from_version = _index_migrations(migrations)
     current_version = cast(int, _metadata_row(connection)["schema_version"])
     if current_version > CURRENT_SCHEMA_VERSION:
         raise FutureSchemaVersionError(
@@ -135,8 +150,17 @@ def apply_migrations(
 
     while current_version < CURRENT_SCHEMA_VERSION:
         migration = by_from_version.get(current_version)
-        if migration is None or migration.to_version <= current_version:
+        if migration is None:
             raise StateCorruptError(f"no valid migration from schema version {current_version}")
+        if migration.to_version != current_version + 1:
+            raise StateCorruptError(
+                f"migration {migration.migration_id} must advance exactly one schema version"
+            )
+        if migration.to_version > CURRENT_SCHEMA_VERSION:
+            raise StateCorruptError(
+                f"migration {migration.migration_id} exceeds supported schema version "
+                f"{CURRENT_SCHEMA_VERSION}"
+            )
         _apply_migration(connection, migration)
         current_version = migration.to_version
 
