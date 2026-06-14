@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Literal
 
 STATE_DATABASE_NAME = "doll-state.sqlite3"
-CURRENT_SCHEMA_VERSION = 1
+CURRENT_SCHEMA_VERSION = 2
 
 RecordStatus = Literal["active", "archived", "superseded", "deleted", "invalid"]
 RecordProvenance = Literal[

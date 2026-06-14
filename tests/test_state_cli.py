@@ -8,7 +8,7 @@ from pytest import MonkeyPatch
 from typer.testing import CliRunner
 
 from doll.cli import app
-from doll.state import STATE_DATABASE_NAME
+from doll.state import CURRENT_SCHEMA_VERSION, STATE_DATABASE_NAME
 
 runner = CliRunner()
 
@@ -29,7 +29,7 @@ def test_state_cli_init_and_read_only_status(tmp_path: Path) -> None:
     initialized = runner.invoke(app, ["state", "init", str(target)])
 
     assert initialized.exit_code == 0
-    assert "Schema version: 1" in initialized.stdout
+    assert f"Schema version: {CURRENT_SCHEMA_VERSION}" in initialized.stdout
     assert "State revision: 0" in initialized.stdout
 
     status = runner.invoke(app, ["state", "status", str(target)])
@@ -59,11 +59,10 @@ def test_state_cli_reports_missing_and_duplicate_state(tmp_path: Path) -> None:
 def test_help_and_version_do_not_initialize_state(monkeypatch: MonkeyPatch) -> None:
     import doll.cli as cli_module
 
-    monkeypatch.setattr(
-        cli_module,
-        "initialize_state_repository",
-        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("unexpected state init")),
-    )
+    def unexpected_state_init(*args: object, **kwargs: object) -> object:
+        raise AssertionError("unexpected state init")
+
+    monkeypatch.setattr(cli_module, "initialize_state_repository", unexpected_state_init)
 
     assert runner.invoke(app, ["--help"]).exit_code == 0
     assert runner.invoke(app, ["version"]).exit_code == 0

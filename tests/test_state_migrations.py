@@ -52,7 +52,84 @@ def test_failed_migration_rolls_back_and_records_failure(tmp_path: Path) -> None
     assert failed[1] == "OperationalError"
 
     with state.open_state_repository(initialized.root) as repository:
-        assert repository.status().schema_version == 1
+        assert repository.status().schema_version == state.CURRENT_SCHEMA_VERSION
+
+
+def test_existing_schema_one_migrates_to_audit_schema(tmp_path: Path) -> None:
+    initialized = initialized_workspace(tmp_path)
+    database_path = initialized.root / "state" / state.STATE_DATABASE_NAME
+    connection = state_db._connect(database_path, read_only=False)
+    try:
+        state_db._bootstrap(connection, str(initialized.record.workspace_id))
+        state_migrations._apply_migration(connection, state_db.MIGRATION_0001)
+    finally:
+        connection.close()
+
+    with state.open_state_repository(initialized.root) as repository:
+        assert repository.status().schema_version == state.CURRENT_SCHEMA_VERSION
+        tables = {
+            row[0]
+            for row in repository.connection.execute(
+                "SELECT name FROM sqlite_master WHERE type = 'table'"
+            ).fetchall()
+        }
+        triggers = {
+            row[0]
+            for row in repository.connection.execute(
+                "SELECT name FROM sqlite_master WHERE type = 'trigger'"
+            ).fetchall()
+        }
+        history = repository.connection.execute(
+            "SELECT migration_id, status FROM migration_history ORDER BY completed_at"
+        ).fetchall()
+
+    assert "audit_events" in tables
+    assert {"audit_events_no_update", "audit_events_no_delete"} <= triggers
+    assert [tuple(row) for row in history] == [
+        ("0001-initial-authoritative-state", "completed"),
+        ("0002-append-oriented-audit-events", "completed"),
+    ]
+
+
+def test_failed_audit_migration_leaves_schema_one_usable(tmp_path: Path) -> None:
+    initialized = initialized_workspace(tmp_path)
+    failing = (
+        state_db.MIGRATION_0001,
+        state.Migration(
+            migration_id="0002-failing-audit",
+            from_version=1,
+            to_version=2,
+            statements=(
+                "CREATE TABLE should_rollback_audit (id INTEGER PRIMARY KEY)",
+                "THIS IS NOT VALID SQL",
+            ),
+        ),
+    )
+
+    with pytest.raises(state.MigrationError):
+        state.initialize_state_repository(initialized.root, migrations=failing)
+
+    database_path = initialized.root / "state" / state.STATE_DATABASE_NAME
+    connection = sqlite3.connect(database_path)
+    try:
+        version = connection.execute(
+            "SELECT schema_version FROM schema_metadata WHERE singleton = 1"
+        ).fetchone()
+        rolled_back = connection.execute(
+            "SELECT name FROM sqlite_master WHERE name = 'should_rollback_audit'"
+        ).fetchone()
+        records = connection.execute(
+            "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'records'"
+        ).fetchone()
+    finally:
+        connection.close()
+
+    assert version == (1,)
+    assert rolled_back is None
+    assert records == ("records",)
+
+    with state.open_state_repository(initialized.root) as repository:
+        assert repository.status().schema_version == state.CURRENT_SCHEMA_VERSION
 
 
 def test_private_metadata_and_bootstrap_failure_paths() -> None:
