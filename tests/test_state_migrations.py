@@ -118,6 +118,38 @@ def test_apply_migrations_rejects_future_version(tmp_path: Path) -> None:
         connection.close()
 
 
+def test_migration_chain_rejects_leaps_and_duplicate_starts(tmp_path: Path) -> None:
+    leap_workspace = initialized_workspace(tmp_path, "leap")
+    leap = (
+        state.Migration(
+            migration_id="0001-leap",
+            from_version=0,
+            to_version=2,
+            statements=(),
+        ),
+    )
+    with pytest.raises(state.StateCorruptError, match="advance exactly one"):
+        state.initialize_state_repository(leap_workspace.root, migrations=leap)
+
+    duplicate_workspace = initialized_workspace(tmp_path, "duplicate")
+    duplicate = (
+        state.Migration("0001-first", 0, 1, ()),
+        state.Migration("0001-second", 0, 1, ()),
+    )
+    with pytest.raises(state.StateCorruptError, match="multiple migrations"):
+        state.initialize_state_repository(duplicate_workspace.root, migrations=duplicate)
+
+
+def test_migration_chain_rejects_duplicate_ids(tmp_path: Path) -> None:
+    initialized = initialized_workspace(tmp_path)
+    duplicate_ids = (
+        state.Migration("duplicate", 0, 1, ()),
+        state.Migration("duplicate", 1, 2, ()),
+    )
+    with pytest.raises(state.StateCorruptError, match="duplicate migration id"):
+        state.initialize_state_repository(initialized.root, migrations=duplicate_ids)
+
+
 def test_workspace_sync_error_is_wrapped(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
