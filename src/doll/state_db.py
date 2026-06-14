@@ -169,3 +169,50 @@ MIGRATION_0001: Migration = Migration(
         "CREATE INDEX records_updated_at_idx ON records(updated_at)",
     ),
 )
+
+MIGRATION_0002: Migration = Migration(
+    migration_id="0002-append-oriented-audit-events",
+    from_version=1,
+    to_version=2,
+    statements=(
+        """
+        CREATE TABLE audit_events (
+            sequence INTEGER PRIMARY KEY AUTOINCREMENT,
+            event_id TEXT NOT NULL UNIQUE,
+            operation_id TEXT NOT NULL,
+            occurred_at TEXT NOT NULL,
+            actor_type TEXT NOT NULL CHECK (
+                actor_type IN ('user', 'system', 'model', 'runtime', 'capability', 'migration')
+            ),
+            actor_id TEXT,
+            action TEXT NOT NULL,
+            target_type TEXT,
+            target_id TEXT,
+            result TEXT NOT NULL CHECK (
+                result IN ('success', 'denied', 'failed', 'cancelled', 'partial')
+            ),
+            summary TEXT,
+            error_class TEXT,
+            metadata_json TEXT NOT NULL DEFAULT '{}'
+        )
+        """,
+        "CREATE INDEX audit_events_operation_idx ON audit_events(operation_id, sequence)",
+        "CREATE INDEX audit_events_action_idx ON audit_events(action, sequence)",
+        "CREATE INDEX audit_events_actor_idx ON audit_events(actor_type, sequence)",
+        "CREATE INDEX audit_events_result_idx ON audit_events(result, sequence)",
+        """
+        CREATE TRIGGER audit_events_no_update
+        BEFORE UPDATE ON audit_events
+        BEGIN
+            SELECT RAISE(ABORT, 'audit events are append-only');
+        END
+        """,
+        """
+        CREATE TRIGGER audit_events_no_delete
+        BEFORE DELETE ON audit_events
+        BEGIN
+            SELECT RAISE(ABORT, 'audit events are append-only');
+        END
+        """,
+    ),
+)
