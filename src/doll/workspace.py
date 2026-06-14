@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Literal
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from doll import __version__
 from doll.paths import canonicalize_path, default_workspace_path, find_doll_repository_ancestor
@@ -31,7 +31,7 @@ ProfilePreference = Literal["lite", "heavy", "auto"]
 
 
 class WorkspaceError(RuntimeError):
-    """Base class for workspace initialization failures."""
+    """Base class for workspace initialization and loading failures."""
 
 
 class WorkspaceExistsError(WorkspaceError):
@@ -46,6 +46,14 @@ class WorkspaceNotEmptyError(WorkspaceError):
     """Raised when initialization would modify an unrelated non-empty directory."""
 
 
+class WorkspaceRecordError(WorkspaceError):
+    """Raised when a workspace identity record is missing or invalid."""
+
+
+class WorkspaceRevisionError(WorkspaceError):
+    """Raised when a state revision would move backwards."""
+
+
 class WorkspaceRecord(BaseModel):
     """Stable identity and schema metadata for one doll workspace."""
 
@@ -58,7 +66,7 @@ class WorkspaceRecord(BaseModel):
     product_version_created: str
     product_version_last_opened: str
     profile_preference: ProfilePreference = "lite"
-    state_revision: int = 0
+    state_revision: int = Field(default=0, ge=0)
     instance_label: str = Field(min_length=1, max_length=120)
 
     @classmethod
@@ -84,7 +92,7 @@ class WorkspaceRecord(BaseModel):
 
 @dataclass(frozen=True, slots=True)
 class InitializedWorkspace:
-    """Result of a successful workspace initialization."""
+    """Loaded or newly initialized doll workspace."""
 
     root: Path
     record: WorkspaceRecord
@@ -180,3 +188,57 @@ def initialize_workspace(
         raise
 
     return InitializedWorkspace(root=root, record=record)
+
+
+def load_workspace(path: Path | None = None) -> InitializedWorkspace:
+    """Load and validate an initialized workspace without mutating it."""
+
+    root = canonicalize_path(path) if path is not None else default_workspace_path()
+    if not root.is_dir():
+        raise WorkspaceRecordError(f"workspace directory does not exist: {root}")
+
+    record_path = root / WORKSPACE_RECORD_NAME
+    try:
+        payload = record_path.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise WorkspaceRecordError(f"workspace identity is not readable: {record_path}") from exc
+
+    try:
+        record = WorkspaceRecord.model_validate_json(payload)
+    except ValidationError as exc:
+        raise WorkspaceRecordError(f"workspace identity is invalid: {record_path}") from exc
+
+    if record.schema_version > WORKSPACE_SCHEMA_VERSION:
+        raise WorkspaceRecordError(
+            f"workspace schema version {record.schema_version} is newer than supported "
+            f"version {WORKSPACE_SCHEMA_VERSION}"
+        )
+
+    state_directory = root / "state"
+    if not state_directory.is_dir():
+        raise WorkspaceRecordError(f"workspace state directory is missing: {state_directory}")
+
+    return InitializedWorkspace(root=root, record=record)
+
+
+def update_workspace_state_revision(root: Path, revision: int) -> WorkspaceRecord:
+    """Persist a non-decreasing workspace state revision atomically."""
+
+    workspace = load_workspace(root)
+    if revision < workspace.record.state_revision:
+        raise WorkspaceRevisionError(
+            f"workspace state revision cannot decrease from "
+            f"{workspace.record.state_revision} to {revision}"
+        )
+    if revision == workspace.record.state_revision:
+        return workspace.record
+
+    updated = workspace.record.model_copy(
+        update={
+            "state_revision": revision,
+            "updated_at": datetime.now(UTC),
+            "product_version_last_opened": __version__,
+        }
+    )
+    _write_record_atomic(workspace.root / WORKSPACE_RECORD_NAME, updated)
+    return updated
