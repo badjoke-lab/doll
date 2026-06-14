@@ -10,6 +10,7 @@ import typer
 from doll import __version__
 from doll.artifact import ArtifactError, ArtifactValidationError, WorkspaceFileService
 from doll.audit import AuditActorType, AuditResult, AuditService
+from doll.settings_cli import permission_app, policy_app, preference_app
 from doll.state import StateError, initialize_state_repository, open_state_repository
 from doll.workspace import ProfilePreference, WorkspaceError, initialize_workspace
 from doll.workspace_files import WorkspaceFileError
@@ -35,6 +36,9 @@ artifact_app = typer.Typer(
 app.add_typer(state_app, name="state")
 app.add_typer(audit_app, name="audit")
 app.add_typer(artifact_app, name="artifact")
+app.add_typer(preference_app, name="preference")
+app.add_typer(policy_app, name="policy")
+app.add_typer(permission_app, name="permission")
 
 
 @app.callback()
