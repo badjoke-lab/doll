@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-import json
 import re
 import sqlite3
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Literal, cast
 from uuid import uuid4
 
@@ -17,6 +17,7 @@ from doll.state import (
     RecordProvenance,
     RecordSensitivity,
     StateCorruptError,
+    StateError,
     _utc_now,
 )
 from doll.state_repository import (
@@ -26,8 +27,8 @@ from doll.state_repository import (
 )
 from doll.workspace_files import (
     DEFAULT_MAX_ARTIFACT_BYTES,
-    ManagedFileDigest,
     PublishedFileCleanupError,
+    PublishedWorkspaceFile,
     WorkspaceFileError,
     publish_new_workspace_file,
     validate_managed_path,
@@ -109,7 +110,7 @@ class WorkspaceFileService:
             raise ArtifactValidationError("workspace file service size limit is unsupported")
 
     @property
-    def artifacts_root(self):  # type: ignore[no-untyped-def]
+    def artifacts_root(self) -> Path:
         return self.repository.workspace.root / "artifacts"
 
     def create_bytes(
@@ -170,10 +171,9 @@ class WorkspaceFileService:
             content,
             max_bytes=accepted_limit,
         )
-        committed = False
         artifact_id = str(uuid4())
         try:
-            self._register(
+            state_revision = self._register(
                 artifact_id=artifact_id,
                 title=safe_title,
                 artifact_type=safe_type,
@@ -185,7 +185,6 @@ class WorkspaceFileService:
                 format=safe_format,
                 media_type=safe_media_type,
             )
-            committed = True
         except BaseException as exc:
             try:
                 published.cleanup()
@@ -198,10 +197,9 @@ class WorkspaceFileService:
             raise ArtifactRegistrationError(
                 "artifact could not be registered authoritatively"
             ) from exc
-        finally:
-            if committed:
-                published.close()
 
+        published.close()
+        self.repository._sync_after_commit(state_revision)
         return self.get(artifact_id)
 
     def create_text(
@@ -294,14 +292,14 @@ class WorkspaceFileService:
         artifact_id: str,
         title: str,
         artifact_type: str,
-        published,  # type: ignore[no-untyped-def]
+        published: PublishedWorkspaceFile,
         operation_id: str,
         created_by: ArtifactCreator,
         provenance: RecordProvenance,
         sensitivity: RecordSensitivity,
         format: str | None,
         media_type: str | None,
-    ) -> None:
+    ) -> int:
         metadata: dict[str, object] = {
             "artifact_type": artifact_type,
             "managed_path": published.managed_path,
@@ -385,7 +383,7 @@ class WorkspaceFileService:
                 connection.execute("ROLLBACK")
             raise
 
-        self.repository._sync_after_commit(state_revision)
+        return state_revision
 
 
 def _validate_title(value: str) -> str:
@@ -430,7 +428,11 @@ def _provenance_for_creator(creator: ArtifactCreator) -> RecordProvenance:
 def _artifact_from_record(record: RecordEnvelope) -> ArtifactInfo:
     try:
         metadata = record.metadata
-        artifact_type = _required_string(metadata, "artifact_type")
+        artifact_type = _validate_identifier(
+            "artifact type",
+            _required_string(metadata, "artifact_type"),
+            MAX_ARTIFACT_TYPE_LENGTH,
+        )
         managed_path = validate_managed_path(
             _required_string(metadata, "managed_path")
         ).as_posix()
@@ -445,14 +447,26 @@ def _artifact_from_record(record: RecordEnvelope) -> ArtifactInfo:
             raise ArtifactCorruptError("artifact creator is invalid")
         operation_id = _required_string(metadata, "operation_id")
         _validate_audit_token("operation ID", operation_id, 200)
-        format_value = _optional_string(metadata, "format")
-        media_type = _optional_string(metadata, "media_type")
+        format_raw = _optional_string(metadata, "format")
+        format_value = (
+            _validate_identifier("artifact format", format_raw, MAX_FORMAT_LENGTH)
+            if format_raw is not None
+            else None
+        )
+        media_type = _validate_media_type(_optional_string(metadata, "media_type"))
         if record.title is None:
             raise ArtifactCorruptError("artifact title is missing")
         title = _validate_title(record.title)
-    except (ArtifactValidationError, WorkspaceFileError, KeyError, TypeError) as exc:
-        if isinstance(exc, ArtifactCorruptError):
-            raise
+    except ArtifactCorruptError:
+        raise
+    except (
+        ArtifactValidationError,
+        WorkspaceFileError,
+        StateError,
+        KeyError,
+        TypeError,
+        ValueError,
+    ) as exc:
         raise ArtifactCorruptError("artifact record contains invalid metadata") from exc
 
     return ArtifactInfo(
