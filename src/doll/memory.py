@@ -260,7 +260,9 @@ class ConfirmedMemoryService:
             raise MemoryValidationError(
                 f"memory list limit must be between 1 and {MAX_MEMORY_LIMIT}"
             )
-        status_clause = "" if include_archived else "AND status = 'active'"
+        status_clause = (
+            "AND status IN ('active', 'archived')" if include_archived else "AND status = 'active'"
+        )
         try:
             rows = self.repository.connection.execute(
                 f"""
@@ -600,6 +602,7 @@ def _require_memory_record(
 
 def _memory_from_record(record: RecordEnvelope) -> ConfirmedMemoryInfo:
     try:
+        _validate_memory_envelope(record)
         memory_class = _required_string(record.metadata, "memory_class")
         if memory_class != "confirmed":
             raise MemoryValidationError("memory class is not confirmed")
@@ -707,6 +710,45 @@ def _memory_from_record(record: RecordEnvelope) -> ConfirmedMemoryInfo:
         created_at=record.created_at,
         updated_at=record.updated_at,
     )
+
+
+def _validate_memory_envelope(record: RecordEnvelope) -> None:
+    if record.schema_version != 1:
+        raise MemoryValidationError("confirmed memory schema version is unsupported")
+    if record.revision < 1:
+        raise MemoryValidationError("confirmed memory revision must be positive")
+    if record.status not in {"active", "archived"}:
+        raise MemoryValidationError("confirmed memory status is unsupported")
+    if record.provenance not in {
+        "user-confirmed",
+        "imported",
+        "migrated",
+        "restored",
+    }:
+        raise MemoryValidationError("confirmed memory provenance is unsupported")
+    if record.sensitivity not in {
+        "public",
+        "internal",
+        "personal",
+        "sensitive",
+        "secret",
+    }:
+        raise MemoryValidationError("confirmed memory sensitivity is unsupported")
+
+    created_at = _validate_optional_utc(
+        "memory created-at",
+        record.created_at,
+    )
+    updated_at = _validate_optional_utc(
+        "memory updated-at",
+        record.updated_at,
+    )
+    if created_at is None or updated_at is None:
+        raise MemoryValidationError("confirmed memory timestamps are missing")
+    created = datetime.fromisoformat(created_at[:-1] + "+00:00")
+    updated = datetime.fromisoformat(updated_at[:-1] + "+00:00")
+    if updated < created:
+        raise MemoryValidationError("confirmed memory updated-at precedes created-at")
 
 
 def _validate_text(name: str, value: str, maximum: int) -> str:

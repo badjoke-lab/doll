@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sqlite3
 from pathlib import Path
 from typing import cast
 from uuid import uuid4
@@ -266,3 +267,106 @@ def test_memory_cli_missing_record_failures_hide_workspace(
     assert export.exit_code == 2
     assert "memory export failed" in export.output
     assert str(root) not in export.output
+
+
+@pytest.mark.parametrize(
+    ("column", "value"),
+    [
+        ("schema_version", 2),
+        ("status", "superseded"),
+        ("provenance", "model-proposed"),
+        ("created_at", "not-a-time"),
+        ("updated_at", "not-a-time"),
+    ],
+)
+def test_corrupt_memory_common_envelope_is_rejected(
+    tmp_path: Path,
+    column: str,
+    value: object,
+) -> None:
+    initialized = initialized_workspace(tmp_path)
+    with state.open_state_repository(initialized.root) as repository:
+        created = ConfirmedMemoryService(repository).create(
+            subject="envelope",
+            content="valid fact",
+        )
+        repository.connection.execute(
+            f"UPDATE records SET {column} = ? WHERE id = ?",
+            (value, created.record_id),
+        )
+        with pytest.raises(MemoryCorruptError):
+            ConfirmedMemoryService(repository).get(created.record_id)
+
+
+@pytest.mark.parametrize(
+    ("column", "value"),
+    [
+        ("revision", 0),
+        ("sensitivity", "unknown"),
+    ],
+)
+def test_memory_database_constraints_reject_invalid_envelope_values(
+    tmp_path: Path,
+    column: str,
+    value: object,
+) -> None:
+    initialized = initialized_workspace(tmp_path)
+    with state.open_state_repository(initialized.root) as repository:
+        created = ConfirmedMemoryService(repository).create(
+            subject="database constraint",
+            content="valid fact",
+        )
+        before = ConfirmedMemoryService(repository).get(created.record_id)
+
+        with pytest.raises(sqlite3.IntegrityError):
+            repository.connection.execute(
+                f"UPDATE records SET {column} = ? WHERE id = ?",
+                (value, created.record_id),
+            )
+
+        after = ConfirmedMemoryService(repository).get(created.record_id)
+        assert after == before
+        assert repository.connection.in_transaction is False
+
+
+def test_memory_updated_at_cannot_precede_created_at(
+    tmp_path: Path,
+) -> None:
+    initialized = initialized_workspace(tmp_path)
+    with state.open_state_repository(initialized.root) as repository:
+        created = ConfirmedMemoryService(repository).create(
+            subject="time order",
+            content="valid fact",
+        )
+        repository.connection.execute(
+            """
+            UPDATE records
+            SET created_at = '2026-06-15T00:00:00Z',
+                updated_at = '2026-06-14T00:00:00Z'
+            WHERE id = ?
+            """,
+            (created.record_id,),
+        )
+        with pytest.raises(MemoryCorruptError):
+            ConfirmedMemoryService(repository).get(created.record_id)
+
+
+def test_include_archived_excludes_other_record_statuses(
+    tmp_path: Path,
+) -> None:
+    initialized = initialized_workspace(tmp_path)
+    with state.open_state_repository(initialized.root) as repository:
+        created = ConfirmedMemoryService(repository).create(
+            subject="quarantined",
+            content="valid fact",
+        )
+        repository.connection.execute(
+            "UPDATE records SET status = 'invalid' WHERE id = ?",
+            (created.record_id,),
+        )
+
+        service = ConfirmedMemoryService(repository)
+        assert service.list() == ()
+        assert service.list(include_archived=True) == ()
+        with pytest.raises(MemoryCorruptError):
+            service.get(created.record_id)

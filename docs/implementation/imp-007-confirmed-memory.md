@@ -88,3 +88,14 @@ doll memory export
 This slice does not add session memory, suggested memory, automatic extraction, model
 recall, embeddings, FTS, contradiction adjudication, project relationships, bulk Doll
 State export/import, backup/restore, secret export, or hard deletion.
+
+## Envelope validation
+
+Typed memory inspection validates the common envelope as well as memory metadata.
+The first confirmed-memory schema accepts schema version 1, positive revisions,
+active or archived status, supported sensitivity values, supported confirmed-memory
+provenance, valid UTC timestamps, and an update time that is not earlier than creation.
+
+Memory listing with `--include-archived` includes only active and archived confirmed
+memories. Invalid, deleted, and superseded rows are not presented as ordinary confirmed
+memory entries.
