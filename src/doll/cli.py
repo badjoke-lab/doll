@@ -10,6 +10,7 @@ import typer
 from doll import __version__
 from doll.artifact import ArtifactError, ArtifactValidationError, WorkspaceFileService
 from doll.audit import AuditActorType, AuditResult, AuditService
+from doll.memory_cli import memory_app
 from doll.settings_cli import permission_app, policy_app, preference_app
 from doll.state import StateError, initialize_state_repository, open_state_repository
 from doll.workspace import ProfilePreference, WorkspaceError, initialize_workspace
@@ -39,6 +40,7 @@ app.add_typer(artifact_app, name="artifact")
 app.add_typer(preference_app, name="preference")
 app.add_typer(policy_app, name="policy")
 app.add_typer(permission_app, name="permission")
+app.add_typer(memory_app, name="memory")
 
 
 @app.callback()
