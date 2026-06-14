@@ -62,9 +62,7 @@ def test_help_and_version_do_not_initialize_state(monkeypatch: MonkeyPatch) -> N
     def unexpected_state_init(*args: object, **kwargs: object) -> object:
         raise AssertionError("unexpected state init")
 
-    monkeypatch.setattr(
-        cli_module, "initialize_state_repository", unexpected_state_init
-    )
+    monkeypatch.setattr(cli_module, "initialize_state_repository", unexpected_state_init)
 
     assert runner.invoke(app, ["--help"]).exit_code == 0
     assert runner.invoke(app, ["version"]).exit_code == 0

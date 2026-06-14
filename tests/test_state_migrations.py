@@ -41,9 +41,7 @@ def test_failed_migration_rolls_back_and_records_failure(tmp_path: Path) -> None
         table = connection.execute(
             "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'should_rollback'"
         ).fetchone()
-        failed = connection.execute(
-            "SELECT status, error_class FROM migration_history"
-        ).fetchone()
+        failed = connection.execute("SELECT status, error_class FROM migration_history").fetchone()
     finally:
         connection.close()
 
@@ -172,9 +170,7 @@ def test_migration_detects_changed_schema_version(tmp_path: Path) -> None:
             migration_id="0001-race",
             from_version=0,
             to_version=1,
-            statements=(
-                "UPDATE schema_metadata SET schema_version = 9 WHERE singleton = 1",
-            ),
+            statements=("UPDATE schema_metadata SET schema_version = 9 WHERE singleton = 1",),
         ),
     )
     with pytest.raises(state.MigrationError):
@@ -218,9 +214,7 @@ def test_migration_chain_rejects_leaps_and_duplicate_starts(tmp_path: Path) -> N
         state.Migration("0001-second", 0, 1, ()),
     )
     with pytest.raises(state.StateCorruptError, match="multiple migrations"):
-        state.initialize_state_repository(
-            duplicate_workspace.root, migrations=duplicate
-        )
+        state.initialize_state_repository(duplicate_workspace.root, migrations=duplicate)
 
 
 def test_migration_chain_rejects_duplicate_ids(tmp_path: Path) -> None:

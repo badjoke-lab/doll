@@ -15,14 +15,10 @@ from doll.state import ReadOnlyStateError, StateCorruptError, StateError, _utc_n
 if TYPE_CHECKING:
     from doll.state_repository import StateRepository
 
-AuditActorType = Literal[
-    "user", "system", "model", "runtime", "capability", "migration"
-]
+AuditActorType = Literal["user", "system", "model", "runtime", "capability", "migration"]
 AuditResult = Literal["success", "denied", "failed", "cancelled", "partial"]
 
-_ALLOWED_ACTOR_TYPES = frozenset(
-    {"user", "system", "model", "runtime", "capability", "migration"}
-)
+_ALLOWED_ACTOR_TYPES = frozenset({"user", "system", "model", "runtime", "capability", "migration"})
 _ALLOWED_RESULTS = frozenset({"success", "denied", "failed", "cancelled", "partial"})
 _TOKEN_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]*$")
 _SECRET_ASSIGNMENT_PATTERN = re.compile(
@@ -31,9 +27,7 @@ _SECRET_ASSIGNMENT_PATTERN = re.compile(
     r"\b\s*[:=]\s*\S+"
 )
 _BEARER_PATTERN = re.compile(r"(?i)\bbearer\s+[A-Za-z0-9._~+/=-]{8,}")
-_JWT_PATTERN = re.compile(
-    r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b"
-)
+_JWT_PATTERN = re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b")
 _POSIX_PATH_PATTERN = re.compile(r"(?<![:/\w])/(?:[^/\s]+/)*[^/\s]+")
 _WINDOWS_PATH_PATTERN = re.compile(r"(?i)\b[A-Z]:\\")
 _SECRET_KEYS = frozenset(
@@ -116,8 +110,7 @@ class AuditService:
     def _require_audit_schema(self) -> None:
         if self.repository.status().schema_version < AUDIT_SCHEMA_VERSION:
             raise AuditError(
-                "audit schema is unavailable; open the state repository in writable mode "
-                "to migrate"
+                "audit schema is unavailable; open the state repository in writable mode to migrate"
             )
 
     def append(
@@ -255,16 +248,12 @@ class AuditService:
 
         self._require_audit_schema()
         if limit < 1 or limit > MAX_AUDIT_LIMIT:
-            raise AuditValidationError(
-                f"audit limit must be between 1 and {MAX_AUDIT_LIMIT}"
-            )
+            raise AuditValidationError(f"audit limit must be between 1 and {MAX_AUDIT_LIMIT}")
         clauses: list[str] = []
         parameters: list[object] = []
         if operation_id is not None:
             clauses.append("operation_id = ?")
-            parameters.append(
-                _validate_token("operation ID", operation_id, MAX_IDENTIFIER_LENGTH)
-            )
+            parameters.append(_validate_token("operation ID", operation_id, MAX_IDENTIFIER_LENGTH))
         if action is not None:
             clauses.append("action = ?")
             parameters.append(_validate_token("action", action, MAX_ACTION_LENGTH))
@@ -344,9 +333,7 @@ def _validate_summary(summary: str | None) -> str | None:
     if not normalized:
         return None
     if len(normalized) > MAX_SUMMARY_LENGTH:
-        raise AuditValidationError(
-            f"audit summary exceeds {MAX_SUMMARY_LENGTH} characters"
-        )
+        raise AuditValidationError(f"audit summary exceeds {MAX_SUMMARY_LENGTH} characters")
     _reject_secret_text(normalized)
     _reject_local_path(normalized)
     return normalized
@@ -356,9 +343,7 @@ def _safe_error_class(error: BaseException | None) -> str | None:
     if error is None:
         return None
     error_class = type(error).__name__
-    if len(error_class) > MAX_ERROR_CLASS_LENGTH or not _TOKEN_PATTERN.fullmatch(
-        error_class
-    ):
+    if len(error_class) > MAX_ERROR_CLASS_LENGTH or not _TOKEN_PATTERN.fullmatch(error_class):
         return "Error"
     return error_class
 
@@ -472,9 +457,7 @@ def _event_from_row(row: sqlite3.Row) -> AuditEvent:
         actor_type_value = cast(str, row["actor_type"])
         if actor_type_value not in _ALLOWED_ACTOR_TYPES:
             raise AuditValidationError("audit actor type is invalid")
-        actor_id = _validate_optional_identifier(
-            "actor ID", cast(str | None, row["actor_id"])
-        )
+        actor_id = _validate_optional_identifier("actor ID", cast(str | None, row["actor_id"]))
         action = _validate_token("action", cast(str, row["action"]), MAX_ACTION_LENGTH)
         target_type_value = cast(str | None, row["target_type"])
         target_type = (
@@ -482,9 +465,7 @@ def _event_from_row(row: sqlite3.Row) -> AuditEvent:
             if target_type_value is not None
             else None
         )
-        target_id = _validate_optional_identifier(
-            "target ID", cast(str | None, row["target_id"])
-        )
+        target_id = _validate_optional_identifier("target ID", cast(str | None, row["target_id"]))
         result_value = cast(str, row["result"])
         if result_value not in _ALLOWED_RESULTS:
             raise AuditValidationError("audit result is invalid")

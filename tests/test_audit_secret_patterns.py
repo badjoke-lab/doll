@@ -10,9 +10,7 @@ from doll.audit import AuditService, AuditValidationError
 
 def test_private_key_jwt_and_bearer_values_are_rejected(tmp_path: Path) -> None:
     initialized = workspace.initialize_workspace(tmp_path / "workspace")
-    private_key_marker = (
-        f"-----BEGIN {'PRIVATE'} KEY----- abc -----END PRIVATE KEY-----"
-    )
+    private_key_marker = f"-----BEGIN {'PRIVATE'} KEY----- abc -----END PRIVATE KEY-----"
     jwt_like = "eyJ" + "abcdefghijk.abcdefghijk.abcdefghijk"
     bearer_like = "Bearer " + "abcdefghijk12345"
 

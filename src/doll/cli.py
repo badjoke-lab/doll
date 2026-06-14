@@ -45,15 +45,11 @@ def init_command(
     ] = None,
     instance_label: Annotated[
         str,
-        typer.Option(
-            "--instance-label", help="Human-readable label for this local instance."
-        ),
+        typer.Option("--instance-label", help="Human-readable label for this local instance."),
     ] = "primary",
     profile: Annotated[
         str,
-        typer.Option(
-            "--profile", help="Initial execution profile: lite, heavy, or auto."
-        ),
+        typer.Option("--profile", help="Initial execution profile: lite, heavy, or auto."),
     ] = "lite",
 ) -> None:
     """Initialize a new private doll workspace."""

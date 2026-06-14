@@ -131,7 +131,7 @@ def test_audit_validation_rejects_secrets_paths_and_invalid_values(
         )
         for kwargs in invalid_calls:
             with pytest.raises(AuditValidationError):
-                service.append(**kwargs)  # type: ignore[arg-type]
+                service.append(**kwargs)
 
         with pytest.raises(AuditValidationError):
             service.list(limit=0)
