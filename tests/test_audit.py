@@ -184,7 +184,7 @@ def test_corrupt_audit_metadata_is_detected(tmp_path: Path) -> None:
             """,
             (str(uuid4()), str(uuid4()), "2026-06-14T00:00:00Z"),
         )
-        with pytest.raises(state.StateCorruptError, match="JSON object"):
+        with pytest.raises(state.StateCorruptError, match="invalid data"):
             AuditService(repository).list()
 
 
