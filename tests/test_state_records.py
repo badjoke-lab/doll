@@ -97,6 +97,34 @@ def test_invalid_record_metadata_is_detected(tmp_path: Path) -> None:
             repository.get_record(record.id)
 
 
+def test_malformed_and_nonstandard_json_metadata_are_rejected(tmp_path: Path) -> None:
+    initialized = initialized_workspace(tmp_path)
+    with state.initialize_state_repository(initialized.root) as repository:
+        malformed = repository.create_record(record_type="malformed")
+        nonstandard = repository.create_record(record_type="nonstandard")
+
+    database_path = initialized.root / "state" / state.STATE_DATABASE_NAME
+    connection = sqlite3.connect(database_path)
+    try:
+        connection.execute(
+            "UPDATE records SET metadata_json = ? WHERE id = ?",
+            ("{not-json", malformed.id),
+        )
+        connection.execute(
+            "UPDATE records SET metadata_json = ? WHERE id = ?",
+            ('{"value": NaN}', nonstandard.id),
+        )
+        connection.commit()
+    finally:
+        connection.close()
+
+    with state.open_state_repository(initialized.root, read_only=True) as repository:
+        with pytest.raises(state.StateCorruptError, match="not valid JSON"):
+            repository.get_record(malformed.id)
+        with pytest.raises(state.StateCorruptError, match="not valid JSON"):
+            repository.get_record(nonstandard.id)
+
+
 def test_create_record_rolls_back_when_revision_update_fails(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -140,10 +168,16 @@ def test_update_record_validation_race_and_rollback(
             repository.update_record(record.id, expected_revision=1)
         repository.connection.execute("DROP TRIGGER ignore_record_update")
 
-        with pytest.raises(TypeError):
+        with pytest.raises(state.RecordValidationError, match="JSON-compatible"):
             repository.update_record(
                 record.id,
                 expected_revision=1,
                 metadata={"bad": {1, 2}},
+            )
+        with pytest.raises(state.RecordValidationError, match="JSON-compatible"):
+            repository.update_record(
+                record.id,
+                expected_revision=1,
+                metadata={"bad": float("nan")},
             )
         assert repository.get_record(record.id).revision == 1
