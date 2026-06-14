@@ -84,7 +84,7 @@ def state_init_command(
         typer.echo(f"state initialization failed: {exc}", err=True)
         raise typer.Exit(code=2) from exc
 
-    typer.echo(f"State database initialized: {status.database_path}")
+    typer.echo("State database initialized.")
     typer.echo(f"Schema version: {status.schema_version}")
     typer.echo(f"State revision: {status.state_revision}")
 
