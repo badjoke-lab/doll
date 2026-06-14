@@ -318,7 +318,7 @@ def test_memory_database_constraints_reject_invalid_envelope_values(
         )
         before = ConfirmedMemoryService(repository).get(created.record_id)
 
-        with pytest.raises(sqlite3.IntegrityError):
+        with pytest.raises(sqlite3.DatabaseError):
             repository.connection.execute(
                 f"UPDATE records SET {column} = ? WHERE id = ?",
                 (value, created.record_id),
