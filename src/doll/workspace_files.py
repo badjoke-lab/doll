@@ -400,7 +400,8 @@ def _publish_windows(  # pragma: no cover - exercised by native platform CI
     descriptor: int | None = None
     final_created = False
     try:
-        descriptor = os.open(temp_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        file_flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0)
+        descriptor = os.open(temp_path, file_flags, 0o600)
         digest = _write_complete_file(descriptor, content)
         os.close(descriptor)
         descriptor = None
