@@ -14,10 +14,14 @@ from doll.state import ReadOnlyStateError, StateCorruptError, StateError, _utc_n
 if TYPE_CHECKING:
     from doll.state_repository import StateRepository
 
-AuditActorType = Literal["user", "system", "model", "runtime", "capability", "migration"]
+AuditActorType = Literal[
+    "user", "system", "model", "runtime", "capability", "migration"
+]
 AuditResult = Literal["success", "denied", "failed", "cancelled", "partial"]
 
-_ALLOWED_ACTOR_TYPES = frozenset({"user", "system", "model", "runtime", "capability", "migration"})
+_ALLOWED_ACTOR_TYPES = frozenset(
+    {"user", "system", "model", "runtime", "capability", "migration"}
+)
 _ALLOWED_RESULTS = frozenset({"success", "denied", "failed", "cancelled", "partial"})
 _TOKEN_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]*$")
 _SECRET_ASSIGNMENT_PATTERN = re.compile(
@@ -25,7 +29,9 @@ _SECRET_ASSIGNMENT_PATTERN = re.compile(
     r"authorization|cookie|private[_ -]?key|recovery[_ -]?phrase|seed[_ -]?phrase|mnemonic)"
     r"\b\s*[:=]\s*\S+"
 )
-_JWT_PATTERN = re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b")
+_JWT_PATTERN = re.compile(
+    r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b"
+)
 _WINDOWS_PATH_PATTERN = re.compile(r"(?i)\b[A-Z]:\\")
 _SECRET_KEYS = frozenset(
     {
@@ -298,12 +304,18 @@ def _validate_summary(summary: str | None) -> str | None:
     if not normalized:
         return None
     if len(normalized) > MAX_SUMMARY_LENGTH:
-        raise AuditValidationError(f"audit summary exceeds {MAX_SUMMARY_LENGTH} characters")
+        raise AuditValidationError(
+            f"audit summary exceeds {MAX_SUMMARY_LENGTH} characters"
+        )
     _reject_secret_text(normalized)
     if "file://" in normalized or "/Users/" in normalized or "/home/" in normalized:
-        raise AuditValidationError("audit summary must not contain a local absolute path")
+        raise AuditValidationError(
+            "audit summary must not contain a local absolute path"
+        )
     if _WINDOWS_PATH_PATTERN.search(normalized):
-        raise AuditValidationError("audit summary must not contain a local absolute path")
+        raise AuditValidationError(
+            "audit summary must not contain a local absolute path"
+        )
     return normalized
 
 
@@ -311,7 +323,9 @@ def _safe_error_class(error: BaseException | None) -> str | None:
     if error is None:
         return None
     error_class = type(error).__name__
-    if len(error_class) > MAX_ERROR_CLASS_LENGTH or not _TOKEN_PATTERN.fullmatch(error_class):
+    if len(error_class) > MAX_ERROR_CLASS_LENGTH or not _TOKEN_PATTERN.fullmatch(
+        error_class
+    ):
         return "Error"
     return error_class
 
