@@ -118,7 +118,7 @@ class StateRepository:
         )
         record_id = str(uuid4())
         now = _utc_now()
-        metadata_json = json.dumps(metadata or {}, ensure_ascii=False, sort_keys=True)
+        metadata_json = _serialize_metadata(metadata or {})
 
         self.connection.execute("BEGIN IMMEDIATE")
         try:
@@ -208,6 +208,7 @@ class StateRepository:
             raise RecordValidationError(f"invalid record status: {next_status}")
         next_title = current.title if title is None else title
         next_metadata = current.metadata if metadata is None else metadata
+        metadata_json = _serialize_metadata(next_metadata)
         now = _utc_now()
 
         self.connection.execute("BEGIN IMMEDIATE")
@@ -227,7 +228,7 @@ class StateRepository:
                     now,
                     next_status,
                     next_title,
-                    json.dumps(next_metadata, ensure_ascii=False, sort_keys=True),
+                    metadata_json,
                     record_id,
                     expected_revision,
                 ),
@@ -265,8 +266,30 @@ def _validate_record_fields(
         raise RecordValidationError(f"invalid record sensitivity: {sensitivity}")
 
 
+def _serialize_metadata(metadata: dict[str, object]) -> str:
+    try:
+        return json.dumps(
+            metadata,
+            ensure_ascii=False,
+            sort_keys=True,
+            allow_nan=False,
+        )
+    except (TypeError, ValueError) as exc:
+        raise RecordValidationError("record metadata must be JSON-compatible") from exc
+
+
+def _reject_nonstandard_json(value: str) -> object:
+    raise ValueError(f"non-standard JSON constant: {value}")
+
+
 def _record_from_row(row: sqlite3.Row) -> RecordEnvelope:
-    metadata_value = json.loads(cast(str, row["metadata_json"]))
+    try:
+        metadata_value = json.loads(
+            cast(str, row["metadata_json"]),
+            parse_constant=_reject_nonstandard_json,
+        )
+    except (json.JSONDecodeError, TypeError, ValueError) as exc:
+        raise StateCorruptError("record metadata is not valid JSON") from exc
     if not isinstance(metadata_value, dict):
         raise StateCorruptError("record metadata is not a JSON object")
     metadata = cast(dict[str, object], metadata_value)
