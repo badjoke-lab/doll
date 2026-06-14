@@ -18,9 +18,7 @@ def initialized_workspace(tmp_path: Path) -> workspace.InitializedWorkspace:
 def test_append_wraps_database_error_and_rolls_back(tmp_path: Path) -> None:
     initialized = initialized_workspace(tmp_path)
     with state.initialize_state_repository(initialized.root) as repository:
-        repository.connection.execute(
-            "ALTER TABLE audit_events RENAME TO audit_events_missing"
-        )
+        repository.connection.execute("ALTER TABLE audit_events RENAME TO audit_events_missing")
         with pytest.raises(state.StateCorruptError, match="could not be appended"):
             AuditService(repository).append(action="audit.append", result="failed")
         assert repository.connection.in_transaction is False
@@ -44,9 +42,7 @@ def test_append_rolls_back_unexpected_revision_failure(
         with pytest.raises(RuntimeError, match="synthetic revision failure"):
             AuditService(repository).append(action="audit.rollback", result="failed")
 
-        count = repository.connection.execute(
-            "SELECT COUNT(*) FROM audit_events"
-        ).fetchone()
+        count = repository.connection.execute("SELECT COUNT(*) FROM audit_events").fetchone()
         assert count is not None
         assert count[0] == 0
         assert repository.connection.in_transaction is False
@@ -55,9 +51,7 @@ def test_append_rolls_back_unexpected_revision_failure(
 def test_get_wraps_missing_audit_table(tmp_path: Path) -> None:
     initialized = initialized_workspace(tmp_path)
     with state.initialize_state_repository(initialized.root) as repository:
-        repository.connection.execute(
-            "ALTER TABLE audit_events RENAME TO audit_events_missing"
-        )
+        repository.connection.execute("ALTER TABLE audit_events RENAME TO audit_events_missing")
         with pytest.raises(state.StateCorruptError, match="unreadable"):
             AuditService(repository).get(str(uuid4()))
 
