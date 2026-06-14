@@ -107,7 +107,7 @@ def test_symlink_parent_escape_is_rejected_when_supported(tmp_path: Path) -> Non
     except OSError:
         pytest.skip("directory symlink creation is unavailable on this platform")
 
-    with pytest.raises((UnsafeManagedPathError, OSError)):
+    with pytest.raises(UnsafeManagedPathError):
         publish_new_workspace_file(root, "escape/pwned.txt", b"blocked")
 
     assert not (outside / "pwned.txt").exists()

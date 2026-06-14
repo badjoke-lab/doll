@@ -291,7 +291,12 @@ def _publish_posix(  # pragma: no cover - exercised by native platform CI
                 created_directories.append(next_path)
             except FileExistsError:
                 pass
-            next_fd = os.open(component, directory_flags, dir_fd=current_fd)
+            try:
+                next_fd = os.open(component, directory_flags, dir_fd=current_fd)
+            except OSError as exc:
+                raise UnsafeManagedPathError(
+                    "managed parent directory is a link, unreadable, or unsafe"
+                ) from exc
             metadata = os.fstat(next_fd)
             if not stat.S_ISDIR(metadata.st_mode) or metadata.st_dev != root_device:
                 os.close(next_fd)
