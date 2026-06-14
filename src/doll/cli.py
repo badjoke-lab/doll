@@ -8,9 +8,11 @@ from typing import Annotated, cast
 import typer
 
 from doll import __version__
+from doll.artifact import ArtifactError, ArtifactValidationError, WorkspaceFileService
 from doll.audit import AuditActorType, AuditResult, AuditService
 from doll.state import StateError, initialize_state_repository, open_state_repository
 from doll.workspace import ProfilePreference, WorkspaceError, initialize_workspace
+from doll.workspace_files import WorkspaceFileError
 
 app = typer.Typer(
     name="doll",
@@ -26,8 +28,13 @@ audit_app = typer.Typer(
     help="Inspect append-oriented local audit events.",
     no_args_is_help=True,
 )
+artifact_app = typer.Typer(
+    help="Create and inspect confined authoritative workspace artifacts.",
+    no_args_is_help=True,
+)
 app.add_typer(state_app, name="state")
 app.add_typer(audit_app, name="audit")
+app.add_typer(artifact_app, name="artifact")
 
 
 @app.callback()
@@ -177,6 +184,132 @@ def audit_list_command(
             f"operation={event.operation_id} target={target} "
             f"error={error_class} summary={summary}"
         )
+
+
+@artifact_app.command("create")
+def artifact_create_command(
+    managed_path: Annotated[
+        str,
+        typer.Argument(help="Portable path relative to workspace artifacts/ using / separators."),
+    ],
+    title: Annotated[str, typer.Option("--title", help="Artifact title.")],
+    workspace_path: Annotated[
+        Path | None,
+        typer.Option(
+            "--workspace",
+            help="Initialized workspace path. Uses the platform data directory by default.",
+        ),
+    ] = None,
+    artifact_type: Annotated[
+        str,
+        typer.Option("--artifact-type", help="Stable artifact type identifier."),
+    ] = "text",
+    operation_id: Annotated[
+        str | None,
+        typer.Option("--operation-id", help="Operation ID for record and audit attribution."),
+    ] = None,
+    format: Annotated[
+        str | None,
+        typer.Option("--format", help="Optional portable format identifier."),
+    ] = "txt",
+    media_type: Annotated[
+        str | None,
+        typer.Option("--media-type", help="Optional media type."),
+    ] = "text/plain",
+    max_bytes: Annotated[
+        int | None,
+        typer.Option("--max-bytes", min=1, help="Optional lower per-artifact byte limit."),
+    ] = None,
+) -> None:
+    """Read UTF-8 text from stdin and create one new managed artifact."""
+
+    text = typer.get_text_stream("stdin").read()
+    try:
+        with open_state_repository(workspace_path) as repository:
+            artifact = WorkspaceFileService(repository).create_text(
+                managed_path=managed_path,
+                text=text,
+                title=title,
+                artifact_type=artifact_type,
+                operation_id=operation_id,
+                format=format,
+                media_type=media_type,
+                max_bytes=max_bytes,
+            )
+    except (ArtifactValidationError, WorkspaceFileError) as exc:
+        typer.echo(f"artifact creation rejected: {exc}", err=True)
+        raise typer.Exit(code=2) from exc
+    except (WorkspaceError, StateError, ArtifactError) as exc:
+        typer.echo(f"artifact creation failed: {type(exc).__name__}", err=True)
+        raise typer.Exit(code=2) from exc
+
+    typer.echo("Artifact created.")
+    typer.echo(f"Artifact ID: {artifact.artifact_id}")
+    typer.echo(f"Managed path: {artifact.managed_path}")
+    typer.echo(f"Content hash: {artifact.content_hash}")
+    typer.echo(f"Size bytes: {artifact.size_bytes}")
+    typer.echo(f"Operation ID: {artifact.operation_id}")
+
+
+@artifact_app.command("list")
+def artifact_list_command(
+    path: Annotated[
+        Path | None,
+        typer.Argument(
+            help="Initialized workspace path. Uses the platform data directory by default."
+        ),
+    ] = None,
+    limit: Annotated[
+        int,
+        typer.Option("--limit", min=1, max=200, help="Maximum artifacts to display."),
+    ] = 50,
+) -> None:
+    """List artifact records through a read-only state connection."""
+
+    try:
+        with open_state_repository(path, read_only=True) as repository:
+            artifacts = WorkspaceFileService(repository).list(limit=limit)
+    except (WorkspaceError, StateError, ArtifactError) as exc:
+        typer.echo(f"artifact listing failed: {type(exc).__name__}", err=True)
+        raise typer.Exit(code=2) from exc
+
+    if not artifacts:
+        typer.echo("No artifacts.")
+        return
+
+    for artifact in artifacts:
+        typer.echo(
+            f"{artifact.artifact_id} path={artifact.managed_path} "
+            f"size={artifact.size_bytes} hash={artifact.content_hash} "
+            f"operation={artifact.operation_id}"
+        )
+
+
+@artifact_app.command("verify")
+def artifact_verify_command(
+    artifact_id: Annotated[str, typer.Argument(help="Artifact record ID to verify.")],
+    path: Annotated[
+        Path | None,
+        typer.Option(
+            "--workspace",
+            help="Initialized workspace path. Uses the platform data directory by default.",
+        ),
+    ] = None,
+) -> None:
+    """Verify a managed artifact against its authoritative hash and size."""
+
+    try:
+        with open_state_repository(path, read_only=True) as repository:
+            verification = WorkspaceFileService(repository).verify(artifact_id)
+    except (WorkspaceError, StateError, ArtifactError, KeyError) as exc:
+        typer.echo(f"artifact verification failed: {type(exc).__name__}", err=True)
+        raise typer.Exit(code=2) from exc
+
+    typer.echo("Artifact verified.")
+    typer.echo(f"Artifact ID: {verification.artifact.artifact_id}")
+    typer.echo(f"Managed path: {verification.artifact.managed_path}")
+    typer.echo(f"Content hash: {verification.actual_hash}")
+    typer.echo(f"Size bytes: {verification.actual_size_bytes}")
 
 
 @app.command("version")
