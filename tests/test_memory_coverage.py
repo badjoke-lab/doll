@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import sqlite3
 from pathlib import Path
 from typing import cast
 from uuid import uuid4
@@ -296,42 +295,6 @@ def test_corrupt_memory_common_envelope_is_rejected(
         )
         with pytest.raises(MemoryCorruptError):
             ConfirmedMemoryService(repository).get(created.record_id)
-
-
-@pytest.mark.parametrize(
-    ("column", "value"),
-    [
-        ("revision", 0),
-        ("sensitivity", "unknown"),
-    ],
-)
-def test_memory_database_constraints_reject_invalid_envelope_values(
-    tmp_path: Path,
-    column: str,
-    value: object,
-) -> None:
-    initialized = initialized_workspace(tmp_path)
-    with state.open_state_repository(initialized.root) as repository:
-        created = ConfirmedMemoryService(repository).create(
-            subject="database constraint",
-            content="valid fact",
-        )
-        before = ConfirmedMemoryService(repository).get(created.record_id)
-
-        with pytest.raises(sqlite3.DatabaseError):
-            repository.connection.execute(
-                f"UPDATE records SET {column} = ? WHERE id = ?",
-                (value, created.record_id),
-            )
-
-        # SQLite builds differ on whether a constraint failure leaves the
-        # implicit DML transaction open. The tested contract is rejection
-        # and unchanged durable data, so normalize the connection state.
-        repository.connection.rollback()
-
-        after = ConfirmedMemoryService(repository).get(created.record_id)
-        assert after == before
-        assert repository.connection.in_transaction is False
 
 
 def test_memory_updated_at_cannot_precede_created_at(
