@@ -6,8 +6,9 @@ import json
 import re
 import sqlite3
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Literal, cast
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from doll.state import ReadOnlyStateError, StateCorruptError, StateError, _utc_now
 
@@ -33,7 +34,7 @@ _BEARER_PATTERN = re.compile(r"(?i)\bbearer\s+[A-Za-z0-9._~+/=-]{8,}")
 _JWT_PATTERN = re.compile(
     r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b"
 )
-_POSIX_PATH_PATTERN = re.compile(r"(?<![:\w])/(?:[^/\s]+/)*[^/\s]+")
+_POSIX_PATH_PATTERN = re.compile(r"(?<![:/\w])/(?:[^/\s]+/)*[^/\s]+")
 _WINDOWS_PATH_PATTERN = re.compile(r"(?i)\b[A-Z]:\\")
 _SECRET_KEYS = frozenset(
     {
@@ -55,6 +56,7 @@ _SECRET_KEYS = frozenset(
         "credentials",
     }
 )
+
 _SECRET_KEY_PARTS = frozenset(
     {
         "password",
@@ -67,6 +69,8 @@ _SECRET_KEY_PARTS = frozenset(
         "credentials",
     }
 )
+
+AUDIT_SCHEMA_VERSION = 2
 
 MAX_ACTION_LENGTH = 120
 MAX_IDENTIFIER_LENGTH = 200
@@ -109,6 +113,13 @@ class AuditService:
 
     repository: StateRepository
 
+    def _require_audit_schema(self) -> None:
+        if self.repository.status().schema_version < AUDIT_SCHEMA_VERSION:
+            raise AuditError(
+                "audit schema is unavailable; open the state repository in writable mode "
+                "to migrate"
+            )
+
     def append(
         self,
         *,
@@ -127,6 +138,7 @@ class AuditService:
 
         if self.repository.read_only:
             raise ReadOnlyStateError("state repository is open in read-only mode")
+        self._require_audit_schema()
 
         safe_operation_id = operation_id or str(uuid4())
         safe_action = _validate_token("action", action, MAX_ACTION_LENGTH)
@@ -187,6 +199,9 @@ class AuditService:
             )
             state_revision = self.repository._commit_state_revision()
             connection.execute("COMMIT")
+        except sqlite3.DatabaseError as exc:
+            connection.execute("ROLLBACK")
+            raise StateCorruptError("audit event could not be appended") from exc
         except BaseException:
             connection.execute("ROLLBACK")
             raise
@@ -197,9 +212,11 @@ class AuditService:
     def get(self, event_id: str) -> AuditEvent:
         """Return one audit event by its globally unique ID."""
 
+        self._require_audit_schema()
         safe_event_id = _validate_token("event ID", event_id, MAX_IDENTIFIER_LENGTH)
-        row = self.repository.connection.execute(
-            """
+        try:
+            row = self.repository.connection.execute(
+                """
             SELECT
                 sequence,
                 event_id,
@@ -217,8 +234,10 @@ class AuditService:
             FROM audit_events
             WHERE event_id = ?
             """,
-            (safe_event_id,),
-        ).fetchone()
+                (safe_event_id,),
+            ).fetchone()
+        except sqlite3.DatabaseError as exc:
+            raise StateCorruptError("audit events are unreadable") from exc
         if row is None:
             raise KeyError(event_id)
         return _event_from_row(cast(sqlite3.Row, row))
@@ -234,6 +253,7 @@ class AuditService:
     ) -> tuple[AuditEvent, ...]:
         """Return newest audit events matching validated filters."""
 
+        self._require_audit_schema()
         if limit < 1 or limit > MAX_AUDIT_LIMIT:
             raise AuditValidationError(
                 f"audit limit must be between 1 and {MAX_AUDIT_LIMIT}"
@@ -261,8 +281,9 @@ class AuditService:
 
         where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
         parameters.append(limit)
-        rows = self.repository.connection.execute(
-            f"""
+        try:
+            rows = self.repository.connection.execute(
+                f"""
             SELECT
                 sequence,
                 event_id,
@@ -278,12 +299,14 @@ class AuditService:
                 error_class,
                 metadata_json
             FROM audit_events
-            {where}
-            ORDER BY sequence DESC
-            LIMIT ?
-            """,
-            tuple(parameters),
-        ).fetchall()
+                {where}
+                ORDER BY sequence DESC
+                LIMIT ?
+                """,
+                tuple(parameters),
+            ).fetchall()
+        except sqlite3.DatabaseError as exc:
+            raise StateCorruptError("audit events are unreadable") from exc
         return tuple(_event_from_row(cast(sqlite3.Row, row)) for row in rows)
 
 
@@ -295,6 +318,7 @@ def _validate_token(name: str, value: str, maximum: int) -> str:
         raise AuditValidationError(f"{name} exceeds {maximum} characters")
     if not _TOKEN_PATTERN.fullmatch(normalized):
         raise AuditValidationError(f"{name} contains unsupported characters")
+    _reject_secret_text(normalized)
     return normalized
 
 
@@ -422,28 +446,84 @@ def _reject_nonstandard_json(value: str) -> object:
     raise ValueError(f"non-standard JSON constant: {value}")
 
 
+def _validate_utc_timestamp(value: str) -> str:
+    if not value.endswith("Z"):
+        raise AuditValidationError("audit timestamp must use UTC Z notation")
+    try:
+        parsed = datetime.fromisoformat(value[:-1] + "+00:00")
+    except ValueError as exc:
+        raise AuditValidationError("audit timestamp is invalid") from exc
+    if parsed.utcoffset() != timedelta(0):
+        raise AuditValidationError("audit timestamp must be UTC")
+    return value
+
+
 def _event_from_row(row: sqlite3.Row) -> AuditEvent:
     try:
+        sequence = cast(int, row["sequence"])
+        if sequence < 1:
+            raise AuditValidationError("audit sequence must be positive")
+        event_id = cast(str, row["event_id"])
+        UUID(event_id)
+        operation_id = _validate_token(
+            "operation ID", cast(str, row["operation_id"]), MAX_IDENTIFIER_LENGTH
+        )
+        occurred_at = _validate_utc_timestamp(cast(str, row["occurred_at"]))
+        actor_type_value = cast(str, row["actor_type"])
+        if actor_type_value not in _ALLOWED_ACTOR_TYPES:
+            raise AuditValidationError("audit actor type is invalid")
+        actor_id = _validate_optional_identifier(
+            "actor ID", cast(str | None, row["actor_id"])
+        )
+        action = _validate_token("action", cast(str, row["action"]), MAX_ACTION_LENGTH)
+        target_type_value = cast(str | None, row["target_type"])
+        target_type = (
+            _validate_token("target type", target_type_value, MAX_ACTION_LENGTH)
+            if target_type_value is not None
+            else None
+        )
+        target_id = _validate_optional_identifier(
+            "target ID", cast(str | None, row["target_id"])
+        )
+        result_value = cast(str, row["result"])
+        if result_value not in _ALLOWED_RESULTS:
+            raise AuditValidationError("audit result is invalid")
+        summary = _validate_summary(cast(str | None, row["summary"]))
+        error_class_value = cast(str | None, row["error_class"])
+        error_class = (
+            _validate_token("error class", error_class_value, MAX_ERROR_CLASS_LENGTH)
+            if error_class_value is not None
+            else None
+        )
         metadata_value = json.loads(
             cast(str, row["metadata_json"]),
             parse_constant=_reject_nonstandard_json,
         )
-    except (json.JSONDecodeError, TypeError, ValueError) as exc:
-        raise StateCorruptError("audit metadata is not valid JSON") from exc
-    if not isinstance(metadata_value, dict):
-        raise StateCorruptError("audit metadata is not a JSON object")
+        if not isinstance(metadata_value, dict):
+            raise AuditValidationError("audit metadata is not a JSON object")
+        metadata = cast(dict[str, object], metadata_value)
+        _serialize_metadata(metadata)
+    except (
+        AuditValidationError,
+        json.JSONDecodeError,
+        KeyError,
+        TypeError,
+        ValueError,
+    ) as exc:
+        raise StateCorruptError("audit event contains invalid data") from exc
+
     return AuditEvent(
-        sequence=cast(int, row["sequence"]),
-        event_id=cast(str, row["event_id"]),
-        operation_id=cast(str, row["operation_id"]),
-        occurred_at=cast(str, row["occurred_at"]),
-        actor_type=cast(AuditActorType, row["actor_type"]),
-        actor_id=cast(str | None, row["actor_id"]),
-        action=cast(str, row["action"]),
-        target_type=cast(str | None, row["target_type"]),
-        target_id=cast(str | None, row["target_id"]),
-        result=cast(AuditResult, row["result"]),
-        summary=cast(str | None, row["summary"]),
-        error_class=cast(str | None, row["error_class"]),
-        metadata=cast(dict[str, object], metadata_value),
+        sequence=sequence,
+        event_id=event_id,
+        operation_id=operation_id,
+        occurred_at=occurred_at,
+        actor_type=cast(AuditActorType, actor_type_value),
+        actor_id=actor_id,
+        action=action,
+        target_type=target_type,
+        target_id=target_id,
+        result=cast(AuditResult, result_value),
+        summary=summary,
+        error_class=error_class,
+        metadata=metadata,
     )
