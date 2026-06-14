@@ -62,7 +62,9 @@ def test_append_get_list_and_filters_advance_revision(tmp_path: Path) -> None:
     assert workspace.load_workspace(initialized.root).record.state_revision == 2
 
 
-def test_read_only_listing_and_write_rejection_do_not_mutate_files(tmp_path: Path) -> None:
+def test_read_only_listing_and_write_rejection_do_not_mutate_files(
+    tmp_path: Path,
+) -> None:
     initialized = initialized_workspace(tmp_path)
     with state.initialize_state_repository(initialized.root) as repository:
         AuditService(repository).append(action="audit.test", result="success")
@@ -83,7 +85,9 @@ def test_read_only_listing_and_write_rejection_do_not_mutate_files(tmp_path: Pat
     assert workspace_path.stat().st_mtime_ns == before_workspace
 
 
-def test_audit_validation_rejects_secrets_paths_and_invalid_values(tmp_path: Path) -> None:
+def test_audit_validation_rejects_secrets_paths_and_invalid_values(
+    tmp_path: Path,
+) -> None:
     initialized = initialized_workspace(tmp_path)
     with state.initialize_state_repository(initialized.root) as repository:
         service = AuditService(repository)
