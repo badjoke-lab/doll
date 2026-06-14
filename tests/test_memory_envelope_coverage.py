@@ -36,9 +36,7 @@ def test_memory_envelope_rejects_non_positive_revision() -> None:
 
 def test_memory_envelope_rejects_unknown_sensitivity() -> None:
     with pytest.raises(MemoryValidationError, match="sensitivity"):
-        _validate_memory_envelope(
-            envelope(sensitivity=cast(RecordSensitivity, "unknown"))
-        )
+        _validate_memory_envelope(envelope(sensitivity=cast(RecordSensitivity, "unknown")))
 
 
 def test_memory_envelope_rejects_missing_timestamp() -> None:
