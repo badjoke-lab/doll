@@ -113,3 +113,15 @@ This slice does not add:
 - backup/restore;
 - secret credential storage;
 - hard deletion.
+
+## Lifecycle and complete lookup
+
+Archived preference, policy, and permission records are inspection-only in this slice.
+Update and repeated archive attempts are rejected without a revision or audit change.
+
+Permission resolution and active-identity uniqueness checks scan the complete active
+permission set. Public list pagination limits do not affect authorization decisions or
+duplicate detection.
+
+SQLite mutation failures are rolled back and normalized as state-corruption errors rather
+than exposing raw database exceptions through management commands.

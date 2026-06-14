@@ -8,6 +8,7 @@ import pytest
 
 from doll import state, workspace
 from doll.settings import (
+    DuplicateSettingError,
     ForbiddenPermissionMutationError,
     PermissionService,
     PolicyService,
@@ -266,3 +267,174 @@ def test_additional_corrupt_permission_variants(
         )
         with pytest.raises(SettingsCorruptError):
             PermissionService(repository).get(record.id)
+
+
+def _insert_raw_permission(
+    repository: state.StateRepository,
+    *,
+    capability_id: str,
+    scope: dict[str, object],
+    created_at: str,
+) -> str:
+    import json
+    from uuid import uuid4
+
+    record_id = str(uuid4())
+    identity = (
+        capability_id
+        + "\0"
+        + json.dumps(
+            scope,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
+    metadata = {
+        "capability_id": capability_id,
+        "scope": scope,
+        "mode": "ask",
+        "expires_at": None,
+        "approval_source": "management-cli",
+        "last_changed_at": created_at,
+        "last_used_at": None,
+        "remaining_uses": None,
+        "permission_identity": identity,
+    }
+    repository.connection.execute(
+        """
+        INSERT INTO records (
+            id, record_type, schema_version, created_at, updated_at, revision,
+            status, provenance, sensitivity, title, metadata_json
+        ) VALUES (?, 'permission', 1, ?, ?, 1, 'active', 'user-created', 'personal', ?, ?)
+        """,
+        (
+            record_id,
+            created_at,
+            created_at,
+            capability_id,
+            json.dumps(
+                metadata,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            ),
+        ),
+    )
+    return record_id
+
+
+def test_permission_resolution_has_no_public_list_limit(tmp_path: Path) -> None:
+    initialized = initialized_workspace(tmp_path)
+    target_scope: dict[str, object] = {"kind": "project", "project_id": "target"}
+    with state.open_state_repository(initialized.root) as repository:
+        target_id = _insert_raw_permission(
+            repository,
+            capability_id="artifact.create",
+            scope=target_scope,
+            created_at="2026-06-14T00:00:00Z",
+        )
+        for index in range(60):
+            _insert_raw_permission(
+                repository,
+                capability_id=f"unrelated.{index}",
+                scope={"kind": "global"},
+                created_at=f"2026-06-14T00:{index % 60:02d}:30Z",
+            )
+
+        decision = PermissionService(repository).resolve(
+            capability_id="artifact.create",
+            scope=target_scope,
+        )
+        assert decision.record_id == target_id
+        assert decision.effective_mode == "ask"
+
+
+def test_duplicate_scan_has_no_internal_record_cap(tmp_path: Path) -> None:
+    initialized = initialized_workspace(tmp_path)
+    target_scope: dict[str, object] = {"kind": "project", "project_id": "oldest"}
+    with state.open_state_repository(initialized.root) as repository:
+        _insert_raw_permission(
+            repository,
+            capability_id="artifact.create",
+            scope=target_scope,
+            created_at="2026-06-14T00:00:00Z",
+        )
+        for index in range(205):
+            _insert_raw_permission(
+                repository,
+                capability_id=f"unrelated.{index}",
+                scope={"kind": "global"},
+                created_at=f"2026-06-15T{index % 24:02d}:{index % 60:02d}:00Z",
+            )
+
+        with pytest.raises(DuplicateSettingError):
+            PermissionService(repository).create(
+                capability_id="artifact.create",
+                scope=target_scope,
+                mode="denied",
+            )
+
+
+def test_archived_typed_records_are_immutable(tmp_path: Path) -> None:
+    initialized = initialized_workspace(tmp_path)
+    with state.open_state_repository(initialized.root) as repository:
+        preferences = PreferenceService(repository)
+        preference = preferences.create(key="display.mode", value="normal")
+        preference = preferences.archive(preference.record_id, expected_revision=1)
+        with pytest.raises(SettingsValidationError):
+            preferences.update(
+                preference.record_id,
+                expected_revision=2,
+                value="changed",
+            )
+        with pytest.raises(SettingsValidationError):
+            preferences.archive(preference.record_id, expected_revision=2)
+
+        policies = PolicyService(repository)
+        policy = policies.create(key="network.no-post", rule="No external POST")
+        policy = policies.archive(policy.record_id, expected_revision=1)
+        with pytest.raises(SettingsValidationError):
+            policies.update(
+                policy.record_id,
+                expected_revision=2,
+                rule="Changed",
+                enabled=False,
+            )
+        with pytest.raises(SettingsValidationError):
+            policies.archive(policy.record_id, expected_revision=2)
+
+        permissions = PermissionService(repository)
+        permission = permissions.create(
+            capability_id="artifact.create",
+            scope={"kind": "global"},
+            mode="ask",
+        )
+        permission = permissions.archive(permission.record_id, expected_revision=1)
+        with pytest.raises(SettingsValidationError):
+            permissions.update(
+                permission.record_id,
+                expected_revision=2,
+                mode="denied",
+            )
+        with pytest.raises(SettingsValidationError):
+            permissions.archive(permission.record_id, expected_revision=2)
+
+
+def test_sqlite_mutation_failure_is_normalized_and_rolled_back(tmp_path: Path) -> None:
+    initialized = initialized_workspace(tmp_path)
+    with state.open_state_repository(initialized.root) as repository:
+        repository.connection.execute("DROP TABLE audit_events")
+
+        with pytest.raises(state.StateCorruptError):
+            PreferenceService(repository).create(
+                key="display.mode",
+                value="normal",
+            )
+
+        row = repository.connection.execute(
+            "SELECT COUNT(*) FROM records WHERE record_type = 'preference'"
+        ).fetchone()
+        assert row is not None
+        assert row[0] == 0
+        assert repository.connection.in_transaction is False

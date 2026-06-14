@@ -192,6 +192,7 @@ class PreferenceService:
     ) -> PreferenceInfo:
         _require_user_management(actor_type)
         current = self.get(record_id)
+        _require_active_record(current.status, "preference")
         metadata: dict[str, object] = {
             "preference_key": current.key,
             "value": _validate_json_value(value, maximum=MAX_JSON_BYTES),
@@ -221,6 +222,7 @@ class PreferenceService:
     ) -> PreferenceInfo:
         _require_user_management(actor_type)
         current = self.get(record_id)
+        _require_active_record(current.status, "preference")
         _update_typed_record(
             self.repository,
             current_record=self.repository.get_record(record_id),
@@ -299,6 +301,7 @@ class PolicyService:
     ) -> PolicyInfo:
         _require_user_management(actor_type)
         current = self.get(record_id)
+        _require_active_record(current.status, "policy")
         safe_rule = _validate_text("policy rule", rule, MAX_POLICY_RULE_LENGTH)
         if not isinstance(enabled, bool):
             raise SettingsValidationError("policy enabled flag must be boolean")
@@ -324,6 +327,7 @@ class PolicyService:
     ) -> PolicyInfo:
         _require_user_management(actor_type)
         current = self.get(record_id)
+        _require_active_record(current.status, "policy")
         _update_typed_record(
             self.repository,
             current_record=self.repository.get_record(record_id),
@@ -412,6 +416,7 @@ class PermissionService:
     ) -> PermissionInfo:
         _require_user_management(actor_type)
         current = self.get(record_id)
+        _require_active_record(current.status, "permission")
         safe_mode = _validate_permission_mode(mode, current.scope)
         safe_expiration = _validate_optional_utc("permission expiration", expires_at)
         safe_approval_source = _validate_approval_source(approval_source)
@@ -452,6 +457,7 @@ class PermissionService:
     ) -> PermissionInfo:
         _require_user_management(actor_type)
         current = self.get(record_id)
+        _require_active_record(current.status, "permission")
         _update_typed_record(
             self.repository,
             current_record=self.repository.get_record(record_id),
@@ -536,11 +542,15 @@ class PermissionService:
     def resolve(self, *, capability_id: str, scope: dict[str, object]) -> PermissionDecision:
         safe_capability = _validate_key("capability ID", capability_id)
         safe_scope = _validate_scope(scope)
-        matching = [
-            permission
-            for permission in self.list()
-            if permission.capability_id == safe_capability and permission.scope == safe_scope
-        ]
+        matching: list[PermissionInfo] = []
+        for record in _list_all_typed_records(
+            self.repository,
+            "permission",
+            include_archived=False,
+        ):
+            permission = _permission_from_record(record)
+            if permission.capability_id == safe_capability and permission.scope == safe_scope:
+                matching.append(permission)
         if not matching:
             return PermissionDecision(
                 record_id=None,
@@ -606,6 +616,10 @@ def _create_typed_record(
         )
         state_revision = repository._commit_state_revision()
         connection.execute("COMMIT")
+    except sqlite3.DatabaseError as exc:
+        if connection.in_transaction:
+            connection.execute("ROLLBACK")
+        raise StateCorruptError("settings record could not be created") from exc
     except BaseException:
         if connection.in_transaction:
             connection.execute("ROLLBACK")
@@ -663,6 +677,10 @@ def _update_typed_record(
         )
         state_revision = repository._commit_state_revision()
         connection.execute("COMMIT")
+    except sqlite3.DatabaseError as exc:
+        if connection.in_transaction:
+            connection.execute("ROLLBACK")
+        raise StateCorruptError("settings record could not be updated") from exc
     except BaseException:
         if connection.in_transaction:
             connection.execute("ROLLBACK")
@@ -713,8 +731,10 @@ def _assert_unique_active_identity(
 ) -> None:
     field, expected = identity
     actual: str | None
-    for record in _list_typed_records(
-        repository, record_type, include_archived=False, limit=MAX_SETTINGS_LIMIT
+    for record in _list_all_typed_records(
+        repository,
+        record_type,
+        include_archived=False,
     ):
         if exclude_id is not None and record.id == exclude_id:
             continue
@@ -726,6 +746,28 @@ def _assert_unique_active_identity(
             actual = raw if isinstance(raw, str) else None
         if actual == expected:
             raise DuplicateSettingError(f"active {record_type} identity already exists")
+
+
+def _list_all_typed_records(
+    repository: StateRepository,
+    record_type: str,
+    *,
+    include_archived: bool,
+) -> tuple[RecordEnvelope, ...]:
+    status_clause = "" if include_archived else "AND status = 'active'"
+    try:
+        rows = repository.connection.execute(
+            f"""
+            SELECT id
+            FROM records
+            WHERE record_type = ? {status_clause}
+            ORDER BY created_at DESC, id DESC
+            """,
+            (record_type,),
+        ).fetchall()
+    except sqlite3.DatabaseError as exc:
+        raise StateCorruptError(f"{record_type} records are unreadable") from exc
+    return tuple(repository.get_record(cast(str, row[0])) for row in rows)
 
 
 def _list_typed_records(
@@ -770,6 +812,11 @@ def _require_user_management(actor_type: PermissionMutationActor) -> None:
         raise ForbiddenPermissionMutationError(
             "permission and policy management requires an explicit user-controlled actor"
         )
+
+
+def _require_active_record(status: RecordStatus, record_type: str) -> None:
+    if status != "active":
+        raise SettingsValidationError(f"archived {record_type} record cannot be changed")
 
 
 def _validate_key(name: str, value: str) -> str:
