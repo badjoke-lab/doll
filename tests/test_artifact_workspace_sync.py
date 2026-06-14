@@ -40,12 +40,13 @@ def test_database_commit_survives_workspace_revision_sync_failure(
             "SELECT id FROM records WHERE record_type = 'artifact'"
         ).fetchone()
         assert row is not None
-        assert (
-            repository.connection.execute("SELECT COUNT(*) FROM audit_events").fetchone()[0]
-            == 1
-        )
+        audit_count = repository.connection.execute("SELECT COUNT(*) FROM audit_events").fetchone()
+        assert audit_count is not None
+        assert audit_count[0] == 1
 
     assert (initialized.root / "artifacts" / "committed.txt").read_text() == "committed"
+
+    monkeypatch.undo()
 
     with state.open_state_repository(initialized.root) as repository:
         assert repository.status().state_revision == 1

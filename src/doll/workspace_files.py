@@ -266,7 +266,7 @@ def _write_complete_file(descriptor: int, content: bytes) -> ManagedFileDigest:
     return ManagedFileDigest(size_bytes=written, content_hash=f"sha256:{digest.hexdigest()}")
 
 
-def _publish_posix(
+def _publish_posix(  # pragma: no cover - exercised by native platform CI
     root: Path,
     relative: PurePosixPath,
     content: bytes,
@@ -322,7 +322,9 @@ def _publish_posix(
         except FileExistsError as exc:
             raise ManagedFileExistsError("managed artifact destination already exists") from exc
         except OSError as exc:
-            raise AtomicPublicationError("complete artifact could not be published atomically") from exc
+            raise AtomicPublicationError(
+                "complete artifact could not be published atomically"
+            ) from exc
         final_created = True
         os.unlink(temp_name, dir_fd=current_fd)
         temp_created = False
@@ -374,7 +376,7 @@ def _publish_posix(
         os.close(root_fd)
 
 
-def _publish_windows(
+def _publish_windows(  # pragma: no cover - exercised by native platform CI
     root: Path,
     relative: PurePosixPath,
     content: bytes,
@@ -407,7 +409,9 @@ def _publish_windows(
         except FileExistsError as exc:
             raise ManagedFileExistsError("managed artifact destination already exists") from exc
         except OSError as exc:
-            raise AtomicPublicationError("complete artifact could not be published atomically") from exc
+            raise AtomicPublicationError(
+                "complete artifact could not be published atomically"
+            ) from exc
         final_created = True
         temp_path.unlink()
         _validate_existing_target(root, final_path)
@@ -443,7 +447,9 @@ def _hash_file(path: Path, *, max_bytes: int) -> ManagedFileDigest:
             while chunk := handle.read(1024 * 1024):
                 size += len(chunk)
                 if size > max_bytes:
-                    raise ArtifactSizeLimitError("managed artifact exceeds the supported size limit")
+                    raise ArtifactSizeLimitError(
+                        "managed artifact exceeds the supported size limit"
+                    )
                 digest.update(chunk)
     except ArtifactSizeLimitError:
         raise

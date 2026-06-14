@@ -110,7 +110,7 @@ def test_registration_failure_removes_published_file_and_empty_parents(
         def fail_register(*args: object, **kwargs: object) -> int:
             raise sqlite3.DatabaseError("synthetic registration failure")
 
-        monkeypatch.setattr(service, "_register", fail_register)
+        monkeypatch.setattr(WorkspaceFileService, "_register", fail_register)
         with pytest.raises(ArtifactRegistrationError):
             service.create_text(
                 managed_path="failed/nested.txt",

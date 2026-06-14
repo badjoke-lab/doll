@@ -22,8 +22,10 @@ from doll.state import (
 )
 from doll.state_repository import (
     StateRepository,
-    _serialize_metadata as _serialize_record_metadata,
     _validate_record_fields,
+)
+from doll.state_repository import (
+    _serialize_metadata as _serialize_record_metadata,
 )
 from doll.workspace_files import (
     DEFAULT_MAX_ARTIFACT_BYTES,
@@ -136,9 +138,7 @@ class WorkspaceFileService:
 
         safe_path = validate_managed_path(managed_path).as_posix()
         safe_title = _validate_title(title)
-        safe_type = _validate_identifier(
-            "artifact type", artifact_type, MAX_ARTIFACT_TYPE_LENGTH
-        )
+        safe_type = _validate_identifier("artifact type", artifact_type, MAX_ARTIFACT_TYPE_LENGTH)
         safe_operation_id = _validate_audit_token(
             "operation ID",
             operation_id or str(uuid4()),
@@ -275,10 +275,7 @@ class WorkspaceFileService:
             )
         except WorkspaceFileError as exc:
             raise ArtifactIntegrityError("managed artifact could not be verified") from exc
-        if (
-            digest.content_hash != artifact.content_hash
-            or digest.size_bytes != artifact.size_bytes
-        ):
+        if digest.content_hash != artifact.content_hash or digest.size_bytes != artifact.size_bytes:
             raise ArtifactIntegrityError("managed artifact does not match its record")
         return ArtifactVerification(
             artifact=artifact,
@@ -433,9 +430,7 @@ def _artifact_from_record(record: RecordEnvelope) -> ArtifactInfo:
             _required_string(metadata, "artifact_type"),
             MAX_ARTIFACT_TYPE_LENGTH,
         )
-        managed_path = validate_managed_path(
-            _required_string(metadata, "managed_path")
-        ).as_posix()
+        managed_path = validate_managed_path(_required_string(metadata, "managed_path")).as_posix()
         content_hash = _required_string(metadata, "content_hash")
         if not re.fullmatch(r"sha256:[0-9a-f]{64}", content_hash):
             raise ArtifactCorruptError("artifact content hash is invalid")
@@ -486,7 +481,7 @@ def _artifact_from_record(record: RecordEnvelope) -> ArtifactInfo:
 
 
 def _required_string(metadata: dict[str, object], key: str) -> str:
-    value = metadata[key]
+    value = metadata.get(key)
     if not isinstance(value, str) or not value:
         raise ArtifactCorruptError(f"artifact {key} is invalid")
     return value

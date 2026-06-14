@@ -8,6 +8,7 @@ import pytest
 from doll import workspace_files
 from doll.workspace_files import (
     ArtifactSizeLimitError,
+    ManagedFileDigest,
     ManagedFileExistsError,
     UnsafeManagedPathError,
     publish_new_workspace_file,
@@ -66,7 +67,8 @@ def test_publish_create_new_hash_size_and_permissions(tmp_path: Path) -> None:
         assert published.managed_path == "reports/結果.txt"
         assert published.size_bytes == len(content)
         assert published.content_hash.startswith("sha256:")
-        assert verify_workspace_file(root, published.managed_path).content_hash == published.content_hash
+        verified = verify_workspace_file(root, published.managed_path)
+        assert verified.content_hash == published.content_hash
         if os.name != "nt":
             assert published.path.stat().st_mode & 0o777 == 0o600
             assert published.path.parent.stat().st_mode & 0o777 == 0o700
@@ -117,7 +119,7 @@ def test_interrupted_temporary_write_is_cleaned_up(
 ) -> None:
     root = artifacts_root(tmp_path)
 
-    def fail_write(descriptor: int, content: bytes):  # type: ignore[no-untyped-def]
+    def fail_write(descriptor: int, content: bytes) -> ManagedFileDigest:
         os.write(descriptor, content[:2])
         raise RuntimeError("synthetic interruption")
 
