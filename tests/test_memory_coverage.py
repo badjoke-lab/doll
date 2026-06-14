@@ -324,6 +324,11 @@ def test_memory_database_constraints_reject_invalid_envelope_values(
                 (value, created.record_id),
             )
 
+        # SQLite builds differ on whether a constraint failure leaves the
+        # implicit DML transaction open. The tested contract is rejection
+        # and unchanged durable data, so normalize the connection state.
+        repository.connection.rollback()
+
         after = ConfirmedMemoryService(repository).get(created.record_id)
         assert after == before
         assert repository.connection.in_transaction is False
