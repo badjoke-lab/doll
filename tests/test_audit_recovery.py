@@ -27,7 +27,9 @@ def test_read_only_schema_one_requires_writable_migration(tmp_path: Path) -> Non
 def test_missing_audit_table_is_reported_as_corrupt_state(tmp_path: Path) -> None:
     initialized = workspace.initialize_workspace(tmp_path / "workspace")
     with state.initialize_state_repository(initialized.root) as repository:
-        repository.connection.execute("DROP TABLE audit_events")
+        repository.connection.execute(
+            "ALTER TABLE audit_events RENAME TO audit_events_missing"
+        )
         with pytest.raises(state.StateCorruptError, match="unreadable"):
             AuditService(repository).list()
 
