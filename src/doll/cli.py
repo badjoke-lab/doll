@@ -8,6 +8,7 @@ from typing import Annotated, cast
 import typer
 
 from doll import __version__
+from doll.audit import AuditActorType, AuditResult, AuditService
 from doll.state import StateError, initialize_state_repository, open_state_repository
 from doll.workspace import ProfilePreference, WorkspaceError, initialize_workspace
 
@@ -21,7 +22,12 @@ state_app = typer.Typer(
     help="Initialize and inspect the local authoritative state repository.",
     no_args_is_help=True,
 )
+audit_app = typer.Typer(
+    help="Inspect append-oriented local audit events.",
+    no_args_is_help=True,
+)
 app.add_typer(state_app, name="state")
+app.add_typer(audit_app, name="audit")
 
 
 @app.callback()
@@ -112,6 +118,65 @@ def state_status_command(
     typer.echo(f"State revision: {status.state_revision}")
     typer.echo(f"Record count: {status.record_count}")
     typer.echo("Mode: read-only")
+
+
+@audit_app.command("list")
+def audit_list_command(
+    path: Annotated[
+        Path | None,
+        typer.Argument(
+            help="Initialized workspace path. Uses the platform data directory by default."
+        ),
+    ] = None,
+    operation_id: Annotated[
+        str | None,
+        typer.Option("--operation-id", help="Filter by exact operation ID."),
+    ] = None,
+    action: Annotated[
+        str | None,
+        typer.Option("--action", help="Filter by exact audit action."),
+    ] = None,
+    actor_type: Annotated[
+        str | None,
+        typer.Option("--actor-type", help="Filter by actor type."),
+    ] = None,
+    result: Annotated[
+        str | None,
+        typer.Option("--result", help="Filter by operation result."),
+    ] = None,
+    limit: Annotated[
+        int,
+        typer.Option("--limit", min=1, max=200, help="Maximum events to display."),
+    ] = 50,
+) -> None:
+    """List audit events through a read-only state connection."""
+
+    try:
+        with open_state_repository(path, read_only=True) as repository:
+            events = AuditService(repository).list(
+                operation_id=operation_id,
+                action=action,
+                actor_type=cast(AuditActorType | None, actor_type),
+                result=cast(AuditResult | None, result),
+                limit=limit,
+            )
+    except (WorkspaceError, StateError) as exc:
+        typer.echo(f"audit listing failed: {exc}", err=True)
+        raise typer.Exit(code=2) from exc
+
+    if not events:
+        typer.echo("No audit events.")
+        return
+
+    for event in events:
+        target = event.target_type or "-"
+        summary = event.summary or "-"
+        error_class = event.error_class or "-"
+        typer.echo(
+            f"{event.occurred_at} {event.result} {event.actor_type} {event.action} "
+            f"operation={event.operation_id} target={target} "
+            f"error={error_class} summary={summary}"
+        )
 
 
 @app.command("version")
