@@ -72,3 +72,15 @@ doll decision create|get|list|update|archive|export
 This slice does not add task execution, automatic planning, automatic progress
 inference, automatic decision extraction, model recall, semantic search, reciprocal
 link rewriting, bulk state import/export, backup/restore, secret export, or hard delete.
+
+## Read-time link integrity
+
+Typed links are validated again during project or decision inspection. A project or
+decision whose stored link points to a missing, malformed, wrong-type, or invalid
+target is treated as corrupt rather than returned, listed, or exported as an ordinary
+authoritative record.
+
+Project and decision link validation is shallow at each target boundary so legitimate
+project-to-decision and decision-to-project cycles do not recurse indefinitely.
+Archived projects, decisions, and confirmed memories remain valid historical link
+targets. Managed artifact links currently require an active artifact record.

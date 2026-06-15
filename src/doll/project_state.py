@@ -177,7 +177,7 @@ class ProjectService:
     ) -> ProjectInfo:
         _require_user_actor(actor_type)
         current_record = _require_record(self.repository, project_id, "project")
-        current = _project_from_record(current_record)
+        current = _project_from_record(current_record, self.repository)
         _require_active(current.lifecycle_status)
         metadata = _validated_project_values(
             self.repository,
@@ -213,7 +213,7 @@ class ProjectService:
     ) -> ProjectInfo:
         _require_user_actor(actor_type)
         current_record = _require_record(self.repository, project_id, "project")
-        current = _project_from_record(current_record)
+        current = _project_from_record(current_record, self.repository)
         _require_active(current.lifecycle_status)
         _update_record(
             self.repository,
@@ -229,7 +229,10 @@ class ProjectService:
         return self.get(project_id)
 
     def get(self, project_id: str) -> ProjectInfo:
-        return _project_from_record(_require_record(self.repository, project_id, "project"))
+        return _project_from_record(
+            _require_record(self.repository, project_id, "project"),
+            self.repository,
+        )
 
     def list(
         self,
@@ -348,7 +351,7 @@ class DecisionService:
     ) -> DecisionInfo:
         _require_user_actor(actor_type)
         current_record = _require_record(self.repository, decision_id, "decision")
-        current = _decision_from_record(current_record)
+        current = _decision_from_record(current_record, self.repository)
         _require_active(current.lifecycle_status)
         metadata = _validated_decision_values(
             self.repository,
@@ -388,7 +391,7 @@ class DecisionService:
     ) -> DecisionInfo:
         _require_user_actor(actor_type)
         current_record = _require_record(self.repository, decision_id, "decision")
-        current = _decision_from_record(current_record)
+        current = _decision_from_record(current_record, self.repository)
         _require_active(current.lifecycle_status)
         _update_record(
             self.repository,
@@ -404,7 +407,10 @@ class DecisionService:
         return self.get(decision_id)
 
     def get(self, decision_id: str) -> DecisionInfo:
-        return _decision_from_record(_require_record(self.repository, decision_id, "decision"))
+        return _decision_from_record(
+            _require_record(self.repository, decision_id, "decision"),
+            self.repository,
+        )
 
     def list(
         self,
@@ -753,7 +759,10 @@ def _insert_audit(
     )
 
 
-def _project_from_record(record: RecordEnvelope) -> ProjectInfo:
+def _project_from_record(
+    record: RecordEnvelope,
+    repository: StateRepository | None = None,
+) -> ProjectInfo:
     try:
         _validate_envelope(record, "project", "user-created")
         name = _validate_text(
@@ -782,6 +791,13 @@ def _project_from_record(record: RecordEnvelope) -> ProjectInfo:
         decision_ids = _metadata_reference_ids(record.metadata, "decision_ids")
         memory_ids = _metadata_reference_ids(record.metadata, "memory_ids")
         artifact_ids = _metadata_reference_ids(record.metadata, "artifact_ids")
+        if repository is not None:
+            _validate_typed_links(
+                repository,
+                decision_ids=decision_ids,
+                memory_ids=memory_ids,
+                artifact_ids=artifact_ids,
+            )
     except (KeyError, TypeError, ValueError, ProjectDecisionValidationError) as exc:
         raise ProjectDecisionCorruptError("project record is malformed") from exc
 
@@ -804,7 +820,10 @@ def _project_from_record(record: RecordEnvelope) -> ProjectInfo:
     )
 
 
-def _decision_from_record(record: RecordEnvelope) -> DecisionInfo:
+def _decision_from_record(
+    record: RecordEnvelope,
+    repository: StateRepository | None = None,
+) -> DecisionInfo:
     try:
         _validate_envelope(record, "decision", "user-confirmed")
         decision = _validate_text(
@@ -845,6 +864,14 @@ def _decision_from_record(record: RecordEnvelope) -> DecisionInfo:
         artifact_ids = _metadata_reference_ids(record.metadata, "artifact_ids")
         if supersedes_id == record.id:
             raise ProjectDecisionValidationError("decision cannot supersede itself")
+        if repository is not None:
+            _validate_typed_links(
+                repository,
+                project_id=project_id,
+                supersedes_id=supersedes_id,
+                memory_ids=memory_ids,
+                artifact_ids=artifact_ids,
+            )
     except (KeyError, TypeError, ValueError, ProjectDecisionValidationError) as exc:
         raise ProjectDecisionCorruptError("decision record is malformed") from exc
 
@@ -935,11 +962,35 @@ def _validate_typed_links(
     artifact_service = WorkspaceFileService(repository)
     for artifact_id in artifact_ids:
         try:
+            artifact_record = repository.get_record(artifact_id)
+            _validate_artifact_link_envelope(artifact_record)
             artifact_service.get(artifact_id)
-        except (KeyError, ArtifactError) as exc:
+        except (
+            KeyError,
+            ArtifactError,
+            ProjectDecisionValidationError,
+        ) as exc:
             raise ProjectDecisionValidationError(
                 "artifact link does not reference a valid managed artifact"
             ) from exc
+
+
+def _validate_artifact_link_envelope(record: RecordEnvelope) -> None:
+    if record.record_type != "artifact":
+        raise ProjectDecisionValidationError("artifact link target has the wrong record type")
+    if record.schema_version != 1:
+        raise ProjectDecisionValidationError("artifact link target has an unsupported schema")
+    if record.revision < 1:
+        raise ProjectDecisionValidationError("artifact link target has an invalid revision")
+    if record.status != "active":
+        raise ProjectDecisionValidationError(
+            "artifact link target is not an active managed artifact"
+        )
+    if record.sensitivity not in _ALLOWED_SENSITIVITY:
+        raise ProjectDecisionValidationError("artifact link target has unsupported sensitivity")
+    created_at = _validate_utc("artifact created-at", record.created_at)
+    updated_at = _validate_utc("artifact updated-at", record.updated_at)
+    _require_later_or_equal("artifact updated-at", updated_at, created_at)
 
 
 def _require_record(

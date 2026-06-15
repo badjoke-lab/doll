@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from uuid import uuid4
 
 import pytest
 
@@ -17,6 +18,7 @@ from doll.project_state import (
     ProjectDecisionValidationError,
     ProjectService,
 )
+from doll.state_repository import StateRepository
 
 
 def initialized_workspace(tmp_path: Path) -> workspace.InitializedWorkspace:
@@ -382,3 +384,142 @@ def test_corrupt_records_and_wrong_type_are_rejected(tmp_path: Path) -> None:
             ProjectService(repository).get(bad_decision.id)
         with pytest.raises(ProjectDecisionValidationError):
             ProjectService(repository).list(limit=0)
+
+
+def _replace_record_metadata(
+    repository: StateRepository,
+    record_id: str,
+    metadata: dict[str, object],
+) -> None:
+    repository.connection.execute(
+        "UPDATE records SET metadata_json = ? WHERE id = ?",
+        (
+            json.dumps(
+                metadata,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            ),
+            record_id,
+        ),
+    )
+    repository.connection.commit()
+
+
+def test_read_time_project_link_corruption_is_rejected(tmp_path: Path) -> None:
+    initialized = initialized_workspace(tmp_path)
+    with state.open_state_repository(initialized.root) as repository:
+        service = ProjectService(repository)
+        project = service.create(
+            name="project",
+            description="description",
+            project_status="active",
+            started_at="2026-06-14T00:00:00Z",
+        )
+        record = repository.get_record(project.project_id)
+        metadata = dict(record.metadata)
+        metadata["decision_ids"] = [str(uuid4())]
+        _replace_record_metadata(repository, project.project_id, metadata)
+
+        with pytest.raises(ProjectDecisionCorruptError):
+            service.get(project.project_id)
+        with pytest.raises(ProjectDecisionCorruptError):
+            service.list()
+        with pytest.raises(ProjectDecisionCorruptError):
+            service.export_json(project.project_id)
+
+
+def test_read_time_decision_link_corruption_is_rejected(tmp_path: Path) -> None:
+    initialized = initialized_workspace(tmp_path)
+    with state.open_state_repository(initialized.root) as repository:
+        service = DecisionService(repository)
+        decision = service.create(
+            decision="decision",
+            reason="reason",
+            decision_status="accepted",
+            decided_at="2026-06-14T00:00:00Z",
+        )
+        record = repository.get_record(decision.decision_id)
+        metadata = dict(record.metadata)
+        metadata["project_id"] = str(uuid4())
+        _replace_record_metadata(repository, decision.decision_id, metadata)
+
+        with pytest.raises(ProjectDecisionCorruptError):
+            service.get(decision.decision_id)
+        with pytest.raises(ProjectDecisionCorruptError):
+            service.list()
+        with pytest.raises(ProjectDecisionCorruptError):
+            service.export_json(decision.decision_id)
+
+
+def test_deleted_artifact_cannot_be_linked(tmp_path: Path) -> None:
+    initialized = initialized_workspace(tmp_path)
+    with state.open_state_repository(initialized.root) as repository:
+        artifact = WorkspaceFileService(repository).create_text(
+            managed_path="imp-008/deleted.txt",
+            text="synthetic",
+            title="deleted artifact",
+            operation_id="deleted-artifact",
+        )
+        repository.connection.execute(
+            "UPDATE records SET status = 'deleted' WHERE id = ?",
+            (artifact.artifact_id,),
+        )
+        repository.connection.commit()
+
+        with pytest.raises(ProjectDecisionValidationError):
+            ProjectService(repository).create(
+                name="project",
+                description="description",
+                project_status="planned",
+                started_at="2026-06-14T00:00:00Z",
+                artifact_ids=(artifact.artifact_id,),
+            )
+
+
+def test_cyclic_project_decision_links_decode_without_recursion(
+    tmp_path: Path,
+) -> None:
+    initialized = initialized_workspace(tmp_path)
+    with state.open_state_repository(initialized.root) as repository:
+        project_service = ProjectService(repository)
+        decision_service = DecisionService(repository)
+        project = project_service.create(
+            name="project",
+            description="description",
+            project_status="active",
+            started_at="2026-06-14T00:00:00Z",
+        )
+        decision = decision_service.create(
+            decision="decision",
+            reason="reason",
+            decision_status="accepted",
+            decided_at="2026-06-14T01:00:00Z",
+            project_id=project.project_id,
+        )
+        project = project_service.update(
+            project.project_id,
+            expected_revision=1,
+            name=project.name,
+            description=project.description,
+            project_status=project.project_status,
+            started_at=project.started_at,
+            decision_ids=(decision.decision_id,),
+        )
+
+        assert project_service.get(project.project_id).decision_ids == (decision.decision_id,)
+        assert decision_service.get(decision.decision_id).project_id == (project.project_id)
+
+        archived_decision = decision_service.archive(
+            decision.decision_id,
+            expected_revision=1,
+        )
+        assert archived_decision.lifecycle_status == "archived"
+        assert project_service.get(project.project_id).decision_ids == (decision.decision_id,)
+
+        archived_project = project_service.archive(
+            project.project_id,
+            expected_revision=2,
+        )
+        assert archived_project.lifecycle_status == "archived"
+        assert decision_service.get(decision.decision_id).project_id == (project.project_id)
