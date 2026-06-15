@@ -294,11 +294,15 @@ def test_zip_and_fsync_error_wrapping(
     existing.write_bytes(b"x")
     with pytest.raises(package.StatePackageExportError):
         package._write_deterministic_zip(existing, {"x": b"x"})
-    with pytest.raises(package.StatePackageExportError):
+    if os.name == "nt":
         package._fsync_file(tmp_path / "missing")
+    else:
+        with pytest.raises(package.StatePackageExportError):
+            package._fsync_file(tmp_path / "missing")
     with pytest.raises(package.StatePackageError):
         package._fsync_directory(tmp_path / "missing-dir")
     monkeypatch.setattr(os, "name", "nt")
+    package._fsync_file(tmp_path / "missing")
     package._fsync_directory(tmp_path / "missing-dir")
 
 

@@ -1455,6 +1455,8 @@ def _readme_bytes() -> bytes:
 
 
 def _fsync_file(path: Path) -> None:
+    if os.name == "nt":
+        return
     try:
         with path.open("rb") as handle:
             os.fsync(handle.fileno())
