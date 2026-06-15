@@ -26,7 +26,14 @@ from doll.artifact import (
     WorkspaceFileService,
     _artifact_from_record,
 )
-from doll.audit import _ALLOWED_ACTOR_TYPES, _ALLOWED_RESULTS
+from doll.audit import (
+    _ALLOWED_ACTOR_TYPES,
+    _ALLOWED_RESULTS,
+    AuditValidationError,
+    _reject_local_path,
+    _reject_secret_text,
+    _serialize_metadata,
+)
 from doll.memory import MemoryCorruptError, _memory_from_record
 from doll.paths import canonicalize_path, find_doll_repository_ancestor
 from doll.project_state import (
@@ -207,18 +214,24 @@ def export_state_package(
     )
     os.close(descriptor)
     temporary = Path(temporary_name)
+    published = False
     try:
         temporary.unlink()
         _write_deterministic_zip(temporary, members)
         inspection = verify_state_package(temporary)
         _fsync_file(temporary)
         os.replace(temporary, output)
+        published = True
         _fsync_directory(output.parent)
         return inspection
     except StatePackageError:
+        if published:
+            _rollback_export_publication(output)
         temporary.unlink(missing_ok=True)
         raise
     except BaseException as exc:
+        if published:
+            _rollback_export_publication(output)
         temporary.unlink(missing_ok=True)
         raise StatePackageExportError("state package export failed") from exc
 
@@ -466,7 +479,13 @@ def _load_package(package_path: Path) -> _PackageData:
             members = {info.filename: archive.read(info) for info in infos}
     except StatePackageError:
         raise
-    except (OSError, ValueError, zipfile.BadZipFile, zipfile.LargeZipFile) as exc:
+    except (
+        OSError,
+        RuntimeError,
+        ValueError,
+        zipfile.BadZipFile,
+        zipfile.LargeZipFile,
+    ) as exc:
         raise StatePackageValidationError("state package ZIP is unreadable") from exc
 
     checksums_path = f"{PACKAGE_ROOT}/checksums.json"
@@ -475,6 +494,7 @@ def _load_package(package_path: Path) -> _PackageData:
         "checksums",
     )
     checksum_entries = _validate_checksums(checksums_value)
+    _validate_member_inventory_paths(set(checksum_entries))
     expected_members = {checksums_path, *checksum_entries}
     if set(members) != expected_members:
         raise StatePackageIntegrityError("package member inventory does not match checksums")
@@ -580,6 +600,16 @@ def _validate_checksums(value: object) -> dict[str, dict[str, object]]:
     return result
 
 
+def _validate_member_inventory_paths(paths: set[str]) -> None:
+    fixed = {f"{PACKAGE_ROOT}/{path}" for path in _ALWAYS_MEMBER_PATHS}
+    if not fixed.issubset(paths):
+        raise StatePackageIntegrityError("required package member is missing")
+    artifact_prefix = f"{PACKAGE_ROOT}/files/authoritative/"
+    for path in paths - fixed:
+        if not path.startswith(artifact_prefix) or path == artifact_prefix:
+            raise StatePackageIntegrityError("package contains an unsupported member")
+
+
 def _validate_package_payloads(
     manifest_value: object,
     workspace_value: object,
@@ -605,6 +635,13 @@ def _validate_package_payloads(
         raise StatePackageValidationError("package state schema is newer than supported")
     if schema_version != CURRENT_SCHEMA_VERSION:
         raise StatePackageValidationError("package state schema is not current")
+    workspace_schema_version = _required_nonnegative_int(
+        manifest,
+        "source_workspace_schema_version",
+    )
+    if workspace_schema_version > WORKSPACE_SCHEMA_VERSION:
+        raise StatePackageValidationError("workspace schema is newer than supported")
+    source_product_version = _required_string(manifest, "source_product_version")
     state_revision = _required_nonnegative_int(manifest, "state_revision")
 
     if not isinstance(workspace_value, dict):
@@ -615,6 +652,11 @@ def _validate_package_payloads(
         raise StatePackageValidationError("workspace payload is invalid") from exc
     if workspace_record.schema_version > WORKSPACE_SCHEMA_VERSION:
         raise StatePackageValidationError("workspace schema is newer than supported")
+    if workspace_record.schema_version != workspace_schema_version:
+        raise StatePackageIntegrityError("workspace schema does not match manifest")
+    if workspace_record.product_version_last_opened != source_product_version:
+        raise StatePackageIntegrityError("workspace product version does not match manifest")
+    _validate_workspace_record(workspace_record)
     if str(workspace_record.workspace_id) != workspace_id:
         raise StatePackageIntegrityError("workspace identity does not match manifest")
     if workspace_record.state_revision != state_revision:
@@ -716,6 +758,28 @@ def _validate_package_payloads(
         artifact_files=artifact_files,
         manifest=manifest,
     )
+
+
+def _validate_workspace_record(record: WorkspaceRecord) -> None:
+    if (
+        record.created_at.tzinfo is None
+        or record.created_at.utcoffset() != UTC.utcoffset(record.created_at)
+        or record.updated_at.tzinfo is None
+        or record.updated_at.utcoffset() != UTC.utcoffset(record.updated_at)
+    ):
+        raise StatePackageValidationError("workspace timestamps must be UTC")
+    if record.updated_at < record.created_at:
+        raise StatePackageValidationError("workspace update time precedes creation")
+    try:
+        for value in (
+            record.instance_label,
+            record.product_version_created,
+            record.product_version_last_opened,
+        ):
+            _reject_secret_text(value)
+            _reject_local_path(value)
+    except AuditValidationError as exc:
+        raise StatePackageValidationError("workspace metadata is not portable") from exc
 
 
 def _envelope_from_payload(payload: object, expected_type: str) -> RecordEnvelope:
@@ -902,8 +966,30 @@ def _validate_audit_events(payloads: list[object]) -> tuple[dict[str, object], .
             value = event.get(key)
             if value is not None and not isinstance(value, str):
                 raise StatePackageValidationError("audit optional field is invalid")
+        try:
+            for value in event.values():
+                if isinstance(value, str):
+                    _reject_secret_text(value)
+                    _reject_local_path(value)
+            _serialize_metadata(cast(dict[str, object], metadata))
+            _reject_local_paths_in_json(metadata)
+        except AuditValidationError as exc:
+            raise StatePackageValidationError("audit event is not portable") from exc
         result.append(event)
     return tuple(result)
+
+
+def _reject_local_paths_in_json(value: object) -> None:
+    if isinstance(value, dict):
+        for nested in value.values():
+            _reject_local_paths_in_json(nested)
+        return
+    if isinstance(value, list):
+        for nested in value:
+            _reject_local_paths_in_json(nested)
+        return
+    if isinstance(value, str):
+        _reject_local_path(value)
 
 
 def _validate_migration_history(payloads: list[object]) -> tuple[dict[str, object], ...]:
@@ -1151,6 +1237,7 @@ def _validate_imported_workspace(
 
 def _publish_import_target(staging: Path, target: Path) -> None:
     backup: Path | None = None
+    published = False
     try:
         if target.exists():
             if not target.is_dir() or any(target.iterdir()):
@@ -1158,17 +1245,31 @@ def _publish_import_target(staging: Path, target: Path) -> None:
             backup = target.with_name(f".{target.name}.empty-{uuid4().hex}")
             os.replace(target, backup)
         os.replace(staging, target)
+        published = True
+        _fsync_directory(target.parent)
         if backup is not None:
             backup.rmdir()
-        _fsync_directory(target.parent)
+            backup = None
     except StatePackageError:
-        if backup is not None and backup.exists() and not target.exists():
-            os.replace(backup, target)
+        _rollback_import_publication(target, backup, published)
         raise
     except BaseException as exc:
-        if backup is not None and backup.exists() and not target.exists():
-            os.replace(backup, target)
+        _rollback_import_publication(target, backup, published)
         raise StatePackageImportError("import target could not be published") from exc
+
+
+def _rollback_import_publication(
+    target: Path,
+    backup: Path | None,
+    published: bool,
+) -> None:
+    try:
+        if published and target.exists():
+            shutil.rmtree(target)
+        if backup is not None and backup.exists():
+            os.replace(backup, target)
+    except BaseException as exc:
+        raise StatePackageImportError("import publication rollback failed") from exc
 
 
 def _validate_export_record(record: RecordEnvelope) -> None:
@@ -1452,6 +1553,13 @@ def _readme_bytes() -> bytes:
         b"Verify checksums.json before import.\n"
         b"Secret records are omitted from unencrypted packages.\n"
     )
+
+
+def _rollback_export_publication(output: Path) -> None:
+    try:
+        output.unlink(missing_ok=True)
+    except OSError as exc:
+        raise StatePackageExportError("state package publication rollback failed") from exc
 
 
 def _fsync_file(path: Path) -> None:

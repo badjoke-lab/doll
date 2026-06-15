@@ -28,6 +28,8 @@ def test_state_package_validation_helpers() -> None:
         _validate_member_name(f"{PACKAGE_ROOT}/./x")
     with pytest.raises(StatePackageUnsafePathError):
         _validate_member_name(f"{PACKAGE_ROOT}/bad\x00name")
+    with pytest.raises(StatePackageUnsafePathError):
+        _validate_member_name(f"{PACKAGE_ROOT}/records\\escape")
     with pytest.raises(StatePackageValidationError):
         _required_nonnegative_int({"x": True}, "x")
     with pytest.raises(StatePackageValidationError):

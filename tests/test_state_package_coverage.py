@@ -299,8 +299,11 @@ def test_zip_and_fsync_error_wrapping(
     else:
         with pytest.raises(package.StatePackageExportError):
             package._fsync_file(tmp_path / "missing")
-    with pytest.raises(package.StatePackageError):
+    if os.name == "nt":
         package._fsync_directory(tmp_path / "missing-dir")
+    else:
+        with pytest.raises(package.StatePackageError):
+            package._fsync_directory(tmp_path / "missing-dir")
     monkeypatch.setattr(os, "name", "nt")
     package._fsync_file(tmp_path / "missing")
     package._fsync_directory(tmp_path / "missing-dir")
@@ -1180,3 +1183,121 @@ def test_state_package_cli_all_error_paths(tmp_path: Path) -> None:
     assert export_result.exit_code == 2
     assert str(output) not in export_result.output
     assert str(initialized.root) not in export_result.output
+
+
+def test_checksummed_unknown_member_is_rejected(tmp_path: Path) -> None:
+    _, source, _ = _export_package(tmp_path)
+    members = _read_members(source)
+    members[f"{package.PACKAGE_ROOT}/unexpected.bin"] = b"unexpected"
+    forged = tmp_path / "forged-extra.zip"
+    _write_members(forged, members)
+    with pytest.raises(package.StatePackageIntegrityError):
+        package.verify_state_package(forged)
+
+
+def test_workspace_manifest_and_audit_portability_validation(tmp_path: Path) -> None:
+    manifest, workspace_payload, members = _valid_payload_context(tmp_path)
+
+    changed_manifest = copy.deepcopy(manifest)
+    changed_manifest["source_workspace_schema_version"] = 0
+    with pytest.raises(package.StatePackageIntegrityError):
+        package._validate_package_payloads(
+            changed_manifest,
+            workspace_payload,
+            members,
+        )
+
+    changed_manifest = copy.deepcopy(manifest)
+    changed_manifest["source_product_version"] = "different"
+    with pytest.raises(package.StatePackageIntegrityError):
+        package._validate_package_payloads(
+            changed_manifest,
+            workspace_payload,
+            members,
+        )
+
+    changed_workspace = copy.deepcopy(workspace_payload)
+    changed_workspace["instance_label"] = "/Users/example/private"
+    with pytest.raises(package.StatePackageValidationError):
+        package._validate_package_payloads(
+            manifest,
+            changed_workspace,
+            members,
+        )
+
+    changed_workspace = copy.deepcopy(workspace_payload)
+    changed_workspace["created_at"] = "2026-06-15T00:00:00"
+    with pytest.raises(package.StatePackageValidationError):
+        package._validate_package_payloads(
+            manifest,
+            changed_workspace,
+            members,
+        )
+
+    event = _base_audit()
+    event["metadata"] = {"source_path": "/Users/example/private"}
+    changed_manifest = copy.deepcopy(manifest)
+    changed_manifest["audit_event_count"] = 1
+    changed_members = dict(members)
+    changed_members[f"{package.PACKAGE_ROOT}/records/audit-events.jsonl"] = package._jsonl_bytes(
+        [event]
+    )
+    with pytest.raises(package.StatePackageValidationError):
+        package._validate_package_payloads(
+            changed_manifest,
+            workspace_payload,
+            changed_members,
+        )
+
+    event = _base_audit()
+    event["metadata"] = {"api_key": "fixture"}
+    changed_members[f"{package.PACKAGE_ROOT}/records/audit-events.jsonl"] = package._jsonl_bytes(
+        [event]
+    )
+    with pytest.raises(package.StatePackageValidationError):
+        package._validate_package_payloads(
+            changed_manifest,
+            workspace_payload,
+            changed_members,
+        )
+
+
+def test_fsync_publication_failures_roll_back(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    initialized = _initialized_workspace(tmp_path, "export-fsync")
+    output = tmp_path / "export-fsync.zip"
+    calls = 0
+
+    def fail_export_fsync(path: Path) -> None:
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            raise package.StatePackageError("synthetic")
+
+    monkeypatch.setattr(package, "_fsync_directory", fail_export_fsync)
+    with state.open_state_repository(initialized.root, read_only=True) as repository:
+        with pytest.raises(package.StatePackageError):
+            package.export_state_package(
+                repository,
+                output,
+                exported_at="2026-06-15T02:00:00Z",
+            )
+    assert not output.exists()
+
+    monkeypatch.undo()
+    _, source, _ = _export_package(tmp_path, name="import-fsync")
+    target = tmp_path / "import-fsync-target"
+    calls = 0
+
+    def fail_import_fsync(path: Path) -> None:
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            raise package.StatePackageError("synthetic")
+
+    monkeypatch.setattr(package, "_fsync_directory", fail_import_fsync)
+    with pytest.raises(package.StatePackageError):
+        package.import_state_package(source, target)
+    assert not target.exists()

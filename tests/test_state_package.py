@@ -228,7 +228,6 @@ def test_verify_rejects_inventory_and_content_tampering(
         "C:/drive",
         r"\\server\share",
         f"{PACKAGE_ROOT}/../escape",
-        f"{PACKAGE_ROOT}/records\\escape",
     ],
 )
 def test_verify_rejects_unsafe_member_names(
