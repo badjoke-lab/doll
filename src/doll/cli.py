@@ -14,6 +14,7 @@ from doll.memory_cli import memory_app
 from doll.project_cli import decision_app, project_app
 from doll.settings_cli import permission_app, policy_app, preference_app
 from doll.state import StateError, initialize_state_repository, open_state_repository
+from doll.state_package_cli import state_package_app
 from doll.workspace import ProfilePreference, WorkspaceError, initialize_workspace
 from doll.workspace_files import WorkspaceFileError
 
@@ -44,6 +45,7 @@ app.add_typer(permission_app, name="permission")
 app.add_typer(memory_app, name="memory")
 app.add_typer(project_app, name="project")
 app.add_typer(decision_app, name="decision")
+app.add_typer(state_package_app, name="state-package")
 
 
 @app.callback()
