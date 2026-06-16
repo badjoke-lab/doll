@@ -570,6 +570,26 @@ def test_publication_mismatch_and_generic_failure_roll_back(
         )
 
 
+def test_publication_refuses_a_racing_existing_output(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    members, _, _ = _state_context(tmp_path)
+    output = tmp_path / "racing-output.zip"
+    existing = b"created-by-another-process"
+    original_link = os.link
+
+    def create_destination_then_link(source: Path, destination: Path) -> None:
+        Path(destination).write_bytes(existing)
+        original_link(source, destination)
+
+    monkeypatch.setattr(os, "link", create_destination_then_link)
+    with pytest.raises(backup.BackupCreationError):
+        backup._publish_verified_backup(output, members)
+
+    assert output.read_bytes() == existing
+    assert not list(tmp_path.glob(f".{output.name}.*.backup.tmp"))
+
+
 def test_backup_manifest_additional_validation(tmp_path: Path) -> None:
     initialized = _initialized(tmp_path, "manifest-extra")
     with state.open_state_repository(initialized.root) as repository:

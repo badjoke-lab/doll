@@ -29,8 +29,10 @@ indexes.
 ## Publication and inventory
 
 Creation uses a sibling temporary file, reopens and verifies the complete archive,
-fsyncs it, publishes with an atomic replacement, fsyncs the parent directory, and
-verifies the published bytes again. Existing outputs are never overwritten.
+fsyncs it, publishes through an atomic no-clobber hard link, removes the temporary
+name, fsyncs the parent directory, and verifies the published bytes again. Existing
+outputs are never overwritten, including when another process creates the output
+between initial validation and publication.
 
 Only then does doll register a `backup_manifest` common-envelope record. The record,
 a `backup.create` audit event, and one state-revision increment are committed in one

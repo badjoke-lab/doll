@@ -658,8 +658,14 @@ def _publish_verified_backup(output: Path, members: dict[str, bytes]) -> BackupI
         _write_deterministic_zip(temporary, members)
         inspection = verify_backup(temporary)
         _fsync_file(temporary)
-        os.replace(temporary, output)
+        try:
+            os.link(temporary, output)
+        except FileExistsError as exc:
+            raise BackupCreationError("backup output already exists") from exc
+        except OSError as exc:
+            raise BackupCreationError("backup publication failed") from exc
         published = True
+        temporary.unlink()
         _fsync_directory(output.parent)
         published_inspection = verify_backup(output)
         if published_inspection != inspection:
