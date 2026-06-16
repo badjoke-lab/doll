@@ -34,6 +34,10 @@ from doll.audit import (
     _reject_secret_text,
     _serialize_metadata,
 )
+from doll.backup_manifest import (
+    BackupManifestCorruptError,
+    _backup_manifest_from_record,
+)
 from doll.memory import MemoryCorruptError, _memory_from_record
 from doll.paths import canonicalize_path, find_doll_repository_ancestor
 from doll.project_state import (
@@ -91,12 +95,18 @@ _RECORD_PATHS: dict[str, str] = {
     "project": "records/projects.jsonl",
     "decision": "records/decisions.jsonl",
     "artifact": "records/artifacts.jsonl",
+    "backup_manifest": "records/backup-manifests.jsonl",
 }
 _SUPPORTED_RECORD_TYPES = frozenset(_RECORD_PATHS)
+_OPTIONAL_RECORD_TYPES = frozenset({"backup_manifest"})
 _ALWAYS_MEMBER_PATHS = (
     "manifest.json",
     "records/workspace.json",
-    *tuple(_RECORD_PATHS.values()),
+    *tuple(
+        path
+        for record_type, path in _RECORD_PATHS.items()
+        if record_type not in _OPTIONAL_RECORD_TYPES
+    ),
     "records/audit-events.jsonl",
     "records/migration-history.jsonl",
     "README.txt",
@@ -604,8 +614,11 @@ def _validate_member_inventory_paths(paths: set[str]) -> None:
     fixed = {f"{PACKAGE_ROOT}/{path}" for path in _ALWAYS_MEMBER_PATHS}
     if not fixed.issubset(paths):
         raise StatePackageIntegrityError("required package member is missing")
+    optional = {
+        f"{PACKAGE_ROOT}/{_RECORD_PATHS[record_type]}" for record_type in _OPTIONAL_RECORD_TYPES
+    }
     artifact_prefix = f"{PACKAGE_ROOT}/files/authoritative/"
-    for path in paths - fixed:
+    for path in paths - fixed - optional:
         if not path.startswith(artifact_prefix) or path == artifact_prefix:
             raise StatePackageIntegrityError("package contains an unsupported member")
 
@@ -674,10 +687,14 @@ def _validate_package_payloads(
     actual_counts: dict[str, int] = {}
     for record_type, relative_path in _RECORD_PATHS.items():
         member_name = f"{PACKAGE_ROOT}/{relative_path}"
-        payloads = _load_jsonl_bytes(
-            _required_member(members, member_name),
-            relative_path,
-        )
+        member = members.get(member_name)
+        if member is None and record_type in _OPTIONAL_RECORD_TYPES:
+            payloads = []
+        else:
+            payloads = _load_jsonl_bytes(
+                _required_member(members, member_name),
+                relative_path,
+            )
         actual_counts[record_type] = len(payloads)
         for payload in payloads:
             record = _envelope_from_payload(payload, record_type)
@@ -687,14 +704,14 @@ def _validate_package_payloads(
             records.append(record)
 
     expected_counts = {
-        key: _mapping_nonnegative_int(record_counts_value, key)
+        key: _mapping_record_count(record_counts_value, key)
         for key in sorted(_SUPPORTED_RECORD_TYPES)
     }
     if actual_counts != expected_counts:
         raise StatePackageIntegrityError("record counts do not match manifest")
 
     omitted_counts = {
-        key: _mapping_nonnegative_int(omitted_value, key) for key in sorted(_SUPPORTED_RECORD_TYPES)
+        key: _mapping_record_count(omitted_value, key) for key in sorted(_SUPPORTED_RECORD_TYPES)
     }
     _validate_active_setting_identities(records)
     _validate_cross_record_links(records_by_id)
@@ -844,10 +861,13 @@ def _envelope_from_payload(payload: object, expected_type: str) -> RecordEnvelop
             _decision_from_record(record)
         elif record_type == "artifact":
             _artifact_from_record(record)
+        elif record_type == "backup_manifest":
+            _backup_manifest_from_record(record)
         else:  # pragma: no cover - expected type is selected from a fixed mapping.
             raise StatePackageValidationError("record type is unsupported")
     except (
         ArtifactCorruptError,
+        BackupManifestCorruptError,
         MemoryCorruptError,
         ProjectDecisionCorruptError,
         SettingsCorruptError,
@@ -1480,6 +1500,12 @@ def _mapping_nonnegative_int(mapping: dict[object, object], key: str) -> int:
     if not isinstance(value, int) or isinstance(value, bool) or value < 0:
         raise StatePackageValidationError(f"{key} count is invalid")
     return value
+
+
+def _mapping_record_count(mapping: dict[object, object], key: str) -> int:
+    if key in _OPTIONAL_RECORD_TYPES and key not in mapping:
+        return 0
+    return _mapping_nonnegative_int(mapping, key)
 
 
 def _validate_utc_timestamp(value: str, name: str) -> str:

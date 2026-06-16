@@ -10,6 +10,7 @@ import typer
 from doll import __version__
 from doll.artifact import ArtifactError, ArtifactValidationError, WorkspaceFileService
 from doll.audit import AuditActorType, AuditResult, AuditService
+from doll.backup_cli import backup_app
 from doll.memory_cli import memory_app
 from doll.project_cli import decision_app, project_app
 from doll.settings_cli import permission_app, policy_app, preference_app
@@ -46,6 +47,7 @@ app.add_typer(memory_app, name="memory")
 app.add_typer(project_app, name="project")
 app.add_typer(decision_app, name="decision")
 app.add_typer(state_package_app, name="state-package")
+app.add_typer(backup_app, name="backup")
 
 
 @app.callback()
