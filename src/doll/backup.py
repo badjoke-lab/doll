@@ -55,6 +55,7 @@ MAX_BACKUP_TOTAL_BYTES = 1024 * 1024 * 1024
 MAX_COMPRESSION_RATIO = 1000
 MAX_JSON_BYTES = 4 * 1024 * 1024
 MAX_WORKSPACE_SNAPSHOT_BYTES = 512 * 1024 * 1024
+_FSYNC_FILE_FLAGS = os.O_RDWR | cast(int, getattr(os, "O_BINARY", 0))
 
 _DRIVE_PATH = re.compile(r"^[A-Za-z]:")
 _DIGEST_PATTERN = re.compile(r"^[0-9a-f]{64}$")
@@ -1208,7 +1209,7 @@ def _rollback_publication(output: Path) -> None:
 
 def _fsync_file(path: Path) -> None:
     try:
-        descriptor = os.open(path, os.O_RDONLY)
+        descriptor = os.open(path, _FSYNC_FILE_FLAGS)
         try:
             os.fsync(descriptor)
         finally:

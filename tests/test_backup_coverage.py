@@ -203,6 +203,25 @@ def test_member_checksum_and_required_value_validation() -> None:
         backup._required_categories({"x": [1]}, "x")
 
 
+def test_fsync_file_uses_a_writable_binary_descriptor(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    path = tmp_path / "durable.bin"
+    path.write_bytes(b"durable")
+    seen_flags: list[int] = []
+    real_open = os.open
+
+    def tracked_open(file: Path, flags: int) -> int:
+        seen_flags.append(flags)
+        return real_open(file, flags)
+
+    monkeypatch.setattr(os, "open", tracked_open)
+    backup._fsync_file(path)
+
+    assert seen_flags == [backup._FSYNC_FILE_FLAGS]
+    assert seen_flags[0] & os.O_RDWR == os.O_RDWR
+
+
 def test_json_size_and_regular_file_change_detection(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
