@@ -6,7 +6,7 @@ import argparse
 import json
 import platform
 import re
-import sys
+import subprocess
 import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
@@ -37,6 +37,16 @@ def _parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _current_head() -> str:
+    result = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return result.stdout.strip()
+
+
 def _require_environment(arguments: argparse.Namespace) -> None:
     if platform.system() != "Darwin":
         raise RuntimeError("the IMP-011 real-machine drill requires macOS")
@@ -46,6 +56,8 @@ def _require_environment(arguments: argparse.Namespace) -> None:
         raise RuntimeError("rerun with --offline-confirmed after disabling network access")
     if not _COMMIT_PATTERN.fullmatch(arguments.commit_sha):
         raise RuntimeError("commit SHA must be exactly 40 lowercase hexadecimal characters")
+    if _current_head() != arguments.commit_sha:
+        raise RuntimeError("the checked-out commit does not match --commit-sha")
 
 
 def _run(arguments: argparse.Namespace) -> dict[str, object]:
@@ -101,10 +113,12 @@ def _run(arguments: argparse.Namespace) -> dict[str, object]:
             workspace_preference = PreferenceService(repository).get(preference.record_id)
             workspace_artifact = WorkspaceFileService(repository).verify(artifact.artifact_id)
 
-        state_bytes = (root / "restored-state" / "artifacts" / "drill" / "restore.txt").read_bytes()
-        workspace_bytes = (
+        state_artifact_path = root / "restored-state" / "artifacts" / "drill" / "restore.txt"
+        workspace_artifact_path = (
             root / "restored-workspace" / "artifacts" / "drill" / "restore.txt"
-        ).read_bytes()
+        )
+        state_bytes = state_artifact_path.read_bytes()
+        workspace_bytes = workspace_artifact_path.read_bytes()
 
         checks = {
             "state_fresh_process_validated": restored_state.fresh_process_validated,
@@ -118,8 +132,9 @@ def _run(arguments: argparse.Namespace) -> dict[str, object]:
                 == workspace_backup.inspection.source_state_revision
             ),
             "state_preference_preserved": state_preference.value == {"language": "日本語"},
-            "workspace_preference_preserved": workspace_preference.value
-            == {"language": "日本語"},
+            "workspace_preference_preserved": (
+                workspace_preference.value == {"language": "日本語"}
+            ),
             "state_artifact_hash_verified": state_artifact.actual_hash == artifact.content_hash,
             "workspace_artifact_hash_verified": (
                 workspace_artifact.actual_hash == artifact.content_hash
@@ -168,6 +183,7 @@ def _run(arguments: argparse.Namespace) -> dict[str, object]:
 def main() -> int:
     arguments = _parse_arguments()
     try:
+        _require_environment(arguments)
         report = _run(arguments)
     except BaseException as exc:
         print(
