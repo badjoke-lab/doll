@@ -8,11 +8,12 @@
 
 This document defines the architectural boundaries required to make doll a personal AI continuity system rather than a collection of tightly coupled AI features.
 
-The architecture must preserve three properties:
+The architecture must preserve four properties:
 
 1. durable user state remains independent of any one model, runtime, or UI;
 2. optional components can disappear without making the local core unusable;
-3. failures, migrations, and degraded operation remain observable and recoverable.
+3. failures, migrations, and degraded operation remain observable and recoverable;
+4. models, tools, runtimes, and external content remain behind a model-independent safety boundary.
 
 ## 2. Architectural principles
 
@@ -25,9 +26,11 @@ The durable core owns:
 - authoritative state;
 - memory records;
 - project records;
-- source and research records;
+- source, claim, evidence, and inference records;
 - artifact indexes;
-- permission policy;
+- non-secret secret references;
+- instruction-origin metadata;
+- permission and confirmation policy;
 - audit events;
 - migration state;
 - backup and restore metadata.
@@ -62,13 +65,17 @@ Models never receive direct operating-system authority.
 
 All tool requests pass through a capability boundary that validates:
 
-- the requesting session;
-- the tool name;
+- the requesting session and instruction origin;
+- the capability ID and version;
 - the input schema;
+- the registered risk tier;
 - the allowed path scope;
-- the network policy;
-- the required user approval;
-- the expected side effects.
+- the network and destination policy;
+- the required permission and confirmation;
+- the expected side effects;
+- the credential class or non-secret reference where applicable.
+
+Credential-bearing operations additionally pass through the Credential Broker. The model never receives the stored credential value.
 
 ### 2.5 Fail closed
 
@@ -91,14 +98,17 @@ Doll Core
   |-- State Service
   |-- Memory Service
   |-- Project and Artifact Service
-  |-- Research and Source Service
+  |-- Research, Claim, and Evidence Service
+  |-- Instruction Origin / Context Service
   |-- Capability Broker
+  |-- Credential Broker
   |-- Model Router
   |-- Backup / Migration / Recovery
   |-- Audit Service
   |
-  +--> Runtime Adapters --> Local models
+  +--> Runtime Adapters --> Local models, only after the safety gate
   +--> Tool Adapters ----> Local files, search, OCR, audio, etc.
+  +--> Secret Store Adapter --> operating-system or compatible external store
   +--> Optional Cloud Gateway --> external models, only when enabled
   |
   v
@@ -226,6 +236,8 @@ It owns:
 
 A model may propose memory. It may not silently convert a suggestion into confirmed memory.
 
+The Memory Service must reject secret values from ordinary memory records. A credential may be represented only by a non-secret reference managed under the external secret-store contract.
+
 ## 4.6 Project and Artifact Service
 
 This service links durable state to user work.
@@ -244,22 +256,24 @@ It owns:
 
 Generated files must be created inside approved workspace locations unless the user explicitly exports them elsewhere through a user-controlled path.
 
-## 4.7 Research and Source Service
+## 4.7 Research, Claim, and Evidence Service
 
-This service records the provenance of externally acquired information.
+This service records the provenance and truth status of externally acquired or derived information.
 
 It owns:
 
-- source URLs;
+- source URLs and identifiers;
 - retrieval timestamps;
-- source type;
+- source type and acquisition method;
+- instruction-origin and authority metadata;
 - local cache references;
 - extracted text references;
+- claim, evidence, inference, and confirmed-fact relationships;
 - citation anchors;
 - research sessions;
-- confidence or verification metadata where later defined.
+- confidence, uncertainty, and review state.
 
-Web retrieval is a network capability. It must be explicit and auditable.
+Web retrieval is a network capability. It must be explicit and auditable. Retrieved content remains data rather than authority and cannot grant permissions, confirmation, or policy changes.
 
 ## 4.8 Capability Broker
 
@@ -272,9 +286,11 @@ Each capability definition must include:
 - input schema;
 - output schema;
 - permission class;
+- risk tier;
 - path constraints;
-- network behavior;
-- approval requirement;
+- network and destination behavior;
+- approval and confirmation requirement;
+- credential class where applicable;
 - audit behavior;
 - expected side effects;
 - cancellation behavior;
@@ -291,6 +307,8 @@ Initial safe capability classes:
 - create backup;
 - inspect model or runtime status.
 
+Unknown, malformed, risk-downgraded, or materially changed requests fail closed. High-risk confirmation is fresh and operation-specific; confirmation cannot make a prohibited capability available.
+
 Initial excluded capability classes:
 
 - unrestricted shell;
@@ -301,6 +319,20 @@ Initial excluded capability classes:
 - external upload;
 - account modification;
 - financial transaction.
+
+## 4.8.1 Credential Broker
+
+The Credential Broker is the sole normal path for a capability to ask an external secret store to use a credential.
+
+It accepts a non-secret `SecretReferenceRecord`, exact capability and operation identity, destination, scope, risk tier, and confirmation state. It may use the credential only inside the bounded operation and returns a structured operation result rather than the stored value.
+
+It must fail closed when the reference, destination, permission, confirmation, store availability, user presence, timeout, or audit requirement is invalid. Secret values must not appear in model context, ordinary state, logs, audit, command strings, temporary files, or normal errors.
+
+## 4.8.2 Instruction Origin and Context Service
+
+This service preserves the origin and authority class of system policy, current user instruction, durable policy, user confirmation, external content, tool results, and model proposals.
+
+It assembles context without collapsing untrusted content into trusted instructions, excludes secret values, preserves claim and evidence labels, and defaults unknown origin to the least-authoritative class.
 
 ## 4.9 Model Router
 
@@ -367,7 +399,8 @@ Any future implementation must provide:
 
 - explicit provider configuration;
 - outbound content preview;
-- secret storage through operating-system credential facilities;
+- credential use through the accepted external secret-store and Credential Broker boundary;
+- no stored credential value exposed to a model or gateway caller;
 - redaction and sensitivity checks;
 - cost and token estimates where possible;
 - audit records;
@@ -446,7 +479,11 @@ Instructions embedded in web pages, PDFs, images, documents, or retrieved text m
 
 ## 5.5 Optional tools
 
-OCR, audio, video, browser, and other optional tools are separate trust boundaries. Their absence or failure must disable only the affected capability.
+OCR, audio, video, browser, and other optional tools are separate trust boundaries. Their absence or failure must disable only the affected capability. Returned content remains untrusted and retains instruction-origin metadata.
+
+## 5.6 External secret store
+
+The external secret store is trusted only for the narrow credential-storage and retrieval contract implemented by its adapter. It is not ordinary Doll State. Its absence, lock, denial, or failure must block only the credential-bearing operation and must not prevent non-secret core startup or recovery.
 
 ## 6. Data flow patterns
 
@@ -656,24 +693,37 @@ scripts/
 
 This is a directional structure, not permission to create empty modules before their specifications are accepted.
 
-## 11. Initial implementation slice
+## 11. Initial implementation slices
 
-The first implementation after specification acceptance should contain only the architecture required to prove continuity:
+The first implementation slice contains only the architecture required to prove model-independent continuity:
 
 - workspace initialization;
 - workspace boundary enforcement;
-- schema version record;
+- schema version and revision records;
 - minimal state repository;
-- minimal confirmed-memory record;
-- minimal project or decision record;
-- artifact metadata and file creation inside workspace;
-- backup creation and restoration;
-- model adapter interface;
-- Ollama adapter;
-- manual active-model binding;
-- local API or CLI conversation path;
+- confirmed memory, preference, policy, permission, project, decision, and artifact records;
+- Doll State package export and empty-target import;
+- state and workspace backup creation, verification, empty-target restoration, and fresh-process validation;
 - audit record creation;
-- offline and replacement tests.
+- offline, model-absent, failure-preservation, and path-safety tests.
+
+The second architectural slice implements the complete model-independent safety boundary:
+
+- secret classification, detection, redaction, and secret-safe audit;
+- external secret-store contract and Credential Broker;
+- confirmed fact, claim, evidence, and inference records;
+- instruction-origin and untrusted-content boundary;
+- prompt-injection defense outside model authority;
+- capability taxonomy, risk tiers, and mandatory high-risk confirmation;
+- blocking safety acceptance tests.
+
+Only after those slices pass their gates may the architecture add:
+
+- a model adapter interface;
+- an Ollama adapter;
+- manual active-model binding;
+- a local API or CLI conversation path;
+- offline model execution and replacement tests.
 
 Web research, OCR, audio, video, cloud, mobile, and unrestricted automation are later slices.
 
@@ -682,11 +732,15 @@ Web research, OCR, audio, video, cloud, mobile, and unrestricted automation are 
 This architecture specification is acceptable when later detailed specifications can define implementation without violating these conditions:
 
 - no critical state is owned only by Open WebUI, Ollama, or another adapter;
-- no model receives direct unrestricted operating-system authority;
+- no model execution path exists before the safety acceptance gate;
+- no model receives direct unrestricted operating-system, state, secret, permission, confirmation, network, process, or audit authority;
+- ordinary Doll State stores non-secret credential references rather than secret values;
+- external content remains data rather than instruction;
 - local operation has no mandatory cloud path;
 - backup and restore are first-class services;
 - API, CLI, and UI remain separate layers;
 - Lite and Heavy share one durable state model;
 - optional dependencies can be absent without blocking core startup;
-- all side effects are attributable to a capability and audit event;
+- all side effects are attributable to a versioned capability, risk tier, permission or confirmation decision, and audit event;
+- credential-bearing operations return bounded results without exposing stored values;
 - model replacement leaves durable state intact.
