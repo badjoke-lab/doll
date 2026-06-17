@@ -7,6 +7,7 @@ import io
 import json
 import os
 import shutil
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -121,7 +122,9 @@ def validate_restored_workspace(
             if status.schema_version != expected_schema_version:
                 raise RestoreValidationError("restored schema version does not match backup")
             if status.state_revision != expected_state_revision:
-                raise RestoreValidationError("restored database revision does not match expected state")
+                raise RestoreValidationError(
+                    "restored database revision does not match expected state"
+                )
             integrity = repository.connection.execute("PRAGMA integrity_check").fetchone()
             if integrity is None or integrity[0] != "ok":
                 raise RestoreValidationError("restored SQLite integrity check failed")
@@ -169,8 +172,8 @@ def validate_restored_workspace(
         package_path.unlink(missing_ok=True)
 
 
-def _count(connection: object, query: str) -> int:
-    row = connection.execute(query).fetchone()  # type: ignore[attr-defined]
+def _count(connection: sqlite3.Connection, query: str) -> int:
+    row = connection.execute(query).fetchone()
     if row is None:
         raise RestoreValidationError("restored inventory is unreadable")
     return int(row[0])
@@ -249,7 +252,8 @@ def _prepare_target(target: Path) -> tuple[Path, bool]:
 
 
 def _read_verified_members(
-    backup_path: Path, inspection: BackupInspection
+    backup_path: Path,
+    inspection: BackupInspection,
 ) -> dict[str, bytes]:
     content = _read_regular_file(
         canonicalize_path(backup_path),
@@ -272,7 +276,9 @@ def _stage_state_restore(members: dict[str, bytes], staging: Path) -> int:
     except KeyError as exc:
         raise BackupIntegrityError("state backup payload is missing") from exc
     descriptor, name = tempfile.mkstemp(
-        prefix=".doll-restore-state-", suffix=".zip", dir=staging.parent
+        prefix=".doll-restore-state-",
+        suffix=".zip",
+        dir=staging.parent,
     )
     path = Path(name)
     try:
