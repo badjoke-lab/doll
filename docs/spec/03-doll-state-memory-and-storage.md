@@ -16,7 +16,7 @@ The objective is to ensure that user-controlled state remains:
 - versioned and migratable;
 - recoverable after failure;
 - compatible across Lite and Heavy profiles;
-- safe to back up without including secrets by accident.
+- structurally separate from secret values and safe to back up without accidental credential inclusion.
 
 ## 2. State categories
 
@@ -225,7 +225,11 @@ Initial sensitivity classes:
 - sensitive;
 - secret.
 
-`secret` records must not be passed to models or exported through normal state packages unless a future explicit secret-handling specification permits it.
+`secret` is a sensitivity label, not permission to persist a secret value. Ordinary Doll State records must not contain passwords, API keys, access tokens, private keys, recovery phrases, session cookies, authentication headers, or equivalent credential values.
+
+When doll needs to remember that a credential exists, state may contain only a non-secret `SecretReferenceRecord` under the external secret-store contract. A sensitivity class may still be `secret` when a record describes or governs a secret-bearing operation, but the record payload itself must remain non-secret.
+
+Secret values must not be passed to models, written to ordinary records, or exported through Doll State packages.
 
 ## 5. Core record types
 
@@ -440,7 +444,7 @@ Conversation storage policy must support:
 - configurable retention;
 - secret redaction in logs.
 
-Raw conversation content may be stored as files or structured records, but the format must be documented.
+Raw conversation content may be stored as files or structured records, but the format must be documented. Before durable storage, the conversation path must apply the accepted secret policy. Detected credential values must be rejected, omitted, or redacted rather than persisted as ordinary conversation state.
 
 ## 5.9 DocumentRecord
 
@@ -769,6 +773,49 @@ error_class
 rollback_status
 ```
 
+## 5.21 SecretReferenceRecord
+
+Represents a non-secret reference to a credential held by an operating-system or compatible external secret store. It does not contain the credential value.
+
+Minimum fields:
+
+```text
+reference_id
+credential_class
+store_adapter_class
+label
+status
+```
+
+Optional non-secret fields:
+
+```text
+provider_class
+allowed_operation_scope
+allowed_destination_scope
+created_at
+rotated_at
+revoked_at
+```
+
+A SecretReferenceRecord must not contain a password, token, key, cookie, recovery phrase, authentication header, reversible encoding, or value-derived reconstruction hint. Availability, lock, and user-presence state are reported through the external secret-store contract rather than inferred from a stored value.
+
+## 5.22 ConfirmedFactRecord
+
+Represents a user-confirmed durable fact. It must identify the trusted user-controlled confirmation path and may link to claims and evidence. A model, tool, document, website, import, or runtime cannot create a confirmed fact directly.
+
+## 5.23 ClaimRecord
+
+Represents an assertion that may be true or false. It retains origin, author or actor type, observation time where applicable, confidence, review state, and links to supporting or contradicting evidence. Repetition or model confidence does not promote a claim to a fact.
+
+## 5.24 EvidenceRecord
+
+Represents a source, observation, artifact, or record that supports, contradicts, or contextualizes a claim. It retains source identity, content hash or stable locator, acquisition method, instruction-origin class, and transformation provenance where applicable.
+
+## 5.25 InferenceRecord
+
+Represents a derived conclusion. It must link to the claims and evidence used, identify the deriving actor or method, record confidence and uncertainty, and remain distinct from a confirmed fact.
+
 ## 6. Doll State Package
 
 The Doll State Package is the portable representation of authoritative state.
@@ -798,6 +845,11 @@ doll-state-package/
     memories.jsonl
     projects.jsonl
     decisions.jsonl
+    secret-references.jsonl
+    confirmed-facts.jsonl
+    claims.jsonl
+    evidence.jsonl
+    inferences.jsonl
     conversations.jsonl
     documents.jsonl
     sources.jsonl
@@ -867,6 +919,8 @@ Suitable data:
 - permissions;
 - memory metadata and text;
 - projects and decisions;
+- non-secret secret references;
+- confirmed facts, claims, evidence, and inferences;
 - source and research metadata;
 - artifact metadata;
 - model and runtime manifests;
@@ -1045,7 +1099,11 @@ The system must not propose durable storage by default for:
 - health information unless explicitly requested;
 - third-party personal data inferred from documents.
 
-Detection is best-effort and cannot replace user review.
+Secret values must never become durable memory, even when the user explicitly requests ordinary memory storage. A credential needed by a later capability must remain in an external secret store and be represented only by a non-secret `SecretReferenceRecord`.
+
+Sensitive but non-secret personal information, including health information and third-party personal data, must not be proposed for durable storage by default and requires the applicable explicit user-controlled policy.
+
+Detection is best-effort and cannot replace schema restrictions, external secret storage, permission checks, or user review.
 
 ## 10.5 Memory retrieval transparency
 
@@ -1075,15 +1133,15 @@ Initial backup classes:
 
 ### 12.1 State backup
 
-Includes authoritative structured records and necessary manifests.
+Includes authoritative structured records and necessary manifests. It may include non-secret `SecretReferenceRecord` entries but must not include secret values.
 
 ### 12.2 Full workspace backup
 
-Includes authoritative records and authoritative files, excluding restricted assets unless selected.
+Includes authoritative records and authoritative files, excluding restricted assets unless selected. An unencrypted workspace backup must fail closed when ordinary state contains a secret value or violates the accepted secret policy.
 
 ### 12.3 Recovery backup
 
-Includes state, files, environment manifests, validation instructions, and selected restricted assets or references suitable for an Offline Recovery Kit.
+Includes state, files, environment manifests, validation instructions, and selected restricted assets or references suitable for an Offline Recovery Kit. A future encrypted recovery flow may include a separately exported external secret-store artifact only under a dedicated accepted specification; it must not reclassify secret values as ordinary Doll State.
 
 ### 12.4 Backup requirements
 
@@ -1095,6 +1153,7 @@ Every completed backup must include:
 - schema version;
 - state revision;
 - included and excluded categories;
+- secret-policy result and confirmation that no secret value is present in ordinary state payloads;
 - verification result.
 
 ## 13. Migration
@@ -1174,8 +1233,9 @@ Initial direction:
 
 - rely on operating-system disk encryption for normal workspace-at-rest protection;
 - support an optional standard encrypted archive format for exported backups later;
-- store cloud credentials, when cloud is implemented, in operating-system credential storage;
-- never write secrets to ordinary logs or state exports.
+- store every credential used by doll in an operating-system or compatible external secret store under the accepted contract;
+- store only non-secret references in ordinary Doll State;
+- never write secret values to ordinary records, logs, audit events, state exports, unencrypted backups, fixtures, diagnostics, or model context.
 
 Encryption implementation details belong in the security and platform specification.
 
@@ -1228,4 +1288,7 @@ This specification is acceptable when the later implementation can prove that:
 - imports cannot silently overwrite newer state;
 - automatic cleanup cannot delete authoritative data;
 - paths are portable across supported platforms;
-- a model cannot directly mutate state outside approved services.
+- a model cannot directly mutate state outside approved services;
+- ordinary Doll State cannot persist secret values and can retain only non-secret secret references;
+- confirmed facts, claims, evidence, and inferences remain distinguishable and retain provenance;
+- instruction-origin metadata survives persistence and export where applicable.

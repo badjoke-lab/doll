@@ -10,17 +10,17 @@
 
 ## Included source documents
 
-- `docs/spec/00-index.md` — SHA-256 `ee3682b4c6ff10c39cdd0eddd5c8b29aec908bfbfa9e4be89d90ca01e32ca642`
-- `docs/spec/00-decisions-baseline.md` — SHA-256 `e2b55bd08610b8f3a696ef43f19502cad25de26e2c8aac3a442b8cf5e4a8439d`
-- `docs/spec/01-product-and-continuity-contract.md` — SHA-256 `88c123e541d9906938be673f2c4571b890bf7626b7cc637f113ff39185f2c932`
-- `docs/spec/02-architecture-and-data-flow.md` — SHA-256 `fb8d83f910d56dc41884362c1f8cd8e4eb0dae329cdce485b04e47b4bb967d62`
-- `docs/spec/03-doll-state-memory-and-storage.md` — SHA-256 `bcf88145d99c53feb47baceec8419449c8289e6a492ee574dde6a46c60633c76`
-- `docs/spec/04-security-permissions-and-threat-model.md` — SHA-256 `64a5a131d5cdf1610157fb0e0d3b9aba447c35e40410e1b49d538632aa5316d2`
+- `docs/spec/00-index.md` — SHA-256 `d1274b188c25d264cf67256098ac420479b69f68dc24430800de6e2b5907531a`
+- `docs/spec/00-decisions-baseline.md` — SHA-256 `114f45e16ee5ef5788d15a234653a6af2e2e23aba10c7951ec32144f61f4d833`
+- `docs/spec/01-product-and-continuity-contract.md` — SHA-256 `12cd88ee22046833795e6ba265978cb4508e0042e72e791350cde1bd1f74063f`
+- `docs/spec/02-architecture-and-data-flow.md` — SHA-256 `9698b80087aee29a37b826500e975c1e8576226e0cff797a4b931d283412abcf`
+- `docs/spec/03-doll-state-memory-and-storage.md` — SHA-256 `92e9c2dbd29123eb057a590821ed06702e6938d2c99421510e59ffb9af2656bd`
+- `docs/spec/04-security-permissions-and-threat-model.md` — SHA-256 `fb40578f529840d00dbf3cf9534824d5f15ccc36d20041f945bf42b5acbe9566`
 - `docs/spec/05-model-vault-lifecycle-evaluation.md` — SHA-256 `3011788c55be9232db98bf932d8c859c88ed3d3bc3e603f0d4c3c709f2eb4268`
 - `docs/spec/06-platform-install-update-and-recovery.md` — SHA-256 `b73b6106d28b3fcb740b6d2f8b5dee4935a7a998537e5858395a85170ce85072`
-- `docs/spec/07-release-scope-and-profiles.md` — SHA-256 `2b4c0bdbd0ae8a7d707e35117378b0803426cf401aaf5bc4e048a3ef5ee38605`
-- `docs/spec/08-acceptance-and-continuity-tests.md` — SHA-256 `41a5d3277912ceb1c6e297c99dc858e6ca1ded413ee907ab07a39196a6f785c1`
-- `docs/spec/09-development-roadmap.md` — SHA-256 `e2ed621a451ac00b74ed0ded9d45cfe007f2d90cf638e1732e75074f10100813`
+- `docs/spec/07-release-scope-and-profiles.md` — SHA-256 `c1b7d0be3dccac6df47e07e3e8aa286f91875bc2c6e44882e648654a42a294e3`
+- `docs/spec/08-acceptance-and-continuity-tests.md` — SHA-256 `1ae9b70cf28257b35a30238bdc46c2caea93dbd17fdf8b516ff708c9e208a698`
+- `docs/spec/09-development-roadmap.md` — SHA-256 `51f312ba90ef9fbeef06f91deb9b470f6a2adc251966a4c58bd50f84b994d7ef`
 
 ---
 
@@ -34,57 +34,75 @@
 
 This directory contains the normative product and engineering specification for doll.
 
-The source files under `docs/spec/` are the maintainable source of truth. A combined reading copy may later be generated from these files, but the generated copy must not be edited directly.
+The source files under `docs/spec/` are the maintainable source of truth. `DOLL_FINAL_SPEC.md` is the deterministic combined reading copy and must not be edited directly.
 
-## 2. Normative order
+## 2. Governing pillars
+
+The specification is governed by two co-equal architectural pillars:
+
+1. **Continuity:** user-owned state must survive model, provider, interface, machine, network, and project failure.
+2. **Safety boundary:** models, tools, runtimes, and external content must not gain undeclared authority over state, secrets, the operating system, accounts, or external services.
+
+Implementation must prove continuity without a model, then complete and acceptance-test the safety boundary, then connect a model runtime.
+
+## 3. Normative order
 
 Read and combine the specification in this order:
 
-1. `00-index.md` — document map and requirement language;
+1. `00-index.md` — document map, governing pillars, and requirement language;
 2. `00-decisions-baseline.md` — accepted, rejected, and deferred baseline decisions;
 3. `01-product-and-continuity-contract.md` — product identity and Continuity Contract;
 4. `02-architecture-and-data-flow.md` — service boundaries, adapters, trust boundaries, and flows;
 5. `03-doll-state-memory-and-storage.md` — authoritative state, memory, storage, export, and migration;
-6. `04-security-permissions-and-threat-model.md` — security boundaries, permissions, and threats;
+6. `04-security-permissions-and-threat-model.md` — security boundary, secrets, trust, instructions, permissions, capabilities, and threats;
 7. `05-model-vault-lifecycle-evaluation.md` — model ownership, validation, evaluation, promotion, and rollback;
 8. `06-platform-install-update-and-recovery.md` — platform, install, update, backup, restore, and recovery;
 9. `07-release-scope-and-profiles.md` — release boundaries and Lite/Heavy scope;
-10. `08-acceptance-and-continuity-tests.md` — evidence required for product claims and release gates;
+10. `08-acceptance-and-continuity-tests.md` — evidence required for product claims and phase or release gates;
 11. `09-development-roadmap.md` — implementation sequence and pull-request plan.
 
 Accepted architecture decisions under `docs/decisions/` explain why major constraints were selected. They are normative when their status is accepted and they do not conflict with a later accepted specification change.
 
-## 3. Requirement language
+The accepted decision set includes:
 
-The following terms are normative:
+- `ADR-001-local-complete-cloud-optional.md`;
+- `ADR-002-default-deny-capability-broker.md`;
+- `ADR-003-state-independent-of-model-and-ui.md`;
+- `ADR-004-release-gates-require-evidence.md`;
+- `ADR-005-safety-boundary-before-model-execution.md`.
+
+## 4. Requirement language
+
+The following terms are normative.
 
 The terms are interpreted case-insensitively in specification set 0.1; future changes SHOULD use uppercase forms for clarity.
 
-
-- **MUST / MUST NOT:** mandatory for the applicable release or claim;
+- **MUST / MUST NOT:** mandatory for the applicable release, phase gate, or claim;
 - **SHOULD / SHOULD NOT:** expected unless a documented reason justifies an exception;
 - **MAY:** optional;
 - **DEFERRED:** intentionally outside the current release boundary;
 - **EXPERIMENTAL:** available without a stable compatibility promise;
-- **BLOCKING TEST:** failure prevents the applicable release or claim;
+- **BLOCKING TEST:** failure prevents the applicable phase, release, or claim;
 - **ADVISORY TEST:** failure requires documentation but does not automatically block release.
 
 Ordinary descriptive language is not automatically a mandatory requirement unless it is tied to an acceptance criterion, decision, or release gate.
 
-## 4. Conflict resolution
+## 5. Conflict resolution
 
 When accepted documents conflict, use this order:
 
 1. the most recent explicit decision changing the earlier requirement;
-2. the release-specific scope and acceptance criteria;
+2. the release-specific or phase-specific scope and acceptance criteria;
 3. the Continuity Contract;
-4. security and data-integrity requirements;
+4. security, secret-separation, trust, and data-integrity requirements;
 5. architecture and implementation direction;
 6. roadmap estimates.
 
 A conflict must be resolved in a dedicated pull request. Implementations must not silently choose one interpretation.
 
-## 5. Status meanings
+ADR-005 changes the implementation sequence so that the complete safety boundary and its acceptance gate precede model execution. Earlier roadmap text that placed model integration first is superseded by the accepted roadmap carrying that decision.
+
+## 6. Status meanings
 
 - **Draft for acceptance:** proposed in an open pull request;
 - **Accepted:** merged into the default branch and not superseded;
@@ -94,7 +112,7 @@ A conflict must be resolved in a dedicated pull request. Implementations must no
 
 Merging a draft specification into `main` changes it to accepted unless the document explicitly states otherwise.
 
-## 6. Claim discipline
+## 7. Claim discipline
 
 Public documentation and release notes must distinguish:
 
@@ -106,15 +124,13 @@ Public documentation and release notes must distinguish:
 - experimental;
 - stable for the named release.
 
-A feature being present in source code does not prove that the feature satisfies its Continuity Contract or security requirements.
+A feature being present in source code does not prove that it satisfies its Continuity Contract or security requirements.
 
-## 7. Generated combined specification
+A model responding successfully does not prove that secret isolation, instruction authority, capability enforcement, prompt-injection resistance, or high-risk confirmation are correct.
 
-The project will later add a deterministic build step that concatenates accepted source files into a reading copy such as:
+## 8. Generated combined specification
 
-```text
-DOLL_FINAL_SPEC.md
-```
+`DOLL_FINAL_SPEC.md` is generated from the normative source order defined by `scripts/build_final_spec.py`.
 
 The generator must:
 
@@ -126,7 +142,19 @@ The generator must:
 - mark the output as generated;
 - be checked in CI.
 
-## 8. Non-normative material
+Regenerate with:
+
+```text
+python scripts/build_final_spec.py
+```
+
+Check with:
+
+```text
+python scripts/build_final_spec.py --check
+```
+
+## 9. Non-normative material
 
 The following are non-normative unless promoted through an accepted specification or decision:
 
@@ -137,9 +165,9 @@ The following are non-normative unless promoted through an accepted specificatio
 - screenshots and design mockups;
 - benchmark experiments without an accepted evaluation definition;
 - personal planning documents;
-- generated summaries.
+- generated summaries other than the deterministic combined specification as a reading copy.
 
-## 9. Change requirements
+## 10. Change requirements
 
 A specification-changing pull request SHOULD include:
 
@@ -149,10 +177,10 @@ A specification-changing pull request SHOULD include:
 - migration effects;
 - security and privacy effects;
 - acceptance-test changes;
-- release-scope changes;
+- phase and release-scope changes;
 - documentation updates.
 
-A change that weakens local completeness, state portability, workspace confinement, explicit approval, or recoverability requires a dedicated architecture decision.
+A change that weakens local completeness, state portability, workspace confinement, secret separation, trust provenance, instruction-origin enforcement, explicit approval, high-risk confirmation, or recoverability requires a dedicated architecture decision.
 <!-- END SOURCE: docs/spec/00-index.md -->
 
 ---
@@ -272,7 +300,7 @@ The public repository must not contain:
 - user documents;
 - private research caches;
 - generated personal artifacts;
-- API keys or secrets;
+- API keys, credential values, or other secrets;
 - model weights;
 - private datasets;
 - training checkpoints;
@@ -410,7 +438,8 @@ The user must retain a separate, explicit management path for deleting their own
 ### Accepted rules
 
 - conversation content must not automatically become training data;
-- sensitive personal or secret information must not become durable memory by default;
+- secret values must never become durable memory; doll may retain only a non-secret reference to an externally stored credential;
+- sensitive but non-secret personal information must not become durable memory by default;
 - the user must be able to inspect, edit, export, and delete confirmed memory;
 - memory passed to a model must be scoped to the current need.
 
@@ -454,6 +483,7 @@ Heavy code may be designed and tested with mocks before real Heavy hardware is a
 - Provider-specific support is implemented only after the local system is complete.
 - Any later cloud use must be opt-in and auditable.
 - Original files, long-term memory, and full conversation history must not be sent by default.
+- Secret values remain outside ordinary Doll State and must not be exposed to models; later credential use must pass through the accepted external secret-store and credential-broker boundary.
 - The user must be shown the destination and outbound content before transmission unless they explicitly configure a narrower allowlisted mode.
 
 ## 16. Mobile policy
@@ -481,15 +511,17 @@ A user's own remote PC running doll is distinct from a third-party cloud AI prov
 
 ### First implementation objective
 
-The first usable proof is not a full general-purpose assistant. It is a minimum continuity demonstration capable of proving that:
+The first usable proof is not a chatbot or a full general-purpose assistant. It is a model-independent continuity demonstration capable of proving that:
 
-- the system starts locally;
-- local conversation works;
-- durable state is separate from the model and UI;
-- a model can be replaced without deleting state;
-- backup can be restored into an empty workspace;
-- the system can operate without network access or cloud credentials;
-- the system refuses to write outside its workspace.
+- the durable core starts locally without network access, cloud credentials, or a model runtime;
+- explicit durable state is separate from every model and UI;
+- state can be exported and imported into an empty compatible target;
+- verified state and workspace backups can be restored into empty compatible targets;
+- restored identity, revision, records, links, audit history, and artifact bytes validate in a fresh process;
+- failed import or restore preserves the last known good state;
+- the system refuses unsafe archive paths and writes outside its workspace.
+
+Local conversation and model replacement become a separate proof only after the model-independent safety boundary has passed its acceptance gate.
 
 ## 18. Specification source and generated document
 
@@ -611,7 +643,10 @@ The following categories are part of the durable doll state when enabled:
 - model manifests and validation history;
 - runtime manifests;
 - backup and migration metadata;
+- non-secret references to credentials held by an external secret store;
 - optional identity, personality, relationship, voice, or appearance settings.
+
+Secret values are not durable Doll State. Memory, portability, and ordinary backups must remain structurally separate from credential custody.
 
 Durable state must be exportable independently of a specific model, runtime, user interface, or cloud provider.
 
@@ -660,16 +695,18 @@ Core local use must not require creating or maintaining a doll account, vendor a
 
 #### C-03: Offline startup
 
-After required local dependencies and at least one compatible local model have been installed, the system must be able to start without internet access.
+The durable core must be able to start without internet access, cloud credentials, or an installed model runtime.
 
-Offline mode must allow, at minimum for the applicable release profile:
+Before model integration, offline mode must allow at minimum:
 
 - access to existing durable state;
-- local conversation;
-- local document access;
-- artifact access and creation;
-- backup inspection and local restoration;
-- model and runtime inventory inspection.
+- state export and import inspection;
+- artifact inspection;
+- backup inspection, verification, and local restoration;
+- post-restore validation;
+- audit and doctor inspection.
+
+After the safety gate and local-model phase, an applicable local AI release must additionally provide local conversation and model or runtime inventory without internet access.
 
 Features that inherently require current network data must clearly report that they are unavailable rather than failing the whole system.
 
@@ -850,16 +887,19 @@ At minimum, the test plan will cover applicable scenarios such as:
 
 - all cloud credentials removed;
 - network disabled;
+- every model adapter absent or disabled;
 - preferred UI absent;
-- active model unavailable;
-- fallback model selected;
 - optional dependency missing;
 - state restored into an empty workspace;
+- fresh-process post-restore validation;
 - migration interrupted or rejected;
 - workspace moved to a different supported operating system;
 - write attempt outside the workspace;
-- model distribution source unreachable;
+- after local AI exists, active model unavailable and fallback selected;
+- after Model Vault work exists, model distribution source unreachable;
 - previous stable version restored after a failed update.
+
+The Phase 2 continuity gate is model-independent. Model loss, fallback, and replacement tests become additional gates only after the Phase 3 safety boundary and Phase 4 local AI implementation.
 
 Continuity is not demonstrated by normal startup alone. It is demonstrated by surviving controlled loss and replacement.
 
@@ -899,32 +939,52 @@ A system that preserves state but can silently delete, upload, purchase, post, t
 
 The security specification must therefore define:
 
-- capability allowlists;
+- capability allowlists and risk tiers;
 - workspace boundaries;
 - explicit outbound network behavior;
+- memory and secret-value separation;
+- external secret storage and bounded credential use;
+- confirmed fact, claim, evidence, and inference separation;
+- instruction origin and authority ordering;
 - audit records;
 - safe handling of untrusted documents and web content;
+- mandatory fresh confirmation for high-risk operations;
 - user-controlled deletion separate from autonomous deletion;
 - recovery from failed or malicious operations.
+
+The complete model-independent safety boundary must pass its acceptance gate before any model execution path is introduced.
 
 ## 14. Product success conditions
 
 ### 14.1 First continuity proof
 
-The first implementation milestone succeeds when accepted tests demonstrate that a user can:
+The first continuity milestone is model-independent. It succeeds when accepted tests demonstrate that a user can:
 
 1. initialize a private workspace;
-2. run the local system without cloud credentials;
-3. converse through a local model;
-4. create and retrieve explicit durable state;
-5. read a local document and create a local artifact;
-6. replace the active local model without deleting durable state;
-7. create a backup;
-8. restore the backup into an empty compatible workspace;
-9. start and use the restored environment offline;
-10. confirm that writes outside the workspace are refused.
+2. start and inspect the durable core without cloud credentials, network access, or a model runtime;
+3. create and retrieve explicit durable state;
+4. create and verify a Doll State package;
+5. import the package into an empty compatible target;
+6. create and verify state and workspace backups;
+7. restore each supported backup kind into an empty compatible target;
+8. validate restored identity, revision, records, links, audit history, and artifact bytes in a fresh process;
+9. preserve the last known good state when import, backup, or restore fails;
+10. confirm that writes outside the workspace and unsafe archive paths are refused.
 
-### 14.2 Lite v1.0 direction
+Passing this milestone does not claim that model execution, local conversation, or tool use is implemented.
+
+### 14.2 First local AI proof
+
+After the model-independent safety acceptance gate passes, the first local AI milestone succeeds when accepted tests demonstrate that:
+
+1. a replaceable local runtime adapter can execute without cloud inference;
+2. model context contains only state allowed by secret, trust, origin, and permission policy;
+3. a model cannot directly mutate state or invoke side effects;
+4. local conversation works offline;
+5. the active model can be replaced or rolled back without losing durable state;
+6. disabling every model adapter leaves continuity and recovery operations available.
+
+### 14.3 Lite v1.0 direction
 
 Lite v1.0 is intended to add a useful lower-resource general-purpose environment, including accepted subsets of:
 
@@ -940,7 +1000,7 @@ Lite v1.0 is intended to add a useful lower-resource general-purpose environment
 
 The exact release boundary belongs in the release-scope specification.
 
-### 14.3 Heavy v1.0 direction
+### 14.4 Heavy v1.0 direction
 
 Heavy v1.0 is intended to add accepted subsets of:
 
@@ -997,11 +1057,12 @@ No continuity, platform, model, recovery, or safety claim may be promoted as com
 
 This document defines the architectural boundaries required to make doll a personal AI continuity system rather than a collection of tightly coupled AI features.
 
-The architecture must preserve three properties:
+The architecture must preserve four properties:
 
 1. durable user state remains independent of any one model, runtime, or UI;
 2. optional components can disappear without making the local core unusable;
-3. failures, migrations, and degraded operation remain observable and recoverable.
+3. failures, migrations, and degraded operation remain observable and recoverable;
+4. models, tools, runtimes, and external content remain behind a model-independent safety boundary.
 
 ## 2. Architectural principles
 
@@ -1014,9 +1075,11 @@ The durable core owns:
 - authoritative state;
 - memory records;
 - project records;
-- source and research records;
+- source, claim, evidence, and inference records;
 - artifact indexes;
-- permission policy;
+- non-secret secret references;
+- instruction-origin metadata;
+- permission and confirmation policy;
 - audit events;
 - migration state;
 - backup and restore metadata.
@@ -1051,13 +1114,17 @@ Models never receive direct operating-system authority.
 
 All tool requests pass through a capability boundary that validates:
 
-- the requesting session;
-- the tool name;
+- the requesting session and instruction origin;
+- the capability ID and version;
 - the input schema;
+- the registered risk tier;
 - the allowed path scope;
-- the network policy;
-- the required user approval;
-- the expected side effects.
+- the network and destination policy;
+- the required permission and confirmation;
+- the expected side effects;
+- the credential class or non-secret reference where applicable.
+
+Credential-bearing operations additionally pass through the Credential Broker. The model never receives the stored credential value.
 
 ### 2.5 Fail closed
 
@@ -1080,14 +1147,17 @@ Doll Core
   |-- State Service
   |-- Memory Service
   |-- Project and Artifact Service
-  |-- Research and Source Service
+  |-- Research, Claim, and Evidence Service
+  |-- Instruction Origin / Context Service
   |-- Capability Broker
+  |-- Credential Broker
   |-- Model Router
   |-- Backup / Migration / Recovery
   |-- Audit Service
   |
-  +--> Runtime Adapters --> Local models
+  +--> Runtime Adapters --> Local models, only after the safety gate
   +--> Tool Adapters ----> Local files, search, OCR, audio, etc.
+  +--> Secret Store Adapter --> operating-system or compatible external store
   +--> Optional Cloud Gateway --> external models, only when enabled
   |
   v
@@ -1215,6 +1285,8 @@ It owns:
 
 A model may propose memory. It may not silently convert a suggestion into confirmed memory.
 
+The Memory Service must reject secret values from ordinary memory records. A credential may be represented only by a non-secret reference managed under the external secret-store contract.
+
 ## 4.6 Project and Artifact Service
 
 This service links durable state to user work.
@@ -1233,22 +1305,24 @@ It owns:
 
 Generated files must be created inside approved workspace locations unless the user explicitly exports them elsewhere through a user-controlled path.
 
-## 4.7 Research and Source Service
+## 4.7 Research, Claim, and Evidence Service
 
-This service records the provenance of externally acquired information.
+This service records the provenance and truth status of externally acquired or derived information.
 
 It owns:
 
-- source URLs;
+- source URLs and identifiers;
 - retrieval timestamps;
-- source type;
+- source type and acquisition method;
+- instruction-origin and authority metadata;
 - local cache references;
 - extracted text references;
+- claim, evidence, inference, and confirmed-fact relationships;
 - citation anchors;
 - research sessions;
-- confidence or verification metadata where later defined.
+- confidence, uncertainty, and review state.
 
-Web retrieval is a network capability. It must be explicit and auditable.
+Web retrieval is a network capability. It must be explicit and auditable. Retrieved content remains data rather than authority and cannot grant permissions, confirmation, or policy changes.
 
 ## 4.8 Capability Broker
 
@@ -1261,9 +1335,11 @@ Each capability definition must include:
 - input schema;
 - output schema;
 - permission class;
+- risk tier;
 - path constraints;
-- network behavior;
-- approval requirement;
+- network and destination behavior;
+- approval and confirmation requirement;
+- credential class where applicable;
 - audit behavior;
 - expected side effects;
 - cancellation behavior;
@@ -1280,6 +1356,8 @@ Initial safe capability classes:
 - create backup;
 - inspect model or runtime status.
 
+Unknown, malformed, risk-downgraded, or materially changed requests fail closed. High-risk confirmation is fresh and operation-specific; confirmation cannot make a prohibited capability available.
+
 Initial excluded capability classes:
 
 - unrestricted shell;
@@ -1290,6 +1368,20 @@ Initial excluded capability classes:
 - external upload;
 - account modification;
 - financial transaction.
+
+## 4.8.1 Credential Broker
+
+The Credential Broker is the sole normal path for a capability to ask an external secret store to use a credential.
+
+It accepts a non-secret `SecretReferenceRecord`, exact capability and operation identity, destination, scope, risk tier, and confirmation state. It may use the credential only inside the bounded operation and returns a structured operation result rather than the stored value.
+
+It must fail closed when the reference, destination, permission, confirmation, store availability, user presence, timeout, or audit requirement is invalid. Secret values must not appear in model context, ordinary state, logs, audit, command strings, temporary files, or normal errors.
+
+## 4.8.2 Instruction Origin and Context Service
+
+This service preserves the origin and authority class of system policy, current user instruction, durable policy, user confirmation, external content, tool results, and model proposals.
+
+It assembles context without collapsing untrusted content into trusted instructions, excludes secret values, preserves claim and evidence labels, and defaults unknown origin to the least-authoritative class.
 
 ## 4.9 Model Router
 
@@ -1356,7 +1448,8 @@ Any future implementation must provide:
 
 - explicit provider configuration;
 - outbound content preview;
-- secret storage through operating-system credential facilities;
+- credential use through the accepted external secret-store and Credential Broker boundary;
+- no stored credential value exposed to a model or gateway caller;
 - redaction and sensitivity checks;
 - cost and token estimates where possible;
 - audit records;
@@ -1435,7 +1528,11 @@ Instructions embedded in web pages, PDFs, images, documents, or retrieved text m
 
 ## 5.5 Optional tools
 
-OCR, audio, video, browser, and other optional tools are separate trust boundaries. Their absence or failure must disable only the affected capability.
+OCR, audio, video, browser, and other optional tools are separate trust boundaries. Their absence or failure must disable only the affected capability. Returned content remains untrusted and retains instruction-origin metadata.
+
+## 5.6 External secret store
+
+The external secret store is trusted only for the narrow credential-storage and retrieval contract implemented by its adapter. It is not ordinary Doll State. Its absence, lock, denial, or failure must block only the credential-bearing operation and must not prevent non-secret core startup or recovery.
 
 ## 6. Data flow patterns
 
@@ -1645,24 +1742,37 @@ scripts/
 
 This is a directional structure, not permission to create empty modules before their specifications are accepted.
 
-## 11. Initial implementation slice
+## 11. Initial implementation slices
 
-The first implementation after specification acceptance should contain only the architecture required to prove continuity:
+The first implementation slice contains only the architecture required to prove model-independent continuity:
 
 - workspace initialization;
 - workspace boundary enforcement;
-- schema version record;
+- schema version and revision records;
 - minimal state repository;
-- minimal confirmed-memory record;
-- minimal project or decision record;
-- artifact metadata and file creation inside workspace;
-- backup creation and restoration;
-- model adapter interface;
-- Ollama adapter;
-- manual active-model binding;
-- local API or CLI conversation path;
+- confirmed memory, preference, policy, permission, project, decision, and artifact records;
+- Doll State package export and empty-target import;
+- state and workspace backup creation, verification, empty-target restoration, and fresh-process validation;
 - audit record creation;
-- offline and replacement tests.
+- offline, model-absent, failure-preservation, and path-safety tests.
+
+The second architectural slice implements the complete model-independent safety boundary:
+
+- secret classification, detection, redaction, and secret-safe audit;
+- external secret-store contract and Credential Broker;
+- confirmed fact, claim, evidence, and inference records;
+- instruction-origin and untrusted-content boundary;
+- prompt-injection defense outside model authority;
+- capability taxonomy, risk tiers, and mandatory high-risk confirmation;
+- blocking safety acceptance tests.
+
+Only after those slices pass their gates may the architecture add:
+
+- a model adapter interface;
+- an Ollama adapter;
+- manual active-model binding;
+- a local API or CLI conversation path;
+- offline model execution and replacement tests.
 
 Web research, OCR, audio, video, cloud, mobile, and unrestricted automation are later slices.
 
@@ -1671,13 +1781,17 @@ Web research, OCR, audio, video, cloud, mobile, and unrestricted automation are 
 This architecture specification is acceptable when later detailed specifications can define implementation without violating these conditions:
 
 - no critical state is owned only by Open WebUI, Ollama, or another adapter;
-- no model receives direct unrestricted operating-system authority;
+- no model execution path exists before the safety acceptance gate;
+- no model receives direct unrestricted operating-system, state, secret, permission, confirmation, network, process, or audit authority;
+- ordinary Doll State stores non-secret credential references rather than secret values;
+- external content remains data rather than instruction;
 - local operation has no mandatory cloud path;
 - backup and restore are first-class services;
 - API, CLI, and UI remain separate layers;
 - Lite and Heavy share one durable state model;
 - optional dependencies can be absent without blocking core startup;
-- all side effects are attributable to a capability and audit event;
+- all side effects are attributable to a versioned capability, risk tier, permission or confirmation decision, and audit event;
+- credential-bearing operations return bounded results without exposing stored values;
 - model replacement leaves durable state intact.
 <!-- END SOURCE: docs/spec/02-architecture-and-data-flow.md -->
 
@@ -1702,7 +1816,7 @@ The objective is to ensure that user-controlled state remains:
 - versioned and migratable;
 - recoverable after failure;
 - compatible across Lite and Heavy profiles;
-- safe to back up without including secrets by accident.
+- structurally separate from secret values and safe to back up without accidental credential inclusion.
 
 ## 2. State categories
 
@@ -1911,7 +2025,11 @@ Initial sensitivity classes:
 - sensitive;
 - secret.
 
-`secret` records must not be passed to models or exported through normal state packages unless a future explicit secret-handling specification permits it.
+`secret` is a sensitivity label, not permission to persist a secret value. Ordinary Doll State records must not contain passwords, API keys, access tokens, private keys, recovery phrases, session cookies, authentication headers, or equivalent credential values.
+
+When doll needs to remember that a credential exists, state may contain only a non-secret `SecretReferenceRecord` under the external secret-store contract. A sensitivity class may still be `secret` when a record describes or governs a secret-bearing operation, but the record payload itself must remain non-secret.
+
+Secret values must not be passed to models, written to ordinary records, or exported through Doll State packages.
 
 ## 5. Core record types
 
@@ -2126,7 +2244,7 @@ Conversation storage policy must support:
 - configurable retention;
 - secret redaction in logs.
 
-Raw conversation content may be stored as files or structured records, but the format must be documented.
+Raw conversation content may be stored as files or structured records, but the format must be documented. Before durable storage, the conversation path must apply the accepted secret policy. Detected credential values must be rejected, omitted, or redacted rather than persisted as ordinary conversation state.
 
 ## 5.9 DocumentRecord
 
@@ -2455,6 +2573,49 @@ error_class
 rollback_status
 ```
 
+## 5.21 SecretReferenceRecord
+
+Represents a non-secret reference to a credential held by an operating-system or compatible external secret store. It does not contain the credential value.
+
+Minimum fields:
+
+```text
+reference_id
+credential_class
+store_adapter_class
+label
+status
+```
+
+Optional non-secret fields:
+
+```text
+provider_class
+allowed_operation_scope
+allowed_destination_scope
+created_at
+rotated_at
+revoked_at
+```
+
+A SecretReferenceRecord must not contain a password, token, key, cookie, recovery phrase, authentication header, reversible encoding, or value-derived reconstruction hint. Availability, lock, and user-presence state are reported through the external secret-store contract rather than inferred from a stored value.
+
+## 5.22 ConfirmedFactRecord
+
+Represents a user-confirmed durable fact. It must identify the trusted user-controlled confirmation path and may link to claims and evidence. A model, tool, document, website, import, or runtime cannot create a confirmed fact directly.
+
+## 5.23 ClaimRecord
+
+Represents an assertion that may be true or false. It retains origin, author or actor type, observation time where applicable, confidence, review state, and links to supporting or contradicting evidence. Repetition or model confidence does not promote a claim to a fact.
+
+## 5.24 EvidenceRecord
+
+Represents a source, observation, artifact, or record that supports, contradicts, or contextualizes a claim. It retains source identity, content hash or stable locator, acquisition method, instruction-origin class, and transformation provenance where applicable.
+
+## 5.25 InferenceRecord
+
+Represents a derived conclusion. It must link to the claims and evidence used, identify the deriving actor or method, record confidence and uncertainty, and remain distinct from a confirmed fact.
+
 ## 6. Doll State Package
 
 The Doll State Package is the portable representation of authoritative state.
@@ -2484,6 +2645,11 @@ doll-state-package/
     memories.jsonl
     projects.jsonl
     decisions.jsonl
+    secret-references.jsonl
+    confirmed-facts.jsonl
+    claims.jsonl
+    evidence.jsonl
+    inferences.jsonl
     conversations.jsonl
     documents.jsonl
     sources.jsonl
@@ -2553,6 +2719,8 @@ Suitable data:
 - permissions;
 - memory metadata and text;
 - projects and decisions;
+- non-secret secret references;
+- confirmed facts, claims, evidence, and inferences;
 - source and research metadata;
 - artifact metadata;
 - model and runtime manifests;
@@ -2731,7 +2899,11 @@ The system must not propose durable storage by default for:
 - health information unless explicitly requested;
 - third-party personal data inferred from documents.
 
-Detection is best-effort and cannot replace user review.
+Secret values must never become durable memory, even when the user explicitly requests ordinary memory storage. A credential needed by a later capability must remain in an external secret store and be represented only by a non-secret `SecretReferenceRecord`.
+
+Sensitive but non-secret personal information, including health information and third-party personal data, must not be proposed for durable storage by default and requires the applicable explicit user-controlled policy.
+
+Detection is best-effort and cannot replace schema restrictions, external secret storage, permission checks, or user review.
 
 ## 10.5 Memory retrieval transparency
 
@@ -2761,15 +2933,15 @@ Initial backup classes:
 
 ### 12.1 State backup
 
-Includes authoritative structured records and necessary manifests.
+Includes authoritative structured records and necessary manifests. It may include non-secret `SecretReferenceRecord` entries but must not include secret values.
 
 ### 12.2 Full workspace backup
 
-Includes authoritative records and authoritative files, excluding restricted assets unless selected.
+Includes authoritative records and authoritative files, excluding restricted assets unless selected. An unencrypted workspace backup must fail closed when ordinary state contains a secret value or violates the accepted secret policy.
 
 ### 12.3 Recovery backup
 
-Includes state, files, environment manifests, validation instructions, and selected restricted assets or references suitable for an Offline Recovery Kit.
+Includes state, files, environment manifests, validation instructions, and selected restricted assets or references suitable for an Offline Recovery Kit. A future encrypted recovery flow may include a separately exported external secret-store artifact only under a dedicated accepted specification; it must not reclassify secret values as ordinary Doll State.
 
 ### 12.4 Backup requirements
 
@@ -2781,6 +2953,7 @@ Every completed backup must include:
 - schema version;
 - state revision;
 - included and excluded categories;
+- secret-policy result and confirmation that no secret value is present in ordinary state payloads;
 - verification result.
 
 ## 13. Migration
@@ -2860,8 +3033,9 @@ Initial direction:
 
 - rely on operating-system disk encryption for normal workspace-at-rest protection;
 - support an optional standard encrypted archive format for exported backups later;
-- store cloud credentials, when cloud is implemented, in operating-system credential storage;
-- never write secrets to ordinary logs or state exports.
+- store every credential used by doll in an operating-system or compatible external secret store under the accepted contract;
+- store only non-secret references in ordinary Doll State;
+- never write secret values to ordinary records, logs, audit events, state exports, unencrypted backups, fixtures, diagnostics, or model context.
 
 Encryption implementation details belong in the security and platform specification.
 
@@ -2914,7 +3088,10 @@ This specification is acceptable when the later implementation can prove that:
 - imports cannot silently overwrite newer state;
 - automatic cleanup cannot delete authoritative data;
 - paths are portable across supported platforms;
-- a model cannot directly mutate state outside approved services.
+- a model cannot directly mutate state outside approved services;
+- ordinary Doll State cannot persist secret values and can retain only non-secret secret references;
+- confirmed facts, claims, evidence, and inferences remain distinguishable and retain provenance;
+- instruction-origin metadata survives persistence and export where applicable.
 <!-- END SOURCE: docs/spec/03-doll-state-memory-and-storage.md -->
 
 ---
@@ -2924,39 +3101,70 @@ This specification is acceptable when the later implementation can prove that:
 
 **Status:** Accepted for implementation  
 **Specification version:** 0.1  
-**Depends on:** `00-decisions-baseline.md`, `01-product-and-continuity-contract.md`, `02-architecture-and-data-flow.md`, `03-doll-state-memory-and-storage.md`
+**Depends on:** `00-decisions-baseline.md`, `01-product-and-continuity-contract.md`, `02-architecture-and-data-flow.md`, `03-doll-state-memory-and-storage.md`, `ADR-002-default-deny-capability-broker.md`, `ADR-005-safety-boundary-before-model-execution.md`
 
 ## 1. Purpose
 
-This document defines the minimum security model required for doll to preserve user state without giving models unrestricted authority over the user's computer, network, accounts, or data.
+This document defines the minimum security model required for doll to preserve user-owned state without giving models, runtimes, tools, external content, or interfaces unrestricted authority over the user's computer, network, accounts, secrets, or data.
 
-The security design follows five principles:
+The security design follows these principles:
 
 1. default deny;
 2. least privilege;
 3. explicit user control;
 4. local authority;
-5. recoverable failure.
+5. recoverable failure;
+6. memory and secret separation;
+7. provenance and trust separation;
+8. external content is data, not authority;
+9. high-risk operations require fresh exact confirmation.
 
-A local model is not automatically trusted. A cloud model is not automatically trusted. Retrieved documents, websites, plugins, runtimes, and generated tool arguments are not automatically trusted.
+A local model is not automatically trusted. A cloud model is not automatically trusted. Retrieved documents, websites, images, media transcripts, OCR output, imports, plugins, runtimes, tools, generated arguments, and model output are not automatically trusted.
+
+Continuity and the safety boundary are co-equal architectural pillars. The complete model-independent safety boundary defined by this specification must be implemented and acceptance-tested before any model execution path is introduced.
 
 ## 2. Security objectives
 
-The initial implementation must aim to protect:
+The implementation must protect:
 
 - the confidentiality of private workspace data;
 - the integrity of authoritative state;
 - the availability of the last known good local state;
-- the user's control over external communication;
+- the separation of ordinary state from secret values;
+- the user's control over credential use and external communication;
 - the workspace boundary;
-- backup and restore integrity;
-- permission and audit history;
-- model and runtime provenance;
-- the ability to stop or deny unsafe operations.
+- backup, restore, export, import, and migration integrity;
+- permission, confirmation, and audit history;
+- claim, evidence, inference, and instruction-origin provenance;
+- model, runtime, tool, and dependency provenance;
+- the ability to stop, deny, cancel, or recover from unsafe operations.
 
-## 3. Non-goals and trust assumptions
+Security failure must not be hidden behind a successful model response or generic success message.
 
-## 3.1 Initial non-goals
+## 3. Sequencing requirement
+
+The implementation order is mandatory:
+
+1. local state foundation;
+2. model-independent continuity, export, backup, restore, and validation;
+3. model-independent safety boundary;
+4. safety acceptance gate;
+5. local model execution;
+6. optional cloud and broader tools.
+
+Before the safety acceptance gate passes, the repository must not contain an accepted path that:
+
+- invokes a model runtime;
+- sends a prompt to a model;
+- gives a model direct or indirect tool authority;
+- provides a model with secret values;
+- permits a model adapter to mutate state, filesystem, network, process, permissions, confirmation, credentials, or audit history.
+
+Mocked model-like proposals may be used to test the boundary, but they remain untrusted structured input.
+
+## 4. Non-goals and trust assumptions
+
+### 4.1 Initial non-goals
 
 The initial product does not claim to defend against:
 
@@ -2967,89 +3175,107 @@ The initial product does not claim to defend against:
 - arbitrary untrusted native code executed outside doll;
 - public multi-user server attacks;
 - hostile users sharing one workspace;
-- perfect detection of all secrets or personal information;
+- perfect detection of every secret or personal datum;
+- perfect detection of every prompt injection;
 - complete prevention of model hallucination;
-- safe execution of arbitrary third-party plugins.
+- safe execution of arbitrary third-party plugins;
+- secure erasure guarantees on SSD, copy-on-write, backup, or synchronized storage;
+- formal verification of all safety properties.
 
-## 3.2 Assumed trusted base
+### 4.2 Assumed trusted base
 
 The initial trusted computing base includes:
 
 - the user's operating system and local account;
 - the installed doll core from a known source;
 - the local filesystem and SQLite implementation;
-- accepted cryptographic libraries and operating-system credential stores;
-- explicit user actions through the local management interface.
+- accepted cryptographic libraries;
+- the configured operating-system or compatible external secret store;
+- explicit user actions through a trusted local management interface.
 
-Everything else is treated according to its boundary and capability.
+A configured secret-store adapter is trusted only for the narrow contract it implements. A model, runtime, plugin, UI, web page, document, tool result, or external service is not added to the trusted base merely because it runs locally or is open source.
 
-## 4. Assets
+## 5. Security-sensitive assets
 
 Security-sensitive assets include:
 
 - confirmed memory;
+- preferences, policies, permissions, and confirmations;
 - personal documents;
 - project and decision records;
+- claims, evidence, inferences, and source records;
 - research sources and caches;
 - generated artifacts;
 - model and runtime manifests;
 - model files and tokenizers;
-- permissions and policies;
 - audit events;
 - backups and recovery kits;
 - local API configuration;
-- future cloud credentials;
+- SecretReference records;
+- externally stored credential values;
 - optional identity, personality, relationship, voice, and appearance state.
 
-## 5. Threat actors and failure sources
+Secret values are not ordinary Doll State assets. They remain in an external secret store and are accessed only through the accepted credential boundary.
 
-The threat model includes both malicious actors and accidental failure.
+## 6. Threat actors and failure sources
 
-### 5.1 Malicious external content
+The threat model includes malicious behavior, accidental behavior, and partial failure.
+
+### 6.1 Malicious external content
 
 Examples:
 
-- a web page containing prompt injection;
-- a PDF instructing the model to reveal secrets;
-- a document containing path traversal strings;
-- an image or OCR result containing malicious instructions;
-- a poisoned research source attempting to alter policy.
+- a page telling the model to ignore previous instructions;
+- a PDF requesting secret disclosure;
+- a document containing fake approval text;
+- metadata containing hidden capability requests;
+- OCR text containing malicious instructions;
+- an audio or video transcript attempting to change policy;
+- imported data claiming to be a trusted fact;
+- a source attempting to trigger unrelated tools or network requests.
 
-### 5.2 Malicious or compromised model
+### 6.2 Malicious, compromised, or incorrect model
 
 A model may:
 
-- request a forbidden tool;
-- fabricate user approval;
-- generate unsafe paths;
-- attempt to exfiltrate data;
-- hide a dangerous action in a plausible plan;
-- ignore system policy;
-- produce malformed structured output.
+- request a forbidden or excessive capability;
+- fabricate user approval or confirmation;
+- generate unsafe paths or destinations;
+- attempt secret exfiltration;
+- hide dangerous side effects in a plausible plan;
+- ignore instruction authority;
+- convert claims into facts without evidence;
+- produce malformed structured output;
+- request risk-tier downgrades;
+- produce convincing but false security explanations.
 
-### 5.3 Malicious or compromised runtime or tool
+### 6.3 Malicious or compromised runtime, tool, or dependency
 
-A runtime, extractor, browser, OCR engine, audio tool, plugin, or dependency may:
+A runtime, extractor, browser, OCR engine, media tool, plugin, dependency, or secret-store adapter may:
 
 - access unexpected files;
 - make unexpected network requests;
 - execute code;
 - corrupt output;
 - return hostile data;
-- leak environment variables;
-- introduce vulnerable transitive dependencies.
+- leak environment variables or credentials;
+- misreport completion;
+- introduce vulnerable transitive dependencies;
+- retain private input unexpectedly.
 
-### 5.4 Local application or UI misuse
+### 6.4 Local UI or client misuse
 
-A UI may:
+A UI or local client may:
 
 - request overly broad access;
 - store a copy of sensitive data;
 - bypass user expectations;
 - expose the local API to another process;
-- send hidden metadata externally.
+- send hidden metadata externally;
+- misrepresent a high-risk confirmation;
+- omit material side effects from a preview.
 
-### 5.5 Supply-chain compromise
+### 6.5 Supply-chain compromise
 
 Possible sources:
 
@@ -3059,33 +3285,37 @@ Possible sources:
 - altered runtime binaries;
 - dependency confusion;
 - unsafe remote-code model loaders;
-- fake update notifications.
+- fake update notifications;
+- malicious prompt, template, plugin, or tool packages.
 
-### 5.6 Accidental user action
+### 6.6 Accidental user action
 
 Examples:
 
 - selecting the wrong file;
 - approving the wrong destination;
 - restoring an old backup over newer state;
-- exporting secrets;
+- exporting sensitive records;
 - choosing a model too large for the machine;
 - opening the local API to the network;
-- deleting the only valid backup.
+- deleting the only valid backup;
+- confirming an operation without noticing a changed target.
 
-### 5.7 Resource exhaustion
+### 6.7 Resource exhaustion
 
 Examples:
 
-- disk exhaustion from cache or media;
+- disk exhaustion from cache, backup, or media;
 - memory exhaustion from a model;
 - runaway inference;
 - infinite retry loops;
 - oversized files or decompression bombs;
-- excessively large context assembly;
-- denial of service through repeated local requests.
+- excessive context assembly;
+- repeated local requests;
+- unbounded subprocess output;
+- secret-store prompts repeated without limit.
 
-### 5.8 State corruption and partial failure
+### 6.8 State corruption and partial failure
 
 Examples:
 
@@ -3095,11 +3325,265 @@ Examples:
 - power loss during write;
 - concurrent mutation;
 - incompatible schema;
-- stale revision overwrite.
+- stale revision overwrite;
+- partial capability side effects;
+- audit write failure;
+- confirmation recorded without completed operation.
 
-## 6. Security boundaries
+## 7. Authority, trust, claim, and evidence model
 
-## 6.1 Model boundary
+Doll must distinguish data truth status from instruction authority.
+
+### 7.1 Required truth categories
+
+At minimum, the state model must distinguish:
+
+- **confirmed fact:** durable information explicitly confirmed or explicitly created as fact by the user through a trusted management path;
+- **claim:** an assertion that may be true or false;
+- **evidence:** a source, observation, record, or artifact that supports, contradicts, or contextualizes a claim;
+- **inference:** a derived conclusion with source links, method or actor provenance, confidence, and uncertainty.
+
+A model, runtime, document, page, import, tool, OCR result, transcript, or external service cannot promote its own statement to confirmed fact.
+
+A confirmed fact may be revised or superseded only through an explicit user-controlled or accepted management path with history and audit.
+
+### 7.2 Required provenance
+
+Claims, evidence, and inferences must retain where applicable:
+
+- source identifier;
+- origin type;
+- creator or actor type;
+- creation and observation time;
+- content hash or stable reference;
+- supporting and contradicting links;
+- confidence or uncertainty;
+- review and confirmation state;
+- transformation or extraction method.
+
+Missing provenance must remain visible. It must not be silently invented.
+
+### 7.3 Trust is not popularity or locality
+
+The system must not infer trust merely from:
+
+- local execution;
+- open-source status;
+- repository popularity;
+- model confidence;
+- repeated statements;
+- a signed-in account;
+- an apparently official visual design;
+- a tool returning structured JSON.
+
+Trust decisions must use explicit policy and provenance.
+
+## 8. Instruction origin and untrusted-content boundary
+
+### 8.1 Core rule
+
+Retrieved, imported, extracted, transcribed, or generated content is data, not authority.
+
+Content cannot override:
+
+- system policy;
+- user instruction;
+- durable user policy;
+- permission state;
+- confirmation state;
+- capability definitions;
+- risk tiers;
+- workspace boundaries;
+- network policy;
+- secret policy;
+- security instructions.
+
+### 8.2 Required authority classes
+
+The orchestration and persistence layers must distinguish at least:
+
+- system security and product policy;
+- explicit current user instruction;
+- durable user policy;
+- user confirmation or management action;
+- retrieved or imported content;
+- tool or runtime output;
+- model-generated proposal;
+- unknown origin.
+
+Unknown origin must default to the least-authoritative classification.
+
+### 8.3 Origin metadata
+
+Instruction-bearing input must retain where applicable:
+
+- origin class;
+- source identifier;
+- acquisition method;
+- parent operation or session;
+- content hash;
+- time;
+- whether the content is trusted only as data;
+- transformations such as OCR, extraction, summarization, or transcription.
+
+Origin metadata must survive persistence, export, import, retrieval, and context assembly.
+
+### 8.4 Prompt-injection indicators
+
+The system should detect and flag patterns such as:
+
+- requests to ignore previous instructions;
+- requests to reveal hidden prompts, memory, or secrets;
+- requests to call tools unrelated to the user's task;
+- requests to send files or credentials;
+- fake approval or confirmation statements;
+- encoded or obfuscated instructions;
+- instructions embedded in metadata or citations;
+- requests to lower a risk tier or change policy;
+- claims of special authority unsupported by origin.
+
+Detection is advisory. Authorization must not depend solely on another model or classifier recognizing an attack.
+
+### 8.5 Context assembly
+
+Where a model interface supports roles or structured context:
+
+- higher-authority instructions must be kept separate from untrusted content;
+- source and origin labels must remain machine-readable where practical;
+- untrusted content must use the least-authoritative available channel;
+- content must not be concatenated into system policy as plain trusted text;
+- only the minimum task-relevant state may be included;
+- secret values must be absent by default;
+- claims, evidence, inferences, and confirmed facts must not be collapsed into one unlabeled narrative.
+
+### 8.6 Tool-result handling
+
+Tool results remain untrusted input.
+
+A tool result may inform a response or create evidence, but it cannot:
+
+- grant permission;
+- confirm an operation;
+- change risk tier;
+- widen scope;
+- authorize a new capability;
+- become a confirmed fact automatically;
+- trigger a chained side effect without normal validation.
+
+## 9. Secret architecture
+
+### 9.1 Secret classes
+
+Examples include:
+
+- API keys;
+- access and refresh tokens;
+- passwords;
+- private keys;
+- recovery phrases;
+- session cookies;
+- authentication codes;
+- banking credentials;
+- payment-card data;
+- government identity numbers;
+- encryption keys;
+- sensitive health information;
+- private third-party personal data when treated as a credential or protected value.
+
+The classification policy must define what is a secret value, sensitive non-secret data, and a non-secret SecretReference.
+
+### 9.2 Ordinary-state prohibition
+
+Ordinary Doll State must not store secret values.
+
+This prohibition applies to:
+
+- record fields;
+- free-form metadata;
+- audit events;
+- logs;
+- exports;
+- unencrypted state and workspace backups;
+- fixtures;
+- diagnostics;
+- generated reports;
+- model context;
+- exception text;
+- operation summaries.
+
+A field that is not explicitly defined for a SecretReference must reject secret-reference objects as well as secret values.
+
+### 9.3 SecretReference
+
+Doll State may store a non-secret SecretReference containing only the minimum metadata required to request an external credential operation.
+
+A SecretReference may include:
+
+- stable reference ID;
+- credential class;
+- provider or adapter class;
+- human-readable non-secret label;
+- permitted operation or destination scope;
+- creation or rotation metadata that is not itself secret;
+- availability status that reveals no value.
+
+A SecretReference must not include:
+
+- the secret value;
+- reversible encoding of the value;
+- a value-derived hint that materially helps reconstruction;
+- a raw environment-variable dump;
+- authentication headers;
+- session cookies;
+- recovery material.
+
+### 9.4 External secret-store contract
+
+The external secret-store boundary must define:
+
+- availability and locked-state reporting;
+- user-presence or operating-system approval requirements;
+- create, replace, lookup, revoke, and delete semantics;
+- stable reference behavior;
+- platform-specific error normalization;
+- cancellation and timeout;
+- no secret value in ordinary error output;
+- no requirement that the secret store be available for non-secret core startup;
+- no custom cryptography invented by doll.
+
+Initial platform direction:
+
+- macOS: Keychain-compatible adapter;
+- Windows: Credential Manager-compatible adapter;
+- Linux: Secret Service-compatible adapter where available.
+
+The contract, not one operating-system implementation, is authoritative.
+
+### 9.5 Secret detection and redaction
+
+Secret scanning is best effort and may miss values or produce false positives.
+
+It supplements but does not replace:
+
+- path restrictions;
+- ordinary-state schema restrictions;
+- permission checks;
+- outbound minimization;
+- credential-broker isolation;
+- exact confirmation;
+- log and audit sanitization.
+
+Secret detection does not grant permission to search the filesystem, environment, browser storage, wallet data, or credential stores.
+
+Redaction must use structured handling where possible rather than only string replacement after logging.
+
+### 9.6 Model exclusion
+
+Models must not receive secret values by default.
+
+A model may identify that a task requires a credential class or SecretReference, but the model must not retrieve or handle the stored credential value. A credential-bearing operation must execute through the Credential Broker and return only a bounded result unless a later dedicated specification explicitly defines a user-visible reveal flow outside model context.
+
+## 10. Model boundary
 
 Model output is untrusted proposed data.
 
@@ -3109,30 +3593,42 @@ A model cannot directly:
 - write arbitrary files;
 - execute commands;
 - make network requests;
-- alter permissions;
+- access the external secret store;
+- retrieve secret values;
+- alter permissions or confirmations;
 - approve its own requests;
-- delete state;
+- delete authoritative state;
 - change audit records;
 - activate a model;
-- perform migration or restore.
+- perform migration, import, backup publication, or restore;
+- promote a claim to confirmed fact;
+- change instruction authority;
+- choose or lower a capability risk tier.
 
-The model may emit a structured capability request. The Capability Broker validates and decides whether the request is denied, executed, or presented for user approval.
+The model may emit a structured proposal after Phase 3. The proposal remains untrusted and must pass every accepted boundary before any side effect.
 
-## 6.2 Capability Broker boundary
+A runtime adapter must not receive internal service objects that allow direct state, filesystem, network, credential, permission, confirmation, or audit mutation.
 
-The Capability Broker is the mandatory authorization point for every side effect.
+## 11. Capability Broker boundary
+
+The Capability Broker is the mandatory authorization point for every side effect initiated through an AI or tool workflow.
 
 A capability request must include:
 
 - capability ID;
 - capability version;
 - operation ID;
-- session ID;
+- session ID where applicable;
+- actor and origin type;
 - validated arguments;
 - declared target;
+- declared destination where applicable;
 - declared side effects;
+- risk tier;
 - permission scope;
-- approval requirement;
+- confirmation requirement;
+- credential class or SecretReference where applicable;
+- resource limits;
 - timeout;
 - cancellation token where supported.
 
@@ -3142,75 +3638,267 @@ The broker must reject:
 - unsupported versions;
 - malformed arguments;
 - missing scope;
-- paths outside the approved root;
+- undeclared side effects;
+- risk-tier mismatch or downgrade;
+- paths outside approved roots;
 - network destinations outside policy;
-- requests requiring unavailable approval;
-- model attempts to modify permission state;
-- requests that conceal or expand side effects.
+- requests requiring unavailable approval or confirmation;
+- model attempts to modify permission or confirmation state;
+- content-origin attempts to grant authority;
+- credentials outside declared scope;
+- requests that conceal or expand side effects;
+- prohibited release-excluded operations.
 
-## 6.3 Filesystem boundary
+The broker fails closed on validation, policy, permission, confirmation, credential, execution, audit, or postcondition failure.
+
+## 12. Capability taxonomy and risk tiers
+
+Capability IDs, versions, schemas, and risk tiers are registered and reviewed. A caller cannot choose a lower tier than the registry.
+
+### Tier 0: Pure computation
+
+Examples:
+
+- local text transformation on provided data;
+- schema validation;
+- hashing data already provided;
+- deterministic formatting.
+
+Default: allowed when resource limits are satisfied and no hidden input access occurs.
+
+### Tier 1: Bounded managed read or reversible creation
+
+Examples:
+
+- read an approved workspace record;
+- query a local index;
+- create a new managed artifact without overwrite;
+- create a suggested record;
+- inspect a verified backup.
+
+Default: allowed only within current task scope, with audit where required.
+
+### Tier 2: Scoped modification or explicit external read
+
+Examples:
+
+- update a confirmed memory through an explicit management flow;
+- supersede a decision;
+- apply a migration;
+- read a user-selected external file;
+- fetch a user-specified URL;
+- perform a user-requested search.
+
+Default: explicit user initiation, confirmation, or narrowly defined permission depending on the capability contract.
+
+### Tier 3: High risk
+
+Examples:
+
+- permanent deletion;
+- overwrite without retained prior version;
+- external upload;
+- credential-bearing external operation;
+- sending email or posting;
+- account change;
+- purchase or financial transaction;
+- process execution with material side effects;
+- security configuration change;
+- remote access enablement.
+
+Default: unavailable unless separately accepted for the applicable release. When available, fresh exact confirmation is mandatory.
+
+### Prohibited capabilities
+
+The following remain prohibited until a dedicated accepted specification changes the scope:
+
+- unrestricted shell;
+- arbitrary command strings;
+- autonomous credential collection;
+- autonomous financial transactions;
+- hidden external upload;
+- model self-approval;
+- model permission widening;
+- policy changes from external content;
+- silent destructive operations;
+- security-boundary bypass adapters.
+
+Confirmation cannot make a prohibited capability available.
+
+## 13. Permission and confirmation model
+
+### 13.1 Permission modes
+
+Supported initial modes:
+
+- denied;
+- allow once;
+- ask every time;
+- allow for a defined scope.
+
+A defined scope must specify applicable constraints such as:
+
+- capability and version;
+- risk tier;
+- project;
+- directory;
+- destination host;
+- operation type;
+- file type;
+- size limit;
+- credential class;
+- expiration;
+- session.
+
+A global persistent `allow all` mode is prohibited.
+
+### 13.2 Permission authority
+
+Permission creation, widening, reactivation, and deletion require a trusted user-controlled management path.
+
+Models, runtimes, tools, documents, websites, imports, and capability results cannot create or widen permission records.
+
+A capability may consume or narrow an existing allow-once permission only under its accepted contract.
+
+### 13.3 Approval and confirmation integrity
+
+Approval or confirmation must come from a user-controlled interface or management command, not model-generated or external-content text.
+
+Records should identify:
+
+- operation;
+- capability and version;
+- risk tier;
+- summarized effect;
+- target;
+- destination;
+- credential class where applicable;
+- time;
+- scope;
+- expiration;
+- user decision.
+
+Material changes invalidate approval or confirmation.
+
+### 13.4 Mandatory high-risk confirmation
+
+Every Tier 3 operation, when such a capability is available, requires a fresh confirmation bound to one exact operation.
+
+The confirmation preview must show:
+
+- capability and version;
+- target;
+- destination or external recipient;
+- material side effects;
+- whether data leaves the machine;
+- credential class or account identity without revealing the secret;
+- overwrite, deletion, financial, account, or process consequences;
+- irreversibility or recovery path;
+- expiration.
+
+The following are invalid confirmation sources:
+
+- model output;
+- system-prompt text displayed as if it came from the user;
+- documents or websites;
+- imported records;
+- tool results;
+- previous broad permission;
+- hidden UI defaults;
+- stale confirmation after a material change.
+
+Confirmation is necessary but not sufficient. Policy, scope, capability registration, release availability, credential policy, and postcondition checks still apply.
+
+## 14. Credential Broker
+
+The Credential Broker is the only normal runtime path that may ask an external secret store to use a secret.
+
+It must:
+
+- accept a SecretReference rather than a secret value;
+- validate capability, risk, destination, scope, and operation identity;
+- require user presence or confirmation when policy demands it;
+- obtain the secret only within the narrow operation boundary;
+- avoid returning the stored value to the caller;
+- avoid placing the value in environment dumps, command strings, logs, audit, exceptions, temporary files, model context, or normal output;
+- minimize lifetime and copies;
+- support timeout and cancellation;
+- clear in-memory buffers where practical without claiming guaranteed erasure;
+- return a structured bounded result;
+- create a redacted audit event;
+- fail closed if the secret store is unavailable, locked, denied, mismatched, or out of scope.
+
+A tool requiring direct long-lived credential access is not compatible with the initial broker contract.
+
+## 15. Filesystem boundary
 
 The default managed-write boundary is the private workspace.
 
-### Required controls
+### 15.1 Required controls
 
-- canonicalize the requested path;
+- canonicalize requested paths;
 - resolve relative paths against an approved root;
-- reject `..` traversal;
-- reject absolute paths unless a user-controlled import or export flow explicitly permits them;
-- detect symlink, junction, or mount escapes where supported;
+- reject traversal;
+- reject absolute paths unless an explicit user-controlled import or export flow permits them;
+- reject unsafe drive, UNC, backslash, reserved-name, duplicate, and case-collision paths where applicable;
+- detect symlink, junction, reparse-point, or mount escapes where supported;
 - open files using safe modes;
 - create new files without silent overwrite;
-- use atomic replacement for approved updates;
-- verify the final path after creation where practical;
-- apply size limits;
-- record the resulting file and hash.
+- use atomic publication or replacement for approved updates;
+- verify final location after creation where practical;
+- apply file, member, expansion, and total-size limits;
+- record resulting managed file, byte size, and hash;
+- remove temporary and staging residue on failure.
 
-### Read policy
+### 15.2 Read policy
 
 The initial product may read:
 
 - files explicitly selected by the user;
 - managed files inside the workspace;
-- approved configured read roots, if later enabled.
+- approved configured read roots if later enabled.
 
-The initial product must not recursively scan the entire home directory by default.
+It must not recursively scan the entire home directory by default.
 
-### Restricted locations
+### 15.3 Restricted locations
 
-The initial product must not intentionally read locations such as:
+The initial product must not intentionally read:
 
 - SSH key directories;
 - browser password databases;
-- system credential stores;
+- system credential stores outside the Credential Broker;
 - cryptocurrency wallet secret material;
 - `.env` files;
 - operating-system account databases;
 - application secret stores;
+- arbitrary environment-variable collections;
 
-unless a later explicit, narrowly scoped feature is approved. Secret detection does not grant permission to search for secrets.
+unless a later explicit, narrowly scoped feature is accepted. Secret detection does not grant permission to access restricted locations.
 
-## 6.4 Network boundary
+## 16. Network boundary
 
 The local API binds to `127.0.0.1` by default.
 
-### Initial inbound policy
+### 16.1 Inbound policy
 
 - no public internet listener;
 - no LAN listener by default;
 - no anonymous remote access;
 - no mobile remote access in the initial release;
 - no automatic firewall changes;
-- no UPnP or router configuration.
+- no UPnP or router configuration;
+- request-size and origin controls;
+- no arbitrary host-path exposure.
 
-### Initial outbound policy
+### 16.2 Outbound policy
 
-Allowed only when explicitly initiated or enabled:
+Allowed only when explicitly initiated or enabled by an accepted capability:
 
 - user-requested web search;
 - user-requested URL retrieval;
 - user-approved model acquisition;
-- manual update or dependency retrieval outside normal runtime behavior.
+- manual update or dependency retrieval outside normal runtime behavior;
+- later bounded cloud or external-service requests.
 
 Disallowed by default:
 
@@ -3221,286 +3909,111 @@ Disallowed by default:
 - advertising;
 - background model discovery;
 - automatic cloud inference;
-- arbitrary POST, PUT, PATCH, or DELETE requests;
-- external file upload.
+- arbitrary state-changing HTTP methods;
+- external file upload;
+- credential transmission outside approved destination scope.
 
-A later web-research implementation may use required HTTP methods for safe retrieval, but any state-changing external request requires a separately accepted capability.
+### 16.3 Request controls
 
-### Network request controls
+Retrieval and external-service capabilities must apply as applicable:
 
-Where practical, retrieval capabilities must enforce:
-
-- supported schemes;
+- supported scheme;
 - destination normalization;
-- redirect limits;
-- response-size limits;
-- timeouts;
-- content-type checks;
-- private-network and localhost restrictions to reduce SSRF risk;
-- DNS and resolved-address validation where necessary;
-- audit of final destination;
-- cancellation.
+- allowlist or policy;
+- redirect limit;
+- response-size limit;
+- timeout and cancellation;
+- content-type validation;
+- private-network and localhost restrictions;
+- DNS and resolved-address validation where required;
+- final-destination audit;
+- outbound body minimization;
+- secret and sensitive-data checks;
+- instruction-origin assignment to returned content.
 
-## 6.5 Process execution boundary
+## 17. Process execution boundary
 
 The initial product does not expose unrestricted shell execution.
 
 Approved external tools must use dedicated adapters with:
 
-- a fixed executable or validated configured path;
+- fixed executable or validated configured path;
 - argument arrays rather than command strings;
 - `shell=False` or platform equivalent;
-- input and output limits;
 - controlled environment variables;
+- no inherited secret-bearing environment by default;
 - controlled working directory;
+- input and output limits;
 - timeout and cancellation;
-- explicit file access scope;
+- explicit file and network scope;
 - captured exit status;
-- audit records.
+- provenance and audit;
+- returned content marked as untrusted tool output.
 
 A tool adapter may not become a generic command runner.
 
-## 6.6 Cloud boundary
+Credential-bearing process execution, if later accepted, must use a design that minimizes exposure and never logs the credential or command-expanded secret.
 
-Cloud support is a future optional gateway.
+## 18. Cloud boundary
 
-Any later cloud request must be assembled as a bounded outbound package.
+Cloud support is an optional later gateway.
 
-Before sending, the system must be able to show:
+Any cloud request must be assembled as a bounded outbound package after the local and safety gates pass.
+
+Before sending, the trusted user path must be able to show:
 
 - provider;
 - model;
+- destination;
 - exact or summarized outbound content;
 - attachments or excerpts;
-- redactions;
+- redactions and omissions;
 - estimated size or tokens where possible;
 - estimated cost where possible;
-- applicable permission mode.
+- retention information where available;
+- applicable permission and risk tier;
+- credential or account label without exposing the secret.
 
-The cloud gateway must not have unrestricted workspace read access. It receives only the approved outbound package.
+The cloud gateway must not have unrestricted workspace or secret-store access. It receives only the approved outbound package and a brokered credential operation.
 
-## 6.7 Backup and recovery boundary
+There is no automatic cloud fallback.
+
+Removing cloud adapter code must not prevent local startup, state access, backup, restore, recovery, or local model operation.
+
+## 19. Backup and recovery boundary
 
 Backups are high-value copies of private state.
 
 Required controls:
 
 - explicit included and excluded categories;
-- manifest and checksums;
+- manifest and cryptographic hashes;
 - verification before completion;
-- no secrets in plain configuration exports;
-- safe handling of external references;
-- conflict detection during restore;
-- staging before activation;
-- no silent overwrite of a newer workspace;
-- restoration audit event;
-- optional standard encryption in a later implementation.
+- secret values excluded from unencrypted state and workspace backups;
+- safe external-reference handling;
+- complete archive member validation;
+- resource limits;
+- SQLite snapshot integrity;
+- identity and revision checks;
+- record, link, managed-path, hash, and artifact-byte checks;
+- staging before final publication;
+- empty-target restore only for the first slice;
+- no silent overwrite;
+- atomic no-clobber publication;
+- cleanup on failure;
+- fresh-process post-restore validation;
+- no false success audit;
+- optional standard encryption only in a later implementation.
 
 The project must not invent custom cryptography.
 
-## 7. Permission model
+A backup can be declared complete only after verification. A restore can be declared complete only after post-restore validation of the published workspace.
 
-## 7.1 Permission classes
+## 20. Model and supply-chain security
 
-Initial permission classes:
+### 20.1 Model acquisition
 
-### Class 0: Pure computation
-
-Examples:
-
-- local text transformation;
-- local reasoning;
-- schema validation;
-- hashing data already provided to the operation.
-
-Default: allowed.
-
-### Class 1: Managed read
-
-Examples:
-
-- read an approved workspace record;
-- read a managed workspace file;
-- query a local index.
-
-Default: allowed within the current task scope.
-
-### Class 2: Explicit external read
-
-Examples:
-
-- read a user-selected external file;
-- fetch a user-specified URL;
-- perform a user-requested web search.
-
-Default: user initiation or explicit approval required.
-
-### Class 3: Managed creation
-
-Examples:
-
-- create a new artifact;
-- create a research log;
-- create a backup;
-- create a suggested memory.
-
-Default: allowed within approved workspace directories, subject to limits and audit.
-
-### Class 4: Managed modification
-
-Examples:
-
-- update a confirmed memory;
-- supersede a decision;
-- replace a managed artifact version;
-- apply a migration.
-
-Default: explicit user confirmation or a narrowly defined management command.
-
-### Class 5: Destructive or externally visible action
-
-Examples:
-
-- permanent deletion;
-- overwrite without retained prior version;
-- external upload;
-- sending email;
-- posting to social media;
-- account change;
-- purchase;
-- financial transaction;
-- arbitrary command execution.
-
-Default: unavailable in initial releases.
-
-## 7.2 Permission modes
-
-Supported initial modes:
-
-- denied;
-- allow once;
-- ask every time;
-- allow for a defined scope.
-
-A defined scope must specify constraints such as:
-
-- capability;
-- project;
-- directory;
-- destination host;
-- file type;
-- size limit;
-- expiration;
-- session.
-
-A global persistent `allow all` mode is prohibited in the initial product.
-
-## 7.3 Approval integrity
-
-Approval must be obtained from a user-controlled interface, not from model-generated text.
-
-The system must not treat phrases in documents, web pages, or model output as approval.
-
-Approval records should identify:
-
-- operation;
-- capability;
-- summarized effect;
-- target;
-- time;
-- scope;
-- user decision.
-
-Material changes after approval invalidate the approval.
-
-## 8. Prompt injection and untrusted-content handling
-
-## 8.1 Core rule
-
-Retrieved or imported content is data, not authority.
-
-Content cannot override:
-
-- system policy;
-- user policy;
-- permission state;
-- capability definitions;
-- workspace boundaries;
-- network policy;
-- security instructions.
-
-## 8.2 Required separation
-
-The orchestration layer must distinguish:
-
-- system instructions;
-- user instructions;
-- durable policies;
-- retrieved content;
-- tool outputs;
-- model-generated proposals.
-
-Where the model interface supports roles or structured context, untrusted content must be placed in the least authoritative role available.
-
-## 8.3 Injection indicators
-
-The system should detect and flag patterns such as:
-
-- requests to ignore previous instructions;
-- requests to reveal hidden prompts or memory;
-- requests to call tools unrelated to the user task;
-- requests to send files or secrets;
-- fake approval statements;
-- encoded or obfuscated instructions;
-- instructions embedded in metadata or citations.
-
-Detection is advisory. Authorization boundaries must not depend solely on classification by another model.
-
-## 8.4 Tool-result handling
-
-Tool results remain untrusted.
-
-A tool result may inform a model response but cannot grant new permissions or trigger a new capability without normal validation.
-
-## 9. Secret and sensitive-data handling
-
-## 9.1 Secret classes
-
-Examples:
-
-- API keys;
-- access tokens;
-- passwords;
-- private keys;
-- recovery phrases;
-- session cookies;
-- banking credentials;
-- payment-card data;
-- government identity numbers;
-- sensitive health information;
-- private third-party personal data.
-
-## 9.2 Required behavior
-
-- do not log secrets;
-- redact or omit detected secrets from error messages;
-- do not include secrets in normal exports;
-- do not include secrets in test fixtures;
-- do not send secrets to models by default;
-- do not store future cloud API keys in ordinary configuration files;
-- use operating-system credential storage when cloud credentials are implemented;
-- warn before exporting sensitive records;
-- allow the user to run without cloud credentials.
-
-## 9.3 Detection limits
-
-Secret scanning is best-effort and may miss data or produce false positives. It supplements but does not replace path, permission, and outbound controls.
-
-## 10. Model and supply-chain security
-
-## 10.1 Model acquisition
-
-Before model acquisition, record or display:
+Before acquisition, record or display:
 
 - source;
 - developer;
@@ -3514,25 +4027,26 @@ Before model acquisition, record or display:
 - checksum when available;
 - whether remote code is required.
 
-## 10.2 Model loading
+### 20.2 Model loading
 
-The initial validated model path should prefer inert weight formats and runtimes that do not require executing repository-provided code.
+The validated path should prefer inert weight formats and runtimes that do not require repository-provided code.
 
-Models requiring `trust_remote_code`, arbitrary Python modules, install scripts, or opaque launchers are not standard validated targets.
+Models requiring `trust_remote_code`, arbitrary Python modules, install scripts, opaque launchers, or unexpected network access are not standard validated targets.
 
-## 10.3 Quarantine
+### 20.3 Quarantine
 
-New model assets enter a quarantine or candidate state until:
+New model assets enter quarantine or candidate state until:
 
-- checksums pass;
+- hashes pass;
 - format inspection passes;
 - license record exists;
 - runtime compatibility is known;
 - basic offline loading succeeds;
 - resource limits are acceptable;
-- evaluation is complete for the intended role.
+- evaluation is complete for the intended role;
+- the safety boundary remains enforceable.
 
-## 10.4 Dependency security
+### 20.4 Dependency security
 
 The project should:
 
@@ -3541,85 +4055,94 @@ The project should:
 - minimize core dependencies;
 - separate optional dependency groups;
 - review new transitive dependencies;
-- use automated vulnerability checks when implementation begins;
-- avoid executing install-time scripts from untrusted sources where possible;
-- record third-party notices and licenses.
+- use automated vulnerability checks where practical;
+- avoid executing install-time scripts from untrusted sources;
+- record third-party notices and licenses;
+- avoid dependencies that require broad secret, filesystem, network, or process access.
 
-## 10.5 Update security
+### 20.5 Update security
 
 There is no silent self-update.
 
 A future update flow must:
 
-1. identify the source and target version;
-2. verify package provenance or checksums where available;
-3. show migration implications;
-4. create a verified backup;
+1. identify source and target version;
+2. verify provenance or checksum where available;
+3. show migration and security-boundary implications;
+4. create a verified backup when required;
 5. stage the update;
-6. run doctor or validation;
-7. support rollback.
+6. run doctor and validation;
+7. support rollback;
+8. retain the last known good release and state.
 
-## 11. Audit requirements
+## 21. Audit and logging requirements
 
 Security-relevant operations must create append-oriented audit events.
 
-Audit events should include:
+Audit events should include where applicable:
 
 - operation ID;
-- actor type;
-- capability ID;
-- permission decision;
+- actor and origin type;
+- capability ID and version;
+- risk tier;
+- permission and confirmation decision;
 - target category;
-- network destination where applicable;
-- model and runtime IDs where applicable;
+- normalized destination category;
+- credential class or non-secret reference ID;
+- model and runtime IDs;
 - result;
 - error class;
-- created record or artifact IDs.
+- created or affected record IDs;
+- redacted policy reason.
 
-Audit events must not contain:
+Audit events and logs must not contain:
 
 - passwords;
 - secret keys;
+- tokens;
+- cookies;
+- recovery phrases;
+- authentication headers;
 - full private documents;
-- unnecessary model prompts;
-- raw authentication tokens.
+- unnecessary prompts;
+- raw credential-store errors containing sensitive values;
+- absolute local paths when a portable identifier is sufficient;
+- usernames, hostnames, or home-directory details in shareable output.
 
-Normal model capabilities cannot modify or delete audit history.
+Logging and audit sanitization must occur before persistence where practical. Redaction after an unsafe message has already been written is insufficient.
 
-User-controlled retention and export of audit data may be added through management commands.
+Normal model and capability paths cannot modify or delete audit history.
 
-## 12. Denial of service and resource controls
+If audit persistence is mandatory for an operation and cannot complete safely, the side effect must not be reported as successful. Where atomic rollback is impossible, the capability must define explicit reconciliation and failure reporting before acceptance.
 
-The implementation must define limits for:
+## 22. Resource controls and recoverable writes
+
+The implementation must define limits for applicable operations:
 
 - file size;
-- archive expansion;
+- archive members and expansion;
 - HTTP response size;
 - redirect count;
 - request duration;
-- model context size;
-- generated output size;
+- model context and output size;
 - concurrent operations;
 - temporary storage;
-- cache storage;
+- cache and backup storage;
 - retries;
-- subprocess duration;
-- media duration and frame extraction.
+- subprocess duration and output;
+- media duration and frame extraction;
+- secret-store prompts and retries.
 
 The system must avoid infinite automatic retry.
 
-When resources are insufficient, it should stop the operation, preserve state, and report a lower-cost or lower-capability alternative.
-
-## 13. Data integrity and recoverable writes
-
-Required controls:
+Required integrity controls include:
 
 - schema validation before commit;
 - transaction boundaries for structured state;
 - revision checks;
 - atomic file creation or replacement where supported;
 - content hashing;
-- pre-migration backup;
+- pre-migration backup when required;
 - staged import and restore;
 - post-operation verification;
 - explicit failure status;
@@ -3627,24 +4150,25 @@ Required controls:
 
 A failed operation must not destroy the last valid version.
 
-## 14. User deletion versus autonomous deletion
+## 23. User deletion versus autonomous deletion
 
-The model and normal autonomous workflows cannot delete authoritative state.
+Models and normal autonomous workflows cannot delete authoritative state.
 
 The user may delete through an explicit management path.
 
 Default direction:
 
-- preview the affected records and files;
+- preview affected records and files;
 - show dependent records;
 - move to trash or create tombstones;
-- retain for the configured period;
+- retain for a configured period;
 - require explicit purge for permanent deletion;
-- record the user action.
+- create audit history;
+- require Tier 3 confirmation for irreversible deletion when implemented.
 
-Secure physical erasure is not guaranteed on SSDs, copy-on-write filesystems, backups, or encrypted storage. The interface must not make a false guarantee.
+Secure physical erasure is not guaranteed. The interface must not make a false guarantee.
 
-## 15. Local API protection
+## 24. Local API protection
 
 The initial API must:
 
@@ -3654,32 +4178,32 @@ The initial API must:
 - expose no unauthenticated remote mode;
 - limit request sizes;
 - normalize errors;
-- avoid secrets in responses;
-- support request cancellation and timeouts;
-- provide a clear health endpoint without private state;
-- avoid exposing arbitrary host paths.
+- avoid secrets and private paths in responses;
+- support cancellation and timeouts;
+- provide a health endpoint without private state;
+- avoid arbitrary host-path exposure;
+- keep management, confirmation, and credential operations distinct from ordinary model-facing routes.
 
-Even on localhost, the implementation should consider other local processes as potentially untrusted.
+Even on localhost, other local processes may be untrusted.
 
-A later design may add a local session token or origin-bound authentication for UI clients. Remote authentication is a separate future specification.
+A later remote mode requires a separate accepted threat model and authentication design.
 
-## 16. Emergency controls
+## 25. Emergency controls and user-visible states
 
 The project should provide or plan:
 
-- stop accepting new tool operations;
+- stop accepting new capability operations;
 - cancel active cancellable operations;
 - stop the local server;
 - disable network capabilities;
 - disable a model binding;
+- lock credential operations;
 - enter read-only recovery mode;
 - preserve audit and recovery state.
 
 An emergency stop must not delete state or corrupt a backup.
 
-## 17. Security states and user-visible reporting
-
-The system should expose states such as:
+User-visible states should include:
 
 - normal;
 - degraded;
@@ -3687,86 +4211,105 @@ The system should expose states such as:
 - read-only recovery;
 - migration required;
 - backup invalid;
+- restore failed;
 - model unavailable;
 - capability disabled;
+- permission denied;
+- confirmation required;
+- secret store unavailable or locked;
 - security warning;
 - operation blocked.
 
-Security-relevant failure must not be hidden behind a generic successful chat response.
+## 26. Platform considerations
 
-## 18. Platform considerations
-
-## 18.1 macOS
+### 26.1 macOS
 
 - use platform data directories;
-- respect sandbox and privacy prompts where applicable;
+- respect privacy prompts;
 - recommend FileVault for disk encryption;
-- use Keychain for future credentials;
-- test symlink behavior and application permissions.
+- use a Keychain-compatible adapter for future credentials;
+- test symlink behavior, file permissions, and real-process restore;
+- validate on Intel Mac while it remains the primary real-machine target.
 
-## 18.2 Windows
+### 26.2 Windows
 
 - use platform data directories;
-- handle reserved names and drive letters;
-- test junction and reparse-point escapes;
+- handle reserved names, drive letters, UNC paths, junctions, and reparse points;
 - recommend BitLocker where available;
-- use Windows Credential Manager for future credentials;
+- use a Credential Manager-compatible adapter for future credentials;
 - account for Defender and file-lock behavior.
 
-## 18.3 Linux
+### 26.3 Linux
 
 - follow XDG directories where practical;
 - test symlink and mount behavior;
 - recommend LUKS or equivalent disk encryption;
-- use Secret Service for future credentials where available;
+- use a Secret Service-compatible adapter where available;
+- fail clearly when no supported secret store exists;
 - avoid assumptions about one shell or distribution.
 
-## 19. Security testing requirements
+## 27. Security testing requirements
 
-Implementation acceptance tests must eventually include:
+Implementation acceptance tests must include as applicable:
 
-- path traversal rejection;
-- symlink or junction escape tests where supported;
+- path traversal and unsafe archive rejection;
+- symlink, junction, reparse-point, or mount escape tests;
 - write-outside-workspace rejection;
 - unknown capability rejection;
-- malformed tool request rejection;
+- malformed request rejection;
 - permission denial;
-- approval invalidation after argument change;
-- prompt-injection content cannot grant a capability;
+- risk-tier enforcement;
+- confirmation absence, expiry, and material-change invalidation;
+- prompt-injection content cannot grant authority;
+- instruction origin survives persistence and context assembly;
+- claims cannot silently become confirmed facts;
+- external content cannot change policy or permission;
+- ordinary state rejects secret values;
+- SecretReference remains non-secret;
+- secret redaction in logs, audit, errors, exports, backups, diagnostics, and context packages;
+- credential broker does not return stored secret values;
+- unavailable or locked secret store fails safely;
 - cloud-disabled mode emits no cloud request;
 - local API binds to localhost;
 - SSRF-oriented destination restrictions;
-- response and file size limits;
+- response, file, archive, and context limits;
 - subprocess timeout and `shell=False` enforcement;
-- secret redaction in logs and errors;
 - interrupted write recovery;
-- failed migration preservation;
-- failed restore preservation;
-- checksum mismatch rejection;
-- candidate model cannot become active without approval;
-- missing optional dependency does not block core startup;
-- audit event creation for allowed and denied actions.
+- failed migration and restore preservation;
+- checksum, identity, revision, record, link, and artifact mismatch rejection;
+- candidate model cannot activate without approval;
+- model adapter cannot bypass the broker;
+- missing optional dependency does not block the core;
+- audit event creation for allowed, denied, blocked, and failed actions;
+- no absolute local path, username, hostname, home directory, secret, or personal data in shareable output.
 
-Security claims must distinguish CI tests from real-machine validation.
+Security claims must distinguish unit, integration, CI, fresh-process, and real-machine evidence.
 
-## 20. Threat-to-control matrix
+The repository coverage threshold must not be lowered to accommodate safety code. Blanket `pragma: no cover` or equivalent exclusions must not hide untested safety branches.
+
+## 28. Threat-to-control matrix
 
 | Threat | Prevent | Detect | Record | Recover |
 | --- | --- | --- | --- | --- |
-| Prompt injection | instruction/data separation; capability checks | injection indicators; unrelated-tool warning | source and denied request | discard hostile context; continue local task |
-| Workspace escape | path canonicalization; approved roots; link checks | boundary violation | denied capability event | no state change |
-| Secret exfiltration | no broad reads; outbound package; redaction | secret scanner; destination preview | redacted denial or approval | cancel request; rotate secret outside doll if needed |
-| Malicious model request | default-deny broker | unknown or excessive capability request | denied event with model ID | disable binding; switch to fallback |
-| Malicious tool/runtime | adapter limits; fixed executable; sandbox later | abnormal exit, network, or file behavior | tool failure and provenance | disable adapter; restore affected state |
-| Supply-chain tampering | source and checksum validation; no remote code by default | checksum or signature mismatch | quarantine event | reject asset; keep active version |
-| Partial migration | backup and staging | validation failure | migration failure | rollback or restore pre-migration backup |
-| Corrupt backup | checksums and verification | verify failure | invalid backup status | use earlier valid backup |
-| Resource exhaustion | limits and cancellation | resource threshold | aborted operation | cleanup disposable files; use Lite alternative |
-| Local API exposure | localhost binding; no remote mode | doctor check and bind inspection | warning | stop server; restore safe config |
-| Unauthorized deletion | deletion unavailable to models | forbidden capability | denial | no change; restore trash if user deletion was accidental |
-| Silent cloud fallback | cloud disabled by default; no auto fallback | outbound audit check | blocked or approved cloud event | continue local degraded mode |
+| Prompt injection | origin and authority separation; broker checks | injection indicators; unrelated-capability warning | source and denied request | discard hostile context; continue local task |
+| Workspace escape | canonical paths; approved roots; link checks | boundary violation | denied capability event | no state change |
+| Secret exfiltration | secret separation; brokered credential use; outbound minimization | detector; destination preview | redacted denial or approval | cancel request; rotate externally if needed |
+| Secret in ordinary state | schema prohibition; SecretReference contract | validation and scanning | redacted rejection | no commit; repair source input |
+| Malicious model request | default-deny broker; no direct services | unknown, excessive, or malformed request | denied event with model ID | disable binding; use fallback |
+| Claim promoted without evidence | separate record kinds and confirmation path | provenance and type validation | review and change history | revert or supersede false fact |
+| Fake confirmation | trusted confirmation channel; exact binding | origin and material-change checks | denied or expired confirmation | request fresh user decision |
+| Risk downgrade | registry-owned risk tier | request and registry mismatch | denied capability event | no side effect |
+| Malicious tool or runtime | adapter limits; fixed executable; no direct credentials | abnormal exit, network, or file behavior | tool failure and provenance | disable adapter; restore affected state |
+| Supply-chain tampering | source and hash validation; no remote code by default | hash or signature mismatch | quarantine event | reject asset; keep active version |
+| Partial migration | backup and staging | validation failure | migration failure | rollback or restore backup |
+| Corrupt backup | full verification | verify failure | invalid backup result | use earlier valid backup |
+| Failed restore | staging and atomic publication | post-restore validation | restore failure | remove partial target; keep source |
+| Resource exhaustion | limits and cancellation | threshold breach | aborted operation | cleanup disposable files; degrade safely |
+| Local API exposure | localhost binding; no remote mode | doctor and bind inspection | warning | stop server; restore safe config |
+| Unauthorized deletion | no model deletion; Tier 3 confirmation | forbidden capability | denial | no change; restore trash if applicable |
+| Silent cloud fallback | cloud disabled by default | outbound audit check | blocked or approved event | continue local degraded mode |
 
-## 21. Deferred security work
+## 29. Deferred security work
 
 The following require separate later specifications:
 
@@ -3779,26 +4322,37 @@ The following require separate later specifications:
 - enterprise multi-user authorization;
 - high-assurance backup encryption;
 - hardware-backed keys;
-- cloud-provider-specific data-retention policy handling;
+- cloud-provider-specific retention handling;
 - formal verification;
-- secure enclaves or confidential computing.
+- secure enclaves or confidential computing;
+- user-directed secret reveal outside model context;
+- automated secret rotation across providers.
 
-## 22. Security acceptance criteria
+## 30. Security acceptance criteria
 
-This specification is acceptable when subsequent implementation can be designed so that:
+This specification is acceptable when implementation can be designed and tested so that:
 
-- models cannot bypass the Capability Broker;
+- the safety acceptance gate precedes model execution;
+- models and runtimes cannot bypass the Capability Broker;
 - default permissions are deny or narrow allowlists;
-- files cannot be written outside the workspace through supported APIs;
+- risk tiers are registry-controlled;
+- Tier 3 operations require fresh exact confirmation;
+- confirmation cannot override policy or enable prohibited capabilities;
+- files cannot be written outside the approved workspace through supported APIs;
 - cloud communication is absent unless explicitly enabled;
-- external content cannot act as approval;
+- external content cannot act as authority or approval;
+- instruction origin remains visible and enforceable;
+- confirmed facts, claims, evidence, and inferences remain distinct;
 - unrestricted shell execution is absent;
+- ordinary Doll State stores SecretReference rather than secret values;
+- models do not receive stored secret values by default;
+- credential operations return bounded results rather than credentials;
 - model and tool supply-chain metadata is retained;
 - state changes are recoverable;
-- audit records exist for security-relevant actions;
-- secrets are excluded from ordinary logs and exports;
+- audit records exist for security-relevant allowed and denied actions;
+- logs, exports, backups, fixtures, diagnostics, and errors exclude secret values;
 - the local API is not publicly exposed by default;
-- optional tools can fail without compromising the durable core.
+- optional tools, models, networks, and secret stores can fail without compromising the durable core.
 <!-- END SOURCE: docs/spec/04-security-permissions-and-threat-model.md -->
 
 ---
@@ -5532,7 +6086,9 @@ The release sequence is:
 
 ```text
 Specification baseline
-  -> Personal Lite continuity proof
+  -> model-independent continuity proof
+  -> model-independent safety-boundary proof
+  -> local AI proof
   -> Lite v0.x
   -> Lite v1.0
   -> Heavy foundation
@@ -5550,9 +6106,12 @@ Lite and Heavy must share:
 - one authoritative Doll State model;
 - compatible schemas and migrations;
 - one permission and Capability Broker model;
+- one secret-reference and Credential Broker contract;
 - compatible backup and recovery formats;
 - one audit model;
-- model-independent memory, project, source, and artifact records;
+- model-independent memory, project, source, claim, evidence, inference, and artifact records;
+- one instruction-origin and untrusted-content boundary;
+- one capability risk-tier and high-risk confirmation model;
 - local-first startup;
 - no mandatory cloud account;
 - no automatic cloud fallback;
@@ -5560,30 +6119,57 @@ Lite and Heavy must share:
 
 Heavy may add capabilities but must not create a second incompatible core.
 
-## 3. Personal Lite continuity proof
+## 3. Personal continuity and safety proofs
 
-The first implementation milestone is a proof for one user and one machine.
+The first implementation milestones are proofs for one user and one machine. They are deliberately split so continuity and the safety boundary are established before model execution.
+
+### 3.1 Model-independent continuity proof
 
 It must demonstrate:
 
 1. initialize a private workspace outside the repository;
 2. create and inspect workspace identity and schema version;
-3. start without cloud credentials;
-4. connect to one local model through an adapter;
-5. perform basic local conversation;
-6. create and retrieve confirmed memory;
-7. create and retrieve a project or decision record;
-8. read one user-selected text or Markdown document;
-9. create an artifact inside the workspace;
-10. create, verify, and restore a backup into an empty workspace;
-11. switch to another approved local model without deleting Doll State;
-12. use the restored workspace offline;
-13. refuse a write outside the workspace;
-14. create audit records for continuity and security operations.
+3. start without cloud credentials, network access, or a model runtime;
+4. create and retrieve confirmed memory;
+5. create and retrieve a project or decision record;
+6. create and verify a Doll State package;
+7. import the package into an empty compatible target;
+8. create and verify state and workspace backups;
+9. restore both supported backup kinds into empty compatible targets;
+10. validate restored identity, revision, records, links, audit history, and artifact bytes in a fresh process;
+11. preserve the last known good state when import or restore fails;
+12. refuse unsafe archive paths and writes outside the workspace;
+13. create audit records for continuity and denial operations.
 
-The proof does not require Web research, PDF, OCR, audio, video, cloud, mobile, avatars, Heavy hardware, automatic model acquisition, or public installer quality.
+This proof does not require or permit a model execution path.
 
-Passing the proof validates the architecture only. It does not mean the product is ready for general users.
+### 3.2 Model-independent safety-boundary proof
+
+Before a local model adapter may merge, accepted tests must demonstrate:
+
+1. ordinary Doll State retains only non-secret credential references;
+2. secret values are absent from logs, audit, exports, backups, fixtures, diagnostics, and model-context packages;
+3. the Credential Broker performs bounded synthetic operations without disclosing stored values;
+4. confirmed facts, claims, evidence, and inferences remain distinct;
+5. instruction origin and authority survive persistence and context assembly;
+6. hostile content cannot grant permission, confirmation, or capability authority;
+7. unknown, malformed, risk-downgraded, or under-confirmed capability requests fail closed;
+8. high-risk confirmation is fresh, exact, user-controlled, and invalidated by material changes.
+
+### 3.3 First local AI proof
+
+Only after the safety-boundary proof passes, accepted tests must demonstrate:
+
+1. connect to one local model through a replaceable adapter;
+2. perform basic local conversation offline;
+3. keep model context within secret, trust, origin, and permission policy;
+4. prevent direct model side effects;
+5. switch to another approved local model without deleting Doll State;
+6. disable every model adapter without losing state inspection, export, backup, restore, or recovery.
+
+These proofs do not require Web research, PDF, OCR, audio, video, cloud, mobile, avatars, Heavy hardware, automatic model acquisition, or public installer quality.
+
+Passing them validates the named architecture gates only. It does not mean the product is ready for general users.
 
 ## 4. Lite profile
 
@@ -5726,8 +6312,9 @@ Any cloud integration must:
 - store returned artifacts locally;
 - avoid automatic promotion into confirmed memory;
 - avoid automatic fallback after local failure;
-- use operating-system credential storage;
-- create audit records.
+- use the accepted external secret-store and Credential Broker boundary without exposing stored values to models;
+- preserve instruction origin for returned content;
+- create secret-safe audit records.
 
 ## 8. Mobile scope
 
@@ -5755,7 +6342,7 @@ A neutral work-assistant mode must remain fully supported. Model replacement is 
 
 Stable initial releases exclude destructive, externally visible, account-changing, transactional, unrestricted command, and arbitrary-code capabilities.
 
-Any future addition requires a separate threat model, capability contract, approval design, and acceptance suite.
+Any future addition requires a separate threat model, versioned capability contract, risk tier, exact confirmation design, credential boundary where applicable, and acceptance suite. Confirmation cannot make a prohibited capability available.
 
 ## 11. Support matrix
 
@@ -5804,8 +6391,9 @@ Features that do not strengthen continuity or minimum useful local capability sh
 
 This specification is acceptable when:
 
-- the first proof is smaller than Lite v1.0;
-- Lite and Heavy share one core;
+- the model-independent continuity proof is smaller than Lite v1.0;
+- the complete safety-boundary proof precedes the local AI proof;
+- Lite and Heavy share one core, secret, trust, instruction, capability, and confirmation boundary;
 - Lite v1.0 has a testable boundary;
 - Heavy completion requires real hardware;
 - cloud and mobile cannot become hidden local dependencies;
@@ -5825,9 +6413,11 @@ This specification is acceptable when:
 
 ## 1. Purpose
 
-This document defines the evidence required before doll may claim that a feature, profile, platform, or release is working.
+This document defines the evidence required before doll may claim that a feature, phase, profile, platform, or release is working.
 
-A successful normal startup is not enough. Continuity must be demonstrated by controlled loss, replacement, restoration, and degraded operation.
+A successful normal startup or a plausible model response is not enough. Continuity must be demonstrated by controlled loss, transfer, restoration, and degraded operation. Safety must be demonstrated by denied, malformed, hostile, under-confirmed, and failure cases as well as allowed cases.
+
+No model execution path may be merged before the model-independent safety acceptance gate in this document passes.
 
 ## 2. Evidence levels
 
@@ -5836,8 +6426,10 @@ Every result must identify one evidence level:
 - **Unit:** isolated logic test;
 - **Integration:** multiple doll components using synthetic fixtures;
 - **CI platform:** automated test on macOS, Windows, or Ubuntu CI;
+- **Real process:** fresh operating-system process rather than an in-process call;
 - **Real machine:** recorded test on physical user hardware;
 - **Manual continuity drill:** deliberate failure and recovery exercise;
+- **Manual safety drill:** deliberate hostile, denied, or under-confirmed operation exercise;
 - **Soak:** repeated ordinary use over a defined period;
 - **Community verified:** reproducible report from another user or machine.
 
@@ -5871,17 +6463,60 @@ Results are `pass`, `fail`, `blocked`, or `not_applicable`.
 
 A blocked test does not count as a pass.
 
+A shareable result must not include absolute local paths, usernames, hostnames, home-directory details, secret values, private source content, or personal fixtures.
+
 ## 4. Blocking rules
 
-A blocking test prevents the named release or claim when it fails.
+A blocking test prevents the named phase, release, or claim when it fails.
 
-A test may be advisory only when the release scope says so.
+A test may be advisory only when the accepted phase or release scope says so.
 
-No test may be marked passed based only on expected behavior, code review, or an unexecuted test definition.
+No test may be marked passed based only on expected behavior, code review, a model's statement, or an unexecuted test definition.
 
-## 5. First continuity proof suite
+A waiver cannot override a mandatory Continuity Contract, safety-boundary requirement, or accepted architecture decision without a specification change.
 
-The Personal Lite continuity proof requires all tests in this section.
+## 5. Phase 2 model-independent continuity gate
+
+IMP-012 is the Continuity Acceptance Test. It runs after IMP-011 and before Phase 3 safety-boundary implementation depends on restore behavior.
+
+The Phase 2 gate requires:
+
+- CONT-P001;
+- CONT-P002 without a model requirement;
+- CONT-P005;
+- CONT-P006;
+- CONT-P008;
+- CONT-P009;
+- CONT-P010;
+- CONT-P011;
+- CONT-P012;
+- CONT-P015 for implemented operations;
+- CONT-P016;
+- STATE-001 through STATE-012 where implemented;
+- PLAT-001 through PLAT-007 where applicable.
+
+Required evidence:
+
+- integration and CI on macOS, Windows, and Ubuntu;
+- fresh-process export, import, backup, restore, and inspection;
+- a complete continuity drill on the primary Intel Mac;
+- network-disabled operation for the tested paths;
+- no model runtime or cloud credential dependency;
+- exact artifact-byte and hash comparison;
+- failure cleanup and last-known-good preservation.
+
+The Phase 2 gate fails when:
+
+- a verified backup cannot be restored into an empty target;
+- an invalid, unsafe, mismatched, existing, or non-empty target is partially activated;
+- restored identity, schema, revision, record, link, audit, or artifact data differs from the verified contract;
+- a fresh process cannot inspect the restored workspace;
+- shareable output leaks private environment details;
+- model execution or network access is required.
+
+## 6. Personal Lite continuity proof suite
+
+The Personal Lite continuity proof requires all applicable tests in this section. Model-dependent tests run later, after the safety gate and local-model implementation.
 
 ### CONT-P001 — Workspace initialization
 
@@ -5889,23 +6524,23 @@ Given a clean user data location, `doll init` creates a workspace outside the re
 
 Blocking evidence: integration and primary real machine.
 
-### CONT-P002 — No-cloud startup
+### CONT-P002 — No-cloud core startup
 
-With no cloud credentials and all cloud adapters absent, the core starts and reports local capability status.
+With no cloud credentials and all cloud adapters absent, the core starts and reports local capability status. Before model integration, state inspection, export, backup, restore, audit, and doctor paths remain available without a model.
 
 Blocking evidence: integration and real machine.
 
-### CONT-P003 — Offline startup
+### CONT-P003 — Offline local-AI startup
 
 After required local dependencies and one local model are installed, network access is disabled and doll starts without hidden outbound requests.
 
-Blocking evidence: real-machine continuity drill.
+Blocking evidence: real-machine continuity drill after Phase 4 implementation.
 
 ### CONT-P004 — Local conversation
 
-A request reaches the selected local runtime adapter and returns a response without cloud inference.
+A request reaches the selected local runtime adapter and returns a response without cloud inference. The model receives only the context allowed by secret, origin, trust, and permission policy.
 
-Blocking evidence: real machine.
+Blocking evidence: real machine after the Phase 3 safety gate.
 
 ### CONT-P005 — Confirmed memory persistence
 
@@ -5915,15 +6550,15 @@ Blocking evidence: integration and real machine.
 
 ### CONT-P006 — Project or decision persistence
 
-A project or decision record survives restart and export/import.
+A project or decision record survives restart and export/import. Typed links remain valid.
 
 Blocking evidence: integration.
 
 ### CONT-P007 — Local document read
 
-A user-selected text or Markdown document is read through an approved path and remains outside the workspace unless explicitly copied.
+A user-selected text or Markdown document is read through an approved path, receives instruction-origin metadata, and remains outside the workspace unless explicitly copied.
 
-Blocking evidence: integration and real machine.
+Blocking evidence: integration and real machine after the external-content boundary exists.
 
 ### CONT-P008 — Artifact creation
 
@@ -5933,47 +6568,53 @@ Blocking evidence: integration.
 
 ### CONT-P009 — Workspace escape rejection
 
-Traversal, absolute-path, and supported link-escape attempts cannot create or modify a file outside the workspace.
+Traversal, absolute-path, drive-path, UNC, case-collision, and supported link-escape attempts cannot create or modify a file outside the workspace.
 
 Blocking evidence: CI on all target operating systems and primary real machine.
 
 ### CONT-P010 — Backup creation and verification
 
-A backup is not marked complete until manifest and checksum verification succeed.
+A backup is not marked complete until manifest, member, identity, revision, checksum, nested-package or SQLite, and artifact verification succeed.
 
-Blocking evidence: integration.
+Blocking evidence: integration and CI on all target operating systems.
 
 ### CONT-P011 — Restore to empty workspace
 
-A verified backup restores into a clean target and preserves workspace identity, records, and authoritative files.
+A verified state or workspace backup restores into an empty target and preserves the identity, schema, revision, implemented authoritative records, typed links, audit history, and authoritative artifact bytes required by that backup kind.
 
-Blocking evidence: integration and primary real machine.
+Blocking evidence: integration, fresh process, and primary real machine.
 
 ### CONT-P012 — Post-restore validation
 
-The restored workspace passes doctor checks and can inspect memory, projects, artifacts, and bindings.
+The restored workspace passes integrity and contract validation in a fresh process and can inspect preferences, policies, permissions, confirmed memories, projects, decisions, typed links, artifacts, backup inventory, and audit history without running a model.
 
-Blocking evidence: integration and real machine.
+Blocking evidence: integration, fresh process, and primary real machine.
 
 ### CONT-P013 — Model replacement without state loss
 
-The active local model binding changes while confirmed memory, projects, decisions, and artifacts remain unchanged.
+The active local model binding changes while confirmed memory, projects, decisions, trust records, permissions, audit history, and artifacts remain unchanged.
 
-Blocking evidence: integration and real machine.
+Blocking evidence: integration and real machine after Phase 4 implementation.
 
 ### CONT-P014 — Local fallback
 
-When the active local binding is unavailable, an approved local fallback is selected or offered according to policy, with no cloud request.
+When the active local binding is unavailable, an approved local fallback is selected or offered according to policy, with no cloud request and no safety-boundary bypass.
 
-Blocking evidence: integration and real machine.
+Blocking evidence: integration and real machine after Phase 4 implementation.
 
 ### CONT-P015 — Audit coverage
 
-Allowed, denied, failed, restored, and model-switch operations create audit events without raw secrets.
+Allowed, denied, failed, restored, secret-brokered, under-confirmed, prompt-injection-blocked, and model-switch operations create appropriate audit events without raw secrets or unnecessary private content.
 
-Blocking evidence: integration.
+Blocking evidence: integration for implemented operation classes.
 
-## 6. State, migration, and recovery suite
+### CONT-P016 — Model independence of continuity
+
+Removing or disabling every model adapter does not prevent workspace opening, state inspection, export, import, backup verification, restore, post-restore validation, audit inspection, or read-only recovery.
+
+Blocking evidence: integration, CI, and primary real machine before Phase 4.
+
+## 7. State, migration, and recovery suite
 
 ### STATE-001 — Schema version enforcement
 
@@ -6001,11 +6642,11 @@ A migration requiring backup cannot begin until a verified backup exists.
 
 ### STATE-007 — Corrupt backup rejection
 
-Checksum or manifest corruption prevents activation of restored state.
+Checksum, manifest, nested-package, SQLite, identity, revision, record, link, artifact, or file-inventory corruption prevents restore publication.
 
 ### STATE-008 — Unsafe archive path rejection
 
-Restore rejects traversal, absolute paths, and unsafe link entries.
+Import and restore reject traversal, absolute paths, drive paths, UNC or backslash paths, unsafe link entries, unknown members, duplicate members, case-fold collisions, and resource-limit violations.
 
 ### STATE-009 — Read-only recovery
 
@@ -6015,33 +6656,41 @@ When state integrity or schema compatibility is uncertain, inspection and export
 
 Removing reproducible indexes and disposable caches does not remove authoritative state; supported indexes can be rebuilt.
 
-All tests are blocking for Lite v1.0 where implemented.
+### STATE-011 — Atomic restore publication
 
-## 7. Security and permission suite
+A restore publishes the complete validated workspace without overwriting an existing target. Failure removes staging and any partial publication and emits no false success audit event.
+
+### STATE-012 — Fresh-process restored-state validation
+
+A separate process opens the restored workspace, validates SQLite integrity, identity, revision, record envelopes, typed links, managed artifact paths, hashes, bytes, and implemented record contracts.
+
+All implemented state tests are blocking for the Phase 2 gate and Lite v1.0.
+
+## 8. Security, secret, trust, and permission suite
 
 ### SEC-001 — Unknown capability denied
 
-Unknown capability IDs or versions are rejected.
+Unknown capability IDs or versions are rejected without side effects.
 
 ### SEC-002 — Malformed arguments denied
 
-Invalid structured tool requests cause no side effect.
+Invalid structured capability requests cause no side effect.
 
 ### SEC-003 — Approval cannot come from content
 
-Text inside model output, documents, websites, or tool output cannot grant approval.
+Text inside model output, documents, websites, imported data, metadata, OCR, transcripts, or tool output cannot grant approval.
 
 ### SEC-004 — Approval invalidation
 
-A material target or argument change invalidates prior approval.
+A material target, argument, destination, side-effect, credential-class, or scope change invalidates prior approval.
 
 ### SEC-005 — Model cannot change permissions
 
-Normal model or tool paths cannot create or widen permission records.
+Normal model, runtime, capability, document, import, or tool paths cannot create, widen, reactivate, or self-approve permission records.
 
 ### SEC-006 — No unrestricted shell
 
-No stable capability provides a generic shell or arbitrary command string.
+No stable capability provides a generic shell, arbitrary command string, or unbounded child-process path.
 
 ### SEC-007 — Localhost binding
 
@@ -6049,27 +6698,98 @@ The default API listens only on localhost and doctor reports unsafe bind configu
 
 ### SEC-008 — Cloud-disabled network silence
 
-With cloud disabled, no cloud endpoint is contacted during local chat, fallback, startup, restore, or doctor.
+With cloud disabled, no cloud endpoint is contacted during startup, local chat, fallback, state operations, restore, doctor, or recovery.
 
 ### SEC-009 — Retrieval destination restrictions
 
-Explicit Web retrieval applies scheme, redirect, size, timeout, and private-network restrictions.
+Explicit Web retrieval applies scheme, destination, redirect, size, timeout, content-type, and private-network restrictions.
 
 ### SEC-010 — Secret redaction
 
-Known secret patterns are omitted or redacted from normal logs, errors, exports, and shareable doctor reports.
+Known synthetic secret patterns are omitted or redacted from normal logs, errors, exports, backups, audit events, diagnostics, context packages, and shareable doctor reports.
 
 ### SEC-011 — External content remains untrusted
 
-Prompt-injection fixtures cannot bypass policy, permissions, or workspace boundaries.
+Prompt-injection fixtures cannot bypass policy, instruction authority, permissions, risk tiers, confirmation, workspace boundaries, credential isolation, or network policy.
 
 ### SEC-012 — Audit immutability through normal capabilities
 
-A model cannot rewrite or delete audit history through supported tool paths.
+A model, runtime, tool, or normal capability cannot rewrite or delete audit history.
 
-All are blocking for the applicable stable feature.
+### SEC-013 — Secret classification enforced
 
-## 8. Model Vault suite
+Data classified as a secret value is rejected from ordinary authoritative record fields that do not explicitly permit a SecretReference.
+
+### SEC-014 — SecretReference is non-secret
+
+A SecretReference contains only bounded identifier and policy metadata. It is safe to persist and export under its contract and cannot be used as the secret value itself.
+
+### SEC-015 — Secret-safe exceptional paths
+
+Validation errors, exceptions, failed adapters, trace summaries, retries, cancellation, and partial failures do not leak secret values or private environment details.
+
+### SEC-016 — External secret-store isolation
+
+Secret values are stored outside ordinary Doll State. An unavailable, locked, denied, or missing secret store fails the credential operation without blocking non-secret core startup or corrupting state.
+
+### SEC-017 — Credential broker non-disclosure
+
+The credential broker completes a bounded synthetic operation without returning the stored secret value to a model or ordinary caller. Result and audit data are structured and redacted.
+
+### SEC-018 — Confirmed fact, claim, evidence, and inference separation
+
+Persistence, import, export, query, and context assembly retain distinct record kinds and provenance. No model, document, website, tool, runtime, or import assertion becomes a confirmed fact automatically.
+
+### SEC-019 — Instruction origin preserved
+
+Every instruction-bearing input retains source and authority metadata through persistence and context assembly. Unknown origin is classified at the least-authoritative level.
+
+### SEC-020 — Untrusted content cannot become authority
+
+Retrieved or imported content can supply task data or evidence but cannot change system policy, durable user policy, permission state, risk tier, confirmation state, credential scope, or instruction authority.
+
+### SEC-021 — Capability risk tier enforced
+
+The broker applies the registered capability version and risk tier. A request cannot downgrade its own tier, omit declared side effects, or use a lower-risk permission for a higher-risk operation.
+
+### SEC-022 — Mandatory high-risk confirmation
+
+Every Tier 3 operation fails without a fresh user-controlled confirmation bound to the exact capability, target, destination, material side effects, and credential class where applicable.
+
+### SEC-023 — Confirmation is necessary but not sufficient
+
+A valid confirmation cannot make an unknown, malformed, prohibited, out-of-scope, unsafe, or release-excluded capability executable.
+
+All SEC-001 through SEC-023 are blocking for the Phase 3 safety gate when their components are implemented. SEC-001 through SEC-012 remain blocking for every applicable stable feature.
+
+## 9. Phase 3 safety acceptance gate
+
+IMP-023 is the Safety Acceptance Test. It must pass before IMP-024 or any model execution path merges.
+
+Required gate evidence:
+
+- unit and integration tests for SEC-001 through SEC-023;
+- CI on macOS, Windows, and Ubuntu;
+- fresh-process checks for persistence, export, audit, credential, and denial behavior;
+- hostile synthetic content covering documents, websites, metadata, OCR, transcripts, imports, tool results, and model-like proposals;
+- synthetic secret fixtures only;
+- primary Intel Mac real-process validation for applicable paths;
+- repository coverage remains at or above the accepted threshold;
+- no blanket coverage exclusion hides safety logic;
+- review confirms no direct route from a future model adapter to filesystem, network, process, permission, secret-store, or audit mutation.
+
+The safety gate fails when:
+
+- a secret value enters ordinary state or user-shareable output;
+- a model-like caller can retrieve a stored credential value;
+- external content can grant approval or raise instruction authority;
+- a claim silently becomes a confirmed fact;
+- unknown, malformed, under-declared, under-confirmed, or risk-downgraded capabilities execute;
+- a material change preserves high-risk confirmation;
+- denial or failure damages the last known good state;
+- a model adapter could bypass the accepted broker contracts.
+
+## 10. Model Vault suite
 
 ### MODEL-001 — Manifest completeness
 
@@ -6115,9 +6835,17 @@ Model activation, rollback, and fallback do not rewrite unrelated Doll State.
 
 Training uses an approved dataset snapshot and produces a candidate rather than an active binding.
 
-Blocking status depends on the release capability. MODEL-001 through MODEL-010 are blocking for stable Model Vault claims.
+### MODEL-012 — Safety-boundary-only side effects
 
-## 9. Platform and installation suite
+A runtime adapter and model can propose a capability request but cannot directly access state mutation, filesystem write, network, process, permission, credential, confirmation, or audit internals.
+
+### MODEL-013 — Secret-free default context
+
+Default model context contains no secret values. A credential-bearing operation is performed through the broker and returns only a bounded result.
+
+MODEL-001 through MODEL-010, MODEL-012, and MODEL-013 are blocking for stable local-model claims.
+
+## 11. Platform and installation suite
 
 ### PLAT-001 — Installation and import
 
@@ -6129,40 +6857,45 @@ The default workspace uses the correct platform-aware location and not the repos
 
 ### PLAT-003 — Path portability
 
-Managed export paths do not depend on one drive letter, separator, case-sensitivity rule, or shell.
+Managed export, backup, and restore paths do not depend on one drive letter, separator, case-sensitivity rule, or shell.
 
 ### PLAT-004 — Optional dependency absence
 
-The core starts and doctor reports missing optional tools without crashing.
+The core starts and doctor reports missing optional tools, runtimes, secret-store adapters, or model adapters without crashing.
 
 ### PLAT-005 — UTF-8 behavior
 
-Non-ASCII names and Japanese text survive create, export, backup, restore, and re-import.
+Non-ASCII names and Japanese text survive create, export, backup, restore, re-import, provenance, and audit paths.
 
 ### PLAT-006 — File locking and atomic write
 
 Interrupted supported writes preserve the previous valid version.
 
-### PLAT-007 — Doctor redaction
+### PLAT-007 — Doctor and output redaction
 
-A shareable doctor report removes private path, username, hostname, and secret details by default.
+A shareable doctor report and normal CLI errors remove absolute paths, usernames, hostnames, home-directory details, secret values, and unnecessary private data by default.
 
 ### PLAT-008 — Clean uninstall preservation
 
-Removing application code does not silently remove the private workspace.
+Removing application code does not silently remove the private workspace or external secret-store entries.
+
+### PLAT-009 — Secret-store contract portability
+
+Platform adapters expose the same non-secret reference, availability, user-presence, revocation, and failure contract even when operating-system mechanisms differ.
 
 CI platform evidence is required for Windows and Ubuntu beta claims. Real-machine evidence is required for a real-machine support claim.
 
-## 10. Lite v1.0 functional suite
+## 12. Lite v1.0 functional suite
 
 Blocking Lite v1.0 functions include:
 
-- local conversation;
+- local conversation after the safety gate;
 - writing and editing;
 - summarization;
 - translation;
 - confirmed memory;
 - project and decision state;
+- claim, evidence, inference, and source inspection;
 - local text and Markdown;
 - artifact management;
 - local full-text search;
@@ -6172,27 +6905,29 @@ Blocking Lite v1.0 functions include:
 - state export and import;
 - backup, verify, restore, and post-restore validation;
 - offline and read-only recovery modes;
-- doctor and audit inspection.
+- capability, permission, confirmation, doctor, and audit inspection.
 
-Each advertised function requires success, invalid-input, missing-dependency, permission-denial, restart-persistence, and recovery tests where applicable.
+Each advertised function requires success, invalid-input, missing-dependency, permission-denial, risk-denial, restart-persistence, secret-safety, instruction-origin, and recovery tests where applicable.
 
-## 11. Web research suite
+## 13. Web research suite
 
 When advertised stable:
 
 - explicit search creates a research session;
-- sources record URL and retrieval time;
+- sources record normalized URL, retrieval time, content hash, and instruction origin;
+- claims, evidence, and inferences remain distinguishable;
 - retrieval failure does not fail the core;
 - local cache and authoritative records are distinguished;
 - citation relationships remain inspectable outside the preferred UI;
 - network-disabled mode uses retained sources only;
-- prompt injection in sources cannot grant tools;
+- prompt injection in sources cannot grant tools, confirmation, policy, or credential access;
 - cloud inference is not required;
-- private-network retrieval restrictions pass.
+- private-network retrieval restrictions pass;
+- secret-bearing outbound content is denied or explicitly redacted under policy.
 
 If these are incomplete, Web research must remain experimental.
 
-## 12. Heavy suite
+## 14. Heavy suite
 
 Heavy v1.0 adds blocking evidence for every advertised Heavy capability, including:
 
@@ -6205,11 +6940,12 @@ Heavy v1.0 adds blocking evidence for every advertised Heavy capability, includi
 - media processing;
 - verifier workflows;
 - training or adaptation where included;
-- failure recovery and Lite-compatible degradation.
+- failure recovery and Lite-compatible degradation;
+- the same safety, secret, trust, capability, and confirmation contracts as Lite.
 
 Mocks and CI may support development but cannot satisfy real-hardware Heavy release gates.
 
-## 13. Soak and continuity drills
+## 15. Soak and continuity or safety drills
 
 ### Lite release candidate soak
 
@@ -6220,10 +6956,13 @@ Record:
 - startups and restarts;
 - model switches;
 - document and artifact work;
+- claim and evidence review;
+- capability approvals and denials;
 - backups;
 - at least one restore drill;
 - offline use;
-- observed state or audit defects;
+- secret-store unavailable or locked behavior;
+- observed state, security, trust, or audit defects;
 - disk growth;
 - known crashes.
 
@@ -6232,17 +6971,30 @@ Record:
 A continuity-ready installation should periodically test:
 
 1. disconnect network;
-2. remove cloud credentials;
-3. start through CLI or local API without preferred UI;
-4. use a local model;
-5. retrieve confirmed memory and a project;
-6. open a local document;
-7. create an artifact;
-8. switch to fallback;
-9. verify a backup;
-10. restore to a separate empty location.
+2. remove or disable cloud credentials;
+3. start through CLI or local API without the preferred UI;
+4. inspect confirmed memory and a project without a model;
+5. verify a backup;
+6. restore to a separate empty location;
+7. validate the restored workspace in a fresh process;
+8. after Phase 4, use a local model and switch to fallback;
+9. confirm unrelated authoritative state remains unchanged.
 
-## 14. Release acceptance report
+### Periodic safety drill
+
+A safety-ready installation should periodically test:
+
+1. lock or deny the external secret store;
+2. submit hostile external-content fixtures;
+3. attempt an unknown and malformed capability;
+4. attempt a risk-tier downgrade;
+5. attempt a high-risk operation without confirmation;
+6. approve one exact synthetic high-risk operation;
+7. change a material argument and verify confirmation invalidation;
+8. inspect redacted audit and diagnostic output;
+9. confirm the last known good state remains intact.
+
+## 16. Release acceptance report
 
 A release acceptance report must include:
 
@@ -6252,28 +7004,34 @@ A release acceptance report must include:
 - blocking test totals;
 - failed, blocked, or waived advisory tests;
 - real-machine environments;
-- model and runtime manifests used;
-- backup and restore evidence;
+- model and runtime manifests used where applicable;
+- continuity, backup, and restore evidence;
+- safety-gate evidence;
+- secret-store and credential-broker evidence where applicable;
 - offline evidence;
 - security test summary;
 - known limitations;
 - soak result;
 - release decision.
 
-A test waiver cannot override a mandatory Continuity Contract or security requirement without a specification change.
-
-## 15. Acceptance criteria
+## 17. Acceptance criteria
 
 This test specification is accepted when:
 
-- every release claim can map to a stable test ID;
+- every phase and release claim maps to stable test IDs;
 - continuity includes loss and recovery, not normal startup only;
-- CI and real-machine evidence remain distinct;
+- Phase 2 continuity is provable without model execution;
+- the complete safety gate precedes model execution;
+- CI, fresh-process, and real-machine evidence remain distinct;
 - backup creation does not substitute for restore;
 - model replacement includes rollback and state-integrity evidence;
-- security tests verify denied actions as well as allowed actions;
+- security tests verify denied and hostile actions as well as allowed actions;
+- secret values remain separate from ordinary state and model context;
+- claims, evidence, inferences, and confirmed facts remain distinct;
+- instruction origin remains enforceable through context assembly;
+- high-risk confirmation is exact, fresh, and insufficient to override policy;
 - experimental features cannot silently count toward stable gates;
-- Lite and Heavy use the same core continuity evidence;
+- Lite and Heavy use the same core continuity and safety evidence;
 - release reports expose failures and limitations rather than hiding them.
 <!-- END SOURCE: docs/spec/08-acceptance-and-continuity-tests.md -->
 
@@ -6287,187 +7045,210 @@ This test specification is accepted when:
 
 ## 1. Purpose
 
-This roadmap converts the accepted product and engineering specifications into an implementation sequence.
+This roadmap converts the accepted product, continuity, and security specifications into an implementation sequence.
 
 It is a sequencing document, not a promise of exact dates or pull-request counts.
 
 The governing rule is:
 
-> Prove continuity first, then add useful local capabilities, then expand performance and access.
+> Prove user-owned continuity first, complete the model-independent safety boundary second, then add model execution and useful capabilities without weakening either pillar.
 
 ## 2. Working method
 
 Development proceeds through small, reviewable pull requests.
 
-Each implementation PR should:
+Each implementation PR must:
 
-- solve one bounded problem;
+- solve one bounded issue;
 - cite the accepted specification it implements;
-- describe state, permission, network, and migration effects;
-- include tests;
+- describe state, permission, secret, trust, network, and migration effects;
+- include tests for success and denial or failure paths;
 - avoid unrelated refactoring;
-- state what was not tested on real hardware;
-- preserve a working main branch.
+- distinguish CI evidence from real-machine evidence;
+- preserve a working and recoverable `main` branch;
+- avoid private data, credentials, secret values, personal paths, usernames, hostnames, and home-directory details.
+
+The normal unit of work is:
+
+```text
+1 Issue → 1 Branch → 1 Pull Request
+```
 
 The intended division of work is:
 
 - GPT: architecture, specification, task decomposition, review, and release-gate checking;
-- Codex: implementation, tests, migrations, documentation updates, and PR preparation;
+- Codex or equivalent implementation assistance: code, tests, migrations, documentation updates, and PR preparation;
 - project owner: priorities, real-machine validation, final merge, release, license, and hardware decisions.
 
-## 3. Current phase
+## 3. Governing implementation order
 
-### Phase 0 — Specification and repository baseline
+Doll has two co-equal architectural pillars:
 
-Status at completion of PR-005:
+1. continuity of user-owned state;
+2. a model-independent safety boundary.
 
-- product identity defined;
-- Continuity Contract defined;
-- architecture and Doll State defined;
-- security and permission model defined;
-- Model Vault and recovery defined;
-- release scope defined;
-- acceptance tests defined;
-- roadmap defined.
+The implementation phases are:
 
-Phase 0 is complete when:
+```text
+Phase 0  Specification and principles
+Phase 1  Local state foundation
+Phase 2  Continuity, transfer, backup, and restore
+Phase 3  Safety boundary
+Phase 4  Local AI
+Phase 5  Cloud and multiple models
+Phase 6  Tools and external services
+Phase 7  Daily use
+Phase 8  Distribution, encryption, and long-term operation
+```
 
-1. the combined specification is generated deterministically;
-2. the contradiction and completeness audit is recorded;
-3. requirement wording and acceptance mappings are reviewed;
-4. specification set 0.1 is accepted for implementation;
-5. the initial implementation issue and PR queue can begin.
+No model adapter, inference request, conversation runtime, or model-initiated capability path may merge before the Phase 3 safety gate passes.
 
-No production feature may bypass this baseline. After the v0.1 freeze, implementation starts with IMP-001.
+## 4. Current state
 
-## 4. Phase 1 — Repository and continuity kernel
+Completed:
 
-Goal: establish a cross-platform Python package, private workspace, versioned state, and safe write boundary.
+- Phase 0 specification baseline;
+- IMP-001 through IMP-010;
+- local workspace, SQLite state, migrations, audit, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package export/import, and verified backup creation.
 
-### Proposed PR sequence
+Current implementation point:
 
-#### IMP-001 — Python package and CI skeleton
+- Phase 2;
+- IMP-011 is the next code issue;
+- IMP-011 adds backup restore and post-restore validation;
+- IMP-012 will run the model-independent Continuity Acceptance Test;
+- IMP-013 through IMP-023 implement and validate the safety boundary;
+- local model execution begins at IMP-024 or later.
 
-- Python 3.12 project metadata;
+## 5. Phase 0 — Specification and principles
+
+Goal: define product identity, continuity, state ownership, security, release evidence, and implementation order before production features.
+
+Status: complete, subject to controlled specification changes.
+
+Completed specification work includes:
+
+- product identity and Continuity Contract;
+- local-complete, cloud-optional architecture;
+- Doll State and storage model;
+- default-deny permissions and trust boundaries;
+- Model Vault direction;
+- platform and recovery direction;
+- release scope and acceptance evidence;
+- deterministic `DOLL_FINAL_SPEC.md` generation;
+- ADR-005 sequencing the safety boundary before model execution.
+
+No implementation PR may silently contradict this baseline.
+
+## 6. Phase 1 — Local state foundation
+
+Goal: establish a cross-platform package, private workspace, versioned authoritative state, explicit user control, and safe writes without any model dependency.
+
+Status: complete through IMP-008.
+
+### IMP-001 — Python package and CI skeleton
+
+Implemented:
+
+- Python package metadata;
 - `uv` lock and development commands;
 - `src/doll/` package;
 - Typer CLI entry point;
 - FastAPI application factory;
-- pytest, lint, and type-check configuration;
-- GitHub Actions for macOS, Windows, and Ubuntu;
+- pytest, lint, type-check, and coverage configuration;
+- macOS, Windows, and Ubuntu CI;
 - no model or external tool dependency.
 
-Acceptance focus:
+### IMP-002 — Platform paths and workspace initialization
 
-- PLAT-001;
-- imports and CLI help on all CI platforms;
-- no private data created in repository.
+Implemented:
 
-#### IMP-002 — Platform paths and workspace initialization
-
-- platform-aware default directories;
+- platform-aware data locations;
 - `doll init`;
 - WorkspaceRecord;
-- workspace configuration;
 - repository-checkout protection;
-- path canonicalization primitives;
-- synthetic fixtures.
+- path canonicalization;
+- synthetic and Unicode fixtures.
 
-Acceptance focus:
+### IMP-003 — SQLite state repository and migrations
 
-- CONT-P001;
-- PLAT-002;
-- Japanese and non-ASCII path tests.
+Implemented:
 
-#### IMP-003 — SQLite state repository and migrations
-
-- initial schema;
+- schema versioning;
 - common record envelope;
-- schema version table;
 - migration runner;
-- transactions and revision fields;
+- transactions and revisions;
 - read-only recovery opening path.
 
-Acceptance focus:
+### IMP-004 — Append-oriented audit service
 
-- STATE-001;
-- STATE-002;
-- STATE-005 foundation.
+Implemented:
 
-#### IMP-004 — Audit service
-
-- append-oriented audit schema;
 - operation IDs;
 - actor and result records;
-- secret-safe error summaries;
-- CLI audit listing.
+- secret-safe summaries;
+- audit listing;
+- append-oriented persistence.
 
-Acceptance focus:
+### IMP-005 — Workspace file service
 
-- CONT-P015 foundation;
-- SEC-012.
-
-#### IMP-005 — Workspace file service
+Implemented:
 
 - managed artifact paths;
-- safe create-new semantics;
+- create-new semantics;
 - content hashing;
 - atomic writes;
 - traversal and link-escape defenses;
 - size limits.
 
-Acceptance focus:
+### IMP-006 — Preferences, policies, and permissions
 
-- CONT-P008;
-- CONT-P009;
-- SEC filesystem tests.
-
-## 5. Phase 2 — Minimal Doll State and recovery
-
-Goal: make durable user state inspectable, exportable, restorable, and independent from a model.
-
-### Proposed PR sequence
-
-#### IMP-006 — Preferences, policies, and permissions
+Implemented:
 
 - PreferenceRecord;
 - PolicyRecord;
 - PermissionRecord;
 - denied, allow-once, ask, and scoped modes;
 - no global allow-all;
-- management CLI.
+- explicit management path;
+- model or content text cannot count as approval.
 
-#### IMP-007 — Confirmed memory
+### IMP-007 — Confirmed memory
 
-- confirmed MemoryRecord only for the first slice;
-- create, list, inspect, update, archive, export;
+Implemented:
+
+- confirmed MemoryRecord management;
 - provenance and sensitivity;
+- archive and export;
 - no automatic conversation-to-memory conversion.
 
-Acceptance focus:
+### IMP-008 — Projects and decisions
 
-- CONT-P005.
-
-#### IMP-008 — Projects and decisions
+Implemented:
 
 - ProjectRecord;
 - DecisionRecord;
-- links to memory and artifacts;
-- revision-safe updates.
+- typed links;
+- revision-safe updates;
+- archive and export.
 
-Acceptance focus:
+## 7. Phase 2 — Continuity, transfer, backup, and restore
 
-- CONT-P006.
+Goal: make durable state inspectable, transferable, restorable, and verifiable without a model, runtime, network connection, cloud account, or preferred UI.
 
-#### IMP-009 — Doll State export and import
+### IMP-009 — Doll State package export and import
 
-- package manifest;
-- JSON/JSONL records;
+Status: complete.
+
+Implemented:
+
+- versioned package manifest;
+- JSON and JSONL records;
 - checksums;
-- package version;
 - staged validation;
 - conflict reporting;
-- no code execution.
+- empty-target import;
+- no package-content execution.
 
 Acceptance focus:
 
@@ -6475,298 +7256,402 @@ Acceptance focus:
 - STATE-004;
 - STATE-008.
 
-#### IMP-010 — Backup create and verify
+### IMP-010 — Backup creation and verification
+
+Status: complete.
+
+Implemented:
 
 - state backup;
-- full workspace backup;
-- manifest and SHA-256 checks;
-- completion only after verification;
-- backup inventory.
+- workspace backup;
+- SQLite snapshot;
+- artifact-byte preservation;
+- manifest and SHA-256 verification;
+- tamper detection;
+- atomic no-clobber publication;
+- secret-containing unencrypted workspace-backup rejection;
+- backup inventory and audit.
 
 Acceptance focus:
 
 - CONT-P010;
-- STATE-007 foundation.
+- STATE-007 foundation;
+- cross-platform backup safety.
 
-#### IMP-011 — Restore and post-restore validation
+### IMP-011 — Backup restore and post-restore validation
 
-- restore to empty target;
-- staged extraction;
-- unsafe-path rejection;
-- workspace identity preservation;
-- doctor validation;
-- restore audit event.
+Status: next code implementation.
+
+Required scope:
+
+- state-backup restore into an empty target;
+- workspace-backup restore into an empty target;
+- complete verification before extraction;
+- staging outside the final target;
+- safe path and member validation;
+- SQLite integrity validation;
+- workspace identity and revision validation;
+- record and typed-link validation;
+- artifact hash and byte validation;
+- atomic publication without overwrite;
+- cleanup of staging and partial output on failure;
+- fresh-process post-restore validation;
+- normal output without absolute local path disclosure;
+- no model execution and no network access.
 
 Acceptance focus:
 
 - CONT-P011;
 - CONT-P012;
 - STATE-007;
-- STATE-008.
+- STATE-008;
+- PLAT-005;
+- PLAT-007.
 
-## 6. Phase 3 — Local model path and first continuity proof
+### IMP-012 — Continuity Acceptance Test
 
-Goal: connect local inference without letting the runtime own Doll State.
+Goal: prove the complete Phase 1 and Phase 2 continuity foundation before any safety-boundary or model work depends on it.
 
-### Proposed PR sequence
+Required evidence:
 
-#### IMP-012 — Minimal user-selected document intake
+- clean workspace creation;
+- confirmed memory, preferences, policies, permissions, projects, decisions, typed links, audit history, and artifacts persist across process restart;
+- Doll State export and import preserve implemented authoritative records;
+- state backup restores into an empty target;
+- workspace backup restores into an empty target;
+- restored workspace identity, schema, revision, records, links, audit history, and artifact bytes match the verified source contract;
+- corrupt, tampered, unsafe, mismatched, existing, or non-empty targets fail closed;
+- a fresh process validates and inspects restored state without a model;
+- no cloud credentials or network access are required;
+- no absolute path, username, hostname, home-directory detail, secret, or personal fixture appears in shareable output;
+- CI passes on macOS, Windows, and Ubuntu;
+- the complete drill passes on the primary Intel Mac.
 
-- user-controlled text and Markdown selection;
-- safe external read path;
-- DocumentRecord creation;
-- path and size validation;
-- explicit attachment to the current request;
-- no model-initiated arbitrary filesystem read.
+Phase 2 gate:
 
-Acceptance focus:
+- IMP-011 is merged;
+- required continuity and state tests pass;
+- the real-machine continuity report records the tested commit and limitations;
+- restore failure does not damage the last known good workspace;
+- no model execution path exists.
 
-- CONT-P007.
+## 8. Phase 3 — Safety boundary
 
-#### IMP-013 — Runtime adapter contract
+Goal: implement the authority, secret, trust, instruction, capability, and confirmation boundary before any model is allowed to execute.
 
-- adapter protocol;
-- normalized health, inventory, generation, cancellation, and error models;
-- mocked adapter tests;
-- runtime-independent model IDs.
+The safety boundary is model-independent. Tests use synthetic callers, hostile fixtures, malformed requests, and explicit management commands rather than a live model.
 
-#### IMP-014 — Ollama adapter
+### IMP-013 — Secret Classification Policy
+
+Define:
+
+- secret classes and sensitivity levels;
+- ordinary-state prohibition for secret values;
+- SecretReference requirements;
+- allowed metadata and prohibited value fields;
+- input, output, persistence, export, backup, and diagnostic handling;
+- fail-closed behavior for uncertain secret-bearing operations.
+
+### IMP-014 — Secret Detection and Redaction
+
+Implement:
+
+- bounded best-effort detectors;
+- structured redaction results;
+- false-positive and false-negative documentation;
+- redaction for user-visible errors and diagnostics;
+- no broad secret-search permission;
+- tests for common credential, token, key, cookie, recovery phrase, and personal-data patterns using synthetic fixtures only.
+
+### IMP-015 — Secret-Safe Audit and Logging
+
+Implement:
+
+- centrally enforced audit and log sanitization;
+- structured safe summaries;
+- rejection or redaction of secret-bearing fields;
+- path, username, hostname, and home-directory minimization;
+- tests proving allowed, denied, failed, and exceptional operations do not leak secret values.
+
+### IMP-016 — External Secret Store Contract
+
+Define a portable contract for operating-system or compatible external secret stores:
+
+- reference creation and lookup metadata;
+- availability and locked-state reporting;
+- user-presence requirements;
+- create, replace, revoke, and delete semantics;
+- no ordinary-state secret-value persistence;
+- platform-specific adapters remain replaceable;
+- unavailable secret storage cannot block non-secret core startup.
+
+### IMP-017 — Credential Broker
+
+Implement a narrow broker that:
+
+- accepts SecretReference, capability, destination, scope, and operation metadata;
+- obtains required user approval or presence;
+- uses a credential only inside the bounded operation;
+- does not return the stored secret value to a model or ordinary caller by default;
+- returns a structured operation result;
+- redacts errors and audit events;
+- supports cancellation, timeout, and fail-closed behavior.
+
+### IMP-018 — Claim, Evidence, and Trust Model
+
+Implement distinct records and links for:
+
+- confirmed facts;
+- claims;
+- supporting or contradicting evidence;
+- inferences;
+- provenance, source, confidence, uncertainty, and review status.
+
+Required rule:
+
+- model, tool, document, website, import, or runtime assertions do not become confirmed facts automatically.
+
+### IMP-019 — Instruction Origin and Untrusted-Content Boundary
+
+Implement:
+
+- instruction-origin metadata;
+- authority classes;
+- immutable source attribution for imported and retrieved content;
+- separation of system policy, user instruction, durable policy, content, tool result, and model proposal;
+- content cannot grant permission, confirmation, or policy changes;
+- unknown origin fails to the least-authoritative classification.
+
+### IMP-020 — Prompt Injection Defense
+
+Implement defense in depth:
+
+- context packaging that preserves origin and authority;
+- prompt-injection indicators and warnings;
+- unrelated-capability and exfiltration-request detection;
+- policy and permission enforcement outside the model;
+- hostile document, website, metadata, OCR, transcript, and tool-result fixtures;
+- no reliance on model classification as the authorization boundary.
+
+### IMP-021 — Capability Taxonomy and Risk Tiers
+
+Implement:
+
+- versioned capability registry;
+- input and output schemas;
+- declared targets, side effects, and resource limits;
+- permission and network checks;
+- risk tiers;
+- unknown or malformed capability denial;
+- no unrestricted shell or arbitrary command-string capability;
+- allow and deny audit events.
+
+Initial risk direction:
+
+- Tier 0: pure computation with no side effect;
+- Tier 1: bounded managed read or reversible creation;
+- Tier 2: scoped modification or explicit external read;
+- Tier 3: destructive, externally visible, credential-bearing, account-affecting, or process-execution action;
+- Prohibited: actions outside accepted release scope regardless of confirmation.
+
+### IMP-022 — Mandatory High-Risk Confirmation
+
+Implement:
+
+- trusted user-controlled confirmation channel;
+- fresh confirmation for every Tier 3 operation;
+- exact capability, target, destination, side-effect, and credential-class preview;
+- expiry and one-operation binding;
+- material-change invalidation;
+- no confirmation from model text, documents, websites, imports, or tool results;
+- no persistent broad confirmation for high-risk operations;
+- confirmation does not override policy or make a prohibited capability available.
+
+### IMP-023 — Safety Acceptance Test
+
+Goal: prove the complete safety boundary before model execution.
+
+Required evidence includes:
+
+- secret values are absent from ordinary state, logs, audit, exports, backups, fixtures, diagnostics, and model-context packages;
+- SecretReference remains non-secret and portable;
+- credential-broker tests complete bounded synthetic operations without exposing stored values;
+- confirmed facts, claims, evidence, and inferences remain distinct through restart and export;
+- instruction origin and authority survive persistence and context assembly;
+- hostile content cannot grant approval, alter policy, raise authority, or trigger a capability;
+- unknown and malformed capabilities fail closed;
+- risk tiers are enforced;
+- high-risk operations fail without fresh exact confirmation;
+- changed targets, arguments, destinations, side effects, or credential classes invalidate confirmation;
+- denial and failure preserve the last known good state;
+- security-relevant events are auditable without leaking sensitive data;
+- CI passes on macOS, Windows, and Ubuntu;
+- applicable real-process checks pass on the primary Intel Mac.
+
+Phase 3 gate:
+
+- IMP-013 through IMP-023 are merged;
+- all blocking safety tests pass;
+- open known limitations are documented;
+- no accepted review finding shows a route around the boundary;
+- only after this gate may IMP-024 introduce a model adapter contract.
+
+## 9. Phase 4 — Local AI
+
+Goal: connect useful local inference without allowing the runtime or model to own state, secrets, permissions, trust decisions, or side effects.
+
+Expected sequence begins at IMP-024.
+
+### IMP-024 — Runtime adapter contract
+
+- normalized health, inventory, generation, streaming, cancellation, and error contracts;
+- runtime-independent model IDs;
+- no direct state, secret-store, filesystem, network, or capability access;
+- mocked adapter tests.
+
+### IMP-025 — First local runtime adapter
+
+Initial target: Ollama.
 
 - local health check;
 - installed model inventory mapping;
 - local generation and streaming;
-- timeouts and cancellation;
-- no model download;
-- no cloud path.
+- timeout and cancellation;
+- no silent model download;
+- no cloud fallback;
+- all context passes through accepted origin and secret controls.
 
-#### IMP-015 — Model manifests and bindings
+### IMP-026 — Model manifests and bindings
 
 - ModelManifestRecord;
 - RuntimeManifestRecord;
 - ModelBindingRecord;
-- manual registration;
-- active, previous, fallback status;
-- checksum and provenance fields.
+- source, revision, checksum, license, and compatibility;
+- quarantine, candidate, active, previous, fallback, and rollback state.
 
-#### IMP-016 — Local conversation path
+### IMP-027 — Local conversation path
 
-- session orchestration;
-- local API chat path;
-- CLI conversation path for recovery;
+- local API and CLI conversation;
 - scoped state retrieval;
 - response provenance;
-- no automatic memory creation.
+- no automatic durable memory creation;
+- no direct model capability execution;
+- model proposals pass through the safety boundary.
 
-Acceptance focus:
-
-- CONT-P002;
-- CONT-P004.
-
-#### IMP-017 — Model switch and local fallback
+### IMP-028 — Model switch and local fallback
 
 - explicit activation;
 - previous binding retention;
-- fallback selection;
-- rollback on failed smoke test;
-- degraded-state reporting;
+- fallback selection or offer;
+- rollback after failed smoke test;
+- no unrelated state rewrite;
 - no cloud request.
 
-Acceptance focus:
+### IMP-029 — Offline mode and local AI continuity drill
 
-- CONT-P013;
-- CONT-P014;
-- MODEL-006 through MODEL-010.
+- network-disabled startup;
+- outbound-request guard;
+- local conversation and fallback offline;
+- model replacement without state loss;
+- primary-machine continuity evidence.
 
-#### IMP-018 — Offline mode and first continuity drill
+Phase 4 gate:
 
-- network-disabled startup setting;
-- outbound-request guard for core paths;
-- offline doctor checks;
-- scripted manual drill instructions;
-- first real-machine continuity report.
+- local inference remains optional to state inspection, export, backup, restore, and recovery;
+- model replacement does not rewrite unrelated state;
+- the safety boundary remains the only route to side effects;
+- no cloud credential is required.
 
-Acceptance focus:
+## 10. Phase 5 — Cloud and multiple models
 
-- CONT-P003;
-- first complete Personal Lite proof.
+Goal: add optional performance and role expansion without making cloud access authoritative or mandatory.
 
-### Phase 3 gate
+Cloud work begins only after the local path and safety boundary are stable.
 
-Do not begin broad feature expansion until all Personal Lite continuity proof tests pass on the primary macOS machine.
+Expected slices:
 
-## 7. Phase 4 — Capability Broker and local documents
+1. generic bounded outbound-package contract;
+2. exact preview, minimization, and redaction;
+3. provider-independent cloud adapter interface;
+4. one optional OpenAI-compatible adapter;
+5. multiple local-model role routing;
+6. local/cloud selection policy with no automatic cloud fallback;
+7. cost, retention, destination, and audit reporting where available;
+8. provider-specific adapters only when justified.
 
-Goal: add useful local tools without bypassing security.
+Cloud code must remain removable. Removing cloud adapters must not prevent local startup, state access, restore, or local inference.
 
-### Proposed PR sequence
+## 11. Phase 6 — Tools and external services
 
-#### IMP-019 — Capability Broker core
+Goal: add useful capabilities through the accepted Capability Broker rather than direct model authority.
 
-- versioned capability registry;
-- schema validation;
-- permission checks;
-- operation approval records;
-- allow and deny audit events;
-- timeouts and cancellation.
+Candidate groups:
 
-Acceptance focus:
+- approved local document read;
+- artifact versioning and export;
+- local full-text search;
+- safe URL retrieval and Web research;
+- PDF extraction;
+- OCR;
+- CSV inspection and transformation;
+- image, audio, and video adapters;
+- optional speech-to-text;
+- narrowly scoped external-service integrations.
 
-- SEC-001 through SEC-005.
+Every adapter must:
 
-#### IMP-020 — Approved local document read
+- declare capability ID, version, risk tier, inputs, outputs, side effects, limits, and provenance;
+- fail independently;
+- avoid unrestricted shell execution;
+- preserve instruction origin for returned content;
+- use the credential broker when a credential is required;
+- remain visible through doctor and audit;
+- keep experimental features outside stable release claims.
 
-- user-selected external text and Markdown;
-- managed copy option;
-- DocumentRecord;
-- path and size validation;
-- extraction provenance.
+## 12. Phase 7 — Daily use
 
-Acceptance focus:
+Goal: make the continuity and safety foundations useful for ordinary personal work.
 
-- CONT-P007.
+Candidate work:
 
-#### IMP-021 — Artifact service completion
+- writing and editing;
+- summarization and translation;
+- planning and research workflows;
+- memory review and confirmation flows;
+- project and decision workflows;
+- backup and restore usability;
+- source, claim, evidence, and inference inspection;
+- capability and confirmation usability;
+- optional Open WebUI compatibility;
+- accessibility and error clarity;
+- performance measurement on Lite hardware;
+- seven-day primary-machine soak before a Lite stable claim.
 
-- artifact versions;
-- project links;
-- source links;
-- export path through a user-controlled action;
-- no silent overwrite.
+Daily-use convenience must not hide model, network, credential, permission, or risk state.
 
-#### IMP-022 — Local full-text search
+## 13. Phase 8 — Distribution, encryption, and long-term operation
 
-- SQLite FTS5;
-- index rebuild;
-- authoritative versus reproducible separation;
-- search without a model.
+Goal: make doll maintainable, recoverable, and distributable over long periods without splitting the core.
 
-Acceptance focus:
+Candidate groups:
 
-- STATE-010.
+- installer and package paths;
+- signed or verifiable releases where feasible;
+- offline recovery kit;
+- update staging and rollback;
+- standard backup encryption;
+- backup rotation and retention;
+- long-term schema migration drills;
+- support matrix and shareable doctor reports;
+- Lite and Heavy profile measurement;
+- Heavy hardware selection only after Lite evidence;
+- richer retrieval, media, verification, and training workflows;
+- mobile companion or remote access only after a separate threat model;
+- multi-device synchronization only after conflict and secret-boundary design;
+- periodic continuity and safety drills;
+- community verification and release acceptance reports.
 
-## 8. Phase 5 — Lite general-purpose capabilities
-
-Goal: make Lite useful for daily personal work while preserving the passed continuity proof.
-
-Candidate PR groups:
-
-- writing, editing, summarization, and translation workflows;
-- PDF text extraction adapter;
-- OCR adapter;
-- CSV inspection and simple transformation;
-- optional local speech-to-text;
-- Open WebUI compatibility integration;
-- usability improvements for memory, projects, artifacts, backup, and model switching.
-
-Each optional adapter must fail independently and be visible through `doll doctor`.
-
-## 9. Phase 6 — Minimal Web research
-
-Goal: add current-information research without requiring cloud-model inference.
-
-Proposed slices:
-
-1. source and research-session records;
-2. explicit search-provider adapter;
-3. safe URL retrieval with SSRF-oriented controls;
-4. content extraction;
-5. local cache and retention policy;
-6. citation records;
-7. local-model synthesis;
-8. hostile-source and prompt-injection tests;
-9. offline retained-source mode.
-
-Web research may remain experimental until all tests in the accepted suite pass.
-
-## 10. Phase 7 — Lite release hardening
-
-Goal: satisfy the Lite v1.0 gate.
-
-Required work:
-
-- complete CI matrix;
-- installer or package path suitable for the release claim;
-- migration drills;
-- backup corruption and restore tests;
-- shareable doctor report;
-- support matrix;
-- known limitations;
-- release acceptance report;
-- seven-day primary-machine soak;
-- release candidate continuity drill;
-- documentation review.
-
-### Lite schedule direction
-
-For one person using GPT for specification and review and Codex for implementation, a realistic target remains approximately:
-
-- Personal Lite proof: several focused weeks;
-- Lite v1.0: roughly 10 to 14 weeks at sustained part-time development;
-- weekend-only work: potentially four to six months.
-
-These are planning ranges, not commitments.
-
-## 11. Phase 8 — Heavy foundation
-
-Goal: extend performance without splitting the core.
-
-Before hardware purchase:
-
-- profile and role abstractions;
-- embedding and reranker interfaces;
-- verifier workflow design;
-- media adapter contracts;
-- evaluation suite expansion;
-- hardware measurement schema;
-- training dataset manifests;
-- mocked Heavy integration tests.
-
-After hardware purchase:
-
-- large-model validation;
-- GPU runtime validation;
-- multi-role local routing;
-- richer retrieval;
-- vision and long-audio pipelines;
-- controlled video extraction;
-- LoRA or SFT experiments;
-- real-machine failure and recovery drills;
-- Heavy soak and release report.
-
-### Heavy schedule direction
-
-Heavy v1.0 is expected after Lite, with total project time likely in the range of eight to twelve months under sustained part-time work. Real completion depends on hardware and test results.
-
-## 12. Phase 9 — Optional cloud gateway
-
-Cloud work begins only after local release gates are stable.
-
-Suggested order:
-
-1. generic outbound package contract;
-2. preview and redaction;
-3. operating-system credential storage;
-4. Ask Every Time mode;
-5. one generic OpenAI-compatible adapter;
-6. audit and local response storage;
-7. provider-specific adapters only when justified;
-8. allowlisted task mode;
-9. cost and retention reporting where available.
-
-Cloud code must remain removable.
-
-## 13. Phase 10 — Mobile
-
-Suggested order:
-
-1. separate remote-access threat model;
-2. mobile browser companion to the user's own PC;
-3. PWA;
-4. Android hybrid mode;
-5. iOS hybrid mode;
-6. standalone mobile Lite feasibility work.
-
-PC continuity remains the authority for state and recovery until mobile-specific state synchronization is designed.
+The project must not invent custom cryptography. Encryption work must use established operating-system or library primitives and must not make unencrypted recovery impossible without an explicit accepted product decision.
 
 ## 14. Issue and PR discipline
 
@@ -6775,14 +7660,19 @@ Implementation issues should contain:
 - objective;
 - accepted specification links;
 - in-scope and out-of-scope behavior;
-- data changes;
-- permission and network effects;
+- state and schema changes;
+- secret and credential effects;
+- trust, evidence, and instruction-origin effects;
+- permission, capability, risk, and confirmation effects;
+- network and process effects;
 - migration requirements;
 - test IDs;
 - real-machine work required;
-- rollback plan.
+- rollback or failure-preservation plan.
 
 A PR should normally implement one issue or one tightly related slice.
+
+Documentation-only sequencing changes must not include implementation code.
 
 ## 15. Definition of done for an implementation PR
 
@@ -6790,36 +7680,52 @@ An implementation PR is done when:
 
 - code matches the accepted boundary;
 - tests pass on applicable CI platforms;
+- success, denial, malformed input, and recoverable failure are tested;
 - security and path failures are tested;
 - persisted-state changes include schema and migration handling;
+- secret-bearing paths are classified and tested;
+- audit and user-visible output are checked for leakage;
 - documentation is updated;
-- no private fixture is committed;
+- no private or secret fixture is committed;
+- coverage does not fall below the accepted threshold;
+- blanket coverage exclusions are not used to hide untested logic;
 - optional dependencies fail cleanly;
 - PR description states real-hardware gaps;
 - review comments are resolved;
-- main remains recoverable.
+- `main` remains recoverable.
 
-## 16. Immediate work after specification v0.1 freeze
+## 16. Immediate work
 
-The next repository work is:
+The required order from the current repository state is:
 
-1. open IMP-001;
-2. add the Python package and three-operating-system CI skeleton;
-3. implement platform paths and workspace initialization in IMP-002;
-4. implement SQLite state and migrations in IMP-003;
-5. preserve the accepted continuity, security, and recovery boundaries in every implementation PR.
+1. merge the documentation change adopting ADR-005 and this roadmap;
+2. return to `impl/imp-011-restore-post-validation`;
+3. rebase that branch onto the updated `main`;
+4. implement IMP-011 only;
+5. pass CI, review, and Intel Mac real-process restore validation;
+6. squash-merge IMP-011;
+7. implement IMP-012 as the Continuity Acceptance Test;
+8. begin IMP-013 only after the Phase 2 gate passes;
+9. complete IMP-013 through IMP-023;
+10. begin model work at IMP-024 or later only after the Phase 3 gate passes.
 
 ## 17. Roadmap change control
 
-The roadmap may change as measurements arrive.
+The roadmap may change as implementation evidence arrives.
 
 Changes must preserve:
 
 - continuity-first sequencing;
+- the safety boundary before model execution;
 - local completion before cloud dependence;
-- Lite before Heavy hardware commitment;
-- test evidence before release claims;
+- memory and secret separation;
+- external content as data rather than authority;
+- model-independent permissions, risk, and confirmation;
+- Lite evidence before Heavy hardware commitment;
+- test evidence before phase or release claims;
 - small PRs;
-- explicit migration and rollback;
+- explicit migration, rollback, and recoverable failure;
 - the project owner's immediate personal-use objective.
+
+A change that moves model execution before the Phase 3 safety gate requires a new accepted architecture decision and corresponding security and acceptance-test changes.
 <!-- END SOURCE: docs/spec/09-development-roadmap.md -->
