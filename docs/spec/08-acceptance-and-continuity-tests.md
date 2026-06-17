@@ -83,7 +83,8 @@ The Phase 2 gate requires:
 - CONT-P011;
 - CONT-P012;
 - CONT-P015 for implemented operations;
-- STATE-001 through STATE-009 where implemented;
+- CONT-P016;
+- STATE-001 through STATE-012 where implemented;
 - PLAT-001 through PLAT-007 where applicable.
 
 Required evidence:
