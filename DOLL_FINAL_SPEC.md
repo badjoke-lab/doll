@@ -18,7 +18,7 @@
 - `docs/spec/04-security-permissions-and-threat-model.md` — SHA-256 `fb40578f529840d00dbf3cf9534824d5f15ccc36d20041f945bf42b5acbe9566`
 - `docs/spec/05-model-vault-lifecycle-evaluation.md` — SHA-256 `3011788c55be9232db98bf932d8c859c88ed3d3bc3e603f0d4c3c709f2eb4268`
 - `docs/spec/06-platform-install-update-and-recovery.md` — SHA-256 `b73b6106d28b3fcb740b6d2f8b5dee4935a7a998537e5858395a85170ce85072`
-- `docs/spec/07-release-scope-and-profiles.md` — SHA-256 `2b4c0bdbd0ae8a7d707e35117378b0803426cf401aaf5bc4e048a3ef5ee38605`
+- `docs/spec/07-release-scope-and-profiles.md` — SHA-256 `c1b7d0be3dccac6df47e07e3e8aa286f91875bc2c6e44882e648654a42a294e3`
 - `docs/spec/08-acceptance-and-continuity-tests.md` — SHA-256 `044b576a03b51b4f7613f73d100a1de77e721bf218e77955bdf212c99e15a6ba`
 - `docs/spec/09-development-roadmap.md` — SHA-256 `51f312ba90ef9fbeef06f91deb9b470f6a2adc251966a4c58bd50f84b994d7ef`
 
@@ -6032,7 +6032,9 @@ The release sequence is:
 
 ```text
 Specification baseline
-  -> Personal Lite continuity proof
+  -> model-independent continuity proof
+  -> model-independent safety-boundary proof
+  -> local AI proof
   -> Lite v0.x
   -> Lite v1.0
   -> Heavy foundation
@@ -6050,9 +6052,12 @@ Lite and Heavy must share:
 - one authoritative Doll State model;
 - compatible schemas and migrations;
 - one permission and Capability Broker model;
+- one secret-reference and Credential Broker contract;
 - compatible backup and recovery formats;
 - one audit model;
-- model-independent memory, project, source, and artifact records;
+- model-independent memory, project, source, claim, evidence, inference, and artifact records;
+- one instruction-origin and untrusted-content boundary;
+- one capability risk-tier and high-risk confirmation model;
 - local-first startup;
 - no mandatory cloud account;
 - no automatic cloud fallback;
@@ -6060,30 +6065,57 @@ Lite and Heavy must share:
 
 Heavy may add capabilities but must not create a second incompatible core.
 
-## 3. Personal Lite continuity proof
+## 3. Personal continuity and safety proofs
 
-The first implementation milestone is a proof for one user and one machine.
+The first implementation milestones are proofs for one user and one machine. They are deliberately split so continuity and the safety boundary are established before model execution.
+
+### 3.1 Model-independent continuity proof
 
 It must demonstrate:
 
 1. initialize a private workspace outside the repository;
 2. create and inspect workspace identity and schema version;
-3. start without cloud credentials;
-4. connect to one local model through an adapter;
-5. perform basic local conversation;
-6. create and retrieve confirmed memory;
-7. create and retrieve a project or decision record;
-8. read one user-selected text or Markdown document;
-9. create an artifact inside the workspace;
-10. create, verify, and restore a backup into an empty workspace;
-11. switch to another approved local model without deleting Doll State;
-12. use the restored workspace offline;
-13. refuse a write outside the workspace;
-14. create audit records for continuity and security operations.
+3. start without cloud credentials, network access, or a model runtime;
+4. create and retrieve confirmed memory;
+5. create and retrieve a project or decision record;
+6. create and verify a Doll State package;
+7. import the package into an empty compatible target;
+8. create and verify state and workspace backups;
+9. restore both supported backup kinds into empty compatible targets;
+10. validate restored identity, revision, records, links, audit history, and artifact bytes in a fresh process;
+11. preserve the last known good state when import or restore fails;
+12. refuse unsafe archive paths and writes outside the workspace;
+13. create audit records for continuity and denial operations.
 
-The proof does not require Web research, PDF, OCR, audio, video, cloud, mobile, avatars, Heavy hardware, automatic model acquisition, or public installer quality.
+This proof does not require or permit a model execution path.
 
-Passing the proof validates the architecture only. It does not mean the product is ready for general users.
+### 3.2 Model-independent safety-boundary proof
+
+Before a local model adapter may merge, accepted tests must demonstrate:
+
+1. ordinary Doll State retains only non-secret credential references;
+2. secret values are absent from logs, audit, exports, backups, fixtures, diagnostics, and model-context packages;
+3. the Credential Broker performs bounded synthetic operations without disclosing stored values;
+4. confirmed facts, claims, evidence, and inferences remain distinct;
+5. instruction origin and authority survive persistence and context assembly;
+6. hostile content cannot grant permission, confirmation, or capability authority;
+7. unknown, malformed, risk-downgraded, or under-confirmed capability requests fail closed;
+8. high-risk confirmation is fresh, exact, user-controlled, and invalidated by material changes.
+
+### 3.3 First local AI proof
+
+Only after the safety-boundary proof passes, accepted tests must demonstrate:
+
+1. connect to one local model through a replaceable adapter;
+2. perform basic local conversation offline;
+3. keep model context within secret, trust, origin, and permission policy;
+4. prevent direct model side effects;
+5. switch to another approved local model without deleting Doll State;
+6. disable every model adapter without losing state inspection, export, backup, restore, or recovery.
+
+These proofs do not require Web research, PDF, OCR, audio, video, cloud, mobile, avatars, Heavy hardware, automatic model acquisition, or public installer quality.
+
+Passing them validates the named architecture gates only. It does not mean the product is ready for general users.
 
 ## 4. Lite profile
 
@@ -6226,8 +6258,9 @@ Any cloud integration must:
 - store returned artifacts locally;
 - avoid automatic promotion into confirmed memory;
 - avoid automatic fallback after local failure;
-- use operating-system credential storage;
-- create audit records.
+- use the accepted external secret-store and Credential Broker boundary without exposing stored values to models;
+- preserve instruction origin for returned content;
+- create secret-safe audit records.
 
 ## 8. Mobile scope
 
@@ -6255,7 +6288,7 @@ A neutral work-assistant mode must remain fully supported. Model replacement is 
 
 Stable initial releases exclude destructive, externally visible, account-changing, transactional, unrestricted command, and arbitrary-code capabilities.
 
-Any future addition requires a separate threat model, capability contract, approval design, and acceptance suite.
+Any future addition requires a separate threat model, versioned capability contract, risk tier, exact confirmation design, credential boundary where applicable, and acceptance suite. Confirmation cannot make a prohibited capability available.
 
 ## 11. Support matrix
 
@@ -6304,8 +6337,9 @@ Features that do not strengthen continuity or minimum useful local capability sh
 
 This specification is acceptable when:
 
-- the first proof is smaller than Lite v1.0;
-- Lite and Heavy share one core;
+- the model-independent continuity proof is smaller than Lite v1.0;
+- the complete safety-boundary proof precedes the local AI proof;
+- Lite and Heavy share one core, secret, trust, instruction, capability, and confirmation boundary;
 - Lite v1.0 has a testable boundary;
 - Heavy completion requires real hardware;
 - cloud and mobile cannot become hidden local dependencies;
