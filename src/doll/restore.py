@@ -1,25 +1,9 @@
-"""Public backup restore API."""
+"""Public alias for the backup restore implementation module."""
 
-from doll.restore_impl import (
-    RestoreConflictError,
-    RestoreError,
-    RestorePublicationError,
-    RestoreResult,
-    RestoreValidation,
-    RestoreValidationError,
-    restore_state_backup,
-    restore_workspace_backup,
-    validate_restored_workspace,
-)
+from __future__ import annotations
 
-__all__ = [
-    "RestoreConflictError",
-    "RestoreError",
-    "RestorePublicationError",
-    "RestoreResult",
-    "RestoreValidation",
-    "RestoreValidationError",
-    "restore_state_backup",
-    "restore_workspace_backup",
-    "validate_restored_workspace",
-]
+import sys
+
+from doll import restore_impl as _implementation
+
+sys.modules[__name__] = _implementation
