@@ -1,6 +1,6 @@
 # ADR-005: Complete the safety boundary before model execution
 
-**Status:** Accepted when merged  
+**Status:** Accepted  
 **Date:** 2026-06-17
 
 ## Context
