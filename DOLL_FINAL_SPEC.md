@@ -11,7 +11,7 @@
 ## Included source documents
 
 - `docs/spec/00-index.md` — SHA-256 `d1274b188c25d264cf67256098ac420479b69f68dc24430800de6e2b5907531a`
-- `docs/spec/00-decisions-baseline.md` — SHA-256 `d8376742e244d0b23448292edd218e4b4dd1f36dd7c902ee3d5a99aed75f03e4`
+- `docs/spec/00-decisions-baseline.md` — SHA-256 `114f45e16ee5ef5788d15a234653a6af2e2e23aba10c7951ec32144f61f4d833`
 - `docs/spec/01-product-and-continuity-contract.md` — SHA-256 `12cd88ee22046833795e6ba265978cb4508e0042e72e791350cde1bd1f74063f`
 - `docs/spec/02-architecture-and-data-flow.md` — SHA-256 `fb8d83f910d56dc41884362c1f8cd8e4eb0dae329cdce485b04e47b4bb967d62`
 - `docs/spec/03-doll-state-memory-and-storage.md` — SHA-256 `92e9c2dbd29123eb057a590821ed06702e6938d2c99421510e59ffb9af2656bd`
@@ -511,15 +511,17 @@ A user's own remote PC running doll is distinct from a third-party cloud AI prov
 
 ### First implementation objective
 
-The first usable proof is not a full general-purpose assistant. It is a minimum continuity demonstration capable of proving that:
+The first usable proof is not a chatbot or a full general-purpose assistant. It is a model-independent continuity demonstration capable of proving that:
 
-- the system starts locally;
-- local conversation works;
-- durable state is separate from the model and UI;
-- a model can be replaced without deleting state;
-- backup can be restored into an empty workspace;
-- the system can operate without network access or cloud credentials;
-- the system refuses to write outside its workspace.
+- the durable core starts locally without network access, cloud credentials, or a model runtime;
+- explicit durable state is separate from every model and UI;
+- state can be exported and imported into an empty compatible target;
+- verified state and workspace backups can be restored into empty compatible targets;
+- restored identity, revision, records, links, audit history, and artifact bytes validate in a fresh process;
+- failed import or restore preserves the last known good state;
+- the system refuses unsafe archive paths and writes outside its workspace.
+
+Local conversation and model replacement become a separate proof only after the model-independent safety boundary has passed its acceptance gate.
 
 ## 18. Specification source and generated document
 
