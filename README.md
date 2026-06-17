@@ -115,6 +115,8 @@ The accepted phase order is:
 
 IMP-001 through IMP-010 are complete. IMP-011 adds verified restore and post-restore validation. IMP-012 is the model-independent Continuity Acceptance Test. IMP-013 through IMP-023 implement and validate the safety boundary. Local model execution begins at IMP-024 or later.
 
+Phase 2 is not complete until restore publishes atomically, a fresh process validates the restored workspace, and the model-independent continuity gate passes.
+
 ## What doll is not
 
 `doll` is not intended to be:
