@@ -12,7 +12,7 @@
 
 - `docs/spec/00-index.md` — SHA-256 `d1274b188c25d264cf67256098ac420479b69f68dc24430800de6e2b5907531a`
 - `docs/spec/00-decisions-baseline.md` — SHA-256 `d8376742e244d0b23448292edd218e4b4dd1f36dd7c902ee3d5a99aed75f03e4`
-- `docs/spec/01-product-and-continuity-contract.md` — SHA-256 `88c123e541d9906938be673f2c4571b890bf7626b7cc637f113ff39185f2c932`
+- `docs/spec/01-product-and-continuity-contract.md` — SHA-256 `12cd88ee22046833795e6ba265978cb4508e0042e72e791350cde1bd1f74063f`
 - `docs/spec/02-architecture-and-data-flow.md` — SHA-256 `fb8d83f910d56dc41884362c1f8cd8e4eb0dae329cdce485b04e47b4bb967d62`
 - `docs/spec/03-doll-state-memory-and-storage.md` — SHA-256 `92e9c2dbd29123eb057a590821ed06702e6938d2c99421510e59ffb9af2656bd`
 - `docs/spec/04-security-permissions-and-threat-model.md` — SHA-256 `fb40578f529840d00dbf3cf9534824d5f15ccc36d20041f945bf42b5acbe9566`
@@ -641,7 +641,10 @@ The following categories are part of the durable doll state when enabled:
 - model manifests and validation history;
 - runtime manifests;
 - backup and migration metadata;
+- non-secret references to credentials held by an external secret store;
 - optional identity, personality, relationship, voice, or appearance settings.
+
+Secret values are not durable Doll State. Memory, portability, and ordinary backups must remain structurally separate from credential custody.
 
 Durable state must be exportable independently of a specific model, runtime, user interface, or cloud provider.
 
@@ -690,16 +693,18 @@ Core local use must not require creating or maintaining a doll account, vendor a
 
 #### C-03: Offline startup
 
-After required local dependencies and at least one compatible local model have been installed, the system must be able to start without internet access.
+The durable core must be able to start without internet access, cloud credentials, or an installed model runtime.
 
-Offline mode must allow, at minimum for the applicable release profile:
+Before model integration, offline mode must allow at minimum:
 
 - access to existing durable state;
-- local conversation;
-- local document access;
-- artifact access and creation;
-- backup inspection and local restoration;
-- model and runtime inventory inspection.
+- state export and import inspection;
+- artifact inspection;
+- backup inspection, verification, and local restoration;
+- post-restore validation;
+- audit and doctor inspection.
+
+After the safety gate and local-model phase, an applicable local AI release must additionally provide local conversation and model or runtime inventory without internet access.
 
 Features that inherently require current network data must clearly report that they are unavailable rather than failing the whole system.
 
@@ -880,16 +885,19 @@ At minimum, the test plan will cover applicable scenarios such as:
 
 - all cloud credentials removed;
 - network disabled;
+- every model adapter absent or disabled;
 - preferred UI absent;
-- active model unavailable;
-- fallback model selected;
 - optional dependency missing;
 - state restored into an empty workspace;
+- fresh-process post-restore validation;
 - migration interrupted or rejected;
 - workspace moved to a different supported operating system;
 - write attempt outside the workspace;
-- model distribution source unreachable;
+- after local AI exists, active model unavailable and fallback selected;
+- after Model Vault work exists, model distribution source unreachable;
 - previous stable version restored after a failed update.
+
+The Phase 2 continuity gate is model-independent. Model loss, fallback, and replacement tests become additional gates only after the Phase 3 safety boundary and Phase 4 local AI implementation.
 
 Continuity is not demonstrated by normal startup alone. It is demonstrated by surviving controlled loss and replacement.
 
@@ -929,32 +937,52 @@ A system that preserves state but can silently delete, upload, purchase, post, t
 
 The security specification must therefore define:
 
-- capability allowlists;
+- capability allowlists and risk tiers;
 - workspace boundaries;
 - explicit outbound network behavior;
+- memory and secret-value separation;
+- external secret storage and bounded credential use;
+- confirmed fact, claim, evidence, and inference separation;
+- instruction origin and authority ordering;
 - audit records;
 - safe handling of untrusted documents and web content;
+- mandatory fresh confirmation for high-risk operations;
 - user-controlled deletion separate from autonomous deletion;
 - recovery from failed or malicious operations.
+
+The complete model-independent safety boundary must pass its acceptance gate before any model execution path is introduced.
 
 ## 14. Product success conditions
 
 ### 14.1 First continuity proof
 
-The first implementation milestone succeeds when accepted tests demonstrate that a user can:
+The first continuity milestone is model-independent. It succeeds when accepted tests demonstrate that a user can:
 
 1. initialize a private workspace;
-2. run the local system without cloud credentials;
-3. converse through a local model;
-4. create and retrieve explicit durable state;
-5. read a local document and create a local artifact;
-6. replace the active local model without deleting durable state;
-7. create a backup;
-8. restore the backup into an empty compatible workspace;
-9. start and use the restored environment offline;
-10. confirm that writes outside the workspace are refused.
+2. start and inspect the durable core without cloud credentials, network access, or a model runtime;
+3. create and retrieve explicit durable state;
+4. create and verify a Doll State package;
+5. import the package into an empty compatible target;
+6. create and verify state and workspace backups;
+7. restore each supported backup kind into an empty compatible target;
+8. validate restored identity, revision, records, links, audit history, and artifact bytes in a fresh process;
+9. preserve the last known good state when import, backup, or restore fails;
+10. confirm that writes outside the workspace and unsafe archive paths are refused.
 
-### 14.2 Lite v1.0 direction
+Passing this milestone does not claim that model execution, local conversation, or tool use is implemented.
+
+### 14.2 First local AI proof
+
+After the model-independent safety acceptance gate passes, the first local AI milestone succeeds when accepted tests demonstrate that:
+
+1. a replaceable local runtime adapter can execute without cloud inference;
+2. model context contains only state allowed by secret, trust, origin, and permission policy;
+3. a model cannot directly mutate state or invoke side effects;
+4. local conversation works offline;
+5. the active model can be replaced or rolled back without losing durable state;
+6. disabling every model adapter leaves continuity and recovery operations available.
+
+### 14.3 Lite v1.0 direction
 
 Lite v1.0 is intended to add a useful lower-resource general-purpose environment, including accepted subsets of:
 
@@ -970,7 +998,7 @@ Lite v1.0 is intended to add a useful lower-resource general-purpose environment
 
 The exact release boundary belongs in the release-scope specification.
 
-### 14.3 Heavy v1.0 direction
+### 14.4 Heavy v1.0 direction
 
 Heavy v1.0 is intended to add accepted subsets of:
 
