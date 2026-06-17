@@ -11,7 +11,7 @@
 ## Included source documents
 
 - `docs/spec/00-index.md` — SHA-256 `d1274b188c25d264cf67256098ac420479b69f68dc24430800de6e2b5907531a`
-- `docs/spec/00-decisions-baseline.md` — SHA-256 `e2b55bd08610b8f3a696ef43f19502cad25de26e2c8aac3a442b8cf5e4a8439d`
+- `docs/spec/00-decisions-baseline.md` — SHA-256 `d8376742e244d0b23448292edd218e4b4dd1f36dd7c902ee3d5a99aed75f03e4`
 - `docs/spec/01-product-and-continuity-contract.md` — SHA-256 `88c123e541d9906938be673f2c4571b890bf7626b7cc637f113ff39185f2c932`
 - `docs/spec/02-architecture-and-data-flow.md` — SHA-256 `fb8d83f910d56dc41884362c1f8cd8e4eb0dae329cdce485b04e47b4bb967d62`
 - `docs/spec/03-doll-state-memory-and-storage.md` — SHA-256 `bcf88145d99c53feb47baceec8419449c8289e6a492ee574dde6a46c60633c76`
@@ -300,7 +300,7 @@ The public repository must not contain:
 - user documents;
 - private research caches;
 - generated personal artifacts;
-- API keys or secrets;
+- API keys, credential values, or other secrets;
 - model weights;
 - private datasets;
 - training checkpoints;
@@ -438,7 +438,8 @@ The user must retain a separate, explicit management path for deleting their own
 ### Accepted rules
 
 - conversation content must not automatically become training data;
-- sensitive personal or secret information must not become durable memory by default;
+- secret values must never become durable memory; doll may retain only a non-secret reference to an externally stored credential;
+- sensitive but non-secret personal information must not become durable memory by default;
 - the user must be able to inspect, edit, export, and delete confirmed memory;
 - memory passed to a model must be scoped to the current need.
 
@@ -482,6 +483,7 @@ Heavy code may be designed and tested with mocks before real Heavy hardware is a
 - Provider-specific support is implemented only after the local system is complete.
 - Any later cloud use must be opt-in and auditable.
 - Original files, long-term memory, and full conversation history must not be sent by default.
+- Secret values remain outside ordinary Doll State and must not be exposed to models; later credential use must pass through the accepted external secret-store and credential-broker boundary.
 - The user must be shown the destination and outbound content before transmission unless they explicitly configure a narrower allowlisted mode.
 
 ## 16. Mobile policy
