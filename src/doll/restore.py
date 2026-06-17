@@ -6,6 +6,7 @@ import os as os
 import subprocess as subprocess
 import sys
 
+from doll import restore_impl as _implementation
 from doll.backup import (
     BackupInspection as BackupInspection,
 )
@@ -75,7 +76,5 @@ from doll.restore_impl import (
 from doll.restore_impl import (
     verify_backup as verify_backup,
 )
-
-from doll import restore_impl as _implementation
 
 sys.modules[__name__] = _implementation
