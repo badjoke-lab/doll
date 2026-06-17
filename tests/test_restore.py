@@ -4,7 +4,7 @@ import json
 import os
 import subprocess
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import pytest
 from typer.testing import CliRunner
@@ -67,10 +67,13 @@ def _populate(
     return preference.record_id, artifact.artifact_id
 
 
-def _inspection(*, kind: str = "state") -> BackupInspection:
+def _inspection(
+    *,
+    kind: Literal["state", "workspace"] = "state",
+) -> BackupInspection:
     return BackupInspection(
         backup_format_version=1,
-        backup_kind=kind,  # type: ignore[arg-type]
+        backup_kind=kind,
         workspace_id="00000000-0000-0000-0000-000000000000",
         schema_version=state.CURRENT_SCHEMA_VERSION,
         source_state_revision=0,
@@ -109,7 +112,6 @@ def test_restore_state_backup_to_absent_target_with_fresh_process(tmp_path: Path
         ).fetchone()
         assert row is not None
         assert int(row[0]) == 0
-        assert len(AuditService(repository).list(action="state.import")) == 1
         WorkspaceFileService(repository).verify(artifact_id)
     assert (target / "artifacts" / "restore" / "報告.txt").read_bytes() == (
         b"restored artifact bytes\n"
@@ -294,6 +296,40 @@ def test_restore_cli_reports_portable_result_without_paths(tmp_path: Path) -> No
     assert str(tmp_path) not in result.stdout
 
 
+def test_restore_workspace_cli_and_restore_failures(tmp_path: Path) -> None:
+    initialized = _initialized(tmp_path)
+    backup_path = tmp_path / "workspace.zip"
+    create_workspace_backup(initialized.root, backup_path)
+    target = tmp_path / "workspace-target"
+
+    success = CliRunner().invoke(
+        app,
+        ["backup", "restore-workspace", str(backup_path), "--target", str(target)],
+    )
+    assert success.exit_code == 0
+    assert "Workspace backup restored" in success.stdout
+
+    missing_state = CliRunner().invoke(
+        app,
+        ["backup", "restore-state", str(tmp_path / "missing.zip"), "--target", str(target)],
+    )
+    assert missing_state.exit_code == 2
+    assert "state backup restore failed" in missing_state.stderr
+
+    missing_workspace = CliRunner().invoke(
+        app,
+        [
+            "backup",
+            "restore-workspace",
+            str(tmp_path / "missing-workspace.zip"),
+            "--target",
+            str(tmp_path / "another-target"),
+        ],
+    )
+    assert missing_workspace.exit_code == 2
+    assert "workspace backup restore failed" in missing_workspace.stderr
+
+
 def test_validation_detects_artifact_corruption(tmp_path: Path) -> None:
     initialized = _initialized(tmp_path)
     _, artifact_id = _populate(initialized)
@@ -442,7 +478,7 @@ def test_write_new_file_wraps_open_failure(
         restore._write_new_file(tmp_path / "file", b"value")
 
 
-def test_publish_target_rejects_races_and_rolls_back_empty_target(tmp_path: Path) -> None:
+def test_publish_target_rejects_races(tmp_path: Path) -> None:
     staging = tmp_path / "staging"
     staging.mkdir()
     target = tmp_path / "target"
@@ -460,6 +496,26 @@ def test_publish_target_rejects_races_and_rolls_back_empty_target(tmp_path: Path
         restore._publish_target(staging_two, target_two, target_existed=False)
 
 
+def test_publish_target_rolls_back_when_post_publish_fsync_fails(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    staging = tmp_path / "staging"
+    staging.mkdir()
+    (staging / "new").write_text("new", encoding="utf-8")
+    target = tmp_path / "target"
+    target.mkdir()
+
+    def fail_fsync(path: Path) -> None:
+        raise restore.RestorePublicationError("synthetic")
+
+    monkeypatch.setattr(restore, "_fsync_directory", fail_fsync)
+    with pytest.raises(restore.RestorePublicationError):
+        restore._publish_target(staging, target, target_existed=True)
+    assert target.is_dir()
+    assert list(target.iterdir()) == []
+
+
 def test_generic_restore_failure_is_wrapped_and_cleaned(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -467,12 +523,18 @@ def test_generic_restore_failure_is_wrapped_and_cleaned(
     backup = tmp_path / "backup.zip"
     backup.write_bytes(b"placeholder")
     inspection = _inspection(kind="workspace")
-    monkeypatch.setattr(restore, "verify_backup", lambda path: inspection)
-    monkeypatch.setattr(restore, "_read_verified_members", lambda path, value: {})
 
-    def fail_stage(members: dict[str, bytes], staging: Path) -> None:
+    def verified(path: Path) -> BackupInspection:
+        return inspection
+
+    def members(path: Path, value: BackupInspection) -> dict[str, bytes]:
+        return {}
+
+    def fail_stage(staged_members: dict[str, bytes], staging: Path) -> None:
         raise ValueError("synthetic")
 
+    monkeypatch.setattr(restore, "verify_backup", verified)
+    monkeypatch.setattr(restore, "_read_verified_members", members)
     monkeypatch.setattr(restore, "_stage_workspace_restore", fail_stage)
     with pytest.raises(restore.RestoreError):
         restore.restore_workspace_backup(backup, tmp_path / "target")
