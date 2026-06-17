@@ -112,7 +112,7 @@ The public repository must not contain:
 - user documents;
 - private research caches;
 - generated personal artifacts;
-- API keys or secrets;
+- API keys, credential values, or other secrets;
 - model weights;
 - private datasets;
 - training checkpoints;
@@ -250,7 +250,8 @@ The user must retain a separate, explicit management path for deleting their own
 ### Accepted rules
 
 - conversation content must not automatically become training data;
-- sensitive personal or secret information must not become durable memory by default;
+- secret values must never become durable memory; doll may retain only a non-secret reference to an externally stored credential;
+- sensitive but non-secret personal information must not become durable memory by default;
 - the user must be able to inspect, edit, export, and delete confirmed memory;
 - memory passed to a model must be scoped to the current need.
 
@@ -294,6 +295,7 @@ Heavy code may be designed and tested with mocks before real Heavy hardware is a
 - Provider-specific support is implemented only after the local system is complete.
 - Any later cloud use must be opt-in and auditable.
 - Original files, long-term memory, and full conversation history must not be sent by default.
+- Secret values remain outside ordinary Doll State and must not be exposed to models; later credential use must pass through the accepted external secret-store and credential-broker boundary.
 - The user must be shown the destination and outbound content before transmission unless they explicitly configure a narrower allowlisted mode.
 
 ## 16. Mobile policy
