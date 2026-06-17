@@ -30,22 +30,35 @@ def _inspection() -> BackupInspection:
     )
 
 
-def test_backup_cli_create_workspace_and_list_fail_safely(tmp_path: Path) -> None:
+def test_backup_cli_create_and_list_fail_safely(tmp_path: Path) -> None:
     runner = CliRunner()
     missing = tmp_path / "missing-workspace"
 
-    created = runner.invoke(
+    state_created = runner.invoke(
         app,
         [
             "backup",
-            "create-workspace",
-            str(tmp_path / "backup.zip"),
+            "create-state",
+            str(tmp_path / "state-backup.zip"),
             "--workspace",
             str(missing),
         ],
     )
-    assert created.exit_code == 2
-    assert "workspace backup creation failed" in created.stderr
+    assert state_created.exit_code == 2
+    assert "state backup creation failed" in state_created.stderr
+
+    workspace_created = runner.invoke(
+        app,
+        [
+            "backup",
+            "create-workspace",
+            str(tmp_path / "workspace-backup.zip"),
+            "--workspace",
+            str(missing),
+        ],
+    )
+    assert workspace_created.exit_code == 2
+    assert "workspace backup creation failed" in workspace_created.stderr
 
     listed = runner.invoke(app, ["backup", "list", "--workspace", str(missing)])
     assert listed.exit_code == 2
