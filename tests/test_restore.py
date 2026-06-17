@@ -1,16 +1,17 @@
 from __future__ import annotations
 
-import shutil
+import subprocess
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from typer.testing import CliRunner
 
 import doll.restore as restore
 from doll import state, workspace
-from doll.artifact import WorkspaceFileService
+from doll.artifact import ArtifactCorruptError, WorkspaceFileService
 from doll.audit import AuditService
-from doll.backup import create_state_backup, create_workspace_backup
+from doll.backup import BackupError, create_state_backup, create_workspace_backup
 from doll.backup_manifest import BackupManifestService
 from doll.cli import app
 from doll.memory import ConfirmedMemoryService
@@ -24,7 +25,11 @@ def _initialized(tmp_path: Path, name: str = "workspace") -> workspace.Initializ
     return initialized
 
 
-def _populate(initialized: workspace.InitializedWorkspace, *, secret: bool = False) -> tuple[str, str]:
+def _populate(
+    initialized: workspace.InitializedWorkspace,
+    *,
+    secret: bool = False,
+) -> tuple[str, str]:
     with state.open_state_repository(initialized.root) as repository:
         preference = PreferenceService(repository).create(
             key="output.language",
@@ -66,16 +71,17 @@ def test_restore_state_backup_to_absent_target_with_fresh_process(tmp_path: Path
 
     assert result.backup_kind == "state"
     assert result.source_state_revision == source_revision
-    assert result.restored_state_revision == source_revision
+    assert result.restored_state_revision == source_revision + 1
     assert result.fresh_process_validated is True
     assert target.is_dir()
     assert not any(path.name.startswith(".doll-restore-") for path in tmp_path.iterdir())
     with state.open_state_repository(target, read_only=True) as repository:
-        assert repository.status().state_revision == source_revision
+        assert repository.status().state_revision == source_revision + 1
         assert PreferenceService(repository).get(preference_id).value == {"language": "日本語"}
         assert repository.connection.execute(
             "SELECT COUNT(*) FROM records WHERE sensitivity = 'secret'"
         ).fetchone() == (0,)
+        assert len(AuditService(repository).list(action="state.import")) == 1
         verified = WorkspaceFileService(repository).verify(artifact_id)
         assert verified.actual_size_bytes == len(b"restored artifact bytes\n")
     assert (target / "artifacts" / "restore" / "報告.txt").read_bytes() == (
@@ -129,6 +135,7 @@ def test_restore_accepts_and_preserves_existing_empty_target(tmp_path: Path) -> 
     result = restore.restore_state_backup(backup_path, target)
 
     assert result.fresh_process_validated
+    assert result.restored_state_revision == result.source_state_revision + 1
     assert (target / workspace.WORKSPACE_RECORD_NAME).is_file()
     assert not any(path.name.startswith(f".{target.name}.empty-") for path in tmp_path.iterdir())
 
@@ -153,6 +160,37 @@ def test_restore_rejects_existing_file_and_nonempty_directory(tmp_path: Path) ->
     assert marker.read_text(encoding="utf-8") == "keep"
 
 
+def test_restore_rejects_symbolic_link_target(tmp_path: Path) -> None:
+    initialized = _initialized(tmp_path)
+    backup_path = tmp_path / "state.zip"
+    create_state_backup(initialized.root, backup_path)
+    real_target = tmp_path / "real-target"
+    real_target.mkdir()
+    link_target = tmp_path / "linked-target"
+    try:
+        link_target.symlink_to(real_target, target_is_directory=True)
+    except OSError:
+        pytest.skip("symbolic links are not available")
+
+    with pytest.raises(BackupError):
+        restore.restore_state_backup(backup_path, link_target)
+
+    assert list(real_target.iterdir()) == []
+
+
+def test_restore_rejects_target_with_file_parent(tmp_path: Path) -> None:
+    initialized = _initialized(tmp_path)
+    backup_path = tmp_path / "state.zip"
+    create_state_backup(initialized.root, backup_path)
+    parent = tmp_path / "parent-file"
+    parent.write_text("keep", encoding="utf-8")
+
+    with pytest.raises((OSError, BackupError)):
+        restore.restore_state_backup(backup_path, parent / "target")
+
+    assert parent.read_text(encoding="utf-8") == "keep"
+
+
 def test_restore_rejects_wrong_backup_kind_without_target_residue(tmp_path: Path) -> None:
     initialized = _initialized(tmp_path)
     workspace_backup = tmp_path / "workspace.zip"
@@ -174,7 +212,7 @@ def test_restore_rejects_tampered_backup_before_target_mutation(tmp_path: Path) 
     backup_path.write_bytes(content)
     target = tmp_path / "tampered-target"
 
-    with pytest.raises(Exception):
+    with pytest.raises(BackupError):
         restore.restore_state_backup(backup_path, target)
 
     assert not target.exists()
@@ -182,7 +220,8 @@ def test_restore_rejects_tampered_backup_before_target_mutation(tmp_path: Path) 
 
 
 def test_fresh_process_failure_rolls_back_absent_target(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     initialized = _initialized(tmp_path)
     backup_path = tmp_path / "state.zip"
@@ -201,7 +240,8 @@ def test_fresh_process_failure_rolls_back_absent_target(
 
 
 def test_fresh_process_failure_restores_preexisting_empty_target(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     initialized = _initialized(tmp_path)
     backup_path = tmp_path / "state.zip"
@@ -221,8 +261,74 @@ def test_fresh_process_failure_restores_preexisting_empty_target(
     assert not any(path.name.startswith(f".{target.name}.empty-") for path in tmp_path.iterdir())
 
 
+def test_fresh_process_mismatch_rolls_back_publication(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    initialized = _initialized(tmp_path)
+    backup_path = tmp_path / "workspace.zip"
+    create_workspace_backup(initialized.root, backup_path)
+    target = tmp_path / "mismatch-target"
+    original = restore._validate_in_fresh_process
+
+    def mismatch(*args: object, **kwargs: object) -> restore.RestoreValidation:
+        result = original(*args, **kwargs)
+        return restore.RestoreValidation(
+            workspace_id=result.workspace_id,
+            schema_version=result.schema_version,
+            state_revision=result.state_revision,
+            record_count=result.record_count + 1,
+            artifact_count=result.artifact_count,
+            backup_inventory_count=result.backup_inventory_count,
+            audit_event_count=result.audit_event_count,
+        )
+
+    monkeypatch.setattr(restore, "_validate_in_fresh_process", mismatch)
+    with pytest.raises(restore.RestoreValidationError):
+        restore.restore_workspace_backup(backup_path, target)
+
+    assert not target.exists()
+
+
+def test_fresh_process_nonzero_and_invalid_output_are_rejected(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    inspection = SimpleNamespace(
+        workspace_id="00000000-0000-0000-0000-000000000000",
+        schema_version=1,
+    )
+
+    monkeypatch.setattr(
+        restore.subprocess,
+        "run",
+        lambda *args, **kwargs: subprocess.CompletedProcess(args=[], returncode=2, stdout="", stderr=""),
+    )
+    with pytest.raises(restore.RestoreValidationError):
+        restore._validate_in_fresh_process(
+            tmp_path,
+            inspection,
+            expected_state_revision=0,
+        )
+
+    monkeypatch.setattr(
+        restore.subprocess,
+        "run",
+        lambda *args, **kwargs: subprocess.CompletedProcess(
+            args=[], returncode=0, stdout="not-json", stderr=""
+        ),
+    )
+    with pytest.raises(restore.RestoreValidationError):
+        restore._validate_in_fresh_process(
+            tmp_path,
+            inspection,
+            expected_state_revision=0,
+        )
+
+
 def test_workspace_restore_staging_failure_leaves_no_residue(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     initialized = _initialized(tmp_path)
     _populate(initialized)
@@ -246,6 +352,13 @@ def test_workspace_restore_staging_failure_leaves_no_residue(
 
     assert not target.exists()
     assert not any(path.name.startswith(".doll-restore-") for path in tmp_path.iterdir())
+
+
+def test_stage_helpers_reject_missing_required_members(tmp_path: Path) -> None:
+    with pytest.raises(BackupError):
+        restore._stage_state_restore({}, tmp_path / "state-staging")
+    with pytest.raises(BackupError):
+        restore._stage_workspace_restore({}, tmp_path / "workspace-staging")
 
 
 def test_restore_cli_reports_portable_result_without_target_path(tmp_path: Path) -> None:
@@ -285,8 +398,31 @@ def test_validation_detects_artifact_corruption(tmp_path: Path) -> None:
             expected_state_revision=result.restored_state_revision,
         )
     with state.open_state_repository(target, read_only=True) as repository:
-        with pytest.raises(Exception):
+        with pytest.raises(ArtifactCorruptError):
             WorkspaceFileService(repository).verify(artifact_id)
+
+
+def test_validation_rejects_wrong_expected_identity_and_revision(tmp_path: Path) -> None:
+    initialized = _initialized(tmp_path)
+    backup_path = tmp_path / "workspace.zip"
+    create_workspace_backup(initialized.root, backup_path)
+    target = tmp_path / "restored"
+    result = restore.restore_workspace_backup(backup_path, target)
+
+    with pytest.raises(restore.RestoreValidationError):
+        restore.validate_restored_workspace(
+            target,
+            expected_workspace_id="00000000-0000-0000-0000-000000000000",
+            expected_schema_version=state.CURRENT_SCHEMA_VERSION,
+            expected_state_revision=result.restored_state_revision,
+        )
+    with pytest.raises(restore.RestoreValidationError):
+        restore.validate_restored_workspace(
+            target,
+            expected_workspace_id=result.workspace_id,
+            expected_schema_version=state.CURRENT_SCHEMA_VERSION,
+            expected_state_revision=result.restored_state_revision + 1,
+        )
 
 
 def test_restore_does_not_copy_backup_archive_into_target(tmp_path: Path) -> None:
@@ -298,4 +434,3 @@ def test_restore_does_not_copy_backup_archive_into_target(tmp_path: Path) -> Non
     restore.restore_workspace_backup(backup_path, target)
 
     assert not any(path.suffix == ".zip" for path in target.rglob("*"))
-    shutil.rmtree(target)
