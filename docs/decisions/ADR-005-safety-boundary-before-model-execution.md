@@ -119,6 +119,14 @@ Rejected because prompts are not an authorization mechanism and may be ignored, 
 
 Rejected because arbitrary commands cannot be reliably summarized into a stable, bounded side-effect contract.
 
+## Specification consistency
+
+This sequencing decision applies across the product contract, architecture, state model, security specification, release scope, acceptance tests, roadmap, public README, and security policy.
+
+A document that still describes model connection, local conversation, or model replacement as part of the first continuity proof is inconsistent with this decision. Such a contradiction must be corrected in the same documentation change rather than deferred to implementation or resolved silently by code.
+
+The generated combined specification must be regenerated after every normative source change and must pass its deterministic freshness check before merge.
+
 ## Compatibility and migration
 
 This decision changes implementation order but does not invalidate IMP-001 through IMP-010. Those implementations contain no model execution path and remain the Phase 1 and Phase 2 foundation.
