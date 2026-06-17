@@ -323,15 +323,17 @@ A user's own remote PC running doll is distinct from a third-party cloud AI prov
 
 ### First implementation objective
 
-The first usable proof is not a full general-purpose assistant. It is a minimum continuity demonstration capable of proving that:
+The first usable proof is not a chatbot or a full general-purpose assistant. It is a model-independent continuity demonstration capable of proving that:
 
-- the system starts locally;
-- local conversation works;
-- durable state is separate from the model and UI;
-- a model can be replaced without deleting state;
-- backup can be restored into an empty workspace;
-- the system can operate without network access or cloud credentials;
-- the system refuses to write outside its workspace.
+- the durable core starts locally without network access, cloud credentials, or a model runtime;
+- explicit durable state is separate from every model and UI;
+- state can be exported and imported into an empty compatible target;
+- verified state and workspace backups can be restored into empty compatible targets;
+- restored identity, revision, records, links, audit history, and artifact bytes validate in a fresh process;
+- failed import or restore preserves the last known good state;
+- the system refuses unsafe archive paths and writes outside its workspace.
+
+Local conversation and model replacement become a separate proof only after the model-independent safety boundary has passed its acceptance gate.
 
 ## 18. Specification source and generated document
 
