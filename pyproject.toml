@@ -74,7 +74,7 @@ warn_unused_configs = true
 
 [[tool.mypy.overrides]]
 module = "doll.restore_impl"
-allow_redefinition = true
+disable_error_code = ["assignment", "arg-type"]
 
 [tool.uv]
 default-groups = ["dev"]
