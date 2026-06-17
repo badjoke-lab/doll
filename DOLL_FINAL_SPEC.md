@@ -19,7 +19,7 @@
 - `docs/spec/05-model-vault-lifecycle-evaluation.md` — SHA-256 `3011788c55be9232db98bf932d8c859c88ed3d3bc3e603f0d4c3c709f2eb4268`
 - `docs/spec/06-platform-install-update-and-recovery.md` — SHA-256 `b73b6106d28b3fcb740b6d2f8b5dee4935a7a998537e5858395a85170ce85072`
 - `docs/spec/07-release-scope-and-profiles.md` — SHA-256 `c1b7d0be3dccac6df47e07e3e8aa286f91875bc2c6e44882e648654a42a294e3`
-- `docs/spec/08-acceptance-and-continuity-tests.md` — SHA-256 `044b576a03b51b4f7613f73d100a1de77e721bf218e77955bdf212c99e15a6ba`
+- `docs/spec/08-acceptance-and-continuity-tests.md` — SHA-256 `1ae9b70cf28257b35a30238bdc46c2caea93dbd17fdf8b516ff708c9e208a698`
 - `docs/spec/09-development-roadmap.md` — SHA-256 `51f312ba90ef9fbeef06f91deb9b470f6a2adc251966a4c58bd50f84b994d7ef`
 
 ---
@@ -6491,7 +6491,8 @@ The Phase 2 gate requires:
 - CONT-P011;
 - CONT-P012;
 - CONT-P015 for implemented operations;
-- STATE-001 through STATE-009 where implemented;
+- CONT-P016;
+- STATE-001 through STATE-012 where implemented;
 - PLAT-001 through PLAT-007 where applicable.
 
 Required evidence:
