@@ -72,5 +72,9 @@ strict = true
 files = ["src", "tests"]
 warn_unused_configs = true
 
+[[tool.mypy.overrides]]
+module = "doll.restore_impl"
+allow_redefinition = true
+
 [tool.uv]
 default-groups = ["dev"]
