@@ -7,57 +7,75 @@
 
 This directory contains the normative product and engineering specification for doll.
 
-The source files under `docs/spec/` are the maintainable source of truth. A combined reading copy may later be generated from these files, but the generated copy must not be edited directly.
+The source files under `docs/spec/` are the maintainable source of truth. `DOLL_FINAL_SPEC.md` is the deterministic combined reading copy and must not be edited directly.
 
-## 2. Normative order
+## 2. Governing pillars
+
+The specification is governed by two co-equal architectural pillars:
+
+1. **Continuity:** user-owned state must survive model, provider, interface, machine, network, and project failure.
+2. **Safety boundary:** models, tools, runtimes, and external content must not gain undeclared authority over state, secrets, the operating system, accounts, or external services.
+
+Implementation must prove continuity without a model, then complete and acceptance-test the safety boundary, then connect a model runtime.
+
+## 3. Normative order
 
 Read and combine the specification in this order:
 
-1. `00-index.md` — document map and requirement language;
+1. `00-index.md` — document map, governing pillars, and requirement language;
 2. `00-decisions-baseline.md` — accepted, rejected, and deferred baseline decisions;
 3. `01-product-and-continuity-contract.md` — product identity and Continuity Contract;
 4. `02-architecture-and-data-flow.md` — service boundaries, adapters, trust boundaries, and flows;
 5. `03-doll-state-memory-and-storage.md` — authoritative state, memory, storage, export, and migration;
-6. `04-security-permissions-and-threat-model.md` — security boundaries, permissions, and threats;
+6. `04-security-permissions-and-threat-model.md` — security boundary, secrets, trust, instructions, permissions, capabilities, and threats;
 7. `05-model-vault-lifecycle-evaluation.md` — model ownership, validation, evaluation, promotion, and rollback;
 8. `06-platform-install-update-and-recovery.md` — platform, install, update, backup, restore, and recovery;
 9. `07-release-scope-and-profiles.md` — release boundaries and Lite/Heavy scope;
-10. `08-acceptance-and-continuity-tests.md` — evidence required for product claims and release gates;
+10. `08-acceptance-and-continuity-tests.md` — evidence required for product claims and phase or release gates;
 11. `09-development-roadmap.md` — implementation sequence and pull-request plan.
 
 Accepted architecture decisions under `docs/decisions/` explain why major constraints were selected. They are normative when their status is accepted and they do not conflict with a later accepted specification change.
 
-## 3. Requirement language
+The accepted decision set includes:
 
-The following terms are normative:
+- `ADR-001-local-complete-cloud-optional.md`;
+- `ADR-002-default-deny-capability-broker.md`;
+- `ADR-003-state-independent-of-model-and-ui.md`;
+- `ADR-004-release-gates-require-evidence.md`;
+- `ADR-005-safety-boundary-before-model-execution.md`.
+
+## 4. Requirement language
+
+The following terms are normative.
 
 The terms are interpreted case-insensitively in specification set 0.1; future changes SHOULD use uppercase forms for clarity.
 
-
-- **MUST / MUST NOT:** mandatory for the applicable release or claim;
+- **MUST / MUST NOT:** mandatory for the applicable release, phase gate, or claim;
 - **SHOULD / SHOULD NOT:** expected unless a documented reason justifies an exception;
 - **MAY:** optional;
 - **DEFERRED:** intentionally outside the current release boundary;
 - **EXPERIMENTAL:** available without a stable compatibility promise;
-- **BLOCKING TEST:** failure prevents the applicable release or claim;
+- **BLOCKING TEST:** failure prevents the applicable phase, release, or claim;
 - **ADVISORY TEST:** failure requires documentation but does not automatically block release.
 
 Ordinary descriptive language is not automatically a mandatory requirement unless it is tied to an acceptance criterion, decision, or release gate.
 
-## 4. Conflict resolution
+## 5. Conflict resolution
 
 When accepted documents conflict, use this order:
 
 1. the most recent explicit decision changing the earlier requirement;
-2. the release-specific scope and acceptance criteria;
+2. the release-specific or phase-specific scope and acceptance criteria;
 3. the Continuity Contract;
-4. security and data-integrity requirements;
+4. security, secret-separation, trust, and data-integrity requirements;
 5. architecture and implementation direction;
 6. roadmap estimates.
 
 A conflict must be resolved in a dedicated pull request. Implementations must not silently choose one interpretation.
 
-## 5. Status meanings
+ADR-005 changes the implementation sequence so that the complete safety boundary and its acceptance gate precede model execution. Earlier roadmap text that placed model integration first is superseded by the accepted roadmap carrying that decision.
+
+## 6. Status meanings
 
 - **Draft for acceptance:** proposed in an open pull request;
 - **Accepted:** merged into the default branch and not superseded;
@@ -67,7 +85,7 @@ A conflict must be resolved in a dedicated pull request. Implementations must no
 
 Merging a draft specification into `main` changes it to accepted unless the document explicitly states otherwise.
 
-## 6. Claim discipline
+## 7. Claim discipline
 
 Public documentation and release notes must distinguish:
 
@@ -79,15 +97,13 @@ Public documentation and release notes must distinguish:
 - experimental;
 - stable for the named release.
 
-A feature being present in source code does not prove that the feature satisfies its Continuity Contract or security requirements.
+A feature being present in source code does not prove that it satisfies its Continuity Contract or security requirements.
 
-## 7. Generated combined specification
+A model responding successfully does not prove that secret isolation, instruction authority, capability enforcement, prompt-injection resistance, or high-risk confirmation are correct.
 
-The project will later add a deterministic build step that concatenates accepted source files into a reading copy such as:
+## 8. Generated combined specification
 
-```text
-DOLL_FINAL_SPEC.md
-```
+`DOLL_FINAL_SPEC.md` is generated from the normative source order defined by `scripts/build_final_spec.py`.
 
 The generator must:
 
@@ -99,7 +115,19 @@ The generator must:
 - mark the output as generated;
 - be checked in CI.
 
-## 8. Non-normative material
+Regenerate with:
+
+```text
+python scripts/build_final_spec.py
+```
+
+Check with:
+
+```text
+python scripts/build_final_spec.py --check
+```
+
+## 9. Non-normative material
 
 The following are non-normative unless promoted through an accepted specification or decision:
 
@@ -110,9 +138,9 @@ The following are non-normative unless promoted through an accepted specificatio
 - screenshots and design mockups;
 - benchmark experiments without an accepted evaluation definition;
 - personal planning documents;
-- generated summaries.
+- generated summaries other than the deterministic combined specification as a reading copy.
 
-## 9. Change requirements
+## 10. Change requirements
 
 A specification-changing pull request SHOULD include:
 
@@ -122,7 +150,7 @@ A specification-changing pull request SHOULD include:
 - migration effects;
 - security and privacy effects;
 - acceptance-test changes;
-- release-scope changes;
+- phase and release-scope changes;
 - documentation updates.
 
-A change that weakens local completeness, state portability, workspace confinement, explicit approval, or recoverability requires a dedicated architecture decision.
+A change that weakens local completeness, state portability, workspace confinement, secret separation, trust provenance, instruction-origin enforcement, explicit approval, high-risk confirmation, or recoverability requires a dedicated architecture decision.
