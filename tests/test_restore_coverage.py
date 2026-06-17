@@ -97,3 +97,77 @@ def test_write_new_file_ignores_chmod_failure(
     monkeypatch.setattr(Path, "chmod", fail_chmod)
     restore._write_new_file(path, b"value")
     assert path.read_bytes() == b"value"
+
+
+def test_rollback_removes_staging_and_published_target(tmp_path: Path) -> None:
+    staging = tmp_path / "staging"
+    staging.mkdir()
+    (staging / "partial").write_text("partial", encoding="utf-8")
+    target = tmp_path / "target"
+    target.mkdir()
+    (target / "published").write_text("published", encoding="utf-8")
+
+    restore._rollback_restore(
+        staging,
+        target,
+        empty_backup=None,
+        published=True,
+        target_existed=False,
+    )
+
+    assert not staging.exists()
+    assert not target.exists()
+
+
+def test_rollback_restores_original_empty_target(tmp_path: Path) -> None:
+    staging = tmp_path / "staging"
+    target = tmp_path / "target"
+    empty_backup = tmp_path / ".target.empty"
+    empty_backup.mkdir()
+
+    restore._rollback_restore(
+        staging,
+        target,
+        empty_backup=empty_backup,
+        published=True,
+        target_existed=True,
+    )
+
+    assert target.is_dir()
+    assert list(target.iterdir()) == []
+    assert not empty_backup.exists()
+
+
+def test_rollback_recreates_missing_original_empty_target(tmp_path: Path) -> None:
+    restore._rollback_restore(
+        tmp_path / "missing-staging",
+        tmp_path / "target",
+        empty_backup=None,
+        published=True,
+        target_existed=True,
+    )
+
+    target = tmp_path / "target"
+    assert target.is_dir()
+    assert list(target.iterdir()) == []
+
+
+def test_rollback_wraps_cleanup_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    staging = tmp_path / "staging"
+    staging.mkdir()
+
+    def fail_remove(path: Path) -> None:
+        raise OSError("synthetic")
+
+    monkeypatch.setattr(restore.shutil, "rmtree", fail_remove)
+    with pytest.raises(restore.RestorePublicationError):
+        restore._rollback_restore(
+            staging,
+            tmp_path / "target",
+            empty_backup=None,
+            published=False,
+            target_existed=False,
+        )
