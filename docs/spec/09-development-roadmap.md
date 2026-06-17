@@ -5,187 +5,210 @@
 
 ## 1. Purpose
 
-This roadmap converts the accepted product and engineering specifications into an implementation sequence.
+This roadmap converts the accepted product, continuity, and security specifications into an implementation sequence.
 
 It is a sequencing document, not a promise of exact dates or pull-request counts.
 
 The governing rule is:
 
-> Prove continuity first, then add useful local capabilities, then expand performance and access.
+> Prove user-owned continuity first, complete the model-independent safety boundary second, then add model execution and useful capabilities without weakening either pillar.
 
 ## 2. Working method
 
 Development proceeds through small, reviewable pull requests.
 
-Each implementation PR should:
+Each implementation PR must:
 
-- solve one bounded problem;
+- solve one bounded issue;
 - cite the accepted specification it implements;
-- describe state, permission, network, and migration effects;
-- include tests;
+- describe state, permission, secret, trust, network, and migration effects;
+- include tests for success and denial or failure paths;
 - avoid unrelated refactoring;
-- state what was not tested on real hardware;
-- preserve a working main branch.
+- distinguish CI evidence from real-machine evidence;
+- preserve a working and recoverable `main` branch;
+- avoid private data, credentials, secret values, personal paths, usernames, hostnames, and home-directory details.
+
+The normal unit of work is:
+
+```text
+1 Issue → 1 Branch → 1 Pull Request
+```
 
 The intended division of work is:
 
 - GPT: architecture, specification, task decomposition, review, and release-gate checking;
-- Codex: implementation, tests, migrations, documentation updates, and PR preparation;
+- Codex or equivalent implementation assistance: code, tests, migrations, documentation updates, and PR preparation;
 - project owner: priorities, real-machine validation, final merge, release, license, and hardware decisions.
 
-## 3. Current phase
+## 3. Governing implementation order
 
-### Phase 0 — Specification and repository baseline
+Doll has two co-equal architectural pillars:
 
-Status at completion of PR-005:
+1. continuity of user-owned state;
+2. a model-independent safety boundary.
 
-- product identity defined;
-- Continuity Contract defined;
-- architecture and Doll State defined;
-- security and permission model defined;
-- Model Vault and recovery defined;
-- release scope defined;
-- acceptance tests defined;
-- roadmap defined.
+The implementation phases are:
 
-Phase 0 is complete when:
+```text
+Phase 0  Specification and principles
+Phase 1  Local state foundation
+Phase 2  Continuity, transfer, backup, and restore
+Phase 3  Safety boundary
+Phase 4  Local AI
+Phase 5  Cloud and multiple models
+Phase 6  Tools and external services
+Phase 7  Daily use
+Phase 8  Distribution, encryption, and long-term operation
+```
 
-1. the combined specification is generated deterministically;
-2. the contradiction and completeness audit is recorded;
-3. requirement wording and acceptance mappings are reviewed;
-4. specification set 0.1 is accepted for implementation;
-5. the initial implementation issue and PR queue can begin.
+No model adapter, inference request, conversation runtime, or model-initiated capability path may merge before the Phase 3 safety gate passes.
 
-No production feature may bypass this baseline. After the v0.1 freeze, implementation starts with IMP-001.
+## 4. Current state
 
-## 4. Phase 1 — Repository and continuity kernel
+Completed:
 
-Goal: establish a cross-platform Python package, private workspace, versioned state, and safe write boundary.
+- Phase 0 specification baseline;
+- IMP-001 through IMP-010;
+- local workspace, SQLite state, migrations, audit, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package export/import, and verified backup creation.
 
-### Proposed PR sequence
+Current implementation point:
 
-#### IMP-001 — Python package and CI skeleton
+- Phase 2;
+- IMP-011 is the next code issue;
+- IMP-011 adds backup restore and post-restore validation;
+- IMP-012 will run the model-independent Continuity Acceptance Test;
+- IMP-013 through IMP-023 implement and validate the safety boundary;
+- local model execution begins at IMP-024 or later.
 
-- Python 3.12 project metadata;
+## 5. Phase 0 — Specification and principles
+
+Goal: define product identity, continuity, state ownership, security, release evidence, and implementation order before production features.
+
+Status: complete, subject to controlled specification changes.
+
+Completed specification work includes:
+
+- product identity and Continuity Contract;
+- local-complete, cloud-optional architecture;
+- Doll State and storage model;
+- default-deny permissions and trust boundaries;
+- Model Vault direction;
+- platform and recovery direction;
+- release scope and acceptance evidence;
+- deterministic `DOLL_FINAL_SPEC.md` generation;
+- ADR-005 sequencing the safety boundary before model execution.
+
+No implementation PR may silently contradict this baseline.
+
+## 6. Phase 1 — Local state foundation
+
+Goal: establish a cross-platform package, private workspace, versioned authoritative state, explicit user control, and safe writes without any model dependency.
+
+Status: complete through IMP-008.
+
+### IMP-001 — Python package and CI skeleton
+
+Implemented:
+
+- Python package metadata;
 - `uv` lock and development commands;
 - `src/doll/` package;
 - Typer CLI entry point;
 - FastAPI application factory;
-- pytest, lint, and type-check configuration;
-- GitHub Actions for macOS, Windows, and Ubuntu;
+- pytest, lint, type-check, and coverage configuration;
+- macOS, Windows, and Ubuntu CI;
 - no model or external tool dependency.
 
-Acceptance focus:
+### IMP-002 — Platform paths and workspace initialization
 
-- PLAT-001;
-- imports and CLI help on all CI platforms;
-- no private data created in repository.
+Implemented:
 
-#### IMP-002 — Platform paths and workspace initialization
-
-- platform-aware default directories;
+- platform-aware data locations;
 - `doll init`;
 - WorkspaceRecord;
-- workspace configuration;
 - repository-checkout protection;
-- path canonicalization primitives;
-- synthetic fixtures.
+- path canonicalization;
+- synthetic and Unicode fixtures.
 
-Acceptance focus:
+### IMP-003 — SQLite state repository and migrations
 
-- CONT-P001;
-- PLAT-002;
-- Japanese and non-ASCII path tests.
+Implemented:
 
-#### IMP-003 — SQLite state repository and migrations
-
-- initial schema;
+- schema versioning;
 - common record envelope;
-- schema version table;
 - migration runner;
-- transactions and revision fields;
+- transactions and revisions;
 - read-only recovery opening path.
 
-Acceptance focus:
+### IMP-004 — Append-oriented audit service
 
-- STATE-001;
-- STATE-002;
-- STATE-005 foundation.
+Implemented:
 
-#### IMP-004 — Audit service
-
-- append-oriented audit schema;
 - operation IDs;
 - actor and result records;
-- secret-safe error summaries;
-- CLI audit listing.
+- secret-safe summaries;
+- audit listing;
+- append-oriented persistence.
 
-Acceptance focus:
+### IMP-005 — Workspace file service
 
-- CONT-P015 foundation;
-- SEC-012.
-
-#### IMP-005 — Workspace file service
+Implemented:
 
 - managed artifact paths;
-- safe create-new semantics;
+- create-new semantics;
 - content hashing;
 - atomic writes;
 - traversal and link-escape defenses;
 - size limits.
 
-Acceptance focus:
+### IMP-006 — Preferences, policies, and permissions
 
-- CONT-P008;
-- CONT-P009;
-- SEC filesystem tests.
-
-## 5. Phase 2 — Minimal Doll State and recovery
-
-Goal: make durable user state inspectable, exportable, restorable, and independent from a model.
-
-### Proposed PR sequence
-
-#### IMP-006 — Preferences, policies, and permissions
+Implemented:
 
 - PreferenceRecord;
 - PolicyRecord;
 - PermissionRecord;
 - denied, allow-once, ask, and scoped modes;
 - no global allow-all;
-- management CLI.
+- explicit management path;
+- model or content text cannot count as approval.
 
-#### IMP-007 — Confirmed memory
+### IMP-007 — Confirmed memory
 
-- confirmed MemoryRecord only for the first slice;
-- create, list, inspect, update, archive, export;
+Implemented:
+
+- confirmed MemoryRecord management;
 - provenance and sensitivity;
+- archive and export;
 - no automatic conversation-to-memory conversion.
 
-Acceptance focus:
+### IMP-008 — Projects and decisions
 
-- CONT-P005.
-
-#### IMP-008 — Projects and decisions
+Implemented:
 
 - ProjectRecord;
 - DecisionRecord;
-- links to memory and artifacts;
-- revision-safe updates.
+- typed links;
+- revision-safe updates;
+- archive and export.
 
-Acceptance focus:
+## 7. Phase 2 — Continuity, transfer, backup, and restore
 
-- CONT-P006.
+Goal: make durable state inspectable, transferable, restorable, and verifiable without a model, runtime, network connection, cloud account, or preferred UI.
 
-#### IMP-009 — Doll State export and import
+### IMP-009 — Doll State package export and import
 
-- package manifest;
-- JSON/JSONL records;
+Status: complete.
+
+Implemented:
+
+- versioned package manifest;
+- JSON and JSONL records;
 - checksums;
-- package version;
 - staged validation;
 - conflict reporting;
-- no code execution.
+- empty-target import;
+- no package-content execution.
 
 Acceptance focus:
 
@@ -193,298 +216,402 @@ Acceptance focus:
 - STATE-004;
 - STATE-008.
 
-#### IMP-010 — Backup create and verify
+### IMP-010 — Backup creation and verification
+
+Status: complete.
+
+Implemented:
 
 - state backup;
-- full workspace backup;
-- manifest and SHA-256 checks;
-- completion only after verification;
-- backup inventory.
+- workspace backup;
+- SQLite snapshot;
+- artifact-byte preservation;
+- manifest and SHA-256 verification;
+- tamper detection;
+- atomic no-clobber publication;
+- secret-containing unencrypted workspace-backup rejection;
+- backup inventory and audit.
 
 Acceptance focus:
 
 - CONT-P010;
-- STATE-007 foundation.
+- STATE-007 foundation;
+- cross-platform backup safety.
 
-#### IMP-011 — Restore and post-restore validation
+### IMP-011 — Backup restore and post-restore validation
 
-- restore to empty target;
-- staged extraction;
-- unsafe-path rejection;
-- workspace identity preservation;
-- doctor validation;
-- restore audit event.
+Status: next code implementation.
+
+Required scope:
+
+- state-backup restore into an empty target;
+- workspace-backup restore into an empty target;
+- complete verification before extraction;
+- staging outside the final target;
+- safe path and member validation;
+- SQLite integrity validation;
+- workspace identity and revision validation;
+- record and typed-link validation;
+- artifact hash and byte validation;
+- atomic publication without overwrite;
+- cleanup of staging and partial output on failure;
+- fresh-process post-restore validation;
+- normal output without absolute local path disclosure;
+- no model execution and no network access.
 
 Acceptance focus:
 
 - CONT-P011;
 - CONT-P012;
 - STATE-007;
-- STATE-008.
+- STATE-008;
+- PLAT-005;
+- PLAT-007.
 
-## 6. Phase 3 — Local model path and first continuity proof
+### IMP-012 — Continuity Acceptance Test
 
-Goal: connect local inference without letting the runtime own Doll State.
+Goal: prove the complete Phase 1 and Phase 2 continuity foundation before any safety-boundary or model work depends on it.
 
-### Proposed PR sequence
+Required evidence:
 
-#### IMP-012 — Minimal user-selected document intake
+- clean workspace creation;
+- confirmed memory, preferences, policies, permissions, projects, decisions, typed links, audit history, and artifacts persist across process restart;
+- Doll State export and import preserve implemented authoritative records;
+- state backup restores into an empty target;
+- workspace backup restores into an empty target;
+- restored workspace identity, schema, revision, records, links, audit history, and artifact bytes match the verified source contract;
+- corrupt, tampered, unsafe, mismatched, existing, or non-empty targets fail closed;
+- a fresh process validates and inspects restored state without a model;
+- no cloud credentials or network access are required;
+- no absolute path, username, hostname, home-directory detail, secret, or personal fixture appears in shareable output;
+- CI passes on macOS, Windows, and Ubuntu;
+- the complete drill passes on the primary Intel Mac.
 
-- user-controlled text and Markdown selection;
-- safe external read path;
-- DocumentRecord creation;
-- path and size validation;
-- explicit attachment to the current request;
-- no model-initiated arbitrary filesystem read.
+Phase 2 gate:
 
-Acceptance focus:
+- IMP-011 is merged;
+- required continuity and state tests pass;
+- the real-machine continuity report records the tested commit and limitations;
+- restore failure does not damage the last known good workspace;
+- no model execution path exists.
 
-- CONT-P007.
+## 8. Phase 3 — Safety boundary
 
-#### IMP-013 — Runtime adapter contract
+Goal: implement the authority, secret, trust, instruction, capability, and confirmation boundary before any model is allowed to execute.
 
-- adapter protocol;
-- normalized health, inventory, generation, cancellation, and error models;
-- mocked adapter tests;
-- runtime-independent model IDs.
+The safety boundary is model-independent. Tests use synthetic callers, hostile fixtures, malformed requests, and explicit management commands rather than a live model.
 
-#### IMP-014 — Ollama adapter
+### IMP-013 — Secret Classification Policy
+
+Define:
+
+- secret classes and sensitivity levels;
+- ordinary-state prohibition for secret values;
+- SecretReference requirements;
+- allowed metadata and prohibited value fields;
+- input, output, persistence, export, backup, and diagnostic handling;
+- fail-closed behavior for uncertain secret-bearing operations.
+
+### IMP-014 — Secret Detection and Redaction
+
+Implement:
+
+- bounded best-effort detectors;
+- structured redaction results;
+- false-positive and false-negative documentation;
+- redaction for user-visible errors and diagnostics;
+- no broad secret-search permission;
+- tests for common credential, token, key, cookie, recovery phrase, and personal-data patterns using synthetic fixtures only.
+
+### IMP-015 — Secret-Safe Audit and Logging
+
+Implement:
+
+- centrally enforced audit and log sanitization;
+- structured safe summaries;
+- rejection or redaction of secret-bearing fields;
+- path, username, hostname, and home-directory minimization;
+- tests proving allowed, denied, failed, and exceptional operations do not leak secret values.
+
+### IMP-016 — External Secret Store Contract
+
+Define a portable contract for operating-system or compatible external secret stores:
+
+- reference creation and lookup metadata;
+- availability and locked-state reporting;
+- user-presence requirements;
+- create, replace, revoke, and delete semantics;
+- no ordinary-state secret-value persistence;
+- platform-specific adapters remain replaceable;
+- unavailable secret storage cannot block non-secret core startup.
+
+### IMP-017 — Credential Broker
+
+Implement a narrow broker that:
+
+- accepts SecretReference, capability, destination, scope, and operation metadata;
+- obtains required user approval or presence;
+- uses a credential only inside the bounded operation;
+- does not return the stored secret value to a model or ordinary caller by default;
+- returns a structured operation result;
+- redacts errors and audit events;
+- supports cancellation, timeout, and fail-closed behavior.
+
+### IMP-018 — Claim, Evidence, and Trust Model
+
+Implement distinct records and links for:
+
+- confirmed facts;
+- claims;
+- supporting or contradicting evidence;
+- inferences;
+- provenance, source, confidence, uncertainty, and review status.
+
+Required rule:
+
+- model, tool, document, website, import, or runtime assertions do not become confirmed facts automatically.
+
+### IMP-019 — Instruction Origin and Untrusted-Content Boundary
+
+Implement:
+
+- instruction-origin metadata;
+- authority classes;
+- immutable source attribution for imported and retrieved content;
+- separation of system policy, user instruction, durable policy, content, tool result, and model proposal;
+- content cannot grant permission, confirmation, or policy changes;
+- unknown origin fails to the least-authoritative classification.
+
+### IMP-020 — Prompt Injection Defense
+
+Implement defense in depth:
+
+- context packaging that preserves origin and authority;
+- prompt-injection indicators and warnings;
+- unrelated-capability and exfiltration-request detection;
+- policy and permission enforcement outside the model;
+- hostile document, website, metadata, OCR, transcript, and tool-result fixtures;
+- no reliance on model classification as the authorization boundary.
+
+### IMP-021 — Capability Taxonomy and Risk Tiers
+
+Implement:
+
+- versioned capability registry;
+- input and output schemas;
+- declared targets, side effects, and resource limits;
+- permission and network checks;
+- risk tiers;
+- unknown or malformed capability denial;
+- no unrestricted shell or arbitrary command-string capability;
+- allow and deny audit events.
+
+Initial risk direction:
+
+- Tier 0: pure computation with no side effect;
+- Tier 1: bounded managed read or reversible creation;
+- Tier 2: scoped modification or explicit external read;
+- Tier 3: destructive, externally visible, credential-bearing, account-affecting, or process-execution action;
+- Prohibited: actions outside accepted release scope regardless of confirmation.
+
+### IMP-022 — Mandatory High-Risk Confirmation
+
+Implement:
+
+- trusted user-controlled confirmation channel;
+- fresh confirmation for every Tier 3 operation;
+- exact capability, target, destination, side-effect, and credential-class preview;
+- expiry and one-operation binding;
+- material-change invalidation;
+- no confirmation from model text, documents, websites, imports, or tool results;
+- no persistent broad confirmation for high-risk operations;
+- confirmation does not override policy or make a prohibited capability available.
+
+### IMP-023 — Safety Acceptance Test
+
+Goal: prove the complete safety boundary before model execution.
+
+Required evidence includes:
+
+- secret values are absent from ordinary state, logs, audit, exports, backups, fixtures, diagnostics, and model-context packages;
+- SecretReference remains non-secret and portable;
+- credential-broker tests complete bounded synthetic operations without exposing stored values;
+- confirmed facts, claims, evidence, and inferences remain distinct through restart and export;
+- instruction origin and authority survive persistence and context assembly;
+- hostile content cannot grant approval, alter policy, raise authority, or trigger a capability;
+- unknown and malformed capabilities fail closed;
+- risk tiers are enforced;
+- high-risk operations fail without fresh exact confirmation;
+- changed targets, arguments, destinations, side effects, or credential classes invalidate confirmation;
+- denial and failure preserve the last known good state;
+- security-relevant events are auditable without leaking sensitive data;
+- CI passes on macOS, Windows, and Ubuntu;
+- applicable real-process checks pass on the primary Intel Mac.
+
+Phase 3 gate:
+
+- IMP-013 through IMP-023 are merged;
+- all blocking safety tests pass;
+- open known limitations are documented;
+- no accepted review finding shows a route around the boundary;
+- only after this gate may IMP-024 introduce a model adapter contract.
+
+## 9. Phase 4 — Local AI
+
+Goal: connect useful local inference without allowing the runtime or model to own state, secrets, permissions, trust decisions, or side effects.
+
+Expected sequence begins at IMP-024.
+
+### IMP-024 — Runtime adapter contract
+
+- normalized health, inventory, generation, streaming, cancellation, and error contracts;
+- runtime-independent model IDs;
+- no direct state, secret-store, filesystem, network, or capability access;
+- mocked adapter tests.
+
+### IMP-025 — First local runtime adapter
+
+Initial target: Ollama.
 
 - local health check;
 - installed model inventory mapping;
 - local generation and streaming;
-- timeouts and cancellation;
-- no model download;
-- no cloud path.
+- timeout and cancellation;
+- no silent model download;
+- no cloud fallback;
+- all context passes through accepted origin and secret controls.
 
-#### IMP-015 — Model manifests and bindings
+### IMP-026 — Model manifests and bindings
 
 - ModelManifestRecord;
 - RuntimeManifestRecord;
 - ModelBindingRecord;
-- manual registration;
-- active, previous, fallback status;
-- checksum and provenance fields.
+- source, revision, checksum, license, and compatibility;
+- quarantine, candidate, active, previous, fallback, and rollback state.
 
-#### IMP-016 — Local conversation path
+### IMP-027 — Local conversation path
 
-- session orchestration;
-- local API chat path;
-- CLI conversation path for recovery;
+- local API and CLI conversation;
 - scoped state retrieval;
 - response provenance;
-- no automatic memory creation.
+- no automatic durable memory creation;
+- no direct model capability execution;
+- model proposals pass through the safety boundary.
 
-Acceptance focus:
-
-- CONT-P002;
-- CONT-P004.
-
-#### IMP-017 — Model switch and local fallback
+### IMP-028 — Model switch and local fallback
 
 - explicit activation;
 - previous binding retention;
-- fallback selection;
-- rollback on failed smoke test;
-- degraded-state reporting;
+- fallback selection or offer;
+- rollback after failed smoke test;
+- no unrelated state rewrite;
 - no cloud request.
 
-Acceptance focus:
+### IMP-029 — Offline mode and local AI continuity drill
 
-- CONT-P013;
-- CONT-P014;
-- MODEL-006 through MODEL-010.
+- network-disabled startup;
+- outbound-request guard;
+- local conversation and fallback offline;
+- model replacement without state loss;
+- primary-machine continuity evidence.
 
-#### IMP-018 — Offline mode and first continuity drill
+Phase 4 gate:
 
-- network-disabled startup setting;
-- outbound-request guard for core paths;
-- offline doctor checks;
-- scripted manual drill instructions;
-- first real-machine continuity report.
+- local inference remains optional to state inspection, export, backup, restore, and recovery;
+- model replacement does not rewrite unrelated state;
+- the safety boundary remains the only route to side effects;
+- no cloud credential is required.
 
-Acceptance focus:
+## 10. Phase 5 — Cloud and multiple models
 
-- CONT-P003;
-- first complete Personal Lite proof.
+Goal: add optional performance and role expansion without making cloud access authoritative or mandatory.
 
-### Phase 3 gate
+Cloud work begins only after the local path and safety boundary are stable.
 
-Do not begin broad feature expansion until all Personal Lite continuity proof tests pass on the primary macOS machine.
+Expected slices:
 
-## 7. Phase 4 — Capability Broker and local documents
+1. generic bounded outbound-package contract;
+2. exact preview, minimization, and redaction;
+3. provider-independent cloud adapter interface;
+4. one optional OpenAI-compatible adapter;
+5. multiple local-model role routing;
+6. local/cloud selection policy with no automatic cloud fallback;
+7. cost, retention, destination, and audit reporting where available;
+8. provider-specific adapters only when justified.
 
-Goal: add useful local tools without bypassing security.
+Cloud code must remain removable. Removing cloud adapters must not prevent local startup, state access, restore, or local inference.
 
-### Proposed PR sequence
+## 11. Phase 6 — Tools and external services
 
-#### IMP-019 — Capability Broker core
+Goal: add useful capabilities through the accepted Capability Broker rather than direct model authority.
 
-- versioned capability registry;
-- schema validation;
-- permission checks;
-- operation approval records;
-- allow and deny audit events;
-- timeouts and cancellation.
+Candidate groups:
 
-Acceptance focus:
+- approved local document read;
+- artifact versioning and export;
+- local full-text search;
+- safe URL retrieval and Web research;
+- PDF extraction;
+- OCR;
+- CSV inspection and transformation;
+- image, audio, and video adapters;
+- optional speech-to-text;
+- narrowly scoped external-service integrations.
 
-- SEC-001 through SEC-005.
+Every adapter must:
 
-#### IMP-020 — Approved local document read
+- declare capability ID, version, risk tier, inputs, outputs, side effects, limits, and provenance;
+- fail independently;
+- avoid unrestricted shell execution;
+- preserve instruction origin for returned content;
+- use the credential broker when a credential is required;
+- remain visible through doctor and audit;
+- keep experimental features outside stable release claims.
 
-- user-selected external text and Markdown;
-- managed copy option;
-- DocumentRecord;
-- path and size validation;
-- extraction provenance.
+## 12. Phase 7 — Daily use
 
-Acceptance focus:
+Goal: make the continuity and safety foundations useful for ordinary personal work.
 
-- CONT-P007.
+Candidate work:
 
-#### IMP-021 — Artifact service completion
+- writing and editing;
+- summarization and translation;
+- planning and research workflows;
+- memory review and confirmation flows;
+- project and decision workflows;
+- backup and restore usability;
+- source, claim, evidence, and inference inspection;
+- capability and confirmation usability;
+- optional Open WebUI compatibility;
+- accessibility and error clarity;
+- performance measurement on Lite hardware;
+- seven-day primary-machine soak before a Lite stable claim.
 
-- artifact versions;
-- project links;
-- source links;
-- export path through a user-controlled action;
-- no silent overwrite.
+Daily-use convenience must not hide model, network, credential, permission, or risk state.
 
-#### IMP-022 — Local full-text search
+## 13. Phase 8 — Distribution, encryption, and long-term operation
 
-- SQLite FTS5;
-- index rebuild;
-- authoritative versus reproducible separation;
-- search without a model.
+Goal: make doll maintainable, recoverable, and distributable over long periods without splitting the core.
 
-Acceptance focus:
+Candidate groups:
 
-- STATE-010.
+- installer and package paths;
+- signed or verifiable releases where feasible;
+- offline recovery kit;
+- update staging and rollback;
+- standard backup encryption;
+- backup rotation and retention;
+- long-term schema migration drills;
+- support matrix and shareable doctor reports;
+- Lite and Heavy profile measurement;
+- Heavy hardware selection only after Lite evidence;
+- richer retrieval, media, verification, and training workflows;
+- mobile companion or remote access only after a separate threat model;
+- multi-device synchronization only after conflict and secret-boundary design;
+- periodic continuity and safety drills;
+- community verification and release acceptance reports.
 
-## 8. Phase 5 — Lite general-purpose capabilities
-
-Goal: make Lite useful for daily personal work while preserving the passed continuity proof.
-
-Candidate PR groups:
-
-- writing, editing, summarization, and translation workflows;
-- PDF text extraction adapter;
-- OCR adapter;
-- CSV inspection and simple transformation;
-- optional local speech-to-text;
-- Open WebUI compatibility integration;
-- usability improvements for memory, projects, artifacts, backup, and model switching.
-
-Each optional adapter must fail independently and be visible through `doll doctor`.
-
-## 9. Phase 6 — Minimal Web research
-
-Goal: add current-information research without requiring cloud-model inference.
-
-Proposed slices:
-
-1. source and research-session records;
-2. explicit search-provider adapter;
-3. safe URL retrieval with SSRF-oriented controls;
-4. content extraction;
-5. local cache and retention policy;
-6. citation records;
-7. local-model synthesis;
-8. hostile-source and prompt-injection tests;
-9. offline retained-source mode.
-
-Web research may remain experimental until all tests in the accepted suite pass.
-
-## 10. Phase 7 — Lite release hardening
-
-Goal: satisfy the Lite v1.0 gate.
-
-Required work:
-
-- complete CI matrix;
-- installer or package path suitable for the release claim;
-- migration drills;
-- backup corruption and restore tests;
-- shareable doctor report;
-- support matrix;
-- known limitations;
-- release acceptance report;
-- seven-day primary-machine soak;
-- release candidate continuity drill;
-- documentation review.
-
-### Lite schedule direction
-
-For one person using GPT for specification and review and Codex for implementation, a realistic target remains approximately:
-
-- Personal Lite proof: several focused weeks;
-- Lite v1.0: roughly 10 to 14 weeks at sustained part-time development;
-- weekend-only work: potentially four to six months.
-
-These are planning ranges, not commitments.
-
-## 11. Phase 8 — Heavy foundation
-
-Goal: extend performance without splitting the core.
-
-Before hardware purchase:
-
-- profile and role abstractions;
-- embedding and reranker interfaces;
-- verifier workflow design;
-- media adapter contracts;
-- evaluation suite expansion;
-- hardware measurement schema;
-- training dataset manifests;
-- mocked Heavy integration tests.
-
-After hardware purchase:
-
-- large-model validation;
-- GPU runtime validation;
-- multi-role local routing;
-- richer retrieval;
-- vision and long-audio pipelines;
-- controlled video extraction;
-- LoRA or SFT experiments;
-- real-machine failure and recovery drills;
-- Heavy soak and release report.
-
-### Heavy schedule direction
-
-Heavy v1.0 is expected after Lite, with total project time likely in the range of eight to twelve months under sustained part-time work. Real completion depends on hardware and test results.
-
-## 12. Phase 9 — Optional cloud gateway
-
-Cloud work begins only after local release gates are stable.
-
-Suggested order:
-
-1. generic outbound package contract;
-2. preview and redaction;
-3. operating-system credential storage;
-4. Ask Every Time mode;
-5. one generic OpenAI-compatible adapter;
-6. audit and local response storage;
-7. provider-specific adapters only when justified;
-8. allowlisted task mode;
-9. cost and retention reporting where available.
-
-Cloud code must remain removable.
-
-## 13. Phase 10 — Mobile
-
-Suggested order:
-
-1. separate remote-access threat model;
-2. mobile browser companion to the user's own PC;
-3. PWA;
-4. Android hybrid mode;
-5. iOS hybrid mode;
-6. standalone mobile Lite feasibility work.
-
-PC continuity remains the authority for state and recovery until mobile-specific state synchronization is designed.
+The project must not invent custom cryptography. Encryption work must use established operating-system or library primitives and must not make unencrypted recovery impossible without an explicit accepted product decision.
 
 ## 14. Issue and PR discipline
 
@@ -493,14 +620,19 @@ Implementation issues should contain:
 - objective;
 - accepted specification links;
 - in-scope and out-of-scope behavior;
-- data changes;
-- permission and network effects;
+- state and schema changes;
+- secret and credential effects;
+- trust, evidence, and instruction-origin effects;
+- permission, capability, risk, and confirmation effects;
+- network and process effects;
 - migration requirements;
 - test IDs;
 - real-machine work required;
-- rollback plan.
+- rollback or failure-preservation plan.
 
 A PR should normally implement one issue or one tightly related slice.
+
+Documentation-only sequencing changes must not include implementation code.
 
 ## 15. Definition of done for an implementation PR
 
@@ -508,35 +640,51 @@ An implementation PR is done when:
 
 - code matches the accepted boundary;
 - tests pass on applicable CI platforms;
+- success, denial, malformed input, and recoverable failure are tested;
 - security and path failures are tested;
 - persisted-state changes include schema and migration handling;
+- secret-bearing paths are classified and tested;
+- audit and user-visible output are checked for leakage;
 - documentation is updated;
-- no private fixture is committed;
+- no private or secret fixture is committed;
+- coverage does not fall below the accepted threshold;
+- blanket coverage exclusions are not used to hide untested logic;
 - optional dependencies fail cleanly;
 - PR description states real-hardware gaps;
 - review comments are resolved;
-- main remains recoverable.
+- `main` remains recoverable.
 
-## 16. Immediate work after specification v0.1 freeze
+## 16. Immediate work
 
-The next repository work is:
+The required order from the current repository state is:
 
-1. open IMP-001;
-2. add the Python package and three-operating-system CI skeleton;
-3. implement platform paths and workspace initialization in IMP-002;
-4. implement SQLite state and migrations in IMP-003;
-5. preserve the accepted continuity, security, and recovery boundaries in every implementation PR.
+1. merge the documentation change adopting ADR-005 and this roadmap;
+2. return to `impl/imp-011-restore-post-validation`;
+3. rebase that branch onto the updated `main`;
+4. implement IMP-011 only;
+5. pass CI, review, and Intel Mac real-process restore validation;
+6. squash-merge IMP-011;
+7. implement IMP-012 as the Continuity Acceptance Test;
+8. begin IMP-013 only after the Phase 2 gate passes;
+9. complete IMP-013 through IMP-023;
+10. begin model work at IMP-024 or later only after the Phase 3 gate passes.
 
 ## 17. Roadmap change control
 
-The roadmap may change as measurements arrive.
+The roadmap may change as implementation evidence arrives.
 
 Changes must preserve:
 
 - continuity-first sequencing;
+- the safety boundary before model execution;
 - local completion before cloud dependence;
-- Lite before Heavy hardware commitment;
-- test evidence before release claims;
+- memory and secret separation;
+- external content as data rather than authority;
+- model-independent permissions, risk, and confirmation;
+- Lite evidence before Heavy hardware commitment;
+- test evidence before phase or release claims;
 - small PRs;
-- explicit migration and rollback;
+- explicit migration, rollback, and recoverable failure;
 - the project owner's immediate personal-use objective.
+
+A change that moves model execution before the Phase 3 safety gate requires a new accepted architecture decision and corresponding security and acceptance-test changes.
