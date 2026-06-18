@@ -108,27 +108,17 @@ def restart_checks(
     with state.open_state_repository(root, read_only=True) as repository:
         artifact_check = WorkspaceFileService(repository).verify(source["artifact"].artifact_id)
         checks = {
-            "preference": PreferenceService(repository)
-            .get(source["preference"].record_id)
-            .value
+            "preference": PreferenceService(repository).get(source["preference"].record_id).value
             == source["preference"].value,
             "policy": PolicyService(repository).get(source["policy"].record_id).rule
             == source["policy"].rule,
-            "permission": PermissionService(repository)
-            .get(source["permission"].record_id)
-            .scope
+            "permission": PermissionService(repository).get(source["permission"].record_id).scope
             == source["permission"].scope,
-            "memory": ConfirmedMemoryService(repository)
-            .get(source["memory"].record_id)
-            .content
+            "memory": ConfirmedMemoryService(repository).get(source["memory"].record_id).content
             == source["memory"].content,
-            "project": ProjectService(repository)
-            .get(source["project"].project_id)
-            .decision_ids
+            "project": ProjectService(repository).get(source["project"].project_id).decision_ids
             == (source["decision"].decision_id,),
-            "decision": DecisionService(repository)
-            .get(source["decision"].decision_id)
-            .project_id
+            "decision": DecisionService(repository).get(source["decision"].decision_id).project_id
             == source["project"].project_id,
             "artifact": artifact_check.actual_hash == source["artifact"].content_hash,
             "audit": len(AuditService(repository).list(limit=200)) == source["audit_count"],
