@@ -16,11 +16,17 @@ from doll.backup import (
     verify_backup,
 )
 from doll.backup_manifest import BackupManifestError, BackupManifestService
+from doll.restore import (
+    RestoreError,
+    RestoreResult,
+    restore_state_backup,
+    restore_workspace_backup,
+)
 from doll.state import StateError, open_state_repository
 from doll.workspace import WorkspaceError
 
 backup_app = typer.Typer(
-    help="Create, inspect, verify, and list verified local backups.",
+    help="Create, inspect, verify, restore, and list verified local backups.",
     no_args_is_help=True,
 )
 
@@ -42,6 +48,18 @@ def _show_created(kind: str, result: BackupCreationResult) -> None:
     typer.echo(f"Members: {inspection.member_count}")
     typer.echo(f"Size bytes: {inspection.file_size_bytes}")
     typer.echo(f"SHA-256: {inspection.file_sha256}")
+
+
+def _show_restored(kind: str, result: RestoreResult) -> None:
+    typer.echo(f"{kind} backup restored and validated in a fresh process.")
+    typer.echo(f"Workspace ID: {result.workspace_id}")
+    typer.echo(f"Source revision: {result.source_state_revision}")
+    typer.echo(f"Restored revision: {result.restored_state_revision}")
+    typer.echo(f"Record count: {result.record_count}")
+    typer.echo(f"Artifact count: {result.artifact_count}")
+    typer.echo(f"Backup inventory count: {result.backup_inventory_count}")
+    typer.echo(f"Audit event count: {result.audit_event_count}")
+    typer.echo("Fresh-process validation: passed")
 
 
 @backup_app.command("create-state")
@@ -80,6 +98,34 @@ def create_workspace_command(
     except (WorkspaceError, StateError, BackupError, BackupManifestError) as exc:
         _fail("workspace backup creation failed", exc)
     _show_created("Workspace", result)
+
+
+@backup_app.command("restore-state")
+def restore_state_command(
+    backup: Annotated[Path, typer.Argument()],
+    target: Annotated[Path, typer.Option("--target")],
+) -> None:
+    """Restore a verified state backup into an absent or empty target."""
+
+    try:
+        result = restore_state_backup(backup, target)
+    except (WorkspaceError, StateError, BackupError, RestoreError) as exc:
+        _fail("state backup restore failed", exc)
+    _show_restored("State", result)
+
+
+@backup_app.command("restore-workspace")
+def restore_workspace_command(
+    backup: Annotated[Path, typer.Argument()],
+    target: Annotated[Path, typer.Option("--target")],
+) -> None:
+    """Restore a verified workspace backup into an absent or empty target."""
+
+    try:
+        result = restore_workspace_backup(backup, target)
+    except (WorkspaceError, StateError, BackupError, RestoreError) as exc:
+        _fail("workspace backup restore failed", exc)
+    _show_restored("Workspace", result)
 
 
 @backup_app.command("inspect")
