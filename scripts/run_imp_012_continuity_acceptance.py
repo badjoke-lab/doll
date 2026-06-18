@@ -227,8 +227,12 @@ def _run(arguments: argparse.Namespace) -> dict[str, object]:
                 == (decision.decision_id,),
                 "decision": DecisionService(repository).get(decision.decision_id).project_id
                 == project.project_id,
-                "artifact": WorkspaceFileService(repository).verify(artifact.artifact_id).actual_hash
-                == artifact.content_hash,
+                "artifact": (
+                    WorkspaceFileService(repository)
+                    .verify(artifact.artifact_id)
+                    .actual_hash
+                    == artifact.content_hash
+                ),
                 "audit": len(AuditService(repository).list(limit=200)) == source_audit_count,
             }
             try:
