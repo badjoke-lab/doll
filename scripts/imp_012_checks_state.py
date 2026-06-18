@@ -17,17 +17,14 @@ def evaluate(data: dict[str, Any]) -> dict[str, bool]:
     restored_workspace = data["restored_workspace"]
     return {
         "STATE-002_revision_conflict_covered": status.state_revision >= 8,
-        "STATE-003_export_integrity": data["exported"]
-        == data["inspected"]
-        == data["verified"],
+        "STATE-003_export_integrity": data["exported"] == data["inspected"] == data["verified"],
         "STATE-004_empty_target_import": data["imported"].imported_record_count
         == status.record_count,
         "STATE-007_corrupt_backup_rejected": data["tampered_refused"],
         "STATE-009_read_only_recovery": data["read_only_denied"],
         "STATE-011_atomic_restore_publication": data["preserved"],
         "STATE-012_fresh_process_restore_validation": (
-            restored_state.fresh_process_validated
-            and restored_workspace.fresh_process_validated
+            restored_state.fresh_process_validated and restored_workspace.fresh_process_validated
         ),
         "PLAT-003_path_portability": True,
         "PLAT-005_utf8_preserved": all(
