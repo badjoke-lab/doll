@@ -65,8 +65,7 @@ def execute(root: Path) -> dict[str, Any]:
         "artifacts": 1,
     }
     counts_match = all(
-        all(payload[key] == value for key, value in expected.items())
-        for payload in fresh
+        all(payload[key] == value for key, value in expected.items()) for payload in fresh
     )
 
     relative = Path("artifacts") / "acceptance" / "continuity-日本語.txt"
