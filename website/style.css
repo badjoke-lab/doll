@@ -1,0 +1,110 @@
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: #fff;
+  color: #000;
+}
+
+body {
+  max-width: 760px;
+  margin: 0;
+  padding: 16px;
+  background: #fff;
+  color: #000;
+  font-family: monospace;
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.site-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.site-title img {
+  flex: 0 0 auto;
+}
+
+.site-title h1,
+.site-title p {
+  margin-top: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 2em 0 1em;
+  font: inherit;
+  font-weight: bold;
+}
+
+p,
+ul,
+ol {
+  margin: 1em 0;
+}
+
+ul,
+ol {
+  padding-left: 2em;
+}
+
+a,
+a:visited {
+  color: #000;
+  text-decoration: underline;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 1px solid #000;
+  outline-offset: 2px;
+}
+
+button {
+  font: inherit;
+}
+
+code {
+  font: inherit;
+  overflow-wrap: anywhere;
+}
+
+.asset,
+.development-entry {
+  margin: 2em 0;
+}
+
+footer {
+  margin-top: 3em;
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 12px;
+  }
+
+  .site-title {
+    gap: 10px;
+  }
+
+  .site-title img {
+    width: 48px;
+    height: 48px;
+  }
+}
