@@ -6,8 +6,8 @@ import argparse
 import json
 import platform
 import re
-import shutil
 import subprocess
+import sys
 import tempfile
 import zipfile
 from datetime import UTC, datetime
@@ -119,7 +119,7 @@ with state.open_state_repository(root, read_only=True) as repository:
 print(json.dumps(payload, sort_keys=True, separators=(",", ":")))
 """
     completed = subprocess.run(
-        [subprocess.sys.executable, "-c", code, str(root)],
+        [sys.executable, "-c", code, str(root)],
         check=True,
         capture_output=True,
         text=True,
