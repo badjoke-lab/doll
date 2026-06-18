@@ -17,8 +17,7 @@ def _core(data: dict[str, Any]) -> dict[str, bool]:
         == str(source["workspace"].record.workspace_id),
         "CONT-P002_no_cloud_core_paths": True,
         "CONT-P005_confirmed_memory_restart": restart["memory"],
-        "CONT-P006_project_decision_links": restart["project"]
-        and restart["decision"],
+        "CONT-P006_project_decision_links": restart["project"] and restart["decision"],
         "CONT-P008_artifact_creation": restart["artifact"],
     }
 
