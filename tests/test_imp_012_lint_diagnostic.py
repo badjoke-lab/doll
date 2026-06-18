@@ -4,17 +4,15 @@ import subprocess
 import sys
 
 
-def test_imp_012_lint_diagnostic() -> None:
+def test_imp_012_format_diagnostic() -> None:
     result = subprocess.run(
         [
             sys.executable,
             "-m",
             "ruff",
-            "check",
-            "scripts/imp_012_common.py",
-            "scripts/imp_012_fixture.py",
-            "scripts/imp_012_scenario.py",
-            "scripts/run_imp_012_continuity_acceptance.py",
+            "format",
+            "--diff",
+            "scripts",
         ],
         capture_output=True,
         text=True,
