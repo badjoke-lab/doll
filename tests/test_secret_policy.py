@@ -175,7 +175,7 @@ def test_secret_reference_rejects_invalid_optional_string_and_scope_items() -> N
 
 
 def test_secret_reference_defaults_optional_fields_and_scopes() -> None:
-    payload = {
+    payload: dict[str, object] = {
         "reference_id": "credential:minimal",
         "credential_class": "password",
         "store_adapter_class": "test.synthetic",
@@ -242,7 +242,7 @@ def test_secret_reference_is_reference_only_in_portable_state_locations() -> Non
     for location in ("ordinary_state", "export", "backup"):
         decision = evaluate_secret_handling(
             payload_kind="secret_reference",
-            location=cast(SecretHandlingLocation, location),
+            location=location,
         )
         assert decision.allowed is True
         assert decision.disposition == "reference_only"
