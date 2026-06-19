@@ -80,11 +80,16 @@ def test_scan_limit_is_explicit_and_unscanned_suffix_is_not_returned() -> None:
     assert secret not in result.redacted_text
 
 
-def test_finding_limit_is_enforced() -> None:
+def test_finding_limit_is_enforced_without_leaking_unreported_values() -> None:
     text = " ".join(f"password=synthetic-value-{index:02d}" for index in range(20))
-    result = scan_secrets(text, max_findings=3)
-    assert len(result.findings) == 3
-    assert result.finding_limit_reached is True
+    scan = scan_secrets(text, max_findings=3)
+    assert len(scan.findings) == 3
+    assert scan.finding_limit_reached is True
+
+    redacted = redact_text(text, max_findings=3)
+    assert redacted.finding_limit_reached is True
+    assert redacted.redacted_text == "[REDACTION_FINDING_LIMIT_REACHED]"
+    assert "synthetic-value" not in redacted.redacted_text
 
 
 @pytest.mark.parametrize(
