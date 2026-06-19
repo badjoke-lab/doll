@@ -46,13 +46,13 @@ Default limits are:
 
 Configured limits also have hard upper bounds. The API never silently scans an unbounded suffix.
 
-When the input exceeds the scan limit, redaction returns the inspected prefix plus:
+When the input exceeds the scan limit, the redaction API returns only:
 
 ```text
 [UNSCANNED_CONTENT_OMITTED]
 ```
 
-The original unscanned suffix is not returned because it may contain an undetected secret.
+It does not return the inspected prefix or the unscanned suffix. A secret may cross the scan boundary, so no portion of an over-limit input is considered safe to echo.
 
 When the finding limit is reached, the redaction API returns only:
 
@@ -128,7 +128,7 @@ Permanent tests prove:
 - ordinary text remains unchanged;
 - overlapping matches normalize deterministically;
 - scan and finding limits are enforced;
-- unscanned suffixes are omitted from redacted output;
+- scan-limit exhaustion returns no original text;
 - finding-limit exhaustion returns no original text;
 - nested diagnostic keys and values are redacted;
 - recursion, item, binary, and unknown-object limits are explicit;
