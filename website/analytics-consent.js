@@ -1,26 +1,29 @@
 "use strict";
 
 (() => {
-  const storageKey = "doll-analytics-consent-v1";
+  const cookieName = "doll_analytics";
   const granted = "granted";
   const denied = "denied";
   let panel = null;
 
   function readChoice() {
-    try {
-      const value = localStorage.getItem(storageKey);
-      return value === granted || value === denied ? value : null;
-    } catch {
+    const prefix = `${cookieName}=`;
+    const value = document.cookie
+      .split(";")
+      .map((part) => part.trim())
+      .find((part) => part.startsWith(prefix));
+
+    if (!value) {
       return null;
     }
+
+    const choice = decodeURIComponent(value.slice(prefix.length));
+    return choice === granted || choice === denied ? choice : null;
   }
 
   function writeChoice(value) {
-    try {
-      localStorage.setItem(storageKey, value);
-    } catch {
-      // The current page still respects the selected choice.
-    }
+    const oneYear = 60 * 60 * 24 * 365;
+    document.cookie = `${cookieName}=${encodeURIComponent(value)}; Path=/; Max-Age=${oneYear}; SameSite=Lax; Secure`;
   }
 
   function closePanel() {
@@ -32,9 +35,8 @@
 
   function select(value) {
     writeChoice(value);
-    document.documentElement.dataset.analyticsConsent = value;
     closePanel();
-    document.dispatchEvent(new CustomEvent("doll:analytics-consent", { detail: value }));
+    window.location.reload();
   }
 
   function showPanel() {
@@ -50,10 +52,12 @@
 
     const title = document.createElement("p");
     title.id = "analytics-consent-title";
-    title.innerHTML = "<strong>Optional analytics</strong>";
+    const strong = document.createElement("strong");
+    strong.textContent = "Optional analytics";
+    title.appendChild(strong);
 
     const explanation = document.createElement("p");
-    explanation.textContent = "Google Analytics is off unless you allow it.";
+    explanation.textContent = "Google Analytics is off unless you allow it. Declining prevents the analytics tag from being added to the page.";
 
     const actions = document.createElement("p");
     actions.className = "analytics-consent-actions";
@@ -76,14 +80,15 @@
     inner.append(title, explanation, actions);
     panel.appendChild(inner);
     document.body.appendChild(panel);
+    panel = panel;
     allowButton.focus();
   }
 
   function initialize() {
     const choice = readChoice();
-    if (choice) {
-      document.documentElement.dataset.analyticsConsent = choice;
-    } else {
+    document.documentElement.dataset.analyticsConsent = choice || "unset";
+
+    if (!choice) {
       showPanel();
     }
 
