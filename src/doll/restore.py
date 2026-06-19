@@ -57,6 +57,8 @@ def _restore_workspace_backup_with_boundary(backup_path: Path, target: Path) -> 
         raise BackupValidationError("backup ZIP is unreadable") from exc
 
 
-_implementation.restore_state_backup = _restore_state_backup_with_boundary
-_implementation.restore_workspace_backup = _restore_workspace_backup_with_boundary
+restore_state_backup = _restore_state_backup_with_boundary
+restore_workspace_backup = _restore_workspace_backup_with_boundary
+_implementation.restore_state_backup = restore_state_backup
+_implementation.restore_workspace_backup = restore_workspace_backup
 sys.modules[__name__] = _implementation
