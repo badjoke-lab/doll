@@ -12,8 +12,9 @@ import hashlib
 import sys
 from pathlib import Path
 
-SPEC_VERSION = "0.1"
+SPEC_VERSION = "0.2"
 DEFAULT_OUTPUT = Path("DOLL_FINAL_SPEC.md")
+# Keep accepted versioned extensions in explicit normative order.
 SOURCE_FILES = (
     Path("docs/spec/00-index.md"),
     Path("docs/spec/00-decisions-baseline.md"),
@@ -21,12 +22,14 @@ SOURCE_FILES = (
     Path("docs/spec/02-architecture-and-data-flow.md"),
     Path("docs/spec/03-doll-state-memory-and-storage.md"),
     Path("docs/spec/03a-ai-environment-portability.md"),
+    Path("docs/spec/03b-project-continuity-and-resumption.md"),
     Path("docs/spec/04-security-permissions-and-threat-model.md"),
     Path("docs/spec/05-model-vault-lifecycle-evaluation.md"),
     Path("docs/spec/06-platform-install-update-and-recovery.md"),
     Path("docs/spec/07-release-scope-and-profiles.md"),
     Path("docs/spec/08-acceptance-and-continuity-tests.md"),
     Path("docs/spec/08a-ai-environment-portability-acceptance.md"),
+    Path("docs/spec/08b-project-continuity-acceptance.md"),
     Path("docs/spec/09-development-roadmap.md"),
 )
 
