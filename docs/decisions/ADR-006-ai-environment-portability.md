@@ -1,6 +1,6 @@
 # ADR-006: AI environment portability is a continuity requirement
 
-**Status:** Accepted when merged  
+**Status:** Accepted  
 **Date:** 2026-06-19
 
 ## Context
@@ -102,7 +102,7 @@ They cannot automatically become:
 - credential scope;
 - instruction authority.
 
-Promotion into an authoritative record requires the existing trusted user-controlled path for that record type.
+Promotion into an authoritative record requires the existing trusted user-controlled path for that record type. ADR-007 extends the same rule to work completion, procedure approval, blocker clearing, checkpoint confirmation, and project-scope changes.
 
 ### Export prevents doll lock-in
 
@@ -116,10 +116,11 @@ The implementation order prioritizes:
 
 1. canonical doll conversation and event representation;
 2. generic documented import and export;
-3. local model and runtime replacement without state loss;
-4. one real local AI environment migration path;
-5. migration of the project owner's current ChatGPT history;
-6. additional provider- or application-specific adapters only when justified.
+3. the project-continuity foundation required by ADR-007;
+4. local model and runtime replacement without state loss;
+5. one real local AI environment migration path;
+6. migration of the project owner's current ChatGPT history;
+7. additional provider- or application-specific adapters only when justified.
 
 Cloud adapter expansion must not precede the portability foundation merely because an OpenAI-compatible API is easier to implement.
 
@@ -170,4 +171,5 @@ Rejected. Doll promises state continuity, provenance, and inspectable migration.
 - revise the development roadmap so portability foundations precede provider-specific cloud expansion;
 - ensure future conversation storage records application, interface, runtime, model, and operation provenance separately;
 - keep IMP-013 through the Phase 3 safety gate unchanged;
-- begin portability implementation only after the accepted safety gate, using later non-conflicting implementation identifiers.
+- begin portability implementation only after the accepted safety gate, using later non-conflicting implementation identifiers;
+- apply ADR-007 so the accepted project-continuity foundation follows canonical portability and precedes local model integration.
