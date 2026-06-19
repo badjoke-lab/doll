@@ -20,11 +20,13 @@ SOURCE_FILES = (
     Path("docs/spec/01-product-and-continuity-contract.md"),
     Path("docs/spec/02-architecture-and-data-flow.md"),
     Path("docs/spec/03-doll-state-memory-and-storage.md"),
+    Path("docs/spec/03a-ai-environment-portability.md"),
     Path("docs/spec/04-security-permissions-and-threat-model.md"),
     Path("docs/spec/05-model-vault-lifecycle-evaluation.md"),
     Path("docs/spec/06-platform-install-update-and-recovery.md"),
     Path("docs/spec/07-release-scope-and-profiles.md"),
     Path("docs/spec/08-acceptance-and-continuity-tests.md"),
+    Path("docs/spec/08a-ai-environment-portability-acceptance.md"),
     Path("docs/spec/09-development-roadmap.md"),
 )
 

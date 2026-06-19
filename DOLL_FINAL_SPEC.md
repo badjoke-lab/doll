@@ -10,17 +10,19 @@
 
 ## Included source documents
 
-- `docs/spec/00-index.md` — SHA-256 `d1274b188c25d264cf67256098ac420479b69f68dc24430800de6e2b5907531a`
+- `docs/spec/00-index.md` — SHA-256 `69d40f178622a0be8d43570e90fc735dc9bbc1d1cb8bf782f305db17fcdd1097`
 - `docs/spec/00-decisions-baseline.md` — SHA-256 `114f45e16ee5ef5788d15a234653a6af2e2e23aba10c7951ec32144f61f4d833`
 - `docs/spec/01-product-and-continuity-contract.md` — SHA-256 `12cd88ee22046833795e6ba265978cb4508e0042e72e791350cde1bd1f74063f`
 - `docs/spec/02-architecture-and-data-flow.md` — SHA-256 `9698b80087aee29a37b826500e975c1e8576226e0cff797a4b931d283412abcf`
 - `docs/spec/03-doll-state-memory-and-storage.md` — SHA-256 `92e9c2dbd29123eb057a590821ed06702e6938d2c99421510e59ffb9af2656bd`
+- `docs/spec/03a-ai-environment-portability.md` — SHA-256 `f01efd1788f96d4552853c0d36b50cc70a06616673df133e53594a5ded134f0f`
 - `docs/spec/04-security-permissions-and-threat-model.md` — SHA-256 `fb40578f529840d00dbf3cf9534824d5f15ccc36d20041f945bf42b5acbe9566`
 - `docs/spec/05-model-vault-lifecycle-evaluation.md` — SHA-256 `3011788c55be9232db98bf932d8c859c88ed3d3bc3e603f0d4c3c709f2eb4268`
 - `docs/spec/06-platform-install-update-and-recovery.md` — SHA-256 `b73b6106d28b3fcb740b6d2f8b5dee4935a7a998537e5858395a85170ce85072`
 - `docs/spec/07-release-scope-and-profiles.md` — SHA-256 `c1b7d0be3dccac6df47e07e3e8aa286f91875bc2c6e44882e648654a42a294e3`
 - `docs/spec/08-acceptance-and-continuity-tests.md` — SHA-256 `1ae9b70cf28257b35a30238bdc46c2caea93dbd17fdf8b516ff708c9e208a698`
-- `docs/spec/09-development-roadmap.md` — SHA-256 `51f312ba90ef9fbeef06f91deb9b470f6a2adc251966a4c58bd50f84b994d7ef`
+- `docs/spec/08a-ai-environment-portability-acceptance.md` — SHA-256 `3a1876d8b506204254ccd54eb58cfabcf2ddc92e3edd446d90650b9ae22ff305`
+- `docs/spec/09-development-roadmap.md` — SHA-256 `187c873687a00c02a7cf10311c859ed536bf252639f4c356223a6d8d844b6d1d`
 
 ---
 
@@ -40,10 +42,12 @@ The source files under `docs/spec/` are the maintainable source of truth. `DOLL_
 
 The specification is governed by two co-equal architectural pillars:
 
-1. **Continuity:** user-owned state must survive model, provider, interface, machine, network, and project failure.
-2. **Safety boundary:** models, tools, runtimes, and external content must not gain undeclared authority over state, secrets, the operating system, accounts, or external services.
+1. **Continuity:** user-owned state must survive model, provider, application, interface, runtime, machine, network, and project failure.
+2. **Safety boundary:** models, tools, runtimes, adapters, and external content must not gain undeclared authority over state, secrets, the operating system, accounts, or external services.
 
-Implementation must prove continuity without a model, then complete and acceptance-test the safety boundary, then connect a model runtime.
+AI environment portability is a mandatory continuity property. Local storage alone is insufficient when one application, interface, runtime, model, or provider remains the only practical interpreter of user-owned state.
+
+Implementation must prove model-independent continuity, complete and acceptance-test the safety boundary, establish canonical portability contracts, and only then connect model and provider paths without weakening those guarantees.
 
 ## 3. Normative order
 
@@ -54,12 +58,14 @@ Read and combine the specification in this order:
 3. `01-product-and-continuity-contract.md` — product identity and Continuity Contract;
 4. `02-architecture-and-data-flow.md` — service boundaries, adapters, trust boundaries, and flows;
 5. `03-doll-state-memory-and-storage.md` — authoritative state, memory, storage, export, and migration;
-6. `04-security-permissions-and-threat-model.md` — security boundary, secrets, trust, instructions, permissions, capabilities, and threats;
-7. `05-model-vault-lifecycle-evaluation.md` — model ownership, validation, evaluation, promotion, and rollback;
-8. `06-platform-install-update-and-recovery.md` — platform, install, update, backup, restore, and recovery;
-9. `07-release-scope-and-profiles.md` — release boundaries and Lite/Heavy scope;
-10. `08-acceptance-and-continuity-tests.md` — evidence required for product claims and phase or release gates;
-11. `09-development-roadmap.md` — implementation sequence and pull-request plan.
+6. `03a-ai-environment-portability.md` — external and local AI state portability, canonical mapping, provenance, and anti-lock-in requirements;
+7. `04-security-permissions-and-threat-model.md` — security boundary, secrets, trust, instructions, permissions, capabilities, and threats;
+8. `05-model-vault-lifecycle-evaluation.md` — model ownership, validation, evaluation, promotion, and rollback;
+9. `06-platform-install-update-and-recovery.md` — platform, install, update, backup, restore, and recovery;
+10. `07-release-scope-and-profiles.md` — release boundaries and Lite/Heavy scope;
+11. `08-acceptance-and-continuity-tests.md` — core evidence required for product, phase, profile, platform, and release claims;
+12. `08a-ai-environment-portability-acceptance.md` — blocking evidence for portability, migration, replacement, and doll-exit claims;
+13. `09-development-roadmap.md` — implementation sequence and pull-request plan.
 
 Accepted architecture decisions under `docs/decisions/` explain why major constraints were selected. They are normative when their status is accepted and they do not conflict with a later accepted specification change.
 
@@ -69,7 +75,8 @@ The accepted decision set includes:
 - `ADR-002-default-deny-capability-broker.md`;
 - `ADR-003-state-independent-of-model-and-ui.md`;
 - `ADR-004-release-gates-require-evidence.md`;
-- `ADR-005-safety-boundary-before-model-execution.md`.
+- `ADR-005-safety-boundary-before-model-execution.md`;
+- `ADR-006-ai-environment-portability.md`.
 
 ## 4. Requirement language
 
@@ -93,14 +100,16 @@ When accepted documents conflict, use this order:
 
 1. the most recent explicit decision changing the earlier requirement;
 2. the release-specific or phase-specific scope and acceptance criteria;
-3. the Continuity Contract;
-4. security, secret-separation, trust, and data-integrity requirements;
+3. the Continuity Contract, including AI environment portability;
+4. security, secret-separation, trust, instruction-origin, and data-integrity requirements;
 5. architecture and implementation direction;
 6. roadmap estimates.
 
 A conflict must be resolved in a dedicated pull request. Implementations must not silently choose one interpretation.
 
-ADR-005 changes the implementation sequence so that the complete safety boundary and its acceptance gate precede model execution. Earlier roadmap text that placed model integration first is superseded by the accepted roadmap carrying that decision.
+ADR-005 changes the implementation sequence so that the complete safety boundary and its acceptance gate precede model execution.
+
+ADR-006 requires canonical portability contracts, generic inspectable export, and local AI migration evidence before provider-specific cloud portability can become a primary product claim. It does not move model execution ahead of the Phase 3 safety gate.
 
 ## 6. Status meanings
 
@@ -124,9 +133,11 @@ Public documentation and release notes must distinguish:
 - experimental;
 - stable for the named release.
 
-A feature being present in source code does not prove that it satisfies its Continuity Contract or security requirements.
+A feature being present in source code does not prove that it satisfies its Continuity Contract, portability contract, or security requirements.
 
-A model responding successfully does not prove that secret isolation, instruction authority, capability enforcement, prompt-injection resistance, or high-risk confirmation are correct.
+A model responding successfully does not prove that secret isolation, instruction authority, capability enforcement, prompt-injection resistance, high-risk confirmation, source provenance, mapping fidelity, or export recoverability are correct.
+
+A source file parsing successfully does not prove full migration. Portability claims must disclose the applicable mapping and loss report.
 
 ## 8. Generated combined specification
 
@@ -165,6 +176,7 @@ The following are non-normative unless promoted through an accepted specificatio
 - screenshots and design mockups;
 - benchmark experiments without an accepted evaluation definition;
 - personal planning documents;
+- private source exports and migration archives;
 - generated summaries other than the deterministic combined specification as a reading copy.
 
 ## 10. Change requirements
@@ -174,13 +186,13 @@ A specification-changing pull request SHOULD include:
 - the requirement being changed;
 - the reason and evidence;
 - compatibility effects;
-- migration effects;
+- migration and portability effects;
 - security and privacy effects;
 - acceptance-test changes;
 - phase and release-scope changes;
 - documentation updates.
 
-A change that weakens local completeness, state portability, workspace confinement, secret separation, trust provenance, instruction-origin enforcement, explicit approval, high-risk confirmation, or recoverability requires a dedicated architecture decision.
+A change that weakens local completeness, state portability, AI environment portability, generic exit paths, loss visibility, workspace confinement, secret separation, trust provenance, instruction-origin enforcement, explicit approval, high-risk confirmation, or recoverability requires a dedicated architecture decision.
 <!-- END SOURCE: docs/spec/00-index.md -->
 
 ---
@@ -3093,6 +3105,337 @@ This specification is acceptable when the later implementation can prove that:
 - confirmed facts, claims, evidence, and inferences remain distinguishable and retain provenance;
 - instruction-origin metadata survives persistence and export where applicable.
 <!-- END SOURCE: docs/spec/03-doll-state-memory-and-storage.md -->
+
+---
+
+<!-- BEGIN SOURCE: docs/spec/03a-ai-environment-portability.md -->
+# AI environment portability
+
+**Status:** Accepted for implementation when merged  
+**Specification version:** 0.1  
+**Depends on:** `01-product-and-continuity-contract.md`, `02-architecture-and-data-flow.md`, `03-doll-state-memory-and-storage.md`, `04-security-permissions-and-threat-model.md`, `ADR-006-ai-environment-portability.md`
+
+## 1. Purpose
+
+This specification defines how doll keeps user-owned AI state portable across models, runtimes, interfaces, local AI applications, cloud AI services, and doll itself.
+
+Portability includes:
+
+- importing supported state from another AI environment;
+- storing it in a canonical doll representation;
+- replacing a model, runtime, or interface without unrelated state loss;
+- exporting implemented portable records in documented formats;
+- reporting unsupported or transformed information rather than silently discarding it.
+
+Local and cloud sources use the same trust rule: imported content is external data, not authority.
+
+## 2. Source environments
+
+A source environment may be:
+
+- another doll workspace or Doll State Package;
+- a local AI application;
+- a local runtime with a separate interface;
+- a local or self-hosted compatible service;
+- an API-based personal tool;
+- a cloud AI service export;
+- generic JSON, JSONL, Markdown, text, or file collections.
+
+The first real cloud source may be ChatGPT because current project history exists there. ChatGPT and OpenAI formats must not become the canonical doll format. A real local AI migration path has equal or higher priority.
+
+## 3. Portability architecture
+
+```text
+source environment
+  -> source adapter
+  -> canonical portability representation
+  -> validation and policy pipeline
+  -> staged import plan
+  -> Doll State
+
+Doll State
+  -> generic exporter or target adapter
+  -> mapping and loss report
+  -> versioned export package
+```
+
+Adapters may transform state through declared contracts. They must not become the only place where authoritative state exists.
+
+## 4. Source adapter contract
+
+Each source adapter declares:
+
+```text
+adapter_id
+adapter_version
+source_environment_class
+supported_source_versions
+supported_event_types
+attachment_behavior
+branch_behavior
+resource_limits
+network_behavior
+loss_categories
+```
+
+A source adapter must:
+
+- parse source content without executing it;
+- preserve original identifiers where safe;
+- calculate or verify source hashes;
+- report unsupported fields, events, branches, and attachments;
+- avoid inventing missing provider, application, runtime, model, or timestamp data;
+- produce deterministic mappings for the same accepted input and adapter version;
+- remain replaceable by a later adapter version.
+
+A source adapter must not:
+
+- create confirmed memory or confirmed facts directly;
+- copy source permissions into Doll PermissionRecords;
+- treat imported system text as doll system policy;
+- execute imported tool calls;
+- perform an undeclared network request;
+- silently discard material source information.
+
+## 5. Canonical portability records
+
+The first implementation direction includes these logical records.
+
+### 5.1 SourceEnvironmentRecord
+
+Separately identifies, where known:
+
+```text
+environment_id
+environment_class
+provider_id
+application_id
+interface_id
+runtime_id
+export_format
+export_version
+observed_at
+```
+
+Provider, application, interface, runtime, and model are different concepts. Unknown values remain unknown.
+
+### 5.2 ImportBatchRecord
+
+Records one attempted import:
+
+```text
+import_batch_id
+source_environment_id
+adapter_id
+adapter_version
+started_at
+completed_at
+status
+source_root_hash
+staged_object_count
+published_object_count
+quarantined_object_count
+loss_report_id
+```
+
+Status distinguishes at least staged, awaiting review, published, partially published, rejected, failed, and rolled back.
+
+### 5.3 ConversationRecord and ConversationEventRecord
+
+A conversation is a container. An event is an ordered or related occurrence within it.
+
+Initial event kinds include:
+
+- user message;
+- assistant message;
+- system-context snapshot;
+- model or runtime change;
+- tool request or result;
+- attachment reference;
+- branch creation;
+- edit or regeneration;
+- citation reference;
+- error;
+- imported unknown event.
+
+An event should support parent relationships, sequence hints, actor type, content reference, time, provider, application, interface, model manifest, runtime adapter, operation, and source object identifiers.
+
+A linear UI may derive a linear display. Authoritative records must not silently destroy known branch or regeneration relationships.
+
+### 5.4 MappingReportRecord
+
+Every non-native import or target-specific export reports counts and mapping status.
+
+Mapping status distinguishes:
+
+- mapped without known loss;
+- mapped with transformation;
+- partially mapped;
+- unsupported but preserved;
+- unsupported and omitted;
+- missing dependency;
+- malformed or quarantined;
+- unknown.
+
+### 5.5 PortabilityLossRecord
+
+Records a known limitation with category, severity, source object, description, preservation state, future recoverability, and required user action.
+
+### 5.6 ExportBatchRecord
+
+Records target format, target adapter and version, selected record types, status, manifest hash, and loss report.
+
+## 6. Original source preservation
+
+Doll should preserve an approved original source snapshot when technically and legally possible.
+
+Original material must be:
+
+- integrity-checkable;
+- linked to the import batch;
+- stored as imported external content;
+- separate from normalized records;
+- subject to sensitivity, retention, and secret rules;
+- excluded from instruction authority.
+
+When the original cannot be retained, the import report states why and identifies what evidence remains.
+
+## 7. Import process
+
+```text
+inspect
+  -> identify adapter and source version
+  -> inventory and hash
+  -> parse without execution
+  -> classify sensitivity and instruction origin
+  -> normalize into staging
+  -> detect duplicates and conflicts
+  -> produce mapping and loss reports
+  -> show planned publication
+  -> obtain required user decision
+  -> publish
+  -> create import and audit records
+```
+
+Failure preserves the previous valid Doll State.
+
+### 7.1 Idempotency
+
+Re-importing the same unchanged source objects must not silently duplicate canonical records. Stable duplicate keys use available source identifiers, hashes, adapter identity, and canonical relationships.
+
+A changed source object becomes an update candidate, revision, conflict, or distinct object according to its record contract. It must not silently overwrite newer authoritative state.
+
+### 7.2 Quarantine
+
+Malformed, unsafe, unsupported, over-limit, or incompletely referenced objects may be quarantined. Quarantine is not successful publication and is excluded from model context by default.
+
+### 7.3 Authority and promotion
+
+Imported records may create suggestions or review candidates. They cannot automatically become:
+
+- system or durable user policy;
+- PermissionRecords;
+- user confirmation;
+- confirmed facts;
+- confirmed long-term memory;
+- capability definitions;
+- credential scope;
+- instruction authority.
+
+Promotion requires the trusted user-controlled path for the target record type.
+
+## 8. Export process
+
+### 8.1 Generic continuity export
+
+A generic export is required for implemented portable record types. It must be documented, versioned, machine-readable, integrity-checkable, and inspectable without a model, preferred UI, cloud account, or running doll service.
+
+Preferred forms include JSON, JSONL, Markdown, UTF-8 text, managed file copies, a manifest, and checksums.
+
+### 8.2 Target-specific export
+
+A target adapter may transform Doll State for another environment. It must declare supported target versions, produce a mapping and loss report, preserve Doll State on failure, and avoid claiming round-trip fidelity without evidence.
+
+Generic export, target-specific export, and tested round-trip compatibility are separate claims.
+
+## 9. Model, runtime, and interface replacement
+
+Changing a model, runtime, or interface must not rewrite unrelated authoritative state.
+
+A replacement component receives only scoped context assembled from Doll State under the accepted safety boundary. It does not inherit hidden state from the previous model.
+
+Doll promises state and provenance continuity. It does not promise identical wording, reasoning, personality, capability, or behavior across models.
+
+## 10. Security and privacy requirements
+
+Portability paths use the accepted security boundary.
+
+Required rules:
+
+- imported data remains external content;
+- unknown instruction origin receives the least-authoritative class;
+- prohibited sensitive values do not enter ordinary Doll State;
+- source authentication sessions are not migrated as ordinary state;
+- imported permissions, approvals, and confirmations have no authority;
+- adapters declare network and filesystem behavior;
+- resource and archive limits prevent uncontrolled expansion;
+- audit records avoid raw sensitive content;
+- cloud delivery is never automatic after a local failure.
+
+## 11. Implementation order
+
+After the Phase 3 safety gate, the required order is:
+
+1. canonical conversation and event schema;
+2. source and target adapter contracts;
+3. generic documented export;
+4. generic staged import with provenance, idempotency, quarantine, and loss reporting;
+5. runtime and model integration using canonical Doll State;
+6. local model and runtime replacement drill;
+7. one real local AI environment adapter and migration drill;
+8. the project owner's ChatGPT history adapter and migration drill;
+9. optional cloud and additional product-specific adapters.
+
+Existing IMP-013 through IMP-023 and the Phase 3 gate remain unchanged. Later implementation identifiers are assigned only after checking the then-current roadmap.
+
+## 12. First implementation subset
+
+The first stable portability claim requires only:
+
+- canonical conversations and extensible events;
+- source, import, mapping, loss, and export records;
+- generic JSON or JSONL import and export;
+- Markdown transcript export;
+- original-source hash and optional managed snapshot;
+- staged preview;
+- idempotent repeated import;
+- no automatic promotion into authoritative memory, policy, permission, or fact;
+- one local AI environment adapter;
+- one ChatGPT export adapter after the local path proves the contract.
+
+Universal product coverage is not required.
+
+## 13. Claim discipline
+
+Claims distinguish doll-to-doll transfer, generic import, generic export, source adapter support, target adapter support, model replacement, runtime replacement, interface replacement, tested round trip, and full or lossy migration.
+
+A successful parse is not proof of portability. A portability claim requires the applicable PORT tests and a mapping and loss result.
+
+## 14. Acceptance criteria
+
+Implementation must prove that:
+
+- canonical records do not depend on a provider-native schema;
+- provider, application, interface, runtime, and model identity remain distinct;
+- source provenance and instruction origin survive normalization;
+- repeated import is idempotent for unchanged source objects;
+- material transformation and loss are reported;
+- unsupported events are preserved or explicitly omitted;
+- imported content cannot grant authority or become confirmed memory or fact automatically;
+- model and runtime replacement preserve unrelated authoritative state;
+- generic export remains inspectable without doll or a model;
+- one real local AI migration path passes before provider-specific cloud portability is claimed.
+<!-- END SOURCE: docs/spec/03a-ai-environment-portability.md -->
 
 ---
 
@@ -7037,6 +7380,220 @@ This test specification is accepted when:
 
 ---
 
+<!-- BEGIN SOURCE: docs/spec/08a-ai-environment-portability-acceptance.md -->
+# AI environment portability acceptance suite
+
+**Status:** Accepted for implementation when merged  
+**Specification version:** 0.1  
+**Depends on:** `03a-ai-environment-portability.md`, `08-acceptance-and-continuity-tests.md`, `ADR-006-ai-environment-portability.md`
+
+## 1. Purpose
+
+This document defines blocking evidence for claims that doll can preserve and move supported user-owned AI state across models, runtimes, interfaces, applications, providers, machines, and doll itself.
+
+A successful parser run is not sufficient. Portability must demonstrate source attribution, deterministic mapping, duplicate prevention, explicit loss reporting, authority separation, inspectable export, and controlled replacement of execution components.
+
+## 2. Evidence rules
+
+The evidence levels and result-record requirements from `08-acceptance-and-continuity-tests.md` apply.
+
+Portability results should additionally record:
+
+```text
+source_environment_class
+source_format
+source_format_version
+source_adapter_id
+source_adapter_version
+target_format
+target_adapter_id
+target_adapter_version
+source_object_counts
+published_object_counts
+duplicate_counts
+quarantine_counts
+loss_counts_by_severity
+mapping_report_reference
+original_source_hash
+```
+
+Fixtures must be synthetic unless a private manual migration drill is explicitly required. Private source data and original source archives must not be committed or exposed in shareable reports.
+
+## 3. PORT test suite
+
+### PORT-001 — Model replacement preserves state
+
+Changing the active model binding does not rewrite or remove unrelated confirmed memory, projects, decisions, policies, permissions, conversations, sources, artifacts, audit history, or portability records.
+
+Blocking evidence: integration and real machine after local model integration.
+
+### PORT-002 — Runtime replacement preserves state
+
+A supported model or equivalent role moves between two runtime adapters, or one runtime is replaced by another, while canonical Doll State remains valid and runtime-specific identifiers remain adapter metadata rather than authoritative state.
+
+Blocking evidence: integration and real machine when two runtime paths are implemented.
+
+### PORT-003 — Interface replacement preserves authority
+
+The preferred interface can be removed or replaced while state inspection, conversation history, export, and recovery remain available through another supported interface, local API, or CLI. Interface-local data is not the only authoritative copy.
+
+Blocking evidence: integration and real process.
+
+### PORT-004 — Generic conversation import
+
+A documented generic fixture containing conversations, events, branches, attachments, timestamps, and source attribution is parsed without execution, staged, previewed, and published into canonical records.
+
+Blocking evidence: integration and CI on macOS, Windows, and Ubuntu.
+
+### PORT-005 — Generic inspectable export
+
+Implemented portable records export to documented generic files with a manifest and checksums. A fresh process without a model or running doll service can inspect the manifest, conversations, provenance, and loss report.
+
+Blocking evidence: integration, fresh process, and primary real machine.
+
+### PORT-006 — Source identity and provenance preservation
+
+Provider, application, interface, runtime, model, adapter, source-object, import-batch, and content-hash fields remain distinct through import, restart, export, and re-import where the source provides them.
+
+Unknown source identity remains unknown and is not invented.
+
+Blocking evidence: integration.
+
+### PORT-007 — Idempotent repeated import
+
+Importing the same unchanged source package twice through the same compatible adapter does not silently duplicate conversations, events, attachments, artifacts, projects, memories, or other canonical records.
+
+Changed source objects produce documented update candidates, revisions, conflicts, or distinct records according to their contract.
+
+Blocking evidence: integration and CI.
+
+### PORT-008 — Mapping and loss reporting
+
+Every non-native import and target-specific export reports mapped, transformed, partially mapped, unsupported-preserved, unsupported-omitted, missing, malformed, quarantined, and unknown counts where applicable.
+
+A material loss prevents a full-fidelity claim.
+
+Blocking evidence: integration.
+
+### PORT-009 — Original source preservation
+
+When source preservation is enabled and allowed, the retained source snapshot or reference is integrity-checkable, linked to its import batch, separate from canonical records, and excluded from instruction authority.
+
+When preservation is impossible or disabled, the report states that fact.
+
+Blocking evidence: integration.
+
+### PORT-010 — Imported content cannot grant authority
+
+Imported prompts, permissions, tool definitions, approvals, confirmations, policies, and configuration cannot change system policy, durable policy, PermissionRecords, capability definitions, risk tiers, confirmation state, credential scope, or instruction authority.
+
+Blocking evidence: hostile synthetic integration fixtures.
+
+### PORT-011 — Imported content cannot become confirmed memory or fact automatically
+
+Imported service memory, summaries, assistant assertions, and profile data remain imported content, claims, or suggestions until the trusted user-controlled confirmation path promotes them.
+
+Blocking evidence: integration.
+
+### PORT-012 — Parser and archive safety
+
+Malformed structures, unsafe paths, unsupported archive members, excessive nesting, duplicate members, case-fold collisions, over-limit attachments, and executable source content fail closed or enter quarantine without modifying the last known good state.
+
+Blocking evidence: CI on macOS, Windows, and Ubuntu.
+
+### PORT-013 — Local AI environment migration drill
+
+A real supported local AI environment exports or exposes a test workspace containing conversation history and at least one supported attachment or metadata relationship. Doll imports it, reports inventory and loss, uses a different approved model or runtime to retrieve the imported context, and exports the resulting canonical state generically.
+
+The drill verifies that removal of the original local application does not remove the imported Doll State.
+
+Blocking evidence: primary real machine before a stable local-environment portability claim.
+
+### PORT-014 — Project-owner history migration drill
+
+The project owner's ChatGPT export is handled through a provider-specific source adapter after the generic and local paths pass. Doll preserves original export provenance, imports selected conversation history, prevents automatic memory promotion, reports unsupported events and missing attachments, and exports selected canonical state generically.
+
+This is private manual evidence. No personal archive, conversation text, identifier, or private fixture is committed.
+
+Blocking evidence: private manual continuity drill before claiming ChatGPT migration support.
+
+### PORT-015 — Doll shutdown escape test
+
+From a valid workspace, a generic export is created and then inspected without model execution, the preferred UI, network access, cloud credentials, or a running doll service. The user can recover implemented conversations, confirmed memory, projects, decisions, artifacts, sources, and portability reports in documented forms.
+
+Blocking evidence: fresh process and primary real machine before a stable anti-lock-in claim.
+
+### PORT-016 — Target-specific export failure preserves Doll State
+
+A failed, denied, cancelled, incompatible, or partially completed target-specific export does not rewrite or delete authoritative Doll State and does not report false success.
+
+Blocking evidence: integration.
+
+## 4. Portability phase gate
+
+The portability foundation gate requires, when implemented:
+
+- PORT-004 through PORT-012;
+- canonical conversation and event schemas;
+- source and target adapter contracts;
+- generic inspectable export;
+- staged generic import;
+- provenance, idempotency, quarantine, mapping, and loss records;
+- secret and instruction-origin enforcement on imported content;
+- CI on macOS, Windows, and Ubuntu;
+- no provider-specific cloud adapter required.
+
+The local portability claim additionally requires PORT-001, PORT-003, PORT-013, and applicable PORT-002 evidence.
+
+The ChatGPT migration claim additionally requires PORT-014.
+
+A stable anti-lock-in claim requires PORT-015.
+
+## 5. Failure conditions
+
+The applicable gate or claim fails when:
+
+- provider-native objects become the only authoritative representation;
+- an import executes source content;
+- repeated import silently duplicates unchanged records;
+- source identity is invented or collapsed into the wrong category;
+- material branches, attachments, or unsupported events disappear without a report;
+- imported content gains policy, permission, confirmation, capability, memory, or fact authority automatically;
+- a model or runtime switch rewrites unrelated state;
+- a failed export damages authoritative state;
+- generic export cannot be inspected without the preferred environment;
+- a full-fidelity claim is made despite material reported loss.
+
+## 6. Release reporting
+
+A release claiming portability must publish or retain, as appropriate:
+
+- supported source and target formats and versions;
+- adapter IDs and versions;
+- implemented event and attachment coverage;
+- known unsupported data;
+- mapping and loss summaries;
+- idempotency evidence;
+- security and authority-boundary evidence;
+- real local migration evidence where claimed;
+- private manual evidence status for personal cloud-history migration without exposing private data;
+- whether round-trip compatibility was tested or only one-way import/export.
+
+## 7. Acceptance criteria
+
+This test specification is accepted when:
+
+- each portability claim maps to stable PORT identifiers;
+- local model, runtime, interface, application, cloud source, and doll-exit cases are distinguished;
+- loss visibility is required rather than optional;
+- imported content remains non-authoritative;
+- generic export provides a doll-independent recovery path;
+- local AI migration is required before provider-specific cloud portability becomes the primary claim;
+- private real-data drills remain private while their result and limitations can be recorded safely.
+<!-- END SOURCE: docs/spec/08a-ai-environment-portability-acceptance.md -->
+
+---
+
 <!-- BEGIN SOURCE: docs/spec/09-development-roadmap.md -->
 # Development roadmap
 
@@ -7045,13 +7602,13 @@ This test specification is accepted when:
 
 ## 1. Purpose
 
-This roadmap converts the accepted product, continuity, and security specifications into an implementation sequence.
+This roadmap converts the accepted product, continuity, portability, and security specifications into an implementation sequence.
 
-It is a sequencing document, not a promise of exact dates or pull-request counts.
+It is a sequencing document, not a promise of exact dates or final pull-request counts.
 
 The governing rule is:
 
-> Prove user-owned continuity first, complete the model-independent safety boundary second, then add model execution and useful capabilities without weakening either pillar.
+> Prove user-owned continuity first, complete the model-independent safety boundary second, establish the portability foundation third, then connect models, providers, and useful capabilities without weakening those guarantees.
 
 ## 2. Working method
 
@@ -7061,7 +7618,7 @@ Each implementation PR must:
 
 - solve one bounded issue;
 - cite the accepted specification it implements;
-- describe state, permission, secret, trust, network, and migration effects;
+- describe state, portability, permission, secret, trust, network, and migration effects;
 - include tests for success and denial or failure paths;
 - avoid unrelated refactoring;
 - distinguish CI evidence from real-machine evidence;
@@ -7071,7 +7628,7 @@ Each implementation PR must:
 The normal unit of work is:
 
 ```text
-1 Issue → 1 Branch → 1 Pull Request
+1 Issue -> 1 Branch -> 1 Pull Request
 ```
 
 The intended division of work is:
@@ -7084,7 +7641,7 @@ The intended division of work is:
 
 Doll has two co-equal architectural pillars:
 
-1. continuity of user-owned state;
+1. continuity of user-owned state, including AI environment portability;
 2. a model-independent safety boundary.
 
 The implementation phases are:
@@ -7094,39 +7651,46 @@ Phase 0  Specification and principles
 Phase 1  Local state foundation
 Phase 2  Continuity, transfer, backup, and restore
 Phase 3  Safety boundary
-Phase 4  Local AI
-Phase 5  Cloud and multiple models
-Phase 6  Tools and external services
-Phase 7  Daily use
-Phase 8  Distribution, encryption, and long-term operation
+Phase 4  AI environment portability foundation
+Phase 5  Local runtime and model integration
+Phase 6  Local AI portability and daily-use integration
+Phase 7  Optional cloud and multiple models
+Phase 8  Tools and external services
+Phase 9  Distribution, encryption, and long-term operation
 ```
 
 No model adapter, inference request, conversation runtime, or model-initiated capability path may merge before the Phase 3 safety gate passes.
+
+No provider-specific cloud portability path may become the primary portability implementation before the Phase 4 canonical and generic portability gate passes.
 
 ## 4. Current state
 
 Completed:
 
 - Phase 0 specification baseline;
-- IMP-001 through IMP-010;
-- local workspace, SQLite state, migrations, audit, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package export/import, and verified backup creation.
+- Phase 1 local state foundation;
+- Phase 2 continuity, state-package transfer, backup, restore, and model-independent acceptance;
+- IMP-001 through IMP-013;
+- local workspace, SQLite state, migrations, audit, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package export/import, verified backup, restore, continuity acceptance, and secret-classification enforcement.
 
 Current implementation point:
 
-- Phase 2;
-- IMP-011 is the next code issue;
-- IMP-011 adds backup restore and post-restore validation;
-- IMP-012 will run the model-independent Continuity Acceptance Test;
-- IMP-013 through IMP-023 implement and validate the safety boundary;
-- local model execution begins at IMP-024 or later.
+- Phase 3 is in progress;
+- IMP-013 is complete;
+- IMP-014 is the next implementation item;
+- IMP-014 through IMP-023 complete and validate the remaining safety boundary;
+- Phase 4 portability work begins only after the Phase 3 gate;
+- local model execution begins after both the Phase 3 gate and the required Phase 4 contracts that prevent the first runtime from becoming the canonical state format.
+
+The controlled documentation change adopting ADR-006 does not reopen Phase 0 or change completed implementation evidence. It changes future requirements and sequencing.
 
 ## 5. Phase 0 — Specification and principles
 
-Goal: define product identity, continuity, state ownership, security, release evidence, and implementation order before production features.
+Goal: define product identity, continuity, state ownership, security, portability, release evidence, and implementation order before production features.
 
 Status: complete, subject to controlled specification changes.
 
-Completed specification work includes:
+Accepted specification work includes:
 
 - product identity and Continuity Contract;
 - local-complete, cloud-optional architecture;
@@ -7136,223 +7700,96 @@ Completed specification work includes:
 - platform and recovery direction;
 - release scope and acceptance evidence;
 - deterministic `DOLL_FINAL_SPEC.md` generation;
-- ADR-005 sequencing the safety boundary before model execution.
+- ADR-005 sequencing the safety boundary before model execution;
+- ADR-006 making AI environment portability and a documented exit path mandatory continuity requirements.
 
 No implementation PR may silently contradict this baseline.
 
 ## 6. Phase 1 — Local state foundation
 
-Goal: establish a cross-platform package, private workspace, versioned authoritative state, explicit user control, and safe writes without any model dependency.
+Goal: establish a cross-platform package, private workspace, versioned authoritative state, explicit user control, and safe writes without model dependency.
 
 Status: complete through IMP-008.
 
 ### IMP-001 — Python package and CI skeleton
 
-Implemented:
-
-- Python package metadata;
-- `uv` lock and development commands;
-- `src/doll/` package;
-- Typer CLI entry point;
-- FastAPI application factory;
-- pytest, lint, type-check, and coverage configuration;
-- macOS, Windows, and Ubuntu CI;
-- no model or external tool dependency.
+Implemented package metadata, `src/doll/`, CLI and API foundations, tests, lint, typing, coverage, and macOS, Windows, and Ubuntu CI without a model dependency.
 
 ### IMP-002 — Platform paths and workspace initialization
 
-Implemented:
-
-- platform-aware data locations;
-- `doll init`;
-- WorkspaceRecord;
-- repository-checkout protection;
-- path canonicalization;
-- synthetic and Unicode fixtures.
+Implemented platform-aware private workspace creation, stable WorkspaceRecord identity, repository-checkout protection, path canonicalization, and synthetic Unicode fixtures.
 
 ### IMP-003 — SQLite state repository and migrations
 
-Implemented:
-
-- schema versioning;
-- common record envelope;
-- migration runner;
-- transactions and revisions;
-- read-only recovery opening path.
+Implemented schema versions, common record envelopes, transactions, revisions, migrations, and read-only recovery opening.
 
 ### IMP-004 — Append-oriented audit service
 
-Implemented:
-
-- operation IDs;
-- actor and result records;
-- secret-safe summaries;
-- audit listing;
-- append-oriented persistence.
+Implemented operation IDs, actor and result records, bounded summaries, listing, and append-oriented persistence.
 
 ### IMP-005 — Workspace file service
 
-Implemented:
-
-- managed artifact paths;
-- create-new semantics;
-- content hashing;
-- atomic writes;
-- traversal and link-escape defenses;
-- size limits.
+Implemented managed artifact paths, create-new semantics, hashing, atomic writes, traversal and link-escape defenses, and size limits.
 
 ### IMP-006 — Preferences, policies, and permissions
 
-Implemented:
-
-- PreferenceRecord;
-- PolicyRecord;
-- PermissionRecord;
-- denied, allow-once, ask, and scoped modes;
-- no global allow-all;
-- explicit management path;
-- model or content text cannot count as approval.
+Implemented PreferenceRecord, PolicyRecord, PermissionRecord, explicit modes, no universal allow-all, and a management path that cannot treat model or content text as approval.
 
 ### IMP-007 — Confirmed memory
 
-Implemented:
-
-- confirmed MemoryRecord management;
-- provenance and sensitivity;
-- archive and export;
-- no automatic conversation-to-memory conversion.
+Implemented confirmed MemoryRecord management, provenance, sensitivity, archive, export, and no automatic conversation-to-memory conversion.
 
 ### IMP-008 — Projects and decisions
 
-Implemented:
-
-- ProjectRecord;
-- DecisionRecord;
-- typed links;
-- revision-safe updates;
-- archive and export.
+Implemented ProjectRecord, DecisionRecord, typed links, revision-safe updates, archive, and export.
 
 ## 7. Phase 2 — Continuity, transfer, backup, and restore
 
 Goal: make durable state inspectable, transferable, restorable, and verifiable without a model, runtime, network connection, cloud account, or preferred UI.
 
+Status: complete through IMP-012.
+
 ### IMP-009 — Doll State package export and import
 
-Status: complete.
-
-Implemented:
-
-- versioned package manifest;
-- JSON and JSONL records;
-- checksums;
-- staged validation;
-- conflict reporting;
-- empty-target import;
-- no package-content execution.
-
-Acceptance focus:
-
-- STATE-003;
-- STATE-004;
-- STATE-008.
+Implemented versioned manifests, JSON and JSONL records, checksums, staged validation, conflict reporting, empty-target import, and no package-content execution.
 
 ### IMP-010 — Backup creation and verification
 
-Status: complete.
-
-Implemented:
-
-- state backup;
-- workspace backup;
-- SQLite snapshot;
-- artifact-byte preservation;
-- manifest and SHA-256 verification;
-- tamper detection;
-- atomic no-clobber publication;
-- secret-containing unencrypted workspace-backup rejection;
-- backup inventory and audit.
-
-Acceptance focus:
-
-- CONT-P010;
-- STATE-007 foundation;
-- cross-platform backup safety.
+Implemented state and workspace backups, SQLite snapshots, artifact-byte preservation, manifest and SHA-256 verification, tamper detection, atomic publication, backup inventory, audit, and secret-policy rejection for unsafe unencrypted backups.
 
 ### IMP-011 — Backup restore and post-restore validation
 
-Status: next code implementation.
-
-Required scope:
-
-- state-backup restore into an empty target;
-- workspace-backup restore into an empty target;
-- complete verification before extraction;
-- staging outside the final target;
-- safe path and member validation;
-- SQLite integrity validation;
-- workspace identity and revision validation;
-- record and typed-link validation;
-- artifact hash and byte validation;
-- atomic publication without overwrite;
-- cleanup of staging and partial output on failure;
-- fresh-process post-restore validation;
-- normal output without absolute local path disclosure;
-- no model execution and no network access.
-
-Acceptance focus:
-
-- CONT-P011;
-- CONT-P012;
-- STATE-007;
-- STATE-008;
-- PLAT-005;
-- PLAT-007.
+Implemented verified empty-target restore, pre-extraction validation, staging, path and member defenses, SQLite and record validation, artifact verification, atomic publication, failure cleanup, fresh-process validation, privacy-safe output, and no model or network dependency.
 
 ### IMP-012 — Continuity Acceptance Test
 
-Goal: prove the complete Phase 1 and Phase 2 continuity foundation before any safety-boundary or model work depends on it.
+Proved restart persistence, state transfer, backup restore, fresh-process inspection, failure preservation, model independence, network independence, cross-platform CI, and the primary Intel Mac continuity drill.
 
-Required evidence:
-
-- clean workspace creation;
-- confirmed memory, preferences, policies, permissions, projects, decisions, typed links, audit history, and artifacts persist across process restart;
-- Doll State export and import preserve implemented authoritative records;
-- state backup restores into an empty target;
-- workspace backup restores into an empty target;
-- restored workspace identity, schema, revision, records, links, audit history, and artifact bytes match the verified source contract;
-- corrupt, tampered, unsafe, mismatched, existing, or non-empty targets fail closed;
-- a fresh process validates and inspects restored state without a model;
-- no cloud credentials or network access are required;
-- no absolute path, username, hostname, home-directory detail, secret, or personal fixture appears in shareable output;
-- CI passes on macOS, Windows, and Ubuntu;
-- the complete drill passes on the primary Intel Mac.
-
-Phase 2 gate:
-
-- IMP-011 is merged;
-- required continuity and state tests pass;
-- the real-machine continuity report records the tested commit and limitations;
-- restore failure does not damage the last known good workspace;
-- no model execution path exists.
+Phase 2 is complete. Later portability work extends transfer beyond doll-native packages; it does not invalidate the completed doll-to-doll continuity evidence.
 
 ## 8. Phase 3 — Safety boundary
 
 Goal: implement the authority, secret, trust, instruction, capability, and confirmation boundary before any model is allowed to execute.
 
-The safety boundary is model-independent. Tests use synthetic callers, hostile fixtures, malformed requests, and explicit management commands rather than a live model.
+The safety boundary is model-independent. Tests use synthetic callers, hostile fixtures, malformed requests, imported-content fixtures, and explicit management commands rather than a live model.
 
 ### IMP-013 — Secret Classification Policy
 
-Define:
+Status: complete.
 
-- secret classes and sensitivity levels;
+Implemented:
+
+- closed secret and credential classes;
 - ordinary-state prohibition for secret values;
-- SecretReference requirements;
-- allowed metadata and prohibited value fields;
-- input, output, persistence, export, backup, and diagnostic handling;
-- fail-closed behavior for uncertain secret-bearing operations.
+- validated non-secret SecretReference metadata;
+- explicit handling decisions for input, state, audit, logs, export, backup, diagnostics, model context, output, external stores, and bounded operations;
+- fail-closed behavior for uncertain requests;
+- enforcement in generic state create and update paths before transaction start;
+- tests proving rejected writes do not advance record, state, or workspace revisions.
 
 ### IMP-014 — Secret Detection and Redaction
+
+Status: next.
 
 Implement:
 
@@ -7360,230 +7797,174 @@ Implement:
 - structured redaction results;
 - false-positive and false-negative documentation;
 - redaction for user-visible errors and diagnostics;
+- detection coverage for future imported conversation, attachment, and configuration content;
 - no broad secret-search permission;
-- tests for common credential, token, key, cookie, recovery phrase, and personal-data patterns using synthetic fixtures only.
+- synthetic credential, token, key, cookie, recovery phrase, and personal-data fixtures.
 
 ### IMP-015 — Secret-Safe Audit and Logging
 
-Implement:
-
-- centrally enforced audit and log sanitization;
-- structured safe summaries;
-- rejection or redaction of secret-bearing fields;
-- path, username, hostname, and home-directory minimization;
-- tests proving allowed, denied, failed, and exceptional operations do not leak secret values.
+Implement centrally enforced sanitization, safe summaries, rejection or redaction of secret-bearing fields, private-environment minimization, and exceptional-path tests.
 
 ### IMP-016 — External Secret Store Contract
 
-Define a portable contract for operating-system or compatible external secret stores:
-
-- reference creation and lookup metadata;
-- availability and locked-state reporting;
-- user-presence requirements;
-- create, replace, revoke, and delete semantics;
-- no ordinary-state secret-value persistence;
-- platform-specific adapters remain replaceable;
-- unavailable secret storage cannot block non-secret core startup.
+Define a replaceable operating-system or compatible secret-store contract with non-secret references, availability and lock state, user-presence requirements, lifecycle operations, and failure isolation.
 
 ### IMP-017 — Credential Broker
 
-Implement a narrow broker that:
-
-- accepts SecretReference, capability, destination, scope, and operation metadata;
-- obtains required user approval or presence;
-- uses a credential only inside the bounded operation;
-- does not return the stored secret value to a model or ordinary caller by default;
-- returns a structured operation result;
-- redacts errors and audit events;
-- supports cancellation, timeout, and fail-closed behavior.
+Implement bounded credential use without returning stored values to models or ordinary callers, with destination, scope, approval, timeout, cancellation, result, and audit controls.
 
 ### IMP-018 — Claim, Evidence, and Trust Model
 
-Implement distinct records and links for:
-
-- confirmed facts;
-- claims;
-- supporting or contradicting evidence;
-- inferences;
-- provenance, source, confidence, uncertainty, and review status.
-
-Required rule:
-
-- model, tool, document, website, import, or runtime assertions do not become confirmed facts automatically.
+Implement separate confirmed facts, claims, evidence, and inferences with provenance, confidence, uncertainty, and review state. Imports do not create confirmed facts directly.
 
 ### IMP-019 — Instruction Origin and Untrusted-Content Boundary
 
-Implement:
-
-- instruction-origin metadata;
-- authority classes;
-- immutable source attribution for imported and retrieved content;
-- separation of system policy, user instruction, durable policy, content, tool result, and model proposal;
-- content cannot grant permission, confirmation, or policy changes;
-- unknown origin fails to the least-authoritative classification.
+Implement immutable source attribution and authority classes for system policy, user instruction, durable policy, external content, imported data, tool results, and model proposals.
 
 ### IMP-020 — Prompt Injection Defense
 
-Implement defense in depth:
-
-- context packaging that preserves origin and authority;
-- prompt-injection indicators and warnings;
-- unrelated-capability and exfiltration-request detection;
-- policy and permission enforcement outside the model;
-- hostile document, website, metadata, OCR, transcript, and tool-result fixtures;
-- no reliance on model classification as the authorization boundary.
+Implement context packaging that preserves origin, policy enforcement outside the model, hostile source fixtures, exfiltration and unrelated-capability defenses, and no model-only authorization boundary.
 
 ### IMP-021 — Capability Taxonomy and Risk Tiers
 
-Implement:
-
-- versioned capability registry;
-- input and output schemas;
-- declared targets, side effects, and resource limits;
-- permission and network checks;
-- risk tiers;
-- unknown or malformed capability denial;
-- no unrestricted shell or arbitrary command-string capability;
-- allow and deny audit events.
-
-Initial risk direction:
-
-- Tier 0: pure computation with no side effect;
-- Tier 1: bounded managed read or reversible creation;
-- Tier 2: scoped modification or explicit external read;
-- Tier 3: destructive, externally visible, credential-bearing, account-affecting, or process-execution action;
-- Prohibited: actions outside accepted release scope regardless of confirmation.
+Implement a versioned capability registry, schemas, targets, side effects, limits, permission and network checks, risk tiers, denial of malformed requests, and no unrestricted shell.
 
 ### IMP-022 — Mandatory High-Risk Confirmation
 
-Implement:
-
-- trusted user-controlled confirmation channel;
-- fresh confirmation for every Tier 3 operation;
-- exact capability, target, destination, side-effect, and credential-class preview;
-- expiry and one-operation binding;
-- material-change invalidation;
-- no confirmation from model text, documents, websites, imports, or tool results;
-- no persistent broad confirmation for high-risk operations;
-- confirmation does not override policy or make a prohibited capability available.
+Implement fresh user-controlled confirmation for every Tier 3 operation, exact binding to capability and side effects, expiry, material-change invalidation, and no confirmation from content.
 
 ### IMP-023 — Safety Acceptance Test
 
-Goal: prove the complete safety boundary before model execution.
-
-Required evidence includes:
-
-- secret values are absent from ordinary state, logs, audit, exports, backups, fixtures, diagnostics, and model-context packages;
-- SecretReference remains non-secret and portable;
-- credential-broker tests complete bounded synthetic operations without exposing stored values;
-- confirmed facts, claims, evidence, and inferences remain distinct through restart and export;
-- instruction origin and authority survive persistence and context assembly;
-- hostile content cannot grant approval, alter policy, raise authority, or trigger a capability;
-- unknown and malformed capabilities fail closed;
-- risk tiers are enforced;
-- high-risk operations fail without fresh exact confirmation;
-- changed targets, arguments, destinations, side effects, or credential classes invalidate confirmation;
-- denial and failure preserve the last known good state;
-- security-relevant events are auditable without leaking sensitive data;
-- CI passes on macOS, Windows, and Ubuntu;
-- applicable real-process checks pass on the primary Intel Mac.
+Prove secret separation, credential isolation, claim and evidence separation, instruction origin, hostile-content resistance, capability denial, risk enforcement, exact confirmation, audit safety, cross-platform CI, and applicable primary-machine checks.
 
 Phase 3 gate:
 
 - IMP-013 through IMP-023 are merged;
 - all blocking safety tests pass;
-- open known limitations are documented;
+- known limitations are documented;
 - no accepted review finding shows a route around the boundary;
-- only after this gate may IMP-024 introduce a model adapter contract.
+- only after this gate may portability adapters, model adapters, or model execution paths accept real untrusted input.
 
-## 9. Phase 4 — Local AI
+## 9. Phase 4 — AI environment portability foundation
 
-Goal: connect useful local inference without allowing the runtime or model to own state, secrets, permissions, trust decisions, or side effects.
+Goal: establish canonical conversation and event state, generic import and export, and adapter contracts before the first runtime, provider, or UI can define Doll State accidentally.
 
-Expected sequence begins at IMP-024.
+This phase is model-independent and uses synthetic fixtures.
+
+Required implementation slices, with identifiers assigned only when scheduled:
+
+1. canonical ConversationRecord and extensible ConversationEventRecord schemas;
+2. SourceEnvironmentRecord, ImportBatchRecord, MappingReportRecord, PortabilityLossRecord, and ExportBatchRecord;
+3. source-adapter and target-adapter contracts;
+4. generic JSON or JSONL import staging;
+5. generic JSON, JSONL, Markdown, manifest, checksum, and managed-file export;
+6. original-source hash and optional managed snapshot;
+7. deterministic mapping, provenance, idempotency, conflict, and quarantine behavior;
+8. mapping and loss reports;
+9. imported-content authority restrictions;
+10. PORT-004 through PORT-012 acceptance evidence.
+
+Phase 4 gate:
+
+- canonical state is independent of provider-native and runtime-native response objects;
+- provider, application, interface, runtime, and model identity are separate;
+- generic export is inspectable without a model or preferred UI;
+- repeated import is idempotent for unchanged source objects;
+- material transformation and loss are explicit;
+- imported content cannot become policy, permission, confirmation, capability, confirmed memory, or confirmed fact automatically;
+- CI passes on macOS, Windows, and Ubuntu;
+- no provider-specific cloud adapter is required.
+
+## 10. Phase 5 — Local runtime and model integration
+
+Goal: connect useful local inference without allowing the runtime or model to own state, secrets, permissions, trust decisions, portability, or side effects.
+
+Existing implementation identifiers remain unchanged.
 
 ### IMP-024 — Runtime adapter contract
 
-- normalized health, inventory, generation, streaming, cancellation, and error contracts;
-- runtime-independent model IDs;
-- no direct state, secret-store, filesystem, network, or capability access;
-- mocked adapter tests.
+Implement normalized health, inventory, generation, streaming, cancellation, error, offline, and capability contracts with runtime-independent model identity and no direct authority over state, secrets, files, network, or capabilities.
 
 ### IMP-025 — First local runtime adapter
 
 Initial target: Ollama.
 
-- local health check;
-- installed model inventory mapping;
-- local generation and streaming;
-- timeout and cancellation;
-- no silent model download;
-- no cloud fallback;
-- all context passes through accepted origin and secret controls.
+Implement local health, inventory mapping, generation, streaming, timeout, cancellation, no silent download, no cloud fallback, and context flow through accepted secret and origin controls.
 
 ### IMP-026 — Model manifests and bindings
 
-- ModelManifestRecord;
-- RuntimeManifestRecord;
-- ModelBindingRecord;
-- source, revision, checksum, license, and compatibility;
-- quarantine, candidate, active, previous, fallback, and rollback state.
+Implement ModelManifestRecord, RuntimeManifestRecord, ModelBindingRecord, provenance, exact revision, checksums, license, compatibility, quarantine, candidate, active, previous, fallback, and rollback state.
 
-### IMP-027 — Local conversation path
+### IMP-027 — Canonical local conversation path
 
-- local API and CLI conversation;
+Implement local API and CLI conversation using only the Phase 4 canonical conversation and event records.
+
+Required properties:
+
 - scoped state retrieval;
 - response provenance;
+- separate provider, application, interface, runtime, model, and operation attribution;
+- no provider-native object as authoritative state;
 - no automatic durable memory creation;
 - no direct model capability execution;
 - model proposals pass through the safety boundary.
 
 ### IMP-028 — Model switch and local fallback
 
-- explicit activation;
-- previous binding retention;
-- fallback selection or offer;
-- rollback after failed smoke test;
-- no unrelated state rewrite;
-- no cloud request.
+Implement explicit activation, previous binding retention, fallback selection or offer, smoke-test rollback, no unrelated state rewrite, and no cloud request.
 
 ### IMP-029 — Offline mode and local AI continuity drill
 
-- network-disabled startup;
-- outbound-request guard;
-- local conversation and fallback offline;
-- model replacement without state loss;
-- primary-machine continuity evidence.
+Prove network-disabled startup, outbound-request guard, local conversation, fallback, model replacement without state loss, and primary-machine evidence.
 
-Phase 4 gate:
+Phase 5 gate:
 
 - local inference remains optional to state inspection, export, backup, restore, and recovery;
 - model replacement does not rewrite unrelated state;
+- canonical conversation state survives runtime-private object removal;
 - the safety boundary remains the only route to side effects;
 - no cloud credential is required.
 
-## 10. Phase 5 — Cloud and multiple models
+## 11. Phase 6 — Local AI portability and daily-use integration
 
-Goal: add optional performance and role expansion without making cloud access authoritative or mandatory.
+Goal: prove that doll can enter from, operate across, and exit to documented formats around real local AI use.
 
-Cloud work begins only after the local path and safety boundary are stable.
+Required sequence, with later non-conflicting implementation identifiers:
+
+1. select one local AI environment actually used by the project owner;
+2. implement its source adapter against the Phase 4 contract;
+3. import a synthetic and then private real test workspace;
+4. verify inventory, source provenance, duplicate prevention, quarantine, and loss reports;
+5. retrieve imported context through a different approved model or runtime where practical;
+6. remove or disable the original local application and confirm Doll State remains usable;
+7. export selected canonical state generically;
+8. pass PORT-001, PORT-003, PORT-013, PORT-015, and applicable PORT-002 evidence;
+9. implement the project owner's ChatGPT history adapter only after the local path proves the contract;
+10. run the private PORT-014 migration drill without committing personal data.
+
+Daily-use work may then expand writing, editing, summarization, translation, planning, memory review, project and decision workflows, portability review, accessibility, error clarity, Lite performance, and soak testing.
+
+## 12. Phase 7 — Optional cloud and multiple models
+
+Goal: add optional performance and role expansion without making cloud access authoritative, mandatory, or the canonical portability path.
 
 Expected slices:
 
 1. generic bounded outbound-package contract;
 2. exact preview, minimization, and redaction;
 3. provider-independent cloud adapter interface;
-4. one optional OpenAI-compatible adapter;
+4. one optional provider adapter, potentially OpenAI-compatible;
 5. multiple local-model role routing;
-6. local/cloud selection policy with no automatic cloud fallback;
+6. local and cloud selection policy with no automatic cloud fallback;
 7. cost, retention, destination, and audit reporting where available;
-8. provider-specific adapters only when justified.
+8. provider-specific import or export adapters only after generic and local portability gates;
+9. additional providers only when justified.
 
-Cloud code must remain removable. Removing cloud adapters must not prevent local startup, state access, restore, or local inference.
+Cloud code must remain removable. Removing cloud adapters must not prevent local startup, state access, generic export, restore, local inference, or local migration inspection.
 
-## 11. Phase 6 — Tools and external services
+## 13. Phase 8 — Tools and external services
 
-Goal: add useful capabilities through the accepted Capability Broker rather than direct model authority.
+Goal: add useful capabilities through the accepted Capability Broker rather than direct model or adapter authority.
 
 Candidate groups:
 
@@ -7598,40 +7979,11 @@ Candidate groups:
 - optional speech-to-text;
 - narrowly scoped external-service integrations.
 
-Every adapter must:
+Every adapter must declare capability ID, version, risk tier, inputs, outputs, side effects, limits, provenance, instruction origin, credential behavior, and failure isolation.
 
-- declare capability ID, version, risk tier, inputs, outputs, side effects, limits, and provenance;
-- fail independently;
-- avoid unrestricted shell execution;
-- preserve instruction origin for returned content;
-- use the credential broker when a credential is required;
-- remain visible through doctor and audit;
-- keep experimental features outside stable release claims.
+## 14. Phase 9 — Distribution, encryption, and long-term operation
 
-## 12. Phase 7 — Daily use
-
-Goal: make the continuity and safety foundations useful for ordinary personal work.
-
-Candidate work:
-
-- writing and editing;
-- summarization and translation;
-- planning and research workflows;
-- memory review and confirmation flows;
-- project and decision workflows;
-- backup and restore usability;
-- source, claim, evidence, and inference inspection;
-- capability and confirmation usability;
-- optional Open WebUI compatibility;
-- accessibility and error clarity;
-- performance measurement on Lite hardware;
-- seven-day primary-machine soak before a Lite stable claim.
-
-Daily-use convenience must not hide model, network, credential, permission, or risk state.
-
-## 13. Phase 8 — Distribution, encryption, and long-term operation
-
-Goal: make doll maintainable, recoverable, and distributable over long periods without splitting the core.
+Goal: make doll maintainable, recoverable, portable, and distributable over long periods without splitting the core.
 
 Candidate groups:
 
@@ -7641,19 +7993,18 @@ Candidate groups:
 - update staging and rollback;
 - standard backup encryption;
 - backup rotation and retention;
-- long-term schema migration drills;
+- long-term schema and portability migration drills;
 - support matrix and shareable doctor reports;
-- Lite and Heavy profile measurement;
-- Heavy hardware selection only after Lite evidence;
+- Lite and Heavy measurement;
 - richer retrieval, media, verification, and training workflows;
-- mobile companion or remote access only after a separate threat model;
+- mobile or remote access only after a separate threat model;
 - multi-device synchronization only after conflict and secret-boundary design;
-- periodic continuity and safety drills;
+- periodic continuity, portability, and safety drills;
 - community verification and release acceptance reports.
 
-The project must not invent custom cryptography. Encryption work must use established operating-system or library primitives and must not make unencrypted recovery impossible without an explicit accepted product decision.
+The project must not invent custom cryptography.
 
-## 14. Issue and PR discipline
+## 15. Issue and PR discipline
 
 Implementation issues should contain:
 
@@ -7661,8 +8012,9 @@ Implementation issues should contain:
 - accepted specification links;
 - in-scope and out-of-scope behavior;
 - state and schema changes;
+- import, export, mapping, and loss effects;
 - secret and credential effects;
-- trust, evidence, and instruction-origin effects;
+- trust, evidence, provenance, and instruction-origin effects;
 - permission, capability, risk, and confirmation effects;
 - network and process effects;
 - migration requirements;
@@ -7674,7 +8026,7 @@ A PR should normally implement one issue or one tightly related slice.
 
 Documentation-only sequencing changes must not include implementation code.
 
-## 15. Definition of done for an implementation PR
+## 16. Definition of done for an implementation PR
 
 An implementation PR is done when:
 
@@ -7683,6 +8035,7 @@ An implementation PR is done when:
 - success, denial, malformed input, and recoverable failure are tested;
 - security and path failures are tested;
 - persisted-state changes include schema and migration handling;
+- import or export changes include provenance, idempotency, and loss handling;
 - secret-bearing paths are classified and tested;
 - audit and user-visible output are checked for leakage;
 - documentation is updated;
@@ -7694,22 +8047,22 @@ An implementation PR is done when:
 - review comments are resolved;
 - `main` remains recoverable.
 
-## 16. Immediate work
+## 17. Immediate work
 
-The required order from the current repository state is:
+The required order from `main` commit `14724d2cab328bafc398ea2beac2f23a176ee4fd` is:
 
-1. merge the documentation change adopting ADR-005 and this roadmap;
-2. return to `impl/imp-011-restore-post-validation`;
-3. rebase that branch onto the updated `main`;
-4. implement IMP-011 only;
-5. pass CI, review, and Intel Mac real-process restore validation;
-6. squash-merge IMP-011;
-7. implement IMP-012 as the Continuity Acceptance Test;
-8. begin IMP-013 only after the Phase 2 gate passes;
-9. complete IMP-013 through IMP-023;
-10. begin model work at IMP-024 or later only after the Phase 3 gate passes.
+1. merge the documentation-only change adopting ADR-006, the portability specification, PORT tests, and this revised roadmap;
+2. confirm the generated combined specification and all documentation checks;
+3. return to Phase 3 without starting portability implementation;
+4. create and implement IMP-014 only;
+5. continue IMP-015 through IMP-023 in order;
+6. pass the Phase 3 safety gate;
+7. schedule Phase 4 portability-foundation issues with new non-conflicting identifiers;
+8. pass the Phase 4 portability gate;
+9. begin IMP-024 through IMP-029 local model work;
+10. prove a real local AI migration path before provider-specific cloud portability becomes a primary claim.
 
-## 17. Roadmap change control
+## 18. Roadmap change control
 
 The roadmap may change as implementation evidence arrives.
 
@@ -7717,15 +8070,20 @@ Changes must preserve:
 
 - continuity-first sequencing;
 - the safety boundary before model execution;
+- canonical and generic portability before provider-specific cloud portability;
 - local completion before cloud dependence;
 - memory and secret separation;
-- external content as data rather than authority;
+- external and imported content as data rather than authority;
 - model-independent permissions, risk, and confirmation;
+- explicit mapping and loss reporting;
+- a documented exit path from doll;
 - Lite evidence before Heavy hardware commitment;
 - test evidence before phase or release claims;
 - small PRs;
 - explicit migration, rollback, and recoverable failure;
 - the project owner's immediate personal-use objective.
 
-A change that moves model execution before the Phase 3 safety gate requires a new accepted architecture decision and corresponding security and acceptance-test changes.
+Moving model execution before the Phase 3 safety gate requires a new accepted architecture decision and corresponding security and acceptance-test changes.
+
+Weakening AI environment portability, generic inspectable export, source provenance, idempotency, loss visibility, or the local-first migration priority requires a dedicated architecture decision.
 <!-- END SOURCE: docs/spec/09-development-roadmap.md -->
