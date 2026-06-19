@@ -11,6 +11,7 @@ from doll import __version__
 from doll.artifact import ArtifactError, ArtifactValidationError, WorkspaceFileService
 from doll.audit import AuditActorType, AuditResult, AuditService
 from doll.backup_cli import backup_app
+from doll.diagnostics import redact_exception_text
 from doll.memory_cli import memory_app
 from doll.project_cli import decision_app, project_app
 from doll.settings_cli import permission_app, policy_app, preference_app
@@ -85,7 +86,8 @@ def init_command(
             profile_preference=cast(ProfilePreference, profile),
         )
     except WorkspaceError as exc:
-        typer.echo(f"workspace initialization failed: {exc}", err=True)
+        detail = redact_exception_text(exc)
+        typer.echo(f"workspace initialization failed: {detail}", err=True)
         raise typer.Exit(code=2) from exc
 
     typer.echo(f"Workspace initialized: {initialized.root}")
@@ -107,7 +109,8 @@ def state_init_command(
         with initialize_state_repository(path) as repository:
             status = repository.status()
     except (WorkspaceError, StateError) as exc:
-        typer.echo(f"state initialization failed: {exc}", err=True)
+        detail = redact_exception_text(exc)
+        typer.echo(f"state initialization failed: {detail}", err=True)
         raise typer.Exit(code=2) from exc
 
     typer.echo("State database initialized.")
@@ -130,7 +133,8 @@ def state_status_command(
         with open_state_repository(path, read_only=True) as repository:
             status = repository.status()
     except (WorkspaceError, StateError) as exc:
-        typer.echo(f"state inspection failed: {exc}", err=True)
+        detail = redact_exception_text(exc)
+        typer.echo(f"state inspection failed: {detail}", err=True)
         raise typer.Exit(code=2) from exc
 
     typer.echo("State database: ready")
@@ -181,7 +185,7 @@ def audit_list_command(
                 limit=limit,
             )
     except (WorkspaceError, StateError) as exc:
-        typer.echo(f"audit listing failed: {exc}", err=True)
+        typer.echo(f"audit listing failed: {type(exc).__name__}", err=True)
         raise typer.Exit(code=2) from exc
 
     if not events:
@@ -250,7 +254,8 @@ def artifact_create_command(
                 max_bytes=max_bytes,
             )
     except (ArtifactValidationError, WorkspaceFileError) as exc:
-        typer.echo(f"artifact creation rejected: {exc}", err=True)
+        detail = redact_exception_text(exc)
+        typer.echo(f"artifact creation rejected: {detail}", err=True)
         raise typer.Exit(code=2) from exc
     except (WorkspaceError, StateError, ArtifactError) as exc:
         typer.echo(f"artifact creation failed: {type(exc).__name__}", err=True)
