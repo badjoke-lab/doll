@@ -14,7 +14,7 @@
       <h1>doll</h1>
       <p>A personal AI continuity system.</p>
       <p><strong>Local-complete, cloud-optional.</strong></p>
-      <p><strong>Status:</strong> Pre-alpha. No model runtime is connected yet.</p>
+      <p><strong>Status:</strong> Pre-alpha. Continuity through IMP-012 and safety-boundary work through IMP-014 are implemented. IMP-015 is next. No model runtime is connected yet.</p>
     </div>
   </header>
 
@@ -28,36 +28,43 @@
     <section>
       <h2>What is doll?</h2>
       <p>
-        doll is a continuity system for a personal AI environment.
-        It is intended to keep the user's state usable when a model,
-        provider, interface, network connection, distribution source,
-        or primary machine becomes unavailable.
+        doll is a continuity system for a personal AI environment and the work carried through it.
+        It is intended to keep the user's state and ongoing work usable when a cloud service,
+        local AI application, model, runtime, interface, conversation store, network connection,
+        distribution source, primary machine, or upstream project becomes unavailable.
       </p>
       <p>
         It is not a foundation model, a cloud-required assistant,
-        or an unrestricted autonomous agent.
+        an unrestricted autonomous agent, or a project-management SaaS.
       </p>
-      <p>doll separates durable user-owned state from replaceable reasoning engines.</p>
-      <p><strong>Models are replaceable reasoning engines. The user's state is the durable core.</strong></p>
+      <p>doll separates durable user-owned state and work from replaceable reasoning engines and interfaces.</p>
+      <p><strong>Models are replaceable reasoning engines. The user's state and work are the durable core.</strong></p>
     </section>
 
     <section>
       <h2>What the completed doll is intended to do</h2>
       <p>
-        The intended system is a personal AI environment that can continue across
-        model changes, provider changes, machine failures, and periods without cloud access.
+        The intended system is a personal AI environment whose state and ongoing work can continue
+        across model, runtime, application, provider, conversation, machine, and network changes.
       </p>
       <p>It is intended to support:</p>
       <ul>
         <li>conversation, writing, summarization, translation, planning, and code assistance;</li>
         <li>document, PDF, CSV, image, audio, video, and source-assisted research workflows;</li>
         <li>confirmed memory, preferences, policies, permissions, projects, decisions, and artifacts;</li>
-        <li>switching between local models and optional cloud models without making either the source of truth;</li>
-        <li>reduced-capability offline operation when better models or networks are unavailable;</li>
-        <li>backup, migration, restoration, rollback, and recovery on another machine;</li>
+        <li>canonical conversation and event history with source provenance;</li>
+        <li>import from supported AI environments and documented generic formats, with inspectable export and explicit mapping or loss reports;</li>
+        <li>replacement of models, runtimes, applications, interfaces, and providers without unrelated state loss, plus a documented exit path from doll;</li>
+        <li>preservation of project objectives, scope, active work, next work, blockers, procedures, checkpoints, and validation state;</li>
+        <li>deterministic project status and a project-scoped Resume Bundle that can be inspected without a model, cloud service, or preferred interface;</li>
+        <li>reduced-capability offline operation, verified backup, migration, restoration, rollback, and recovery;</li>
         <li>permission-controlled tool use with local audit records and fresh confirmation for high-risk actions;</li>
-        <li>Lite and Heavy execution profiles that share the same state and safety rules.</li>
+        <li>Lite and Heavy execution profiles that share the same state, portability, project-continuity, and safety rules.</li>
       </ul>
+      <p>
+        A model may propose work or summarize project state. It cannot by itself approve a procedure,
+        confirm a checkpoint, clear a blocker, mark work complete, or change the project objective.
+      </p>
       <p>
         <strong>This is the intended end state, not the current implementation.</strong>
         Features may change as the specifications, safety requirements, and real-machine validation evolve.
@@ -72,8 +79,19 @@
         continue to change outside the user's control.
       </p>
       <p>
+        Running AI locally does not solve the problem by itself. A local application's database,
+        one runtime, one model format, one conversation store, one issue tracker,
+        or one preferred interface can also become a lock-in point or disappear.
+      </p>
+      <p>
+        Files and conversation logs are not always enough to resume real work.
+        The objective, accepted scope, next work, blockers, decisions, procedures,
+        and pending validation may exist only inside scattered chats, notes, or generated handoffs.
+      </p>
+      <p>
         doll is not a bet on a future without AI. It is preparation for a future in which
-        AI is useful or necessary, while the conditions required to keep using it are not owned by the user.
+        AI remains useful or necessary while access conditions, working environments,
+        and the continuity of ongoing work remain outside the user's control.
       </p>
       <p>
         <a href="./notes/ai-will-remain/">Read the longer note: AI will remain. Your access conditions may not.</a>
@@ -85,25 +103,28 @@
 
       <h3>Current status</h3>
       <p>
-        Pre-alpha. Local state, portability, verified backup, restore, and post-restore validation
-        have been implemented. The model-independent continuity acceptance gate is in development.
+        Pre-alpha. Model-independent continuity through IMP-012, secret classification through IMP-013,
+        and bounded secret detection and redaction through IMP-014 are implemented.
+        Phase 3 safety-boundary work is in progress. IMP-015 is next.
         No model runtime is connected yet.
       </p>
 
       <h3>Roadmap</h3>
       <ol>
-        <li>Specification and principles — Complete</li>
-        <li>Local state foundation — Complete</li>
-        <li>Continuity, transfer, backup, and restore — In progress</li>
-        <li>Safety boundary — Planned</li>
-        <li>Local AI — Planned</li>
-        <li>Cloud and multiple models — Planned</li>
-        <li>Tools and external services — Planned</li>
-        <li>Daily use — Planned</li>
-        <li>Distribution and long-term operation — Planned</li>
+        <li>Phase 0 — Specification and principles — Complete</li>
+        <li>Phase 1 — Local state foundation — Complete</li>
+        <li>Phase 2 — Continuity, transfer, backup, and restore — Complete</li>
+        <li>Phase 3 — Safety boundary — In progress</li>
+        <li>Phase 4A — AI environment portability foundation — Planned</li>
+        <li>Phase 4B — Project continuity foundation — Planned</li>
+        <li>Phase 5 — Local runtime and model integration — Planned</li>
+        <li>Phase 6 — Local AI portability and daily-use integration — Planned</li>
+        <li>Phase 7 — Optional cloud and multiple models — Planned</li>
+        <li>Phase 8 — Tools and external services — Planned</li>
+        <li>Phase 9 — Distribution, encryption, and long-term operation — Planned</li>
       </ol>
       <p>
-        <a href="https://github.com/badjoke-lab/doll/tree/main/docs/spec">Read the detailed roadmap on GitHub</a>
+        <a href="https://github.com/badjoke-lab/doll/blob/main/docs/spec/09-development-roadmap.md">Read the detailed roadmap on GitHub</a>
       </p>
 
       <h3>Recent development</h3>
