@@ -4,14 +4,12 @@ import subprocess
 import sys
 
 
-def test_imp_013_format_diagnostic() -> None:
+def test_imp_013_mypy_diagnostic() -> None:
     result = subprocess.run(
         [
             sys.executable,
             "-m",
-            "ruff",
-            "format",
-            "--diff",
+            "mypy",
             "src/doll/secret_policy.py",
             "tests/test_secret_policy.py",
         ],
