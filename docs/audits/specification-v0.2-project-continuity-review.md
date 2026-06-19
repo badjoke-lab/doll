@@ -1,6 +1,6 @@
 # Specification set 0.2 project-continuity review
 
-**Audit status:** Content review complete; final-head CI pending  
+**Audit status:** Complete  
 **Target specification set:** 0.2  
 **Date:** 2026-06-19
 
@@ -145,12 +145,18 @@ Content review confirms:
 - current status is complete through IMP-014 with IMP-015 next;
 - no Python runtime code, dependency change, physical schema migration, package-v2 implementation, or model path is added.
 
-## 11. Remaining merge checks
+## 11. Automated verification
 
-- deterministic generated specification is current on the final head;
-- normal CI passes on the final head;
-- specification workflow passes on the final head;
-- the pull request is reviewed and marked ready.
+The final content revision was verified before audit completion by:
+
+- Specification workflow run `27830146036`: passed;
+- CI workflow run `27830146015`: quality passed;
+- CI workflow run `27830146015`: Ubuntu tests and CLI checks passed;
+- CI workflow run `27830146015`: macOS tests and CLI checks passed;
+- CI workflow run `27830146015`: Windows tests and CLI checks passed;
+- generated specification check: passed on the verified head.
+
+The audit-completion commit changes only this review record. Its own pull-request checks must also pass before merge.
 
 ## 12. Freeze rule
 
