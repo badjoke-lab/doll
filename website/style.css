@@ -23,6 +23,10 @@ body {
   overflow-wrap: anywhere;
 }
 
+html[data-analytics-consent="unset"] body {
+  padding-bottom: 210px;
+}
+
 .site-title {
   display: grid;
   grid-template-columns: 184px minmax(0, 1fr);
@@ -122,6 +126,19 @@ button {
   padding: 3px 9px;
 }
 
+button.link-button {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #000;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+button.link-button:hover {
+  text-decoration-thickness: 2px;
+}
+
 code {
   font: inherit;
   overflow-wrap: anywhere;
@@ -187,6 +204,35 @@ code {
   white-space: nowrap;
 }
 
+.analytics-consent {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1000;
+  padding: 12px 16px;
+  border-top: 1px solid #aaa;
+  background: #fff;
+  color: #000;
+}
+
+.analytics-consent-inner {
+  max-width: 804px;
+  margin: 0 auto;
+}
+
+.analytics-consent p {
+  margin: 3px 0;
+}
+
+.analytics-consent-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+
 footer {
   margin-top: 48px;
 }
@@ -224,6 +270,10 @@ footer {
   body {
     padding: 20px 16px 40px;
     font-size: 16px;
+  }
+
+  html[data-analytics-consent="unset"] body {
+    padding-bottom: 240px;
   }
 
   .site-title {
