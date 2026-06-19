@@ -12,7 +12,7 @@ function render(entries) {
 
   container.replaceChildren();
 
-  entries.slice(0, 10).forEach((entry) => {
+  entries.slice(0, 3).forEach((entry) => {
     const wrapper = document.createElement("div");
     wrapper.className = "development-entry";
 
