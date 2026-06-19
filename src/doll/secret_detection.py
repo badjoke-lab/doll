@@ -23,7 +23,7 @@ DEFAULT_MAX_SCAN_CHARS = 65_536
 DEFAULT_MAX_FINDINGS = 64
 MAX_CONFIGURED_SCAN_CHARS = 1_048_576
 MAX_CONFIGURED_FINDINGS = 1_024
-_UNSCANNED_MARKER = "[UNSCANNED_CONTENT_OMITTED]"
+_SCAN_LIMIT_MARKER = "[REDACTION_SCAN_LIMIT_REACHED]"
 _FINDING_LIMIT_MARKER = "[REDACTION_FINDING_LIMIT_REACHED]"
 
 
@@ -259,7 +259,7 @@ def redact_text(
     max_scan_chars: int = DEFAULT_MAX_SCAN_CHARS,
     max_findings: int = DEFAULT_MAX_FINDINGS,
 ) -> RedactionResult:
-    """Redact detected spans and omit any unscanned suffix from the result."""
+    """Redact detected spans and return no original text when limits are reached."""
 
     scan = scan_secrets(
         text,
@@ -275,24 +275,28 @@ def redact_text(
             input_truncated=scan.input_truncated,
             finding_limit_reached=True,
         )
-    scanned_text = text[: scan.scanned_characters]
+    if scan.input_truncated:
+        return RedactionResult(
+            redacted_text=_SCAN_LIMIT_MARKER,
+            findings=scan.findings,
+            input_characters=scan.input_characters,
+            scanned_characters=scan.scanned_characters,
+            input_truncated=True,
+            finding_limit_reached=False,
+        )
     parts: list[str] = []
     cursor = 0
     for finding in scan.findings:
-        parts.append(scanned_text[cursor : finding.start])
+        parts.append(text[cursor : finding.start])
         parts.append(f"[REDACTED:{finding.kind}]")
         cursor = finding.end
-    parts.append(scanned_text[cursor:])
-    if scan.input_truncated:
-        if parts and parts[-1] and not parts[-1].endswith(("\n", " ")):
-            parts.append(" ")
-        parts.append(_UNSCANNED_MARKER)
+    parts.append(text[cursor:])
     return RedactionResult(
         redacted_text="".join(parts),
         findings=scan.findings,
         input_characters=scan.input_characters,
         scanned_characters=scan.scanned_characters,
-        input_truncated=scan.input_truncated,
+        input_truncated=False,
         finding_limit_reached=False,
     )
 
