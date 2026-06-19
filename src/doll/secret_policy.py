@@ -126,9 +126,7 @@ _PROHIBITED_REFERENCE_FIELDS = frozenset(
 _REFERENCE_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
 _ADAPTER_PATTERN = re.compile(r"^[a-z0-9][a-z0-9._-]{0,79}$")
 _SCOPE_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/@*-]{0,199}$")
-_TIMESTAMP_PATTERN = re.compile(
-    r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$"
-)
+_TIMESTAMP_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$")
 _REFERENCE_ONLY_LOCATIONS = frozenset({"ordinary_state", "export", "backup"})
 _SECRET_VALUE_DENIED_LOCATIONS = frozenset(
     {
@@ -248,9 +246,7 @@ def validate_secret_reference_metadata(metadata: dict[str, object]) -> SecretRef
     for raw_key in metadata:
         normalized = _normalize_field_name(raw_key)
         if normalized in _PROHIBITED_REFERENCE_FIELDS:
-            raise SecretReferenceValidationError(
-                f"SecretReference field is prohibited: {raw_key}"
-            )
+            raise SecretReferenceValidationError(f"SecretReference field is prohibited: {raw_key}")
         if raw_key not in _ALLOWED_REFERENCE_FIELDS:
             raise SecretReferenceValidationError(f"unknown SecretReference field: {raw_key}")
     required = {
@@ -359,9 +355,7 @@ def _required_string(metadata: dict[str, object], key: str, *, maximum: int) -> 
     return value
 
 
-def _optional_string(
-    metadata: dict[str, object], key: str, *, maximum: int
-) -> str | None:
+def _optional_string(metadata: dict[str, object], key: str, *, maximum: int) -> str | None:
     value = metadata.get(key)
     if value is None:
         return None
