@@ -1,0 +1,18 @@
+doll
+
+A personal AI continuity system.
+Local-complete, cloud-optional.
+Status: pre-alpha. No model runtime is connected yet.
+
+Purpose:
+Preserve user-owned AI state and ongoing work across changes in models, runtimes, applications, providers, interfaces, networks, and machines.
+
+Canonical sources:
+https://doll.badjoke-lab.com/
+https://github.com/badjoke-lab/doll
+https://github.com/badjoke-lab/doll/tree/main/docs/spec
+https://github.com/badjoke-lab/doll/blob/main/docs/spec/09-development-roadmap.md
+https://doll.badjoke-lab.com/notes/ai-will-remain/
+https://dev.to/badjoke-lab/why-im-building-doll-a-personal-ai-continuity-system-1a1c
+
+This file is informational. Verify current implementation claims against the repository and merged history.

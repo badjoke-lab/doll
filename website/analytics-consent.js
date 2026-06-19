@@ -31,6 +31,7 @@
       panel.remove();
       panel = null;
     }
+    delete document.documentElement.dataset.analyticsPanel;
   }
 
   function select(value) {
@@ -50,6 +51,9 @@
     const inner = document.createElement("div");
     inner.className = "analytics-consent-inner";
 
+    const copy = document.createElement("div");
+    copy.className = "analytics-consent-copy";
+
     const title = document.createElement("p");
     title.id = "analytics-consent-title";
     const strong = document.createElement("strong");
@@ -57,7 +61,7 @@
     title.appendChild(strong);
 
     const explanation = document.createElement("p");
-    explanation.textContent = "Google Analytics is off unless you allow it. Declining prevents the analytics tag from being added to the page.";
+    explanation.textContent = "Google Analytics is off unless you allow it. Declining keeps the analytics tag disabled.";
 
     const actions = document.createElement("p");
     actions.className = "analytics-consent-actions";
@@ -76,12 +80,13 @@
     privacyLink.href = "/privacy/";
     privacyLink.textContent = "Privacy";
 
-    actions.append(allowButton, " ", declineButton, " ", privacyLink);
-    inner.append(title, explanation, actions);
+    actions.append(allowButton, declineButton, privacyLink);
+    copy.append(title, explanation);
+    inner.append(copy, actions);
     consentPanel.appendChild(inner);
-    document.body.appendChild(consentPanel);
+    document.body.prepend(consentPanel);
+    document.documentElement.dataset.analyticsPanel = "open";
     panel = consentPanel;
-    allowButton.focus();
   }
 
   function initialize() {

@@ -1,0 +1,22 @@
+# doll
+
+> doll is a local-complete, cloud-optional personal AI continuity system.
+
+Current status: pre-alpha. No model runtime is connected yet.
+
+Core idea: models are replaceable reasoning engines; the user's state and work are the durable core.
+
+Official resources:
+- Website: https://doll.badjoke-lab.com/
+- Source repository: https://github.com/badjoke-lab/doll
+- Specifications: https://github.com/badjoke-lab/doll/tree/main/docs/spec
+- Roadmap: https://github.com/badjoke-lab/doll/blob/main/docs/spec/09-development-roadmap.md
+- Long-form note: https://doll.badjoke-lab.com/notes/ai-will-remain/
+- External DEV article: https://dev.to/badjoke-lab/why-im-building-doll-a-personal-ai-continuity-system-1a1c
+- Privacy: https://doll.badjoke-lab.com/privacy/
+
+Important limits:
+- doll is not a foundation model.
+- doll is not a finished product.
+- doll is not a cloud-required assistant.
+- Public claims should be checked against the repository, specifications, tests, and merged development history.

@@ -23,8 +23,8 @@ body {
   overflow-wrap: anywhere;
 }
 
-html[data-analytics-consent="unset"] body {
-  padding-bottom: 210px;
+html[data-analytics-panel="open"] body {
+  padding-bottom: 150px;
 }
 
 .site-title {
@@ -211,26 +211,39 @@ code {
   left: 0;
   z-index: 1000;
   padding: 12px 16px;
-  border-top: 1px solid #aaa;
-  background: #fff;
+  border-top: 1px solid #555;
+  background: #eee;
   color: #000;
 }
 
 .analytics-consent-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
   max-width: 804px;
   margin: 0 auto;
 }
 
+.analytics-consent-copy {
+  min-width: 0;
+}
+
 .analytics-consent p {
-  margin: 3px 0;
+  margin: 2px 0;
 }
 
 .analytics-consent-actions {
   display: flex;
+  flex: 0 0 auto;
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
-  margin-top: 8px;
+}
+
+.analytics-consent button,
+.analytics-consent a {
+  white-space: nowrap;
 }
 
 footer {
@@ -272,8 +285,8 @@ footer {
     font-size: 16px;
   }
 
-  html[data-analytics-consent="unset"] body {
-    padding-bottom: 240px;
+  html[data-analytics-panel="open"] body {
+    padding-bottom: 220px;
   }
 
   .site-title {
@@ -302,5 +315,13 @@ footer {
 
   .site-links {
     margin-bottom: 32px;
+  }
+
+  .analytics-consent-inner {
+    display: block;
+  }
+
+  .analytics-consent-actions {
+    margin-top: 10px;
   }
 }
