@@ -229,6 +229,7 @@ export async function onRequest(context) {
  / <button type="button" class="link-button" data-analytics-settings>Analytics settings</button>`;
 
   const externalArticleLink = `<br>External article: <a href="${DEV_ARTICLE_URL}" rel="external">Why I'm Building doll: A Personal AI Continuity System — DEV Community</a>`;
+  const relatedArticleBlock = `<h2>Related external article</h2><p><a href="${DEV_ARTICLE_URL}" rel="external">Why I'm Building doll: A Personal AI Continuity System — DEV Community</a></p>`;
 
   let rewriter = new HTMLRewriter()
     .on("head", {
@@ -271,6 +272,14 @@ export async function onRequest(context) {
     rewriter = rewriter.on('a[href="./notes/ai-will-remain/"]', {
       element(element) {
         element.after(externalArticleLink, { html: true });
+      },
+    });
+  }
+
+  if (isNote(requestUrl.pathname)) {
+    rewriter = rewriter.on("article", {
+      element(element) {
+        element.append(relatedArticleBlock, { html: true });
       },
     });
   }
