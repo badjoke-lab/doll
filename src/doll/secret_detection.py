@@ -24,6 +24,7 @@ DEFAULT_MAX_FINDINGS = 64
 MAX_CONFIGURED_SCAN_CHARS = 1_048_576
 MAX_CONFIGURED_FINDINGS = 1_024
 _UNSCANNED_MARKER = "[UNSCANNED_CONTENT_OMITTED]"
+_FINDING_LIMIT_MARKER = "[REDACTION_FINDING_LIMIT_REACHED]"
 
 
 @dataclass(frozen=True, slots=True)
@@ -265,6 +266,15 @@ def redact_text(
         max_scan_chars=max_scan_chars,
         max_findings=max_findings,
     )
+    if scan.finding_limit_reached:
+        return RedactionResult(
+            redacted_text=_FINDING_LIMIT_MARKER,
+            findings=scan.findings,
+            input_characters=scan.input_characters,
+            scanned_characters=scan.scanned_characters,
+            input_truncated=scan.input_truncated,
+            finding_limit_reached=True,
+        )
     scanned_text = text[: scan.scanned_characters]
     parts: list[str] = []
     cursor = 0
@@ -283,7 +293,7 @@ def redact_text(
         input_characters=scan.input_characters,
         scanned_characters=scan.scanned_characters,
         input_truncated=scan.input_truncated,
-        finding_limit_reached=scan.finding_limit_reached,
+        finding_limit_reached=False,
     )
 
 
