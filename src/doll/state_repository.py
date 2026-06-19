@@ -10,6 +10,7 @@ from types import TracebackType
 from typing import cast
 from uuid import uuid4
 
+from doll.secret_policy import SecretPolicyError, validate_ordinary_state_record
 from doll.state import (
     _ALLOWED_PROVENANCE,
     _ALLOWED_SENSITIVITY,
@@ -116,9 +117,15 @@ class StateRepository:
             provenance=provenance,
             sensitivity=sensitivity,
         )
+        metadata_value = metadata or {}
+        _validate_secret_boundary(
+            record_type=record_type,
+            sensitivity=sensitivity,
+            metadata=metadata_value,
+        )
         record_id = str(uuid4())
         now = _utc_now()
-        metadata_json = _serialize_metadata(metadata or {})
+        metadata_json = _serialize_metadata(metadata_value)
 
         self.connection.execute("BEGIN IMMEDIATE")
         try:
@@ -208,6 +215,11 @@ class StateRepository:
             raise RecordValidationError(f"invalid record status: {next_status}")
         next_title = current.title if title is None else title
         next_metadata = current.metadata if metadata is None else metadata
+        _validate_secret_boundary(
+            record_type=current.record_type,
+            sensitivity=current.sensitivity,
+            metadata=next_metadata,
+        )
         metadata_json = _serialize_metadata(next_metadata)
         now = _utc_now()
 
@@ -264,6 +276,22 @@ def _validate_record_fields(
         raise RecordValidationError(f"invalid record provenance: {provenance}")
     if sensitivity not in _ALLOWED_SENSITIVITY:
         raise RecordValidationError(f"invalid record sensitivity: {sensitivity}")
+
+
+def _validate_secret_boundary(
+    *,
+    record_type: str,
+    sensitivity: str,
+    metadata: dict[str, object],
+) -> None:
+    try:
+        validate_ordinary_state_record(
+            record_type=record_type,
+            sensitivity=sensitivity,
+            metadata=metadata,
+        )
+    except SecretPolicyError as exc:
+        raise RecordValidationError(str(exc)) from exc
 
 
 def _serialize_metadata(metadata: dict[str, object]) -> str:
