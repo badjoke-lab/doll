@@ -42,10 +42,10 @@
   function showPanel() {
     closePanel();
 
-    panel = document.createElement("aside");
-    panel.className = "analytics-consent";
-    panel.setAttribute("role", "dialog");
-    panel.setAttribute("aria-labelledby", "analytics-consent-title");
+    const consentPanel = document.createElement("aside");
+    consentPanel.className = "analytics-consent";
+    consentPanel.setAttribute("role", "dialog");
+    consentPanel.setAttribute("aria-labelledby", "analytics-consent-title");
 
     const inner = document.createElement("div");
     inner.className = "analytics-consent-inner";
@@ -78,9 +78,9 @@
 
     actions.append(allowButton, " ", declineButton, " ", privacyLink);
     inner.append(title, explanation, actions);
-    panel.appendChild(inner);
-    document.body.appendChild(panel);
-    panel = panel;
+    consentPanel.appendChild(inner);
+    document.body.appendChild(consentPanel);
+    panel = consentPanel;
     allowButton.focus();
   }
 
