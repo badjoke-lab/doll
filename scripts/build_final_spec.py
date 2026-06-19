@@ -14,6 +14,7 @@ from pathlib import Path
 
 SPEC_VERSION = "0.2"
 DEFAULT_OUTPUT = Path("DOLL_FINAL_SPEC.md")
+# Keep accepted versioned extensions in explicit normative order.
 SOURCE_FILES = (
     Path("docs/spec/00-index.md"),
     Path("docs/spec/00-decisions-baseline.md"),
