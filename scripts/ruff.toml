@@ -1,0 +1,4 @@
+extend = "../pyproject.toml"
+
+[lint.isort]
+known-first-party = ["doll", "imp_012_*"]
