@@ -24,21 +24,41 @@ body {
 }
 
 .site-title {
-  display: flex;
-  align-items: center;
-  gap: 18px;
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  grid-template-areas:
+    "logo intro"
+    "logo status";
+  column-gap: 24px;
+  row-gap: 8px;
+  align-items: start;
   margin-bottom: 28px;
 }
 
 .site-title img {
-  width: 96px;
-  height: 96px;
-  flex: 0 0 auto;
+  grid-area: logo;
+  width: 160px;
+  height: 160px;
   object-fit: contain;
 }
 
-.site-title h1,
-.site-title p {
+.site-intro {
+  grid-area: intro;
+}
+
+.site-status {
+  grid-area: status;
+}
+
+.site-intro h1 {
+  margin: 0 0 8px;
+  font-size: 24px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.site-intro p,
+.site-status p {
   margin: 3px 0;
 }
 
@@ -207,13 +227,27 @@ footer {
   }
 
   .site-title {
-    gap: 14px;
+    grid-template-columns: 88px minmax(0, 1fr);
+    grid-template-areas:
+      "logo intro"
+      "status status";
+    column-gap: 14px;
+    row-gap: 12px;
     margin-bottom: 22px;
   }
 
   .site-title img {
-    width: 72px;
-    height: 72px;
+    width: 88px;
+    height: 88px;
+  }
+
+  .site-intro h1 {
+    margin-bottom: 6px;
+    font-size: 22px;
+  }
+
+  .site-status {
+    width: 100%;
   }
 
   .site-links {
