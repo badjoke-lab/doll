@@ -2,17 +2,19 @@
 
 > A personal AI continuity system.
 
-**Status:** Pre-alpha — local state, portability, and verified backup are implemented through IMP-010. Restore is next. No model runtime is connected yet.
+**Status:** Pre-alpha — model-independent continuity through IMP-012 and secret classification through IMP-013 are implemented. IMP-014 is next. No model runtime is connected yet.
 
-`doll` is an open-source project intended to keep a person's AI environment usable even when a cloud service, model provider, user interface, distribution source, network connection, or primary machine becomes unavailable.
+`doll` is an open-source project intended to keep a person's AI environment usable even when a cloud service, local AI application, model provider, runtime, user interface, distribution source, network connection, or primary machine becomes unavailable.
 
 The project is not trying to build a foundation model from scratch. It aims to preserve and operate the parts that must remain under the user's control:
 
 - memory and long-term state;
 - preferences, policies, and permissions;
+- conversations and their source provenance;
 - documents, research logs, claims, evidence, and source records;
 - generated artifacts and project history;
 - model and runtime manifests;
+- import, export, mapping, and loss records;
 - backup, migration, rollback, restoration, and recovery paths.
 
 Models are replaceable reasoning engines. The user's state is the durable core.
@@ -21,8 +23,8 @@ Models are replaceable reasoning engines. The user's state is the durable core.
 
 The project is built around two co-equal pillars:
 
-1. **Continuity:** user-owned state must survive model, provider, interface, machine, and project failure.
-2. **Safety boundary:** models, tools, runtimes, and external content must not gain undeclared authority over state, secrets, the operating system, accounts, or external services.
+1. **Continuity:** user-owned state must survive model, provider, application, interface, runtime, machine, and project failure.
+2. **Safety boundary:** models, tools, runtimes, adapters, and external content must not gain undeclared authority over state, secrets, the operating system, accounts, or external services.
 
 The working rules are:
 
@@ -30,37 +32,64 @@ The working rules are:
 - local-first and local-complete;
 - user-owned state;
 - model independence;
+- AI environment portability;
 - cloud is optional;
 - state continuity is more important than model performance;
-- local models are not automatically trusted;
+- local models and local applications are not automatically trusted;
 - memory and secrets are separate;
-- external content is data, not instruction;
+- external and imported content is data, not instruction;
 - authority is granted only through explicit, bounded capabilities;
 - high-risk operations require fresh user confirmation;
+- migration loss must be visible;
 - failures must preserve the last known good state.
 
 ## Core principle
 
 **Local-complete, cloud-optional.**
 
-The local system must remain useful without API keys, account registration, or a permanent internet connection. Cloud models may later be used as optional, explicitly approved performance extensions, but they must never become the source of truth for memory, identity, files, permissions, or recovery.
+The local system must remain useful without API keys, account registration, or a permanent internet connection. Cloud models may later be used as optional, explicitly approved performance extensions, but they must never become the source of truth for memory, identity, files, permissions, portability, or recovery.
 
 ## Why this project exists
 
 Access to high-performance AI is controlled by external organizations. Pricing, usage limits, account actions, regional restrictions, policy changes, model withdrawal, service shutdowns, and political or regulatory decisions can all change that access.
 
-`doll` is intended to reduce the risk that losing one external service also means losing the user's AI-assisted working environment.
+Local AI does not eliminate continuity risk by itself. A local application's database, one runtime, one model format, or one preferred UI can also become a lock-in point or disappear.
+
+`doll` is intended to reduce the risk that losing one external or local component also means losing the user's AI-assisted working environment.
 
 Many projects make local models easier to run. `doll` focuses on continuity across failures and replacements:
 
-- cloud unavailable → continue locally;
-- primary model unavailable → switch to a stored fallback;
-- heavy hardware unavailable → degrade to a lighter profile;
-- preferred UI unavailable → continue through the local API or CLI;
-- model distributor unavailable → use locally preserved and verified assets;
-- project development stops → retain an offline recovery path and open data formats.
+- cloud unavailable -> continue locally;
+- local AI application unavailable -> retain canonical Doll State;
+- primary model unavailable -> switch to an approved fallback;
+- runtime unavailable -> replace it without discarding user state;
+- heavy hardware unavailable -> degrade to a lighter profile;
+- preferred UI unavailable -> continue through the local API or CLI;
+- model distributor unavailable -> use locally preserved and verified assets;
+- project development stops -> retain an offline recovery path and documented export formats.
 
-Performance may decrease. The state and recovery path must remain.
+Performance may decrease. The state, provenance, and recovery path must remain.
+
+## AI environment portability
+
+Doll treats portability as a continuity requirement, not a later convenience feature.
+
+Supported data paths are designed around:
+
+```text
+AI environment
+  -> source adapter
+  -> canonical doll representation
+  -> validation and safety boundaries
+  -> Doll State
+  -> documented generic export or target adapter
+```
+
+The design must not use ChatGPT, OpenAI-compatible APIs, Ollama, Open WebUI, or any other provider, runtime, or interface format as the canonical user-state model.
+
+Import and export claims must distinguish full, partial, transformed, unsupported, and lossy mappings. Imported prompts, permissions, approvals, memories, and assertions do not become authoritative automatically.
+
+See `docs/decisions/ADR-006-ai-environment-portability.md`.
 
 ## Safety boundary before model execution
 
@@ -69,7 +98,7 @@ Performance may decrease. The state and recovery path must remain.
 That boundary includes:
 
 - secret classification, detection, and redaction;
-- secret-safe logs, audit events, exports, backups, fixtures, and diagnostics;
+- secret-safe logs, audit events, exports, backups, fixtures, diagnostics, and portability reports;
 - external operating-system or compatible secret storage;
 - a credential broker that performs bounded operations without exposing stored secret values to models;
 - explicit separation of confirmed facts, claims, evidence, and inferences;
@@ -88,13 +117,17 @@ The long-term project direction includes:
 
 - local conversation, writing, summarization, translation, and planning;
 - local memory and project state;
+- canonical conversation and event history;
+- generic inspectable import and export;
+- migration from supported local AI environments;
+- migration of selected cloud AI history through provider-specific adapters;
 - web research with locally stored sources and citations;
 - PDF, document, OCR, CSV, image, audio, video, and code assistance;
-- model-independent backup, export, import, restoration, and validation;
-- local model switching and graceful degradation;
+- model-independent backup, restoration, and validation;
+- local model and runtime switching with graceful degradation;
 - verified model storage through a Model Vault;
 - permission-controlled tool use with local audit records;
-- optional cloud acceleration after the local system is complete;
+- optional cloud acceleration after the local and portability paths are complete;
 - later mobile companion and mobile-edge modes.
 
 These are goals, not claims of current implementation.
@@ -107,15 +140,14 @@ The accepted phase order is:
 2. local state foundation;
 3. continuity, transfer, backup, and restore;
 4. safety boundary;
-5. local AI;
-6. cloud and multiple models;
-7. tools and external services;
-8. daily use;
-9. distribution, encryption, and long-term operation.
+5. AI environment portability foundation;
+6. local runtime and model integration;
+7. local AI portability and daily-use integration;
+8. optional cloud and multiple models;
+9. tools and external services;
+10. distribution, encryption, and long-term operation.
 
-IMP-001 through IMP-010 are complete. IMP-011 adds verified restore and post-restore validation. IMP-012 is the model-independent Continuity Acceptance Test. IMP-013 through IMP-023 implement and validate the safety boundary. Local model execution begins at IMP-024 or later.
-
-Phase 2 is not complete until restore publishes atomically, a fresh process validates the restored workspace, and the model-independent continuity gate passes.
+IMP-001 through IMP-013 are complete. IMP-014 is next. IMP-014 through IMP-023 complete and validate the safety boundary. Phase 4 then establishes canonical conversation, adapter, generic import/export, provenance, idempotency, quarantine, and loss-report contracts. Existing local model work remains IMP-024 through IMP-029 after those gates.
 
 ## What doll is not
 
@@ -126,10 +158,12 @@ Phase 2 is not complete until restore publishes atomically, a fresh process vali
 - a cloud-required assistant;
 - an unrestricted autonomous computer-control agent;
 - a credential database inside ordinary Doll State;
-- a system that treats retrieved content as trusted instructions;
+- a system that treats retrieved or imported content as trusted instructions;
 - a guarantee of permanent frontier-model performance;
 - a promise that different models will behave identically;
-- a system that silently uploads memory, documents, files, or secrets.
+- a claim of universal lossless migration;
+- a system that silently uploads memory, documents, files, or secrets;
+- a new lock-in layer that cannot export user-owned state in documented formats.
 
 ## Profiles
 
@@ -138,7 +172,7 @@ The project will use one repository and one core system with different execution
 - **Lite:** designed for lower-powered machines and reduced-capability fallback operation;
 - **Heavy:** designed for larger local models, richer media processing, deeper retrieval, verification, and model-improvement workflows.
 
-They are not separate products and must share the same state, security, backup, recovery, secret, trust, capability, and confirmation semantics.
+They are not separate products and must share the same state, portability, security, backup, recovery, secret, trust, capability, and confirmation semantics.
 
 ## Platform direction
 
@@ -157,7 +191,7 @@ The repository is developed in small pull requests.
 - local hardware testing is distinguished from CI;
 - `main` must remain recoverable;
 - unrelated changes are not mixed into a pull request;
-- private data, model weights, checkpoints, credentials, and personal workspaces must never be committed;
+- private conversations, source exports, model weights, checkpoints, credentials, and personal workspaces must never be committed;
 - public output must not expose absolute local paths, usernames, hostnames, or home-directory details.
 
 ## Specification
