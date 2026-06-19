@@ -4,12 +4,13 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import TypeAlias
 
 from doll.secret_detection import DEFAULT_MAX_SCAN_CHARS, redact_text
 
-DiagnosticScalar: TypeAlias = str | int | float | bool | None
-DiagnosticValue: TypeAlias = DiagnosticScalar | list["DiagnosticValue"] | dict[str, "DiagnosticValue"]
+type DiagnosticScalar = str | int | float | bool | None
+type DiagnosticValue = (
+    DiagnosticScalar | list[DiagnosticValue] | dict[str, DiagnosticValue]
+)
 
 DEFAULT_MAX_DIAGNOSTIC_DEPTH = 6
 DEFAULT_MAX_DIAGNOSTIC_ITEMS = 256
