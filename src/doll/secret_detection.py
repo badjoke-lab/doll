@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Literal, Pattern
+from typing import Literal
 
 SecretFindingKind = Literal[
     "authorization_header",
@@ -77,7 +77,7 @@ class _Detector:
     detector_id: str
     kind: SecretFindingKind
     confidence: SecretFindingConfidence
-    pattern: Pattern[str]
+    pattern: re.Pattern[str]
     value_group: str | None = None
 
 
@@ -292,7 +292,12 @@ def redact_text(
 def _normalize_findings(findings: list[SecretFinding]) -> list[SecretFinding]:
     ordered = sorted(
         findings,
-        key=lambda item: (item.start, -item.end, _confidence_rank(item.confidence), item.detector_id),
+        key=lambda item: (
+            item.start,
+            -item.end,
+            _confidence_rank(item.confidence),
+            item.detector_id,
+        ),
     )
     normalized: list[SecretFinding] = []
     for finding in ordered:
