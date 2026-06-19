@@ -166,9 +166,7 @@ _DETECTORS = (
         detector_id="jwt-v1",
         kind="known_token",
         confidence="medium",
-        pattern=re.compile(
-            r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b"
-        ),
+        pattern=re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b"),
     ),
     _Detector(
         detector_id="email-address-v1",
@@ -336,13 +334,9 @@ def _confidence_rank(confidence: SecretFindingConfidence) -> int:
 
 def _validate_limits(*, max_scan_chars: int, max_findings: int) -> None:
     if not 1 <= max_scan_chars <= MAX_CONFIGURED_SCAN_CHARS:
-        raise ValueError(
-            f"max_scan_chars must be between 1 and {MAX_CONFIGURED_SCAN_CHARS}"
-        )
+        raise ValueError(f"max_scan_chars must be between 1 and {MAX_CONFIGURED_SCAN_CHARS}")
     if not 1 <= max_findings <= MAX_CONFIGURED_FINDINGS:
-        raise ValueError(
-            f"max_findings must be between 1 and {MAX_CONFIGURED_FINDINGS}"
-        )
+        raise ValueError(f"max_findings must be between 1 and {MAX_CONFIGURED_FINDINGS}")
 
 
 __all__ = [
