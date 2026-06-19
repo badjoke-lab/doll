@@ -104,7 +104,9 @@ The accepted metadata contract is deliberately closed. Arbitrary nested metadata
 1. a `secret_reference` record must use `sensitive` or `secret` sensitivity and pass the exact SecretReference metadata validator;
 2. any other record marked `secret` is rejected because the label cannot be used as permission to persist a secret value.
 
-This policy function is the contract that state write paths, import, export, backup, diagnostics, and later credential components must use. IMP-013 defines the boundary; later Phase 3 items integrate detection, sanitization, adapters, and broker execution.
+`StateRepository.create_record` and `StateRepository.update_record` call this policy before serialization or transaction start. A rejected write therefore cannot create or mutate a record, increment a record revision, increment state revision, or update workspace metadata.
+
+Import, export, backup, diagnostic, detection, sanitization, external-store, and broker-specific enforcement continues in later Phase 3 items. Those paths must preserve this policy and may not weaken the ordinary-state boundary.
 
 ## Non-goals
 
@@ -123,6 +125,8 @@ IMP-013 does not:
 The tests prove:
 
 - `secret` sensitivity never permits secret values in ordinary state;
+- generic create and update operations enforce the policy before committing state;
+- rejected secret-bearing creates and updates leave database and workspace revisions unchanged;
 - the handling matrix denies secret values in every durable, diagnostic, output, and model-context location;
 - external-store and bounded-operation handling remain explicit;
 - uncertain classifications fail closed;
