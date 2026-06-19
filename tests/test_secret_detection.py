@@ -18,8 +18,7 @@ from doll.secret_detection import redact_text, scan_secrets
             "recovery_phrase",
         ),
         (
-            "-----BEGIN PRIVATE KEY-----\nsynthetic-material\n"
-            "-----END PRIVATE KEY-----",
+            "-----BEGIN PRIVATE KEY-----\nsynthetic-material\n-----END PRIVATE KEY-----",
             "private_key",
         ),
         ("token sk-syntheticTokenValue1234567890", "known_token"),
