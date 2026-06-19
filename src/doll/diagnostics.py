@@ -38,12 +38,18 @@ class _DiagnosticState:
     items_seen: int = 0
 
 
+def redact_exception_text(exc: BaseException) -> str:
+    """Return only a redacted exception message, preserving no matched value."""
+
+    result = redact_text(str(exc))
+    return result.redacted_text.strip() or type(exc).__name__
+
+
 def safe_exception_message(prefix: str, exc: BaseException) -> str:
     """Render an exception for CLI output without returning detected secret values."""
 
-    result = redact_text(str(exc))
-    message = result.redacted_text.strip()
-    if not message:
+    message = redact_exception_text(exc)
+    if message == type(exc).__name__ and not str(exc):
         return f"{prefix}: {type(exc).__name__}"
     return f"{prefix}: {type(exc).__name__}: {message}"
 
@@ -163,5 +169,6 @@ __all__ = [
     "DiagnosticRedactionResult",
     "DiagnosticValue",
     "redact_diagnostic",
+    "redact_exception_text",
     "safe_exception_message",
 ]
