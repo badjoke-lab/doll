@@ -1,0 +1,256 @@
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: #fff;
+  color: #000;
+}
+
+body {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 40px 28px 64px;
+  background: #fff;
+  color: #000;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 17px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.site-title {
+  display: grid;
+  grid-template-columns: 184px minmax(0, 1fr);
+  grid-template-areas:
+    "logo intro"
+    "logo status";
+  column-gap: 24px;
+  row-gap: 8px;
+  align-items: start;
+  margin-bottom: 28px;
+}
+
+.site-title img {
+  grid-area: logo;
+  width: 184px;
+  height: 184px;
+  object-fit: contain;
+}
+
+.site-intro {
+  grid-area: intro;
+}
+
+.site-status {
+  grid-area: status;
+}
+
+.site-intro h1 {
+  margin: 0 0 8px;
+  font-size: 24px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.site-intro p,
+.site-status p {
+  margin: 3px 0;
+}
+
+.site-links {
+  margin: 0 0 40px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font: inherit;
+  font-weight: 700;
+}
+
+h2 {
+  margin: 0 0 18px;
+}
+
+h3 {
+  margin: 28px 0 10px;
+}
+
+p,
+ul,
+ol {
+  margin: 12px 0;
+}
+
+ul,
+ol {
+  padding-left: 2em;
+}
+
+main > section + section {
+  margin-top: 40px;
+  padding-top: 28px;
+  border-top: 1px solid #aaa;
+}
+
+a,
+a:visited {
+  color: #000;
+  text-decoration: underline;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 1px solid #000;
+  outline-offset: 2px;
+}
+
+button {
+  font: inherit;
+  padding: 3px 9px;
+}
+
+code {
+  font: inherit;
+  overflow-wrap: anywhere;
+}
+
+.development-entry {
+  margin: 20px 0;
+}
+
+.development-entry p {
+  margin: 3px 0;
+}
+
+.support-note,
+.support-legal {
+  max-width: 680px;
+}
+
+.support-legal {
+  font-size: 0.82em;
+  line-height: 1.45;
+}
+
+.support-ledger {
+  margin-top: 22px;
+}
+
+.support-row {
+  display: grid;
+  grid-template-columns: 64px 220px minmax(0, 1fr) auto;
+  gap: 6px 16px;
+  align-items: center;
+  min-width: 0;
+  padding: 8px 0;
+}
+
+.support-asset,
+.support-network,
+.support-address {
+  min-width: 0;
+}
+
+.support-network {
+  font-size: 0.84em;
+  line-height: 1.4;
+}
+
+.support-network small {
+  display: block;
+  font: inherit;
+  font-size: 0.9em;
+}
+
+.support-address code {
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 0.8em;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+
+.support-row button {
+  white-space: nowrap;
+}
+
+footer {
+  margin-top: 48px;
+}
+
+@media (max-width: 760px) {
+  .support-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "asset network network"
+      "address address copy";
+    column-gap: 8px;
+    row-gap: 3px;
+    padding: 10px 0;
+  }
+
+  .support-asset {
+    grid-area: asset;
+  }
+
+  .support-network {
+    grid-area: network;
+  }
+
+  .support-address {
+    grid-area: address;
+  }
+
+  .support-row button {
+    grid-area: copy;
+    align-self: start;
+  }
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 20px 16px 40px;
+    font-size: 16px;
+  }
+
+  .site-title {
+    grid-template-columns: 88px minmax(0, 1fr);
+    grid-template-areas:
+      "logo intro"
+      "status status";
+    column-gap: 14px;
+    row-gap: 12px;
+    margin-bottom: 22px;
+  }
+
+  .site-title img {
+    width: 88px;
+    height: 88px;
+  }
+
+  .site-intro h1 {
+    margin-bottom: 6px;
+    font-size: 22px;
+  }
+
+  .site-status {
+    width: 100%;
+  }
+
+  .site-links {
+    margin-bottom: 32px;
+  }
+}

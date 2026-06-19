@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>doll</title>
+  <meta name="description" content="doll is a personal AI continuity system.">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="site-title">
+    <img src="./assets/doll-logo.png" alt="" width="160" height="160">
+
+    <div class="site-intro">
+      <h1>doll</h1>
+      <p>A personal AI continuity system.</p>
+      <p><strong>Local-complete, cloud-optional.</strong></p>
+    </div>
+
+    <div class="site-status">
+      <p><strong>Status:</strong> Pre-alpha.</p>
+      <p><strong>Current:</strong> Phase 3 safety boundary. IMP-015 is next.</p>
+      <p>No model runtime is connected yet.</p>
+    </div>
+  </header>
+
+  <p class="site-links">
+    <a href="https://github.com/badjoke-lab/doll">GitHub</a>
+    /
+    <a href="https://github.com/badjoke-lab/doll/tree/main/docs/spec">Specification</a>
+  </p>
+
+  <main>
+    <section>
+      <h2>What is doll?</h2>
+      <p>
+        doll is a continuity system for a personal AI environment and the work carried through it.
+        It is intended to keep the user's state and ongoing work usable when a cloud service,
+        local AI application, model, runtime, interface, conversation store, network connection,
+        distribution source, primary machine, or upstream project becomes unavailable.
+      </p>
+      <p>
+        It is not a foundation model, a cloud-required assistant,
+        an unrestricted autonomous agent, or a project-management SaaS.
+      </p>
+      <p>doll separates durable user-owned state and work from replaceable reasoning engines and interfaces.</p>
+      <p><strong>Models are replaceable reasoning engines. The user's state and work are the durable core.</strong></p>
+    </section>
+
+    <section>
+      <h2>What the completed doll is intended to do</h2>
+      <p>
+        The intended system is a personal AI environment whose state and ongoing work can continue
+        across model, runtime, application, provider, conversation, machine, and network changes.
+      </p>
+      <p>It is intended to support:</p>
+      <ul>
+        <li>conversation, writing, summarization, translation, planning, and code assistance;</li>
+        <li>document, PDF, CSV, image, audio, video, and source-assisted research workflows;</li>
+        <li>confirmed memory, preferences, policies, permissions, projects, decisions, and artifacts;</li>
+        <li>canonical conversation and event history with source provenance;</li>
+        <li>import from supported AI environments and documented generic formats, with inspectable export and explicit mapping or loss reports;</li>
+        <li>replacement of models, runtimes, applications, interfaces, and providers without unrelated state loss, plus a documented exit path from doll;</li>
+        <li>preservation of project objectives, scope, active work, next work, blockers, procedures, checkpoints, and validation state;</li>
+        <li>deterministic project status and a project-scoped Resume Bundle that can be inspected without a model, cloud service, or preferred interface;</li>
+        <li>reduced-capability offline operation, verified backup, migration, restoration, rollback, and recovery;</li>
+        <li>permission-controlled tool use with local audit records and fresh confirmation for high-risk actions;</li>
+        <li>Lite and Heavy execution profiles that share the same state, portability, project-continuity, and safety rules.</li>
+      </ul>
+      <p>
+        A model may propose work or summarize project state. It cannot by itself approve a procedure,
+        confirm a checkpoint, clear a blocker, mark work complete, or change the project objective.
+      </p>
+      <p>
+        <strong>This is the intended end state, not the current implementation.</strong>
+        Features may change as the specifications, safety requirements, and real-machine validation evolve.
+      </p>
+    </section>
+
+    <section>
+      <h2>Why build doll?</h2>
+      <p>
+        AI is unlikely to disappear. The more likely problem is that models, prices,
+        limits, accounts, policies, regional access, interfaces, and retained context
+        continue to change outside the user's control.
+      </p>
+      <p>
+        Running AI locally does not solve the problem by itself. A local application's database,
+        one runtime, one model format, one conversation store, one issue tracker,
+        or one preferred interface can also become a lock-in point or disappear.
+      </p>
+      <p>
+        Files and conversation logs are not always enough to resume real work.
+        The objective, accepted scope, next work, blockers, decisions, procedures,
+        and pending validation may exist only inside scattered chats, notes, or generated handoffs.
+      </p>
+      <p>
+        doll is not a bet on a future without AI. It is preparation for a future in which
+        AI remains useful or necessary while access conditions, working environments,
+        and the continuity of ongoing work remain outside the user's control.
+      </p>
+      <p>
+        <a href="./notes/ai-will-remain/">Read the longer note: AI will remain. Your access conditions may not.</a>
+      </p>
+    </section>
+
+    <section>
+      <h2>Development</h2>
+
+      <h3>Current status</h3>
+      <p>
+        Pre-alpha. Model-independent continuity through IMP-012, secret classification through IMP-013,
+        and bounded secret detection and redaction through IMP-014 are implemented.
+        Phase 3 safety-boundary work is in progress. IMP-015 is next.
+        No model runtime is connected yet.
+      </p>
+
+      <h3>Roadmap</h3>
+      <ol>
+        <li>Phase 0 — Specification and principles — Complete</li>
+        <li>Phase 1 — Local state foundation — Complete</li>
+        <li>Phase 2 — Continuity, transfer, backup, and restore — Complete</li>
+        <li>Phase 3 — Safety boundary — In progress</li>
+        <li>Phase 4A — AI environment portability foundation — Planned</li>
+        <li>Phase 4B — Project continuity foundation — Planned</li>
+        <li>Phase 5 — Local runtime and model integration — Planned</li>
+        <li>Phase 6 — Local AI portability and daily-use integration — Planned</li>
+        <li>Phase 7 — Optional cloud and multiple models — Planned</li>
+        <li>Phase 8 — Tools and external services — Planned</li>
+        <li>Phase 9 — Distribution, encryption, and long-term operation — Planned</li>
+      </ol>
+      <p>
+        <a href="https://github.com/badjoke-lab/doll/blob/main/docs/spec/09-development-roadmap.md">Read the detailed roadmap on GitHub</a>
+      </p>
+
+      <h3>Recent development</h3>
+      <div id="development-log">
+        <p>Recent merged pull requests are available on GitHub.</p>
+      </div>
+      <p>
+        <a href="https://github.com/badjoke-lab/doll/pulls?q=is%3Apr+is%3Amerged">View all merged pull requests</a>
+      </p>
+    </section>
+
+    <section>
+      <h2>Support doll</h2>
+      <p class="support-note">
+        Support is voluntary. Send only the listed asset on the listed network.
+        Crypto transfers are final and non-refundable.
+      </p>
+      <p class="support-legal">
+        Support does not purchase a product, priority, or special access,
+        and is not a tax-deductible charitable donation.
+      </p>
+
+      <div class="support-ledger">
+        <div class="support-row">
+          <div class="support-asset"><strong>BTC</strong></div>
+          <div class="support-network">Bitcoin</div>
+          <div class="support-address"><code>bc1q8pk7wra4fzt49cnz59d859xkn8ucc95fwkr7z0</code></div>
+          <button type="button" aria-label="Copy BTC address" data-copy="bc1q8pk7wra4fzt49cnz59d859xkn8ucc95fwkr7z0">Copy</button>
+        </div>
+
+        <div class="support-row">
+          <div class="support-asset"><strong>EVM</strong></div>
+          <div class="support-network">
+            ETH / USDT / USDC / BNB / AVAX
+            <small>Ethereum Mainnet; BNB Smart Chain; Avalanche C-Chain. USDT and USDC are ERC-20.</small>
+          </div>
+          <div class="support-address"><code>0x8e13ce8b1a272d60d5e950ef2a5fe59a4f889764</code></div>
+          <button type="button" aria-label="Copy EVM address" data-copy="0x8e13ce8b1a272d60d5e950ef2a5fe59a4f889764">Copy</button>
+        </div>
+
+        <div class="support-row">
+          <div class="support-asset"><strong>SOL</strong></div>
+          <div class="support-network">Solana</div>
+          <div class="support-address"><code>5Ln8MBCjGov8USnpNfF71tGP3vMZYQsfEz5HH47UGybT</code></div>
+          <button type="button" aria-label="Copy SOL address" data-copy="5Ln8MBCjGov8USnpNfF71tGP3vMZYQsfEz5HH47UGybT">Copy</button>
+        </div>
+
+        <div class="support-row">
+          <div class="support-asset"><strong>XRP</strong></div>
+          <div class="support-network">
+            XRP Ledger
+            <small>Destination tag: Not required</small>
+          </div>
+          <div class="support-address"><code>rLovVdAUfSddXJYJ8JhmLnZNu7hwYFxKaX</code></div>
+          <button type="button" aria-label="Copy XRP address" data-copy="rLovVdAUfSddXJYJ8JhmLnZNu7hwYFxKaX">Copy</button>
+        </div>
+
+        <div class="support-row">
+          <div class="support-asset"><strong>DOGE</strong></div>
+          <div class="support-network">Dogecoin</div>
+          <div class="support-address"><code>DH7jdTwQ9vQWXzgBNmUF86NoCM6GtnsHyS</code></div>
+          <button type="button" aria-label="Copy DOGE address" data-copy="DH7jdTwQ9vQWXzgBNmUF86NoCM6GtnsHyS">Copy</button>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>About the builder</h2>
+      <p>
+        I am not a professional software developer.
+        I did not begin this project with the technical skills normally expected
+        to design and implement a system of this kind.
+      </p>
+      <p>
+        GPT is used for architecture, specification, task decomposition, research, and review.
+        Codex is used for implementation, tests, and pull-request preparation.
+      </p>
+      <p>
+        I decide what doll should be, set priorities, perform real-machine validation,
+        review the results, and decide what is merged.
+      </p>
+      <p>
+        This project should not be trusted because of my credentials.
+        It should be judged by its public specifications, tests, development history,
+        failure behavior, and recovery procedures.
+      </p>
+
+      <h3>Previous public work</h3>
+      <p>If you want to judge my actual level, look at the things I have already published.</p>
+      <ul>
+        <li><a href="https://hei.badjoke-lab.com/">Historical Exchange Index</a> — a historical registry of cryptocurrency exchanges.</li>
+        <li><a href="https://sog.badjoke-lab.com/">Stable or Gone</a> — a lifecycle registry for stablecoins and issuers.</li>
+        <li><a href="https://vl.badjoke-lab.com/">ViewLoom</a> — live-stream data collection and visualization.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Contact</h2>
+      <p>
+        General contact:
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLScIUbHnA9jdQGxLiT7qIEcQsaGGc7Ckl9z8WXQaX2TLPOo7BQ/viewform?usp=publish-editor" rel="noopener noreferrer">Contact form</a>
+      </p>
+      <p>
+        Technical issues and bug reports:
+        <a href="https://github.com/badjoke-lab/doll/issues">GitHub Issues</a>
+      </p>
+      <p>
+        Security reports:
+        <a href="https://github.com/badjoke-lab/doll/blob/main/SECURITY.md">SECURITY.md</a>
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <p>
+      <a href="https://github.com/badjoke-lab/doll">GitHub</a>
+      /
+      <a href="./notes/ai-will-remain/">Note</a>
+      /
+      Apache License 2.0
+    </p>
+  </footer>
+
+  <script src="./site.js"></script>
+  <script src="./devlog.js"></script>
+</body>
+</html>
