@@ -54,6 +54,14 @@ When the input exceeds the scan limit, redaction returns the inspected prefix pl
 
 The original unscanned suffix is not returned because it may contain an undetected secret.
 
+When the finding limit is reached, the redaction API returns only:
+
+```text
+[REDACTION_FINDING_LIMIT_REACHED]
+```
+
+It does not return any portion of the original text, because unreported findings could otherwise remain visible.
+
 Structured diagnostics additionally limit recursion depth and aggregate item count. Binary values are omitted without decoding, and unknown objects are represented only by type name rather than `repr()` or `str()` output.
 
 ## Initial detector set
@@ -121,6 +129,7 @@ Permanent tests prove:
 - overlapping matches normalize deterministically;
 - scan and finding limits are enforced;
 - unscanned suffixes are omitted from redacted output;
+- finding-limit exhaustion returns no original text;
 - nested diagnostic keys and values are redacted;
 - recursion, item, binary, and unknown-object limits are explicit;
 - user-visible CLI exception text crosses the redaction boundary;
