@@ -33,28 +33,43 @@ jobs:
       - name: Install project
         run: uv sync --dev --locked
 
-      - name: Lint
+      - name: Capture quality checks
         shell: bash
         run: |
-          set -o pipefail
-          uv run ruff check . 2>&1 | tee lint-output.txt
+          set +e
+          uv run ruff check . > lint-output.txt 2>&1
+          echo $? > lint-status.txt
+          uv run ruff format --check . > format-output.txt 2>&1
+          echo $? > format-status.txt
+          uv run mypy src tests > mypy-output.txt 2>&1
+          echo $? > mypy-status.txt
+          uv run python scripts/build_final_spec.py --check > spec-output.txt 2>&1
+          echo $? > spec-status.txt
+          exit 0
 
-      - name: Upload lint output
+      - name: Upload quality output
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lint-output
-          path: lint-output.txt
+          name: quality-output
+          path: |
+            lint-output.txt
+            lint-status.txt
+            format-output.txt
+            format-status.txt
+            mypy-output.txt
+            mypy-status.txt
+            spec-output.txt
+            spec-status.txt
           if-no-files-found: error
 
-      - name: Check formatting
-        run: uv run ruff format --check .
-
-      - name: Type check
-        run: uv run mypy src tests
-
-      - name: Check generated specification
-        run: uv run python scripts/build_final_spec.py --check
+      - name: Enforce quality checks
+        shell: bash
+        run: |
+          test "$(cat lint-status.txt)" = "0"
+          test "$(cat format-status.txt)" = "0"
+          test "$(cat mypy-status.txt)" = "0"
+          test "$(cat spec-status.txt)" = "0"
 
   test:
     name: Test (${{ matrix.os }})
