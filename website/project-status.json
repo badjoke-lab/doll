@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "maturity": "Pre-alpha",
+  "phase": {
+    "id": "3",
+    "name": "Safety boundary",
+    "state": "in progress"
+  },
+  "model_runtime": {
+    "connected": false,
+    "message": "No model runtime is connected yet."
+  },
+  "last_reviewed": "2026-06-20"
+}
