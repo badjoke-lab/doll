@@ -96,7 +96,7 @@ def test_secret_material_is_bounded_redacted_and_closed() -> None:
     with pytest.raises(SecretStoreContractError, match="size"):
         SecretMaterial(b"x" * (MAX_SECRET_MATERIAL_BYTES + 1))
     with pytest.raises(SecretStoreContractError, match="bytes-like"):
-        SecretMaterial(object())
+        SecretMaterial(object())  # type: ignore[arg-type]
     released_view = memoryview(b"synthetic")
     released_view.release()
     with pytest.raises(SecretStoreContractError, match="bytes-like"):
@@ -214,7 +214,7 @@ def test_status_validation_is_closed_and_deterministic() -> None:
     for change in invalid_statuses:
         payload = base | change
         with pytest.raises(SecretStoreContractError):
-            SecretStoreStatus(**payload)
+            SecretStoreStatus(**payload)  # type: ignore[arg-type]
 
 
 def test_registry_is_immutable_validated_and_duplicate_safe() -> None:
