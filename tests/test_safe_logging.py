@@ -6,7 +6,6 @@ from io import StringIO
 
 import pytest
 
-import doll.safe_logging as safe_logging
 from doll.safe_logging import (
     MAX_LOG_LINE_BYTES,
     SecretSafeLogHandler,
@@ -147,7 +146,7 @@ def test_renderer_returns_static_omission_event_when_encoding_fails(
     def fail_encoding(*args: object, **kwargs: object) -> str:
         raise RuntimeError("synthetic encoder failure")
 
-    monkeypatch.setattr(safe_logging.json, "dumps", fail_encoding)
+    monkeypatch.setattr(json, "dumps", fail_encoding)
     rendered = render_log_record(record)
 
     assert rendered == (
