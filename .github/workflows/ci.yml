@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   quality:
@@ -16,8 +16,6 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -35,78 +33,17 @@ jobs:
       - name: Install project
         run: uv sync --dev --locked
 
-      - name: Apply remaining IMP-017 quality fixes
-        shell: bash
-        run: |
-          sed -i 's/result=cast(AuditResult, event.result),/result=event.result,/' src/doll/credential_broker.py
-          sed -i 's/handler_result = cast(CredentialHandlerResult, result)/handler_result = result/' src/doll/credential_broker.py
-          if ! grep -q 'CredentialAuditPhase' tests/test_credential_broker_contract.py; then
-            sed -i '/    CredentialAuditEvent,/a\    CredentialAuditPhase,' tests/test_credential_broker_contract.py
-          fi
-          sed -i 's/phase=cast(object, "invented")/phase=cast(CredentialAuditPhase, "invented")/' tests/test_credential_broker_contract.py
-          uv run ruff check --fix --unsafe-fixes \
-            src/doll/credential_broker.py \
-            src/doll/credential_broker_contract.py \
-            tests/test_credential_broker.py \
-            tests/test_credential_broker_contract.py
-          uv run ruff format \
-            src/doll/credential_broker.py \
-            src/doll/credential_broker_contract.py \
-            tests/test_credential_broker.py \
-            tests/test_credential_broker_contract.py
+      - name: Lint
+        run: uv run ruff check .
 
-      - name: Commit remaining IMP-017 quality fixes
-        shell: bash
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            src/doll/credential_broker.py \
-            src/doll/credential_broker_contract.py \
-            tests/test_credential_broker.py \
-            tests/test_credential_broker_contract.py
-          if ! git diff --cached --quiet; then
-            git commit -m "IMP-017: Resolve static quality findings"
-            git push origin HEAD:${{ github.head_ref || github.ref_name }}
-          fi
+      - name: Check formatting
+        run: uv run ruff format --check .
 
-      - name: Capture quality checks
-        shell: bash
-        run: |
-          set +e
-          uv run ruff check . > lint-output.txt 2>&1
-          echo $? > lint-status.txt
-          uv run ruff format --check . > format-output.txt 2>&1
-          echo $? > format-status.txt
-          uv run mypy src tests > mypy-output.txt 2>&1
-          echo $? > mypy-status.txt
-          uv run python scripts/build_final_spec.py --check > spec-output.txt 2>&1
-          echo $? > spec-status.txt
-          exit 0
+      - name: Type check
+        run: uv run mypy src tests
 
-      - name: Upload quality output
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: quality-output
-          path: |
-            lint-output.txt
-            lint-status.txt
-            format-output.txt
-            format-status.txt
-            mypy-output.txt
-            mypy-status.txt
-            spec-output.txt
-            spec-status.txt
-          if-no-files-found: error
-
-      - name: Enforce quality checks
-        shell: bash
-        run: |
-          test "$(cat lint-status.txt)" = "0"
-          test "$(cat format-status.txt)" = "0"
-          test "$(cat mypy-status.txt)" = "0"
-          test "$(cat spec-status.txt)" = "0"
+      - name: Check generated specification
+        run: uv run python scripts/build_final_spec.py --check
 
   test:
     name: Test (${{ matrix.os }})
