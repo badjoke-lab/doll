@@ -63,6 +63,13 @@ from doll.state import (
     open_state_repository,
 )
 from doll.state_repository import StateRepository, _validate_record_fields
+from doll.trust import (
+    TruthCorruptError,
+    _claim_from_record,
+    _evidence_from_record,
+    _inference_from_record,
+    _trust_assessment_from_record,
+)
 from doll.workspace import (
     WORKSPACE_DIRECTORIES,
     WORKSPACE_SCHEMA_VERSION,
@@ -92,13 +99,19 @@ _RECORD_PATHS: dict[str, str] = {
     "policy": "records/policies.jsonl",
     "permission": "records/permissions.jsonl",
     "memory": "records/memories.jsonl",
+    "claim": "records/claims.jsonl",
+    "evidence": "records/evidence.jsonl",
+    "inference": "records/inferences.jsonl",
+    "trust_assessment": "records/trust-assessments.jsonl",
     "project": "records/projects.jsonl",
     "decision": "records/decisions.jsonl",
     "artifact": "records/artifacts.jsonl",
     "backup_manifest": "records/backup-manifests.jsonl",
 }
 _SUPPORTED_RECORD_TYPES = frozenset(_RECORD_PATHS)
-_OPTIONAL_RECORD_TYPES = frozenset({"backup_manifest"})
+_OPTIONAL_RECORD_TYPES = frozenset(
+    {"backup_manifest", "claim", "evidence", "inference", "trust_assessment"}
+)
 _ALWAYS_MEMBER_PATHS = (
     "manifest.json",
     "records/workspace.json",
@@ -855,6 +868,14 @@ def _envelope_from_payload(payload: object, expected_type: str) -> RecordEnvelop
             _permission_from_record(record)
         elif record_type == "memory":
             _memory_from_record(record)
+        elif record_type == "claim":
+            _claim_from_record(record)
+        elif record_type == "evidence":
+            _evidence_from_record(record)
+        elif record_type == "inference":
+            _inference_from_record(record)
+        elif record_type == "trust_assessment":
+            _trust_assessment_from_record(record)
         elif record_type == "project":
             _project_from_record(record)
         elif record_type == "decision":
@@ -871,6 +892,7 @@ def _envelope_from_payload(payload: object, expected_type: str) -> RecordEnvelop
         MemoryCorruptError,
         ProjectDecisionCorruptError,
         SettingsCorruptError,
+        TruthCorruptError,
     ) as exc:
         raise StatePackageValidationError("typed record payload is invalid") from exc
     return record
@@ -883,6 +905,32 @@ def _validate_cross_record_links(records: dict[str, RecordEnvelope]) -> None:
             for key in ("related_memory_ids", "contradicts_memory_ids"):
                 for linked_id in _metadata_id_list(metadata, key):
                     _require_link_type(records, linked_id, "memory")
+        elif record.record_type == "evidence":
+            for key in (
+                "supports_claim_ids",
+                "contradicts_claim_ids",
+                "contextualizes_claim_ids",
+            ):
+                for linked_id in _metadata_id_list(metadata, key):
+                    _require_link_type(records, linked_id, "claim")
+        elif record.record_type == "inference":
+            for linked_id in _metadata_id_list(metadata, "claim_ids"):
+                _require_link_type(records, linked_id, "claim")
+            for linked_id in _metadata_id_list(metadata, "evidence_ids"):
+                _require_link_type(records, linked_id, "evidence")
+        elif record.record_type == "trust_assessment":
+            for linked_id in _metadata_id_list(metadata, "evidence_ids"):
+                _require_link_type(records, linked_id, "evidence")
+            subject_type = _metadata_string(metadata, "subject_type")
+            subject_id = _metadata_string(metadata, "subject_id")
+            expected_subject_type = {
+                "claim": "claim",
+                "evidence": "evidence",
+                "inference": "inference",
+                "confirmed_fact": "memory",
+            }.get(subject_type)
+            if expected_subject_type is not None:
+                _require_link_type(records, subject_id, expected_subject_type)
         elif record.record_type == "project":
             for linked_id in _metadata_id_list(metadata, "decision_ids"):
                 _require_link_type(records, linked_id, "decision")
