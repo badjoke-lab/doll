@@ -39,8 +39,19 @@ jobs:
       - name: Check formatting
         run: uv run ruff format --check .
 
-      - name: Type check
-        run: uv run mypy src tests
+      - name: Capture type check
+        shell: bash
+        run: |
+          set -o pipefail
+          uv run mypy src tests 2>&1 | tee mypy-output.txt
+
+      - name: Upload type-check output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mypy-output
+          path: mypy-output.txt
+          if-no-files-found: error
 
       - name: Check generated specification
         run: uv run python scripts/build_final_spec.py --check
