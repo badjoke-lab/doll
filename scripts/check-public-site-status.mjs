@@ -39,8 +39,10 @@ if (!/^\d{4}-\d{2}-\d{2}$/.test(status.last_reviewed || "")) {
   fail("project-status.json last_reviewed must be YYYY-MM-DD");
 }
 
+const readme = read("README.md");
 const index = read("website/index.html");
 const middleware = read("website/functions/_middleware.js");
+const activityApi = read("website/functions/api/project-status.js");
 const manifest = JSON.parse(read("website/site.webmanifest"));
 const llms = read("website/llms.txt");
 const ai = read("website/ai.txt");
@@ -61,12 +63,31 @@ for (const required of [
   }
 }
 
-if (/IMP-\d+\s+is\s+next/i.test(index)) {
-  fail("website/index.html contains a hard-coded next implementation");
+for (const publicDocument of [index, readme]) {
+  if (/IMP-\d+\s+is\s+next/i.test(publicDocument)) {
+    fail("public documentation contains a hard-coded next implementation");
+  }
+}
+
+for (const statusUrl of [
+  "https://doll.badjoke-lab.com/project-status.json",
+  "https://doll.badjoke-lab.com/api/project-status",
+]) {
+  if (!readme.includes(statusUrl)) {
+    fail(`README.md must reference ${statusUrl}`);
+  }
 }
 
 if (index.includes("devlog.js")) {
   fail("website/index.html still references devlog.js");
+}
+
+if (!activityApi.includes("latestMergedImplementation")) {
+  fail("activity API must track the latest merged implementation");
+}
+
+if (!activityApi.includes("number > latestMergedImplementation")) {
+  fail("activity API must exclude stale open implementation work");
 }
 
 if (middleware.includes("doll-logo.svg")) {
