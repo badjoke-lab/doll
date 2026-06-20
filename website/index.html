@@ -18,9 +18,11 @@
     </div>
 
     <div class="site-status">
-      <p><strong>Status:</strong> Pre-alpha.</p>
-      <p><strong>Current:</strong> Phase 3 safety boundary. IMP-015 is next.</p>
-      <p>No model runtime is connected yet.</p>
+      <p><strong>Status:</strong> <span data-project-maturity>Loading project status</span>.</p>
+      <p><strong>Phase:</strong> <span data-project-phase>Loading current phase</span>.</p>
+      <p><strong>Current:</strong> <span id="project-current">Loading current implementation from GitHub.</span></p>
+      <p><strong>Next:</strong> <span id="project-next">Loading next implementation from GitHub.</span></p>
+      <p data-project-runtime>Loading runtime status.</p>
     </div>
   </header>
 
@@ -109,11 +111,18 @@
 
       <h3>Current status</h3>
       <p>
-        Pre-alpha. Model-independent continuity through IMP-012, secret classification through IMP-013,
-        and bounded secret detection and redaction through IMP-014 are implemented.
-        Phase 3 safety-boundary work is in progress. IMP-015 is next.
-        No model runtime is connected yet.
+        <strong><span data-project-maturity>Loading project status</span>.</strong>
+        <span data-project-phase>Loading current phase</span>.
       </p>
+      <p>
+        <strong>Current implementation:</strong>
+        <span id="development-current">Loading current implementation from GitHub.</span>
+      </p>
+      <p>
+        <strong>Next implementation:</strong>
+        <span id="development-next">Loading next implementation from GitHub.</span>
+      </p>
+      <p data-project-runtime>Loading runtime status.</p>
 
       <h3>Roadmap</h3>
       <ol>
@@ -135,7 +144,7 @@
 
       <h3>Recent development</h3>
       <div id="development-log">
-        <p>Recent merged pull requests are available on GitHub.</p>
+        <p>Loading recent implementation history from GitHub.</p>
       </div>
       <p>
         <a href="https://github.com/badjoke-lab/doll/pulls?q=is%3Apr+is%3Amerged">View all merged pull requests</a>
@@ -255,6 +264,6 @@
   </footer>
 
   <script src="./site.js"></script>
-  <script src="./devlog.js"></script>
+  <script src="./status.js"></script>
 </body>
 </html>
