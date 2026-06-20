@@ -377,12 +377,10 @@ def _sanitize_metadata_value(
                 if not key:
                     raise AuditValidationError("audit metadata keys must not be blank")
                 if is_secret_field_name(key):
-                    raise AuditValidationError(
-                        f"audit metadata contains a prohibited secret-like key: {raw_key}"
-                    )
+                    raise AuditValidationError("audit metadata contains a prohibited secret-like key")
                 if is_private_environment_field_name(key):
                     raise AuditValidationError(
-                        f"audit metadata contains a prohibited private-environment key: {raw_key}"
+                        "audit metadata contains a prohibited private-environment key"
                     )
                 _reject_unsafe_identifier_text(key)
                 result[key] = _sanitize_metadata_value(nested, depth=depth + 1, state=state)
