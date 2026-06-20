@@ -130,8 +130,10 @@ def configure_secret_safe_logger(
 def _timestamp(created: float) -> str:
     try:
         value = created if math.isfinite(created) else 0.0
-        return datetime.fromtimestamp(value, UTC).isoformat(timespec="milliseconds").replace(
-            "+00:00", "Z"
+        return (
+            datetime.fromtimestamp(value, UTC)
+            .isoformat(timespec="milliseconds")
+            .replace("+00:00", "Z")
         )
     except (OverflowError, OSError, ValueError):
         return "1970-01-01T00:00:00.000Z"
