@@ -220,7 +220,7 @@ def _components(
 ]:
     clock_values = now or [10.0]
 
-    def clock():
+    def clock() -> float:
         return clock_values[0]
 
     selected_handler = handler or SyntheticHandler()
@@ -354,7 +354,7 @@ def test_scope_destination_reference_and_handler_checks_precede_lookup() -> None
 def test_unregistered_handler_fails_closed() -> None:
     adapter = SyntheticSecretStoreAdapter()
 
-    def clock():
+    def clock() -> float:
         return 10.0
 
     authority = CredentialAuthorizationAuthority(clock=clock)
