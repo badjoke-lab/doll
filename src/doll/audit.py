@@ -29,6 +29,11 @@ _ALLOWED_RESULTS = frozenset({"success", "denied", "failed", "cancelled", "parti
 _TOKEN_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]*$")
 _POSIX_PATH_PATTERN = re.compile(r"(?<![:/\w])/(?:[^/\s]+/)*[^/\s]+")
 _WINDOWS_PATH_PATTERN = re.compile(r"(?i)\b[A-Z]:\\(?:[^\\\s]+\\)*[^\\\s]+")
+_BARE_BEARER_PATTERN = re.compile(r"(?i)\bbearer\s+[A-Za-z0-9._~+/=-]{8,}")
+_REDACTION_MARKER_PATTERN = re.compile(
+    r"\[(?:REDACTED:[a-z_]+|UNSCANNED_CONTENT_OMITTED|"
+    r"REDACTION_FINDING_LIMIT_REACHED)\]"
+)
 _PRIVATE_ENVIRONMENT_ASSIGNMENT_PATTERN = re.compile(
     r"(?i)\b(?P<label>username|user_name|os_user|login_name|hostname|host_name|"
     r"machine_name|computer_name|cwd|current_working_directory|home_dir|home_directory)"
@@ -301,7 +306,9 @@ def _validate_optional_identifier(name: str, value: str | None) -> str | None:
         raise AuditValidationError(f"{name} exceeds {MAX_IDENTIFIER_LENGTH} characters")
     if any(ord(character) < 32 for character in normalized):
         raise AuditValidationError(f"{name} contains control characters")
-    _reject_unsafe_identifier_text(normalized)
+    _reject_secret_text(normalized)
+    _reject_local_path(normalized)
+    _reject_private_environment_text(normalized)
     return normalized
 
 
@@ -448,7 +455,7 @@ def _encode_metadata(metadata: dict[str, object]) -> str:
 
 def _sanitize_free_text(value: str, *, max_scan_chars: int) -> str:
     normalized = " ".join(value.split())
-    redacted = redact_text(normalized, max_scan_chars=max_scan_chars).redacted_text
+    redacted = _sanitize_secret_text(normalized, max_scan_chars=max_scan_chars)
     redacted = _PRIVATE_ENVIRONMENT_ASSIGNMENT_PATTERN.sub(
         lambda match: f"{match.group('label')}=[REDACTED:private_environment]",
         redacted,
@@ -457,17 +464,42 @@ def _sanitize_free_text(value: str, *, max_scan_chars: int) -> str:
     return _WINDOWS_PATH_PATTERN.sub("[REDACTED:private_path]", redacted)
 
 
+def _sanitize_secret_text(value: str, *, max_scan_chars: int) -> str:
+    if len(value) > max_scan_chars:
+        return redact_text(value, max_scan_chars=max_scan_chars).redacted_text
+    parts: list[str] = []
+    cursor = 0
+    for marker in _REDACTION_MARKER_PATTERN.finditer(value):
+        parts.append(_redact_unmarked_secret_text(value[cursor : marker.start()]))
+        parts.append(marker.group(0))
+        cursor = marker.end()
+    parts.append(_redact_unmarked_secret_text(value[cursor:]))
+    return "".join(parts)
+
+
+def _redact_unmarked_secret_text(value: str) -> str:
+    if not value:
+        return ""
+    redacted = redact_text(value, max_scan_chars=max(len(value), 1)).redacted_text
+    return _BARE_BEARER_PATTERN.sub("Bearer [REDACTED:authorization_header]", redacted)
+
+
 def _reject_unsafe_identifier_text(value: str) -> None:
-    sanitized = _sanitize_free_text(value, max_scan_chars=max(len(value), 1))
-    if sanitized != value:
-        raise AuditValidationError("audit identifier contains secret or private-environment data")
+    _reject_secret_text(value)
+    _reject_local_path(value)
+    _reject_private_environment_text(value)
+
+
+def _reject_private_environment_text(value: str) -> None:
+    if _PRIVATE_ENVIRONMENT_ASSIGNMENT_PATTERN.search(value):
+        raise AuditValidationError("audit identifier contains private-environment data")
 
 
 def _reject_secret_text(value: str) -> None:
     """Strict compatibility validator for callers that cannot accept redaction."""
 
     normalized = " ".join(value.split())
-    redacted = redact_text(normalized, max_scan_chars=max(len(normalized), 1)).redacted_text
+    redacted = _sanitize_secret_text(normalized, max_scan_chars=max(len(normalized), 1))
     if redacted != normalized:
         raise AuditValidationError("audit data appears to contain secret material")
 
