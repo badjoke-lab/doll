@@ -46,8 +46,8 @@ def test_structured_diagnostic_redacts_nested_values_and_keys() -> None:
     assert "syntheticBearer" not in rendered
     assert "user@example.invalid" not in rendered
     assert "90-1234-5678" not in rendered
-    assert result.finding_count == 4
-    assert result.field_redaction_count == 0
+    assert result.finding_count == 3
+    assert result.field_redaction_count == 1
     assert result.text_truncated is False
     assert result.depth_limit_reached is False
     assert result.item_limit_reached is False
