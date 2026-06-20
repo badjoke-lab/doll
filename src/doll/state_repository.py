@@ -215,6 +215,10 @@ class StateRepository:
             raise RecordValidationError(f"invalid record status: {next_status}")
         next_title = current.title if title is None else title
         next_metadata = current.metadata if metadata is None else metadata
+        if current.record_type == "instruction_origin" and (
+            next_title != current.title or next_metadata != current.metadata
+        ):
+            raise RecordValidationError("instruction-origin title and metadata are immutable")
         _validate_secret_boundary(
             record_type=current.record_type,
             sensitivity=current.sensitivity,
