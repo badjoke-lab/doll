@@ -1,0 +1,22 @@
+name: IMP-019 source snapshot
+
+on:
+  pull_request:
+
+jobs:
+  snapshot:
+    if: github.head_ref == 'imp-019-instruction-origin'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Archive source tree
+        run: tar --exclude=.git -czf /tmp/doll-source.tar.gz .
+
+      - name: Upload source tree
+        uses: actions/upload-artifact@v4
+        with:
+          name: imp019-source
+          path: /tmp/doll-source.tar.gz
+          if-no-files-found: error
