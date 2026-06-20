@@ -3,13 +3,19 @@
 from __future__ import annotations
 
 import json
+import math
 import re
 import sqlite3
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Literal, cast
 from uuid import UUID, uuid4
 
+from doll.secret_detection import redact_text
+from doll.sensitive_fields import (
+    is_private_environment_field_name,
+    is_secret_field_name,
+)
 from doll.state import ReadOnlyStateError, StateCorruptError, StateError, _utc_now
 
 if TYPE_CHECKING:
@@ -21,47 +27,12 @@ AuditResult = Literal["success", "denied", "failed", "cancelled", "partial"]
 _ALLOWED_ACTOR_TYPES = frozenset({"user", "system", "model", "runtime", "capability", "migration"})
 _ALLOWED_RESULTS = frozenset({"success", "denied", "failed", "cancelled", "partial"})
 _TOKEN_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]*$")
-_SECRET_ASSIGNMENT_PATTERN = re.compile(
-    r"(?i)\b(?:password|passwd|secret|api[_ -]?key|access[_ -]?token|refresh[_ -]?token|"
-    r"authorization|cookie|private[_ -]?key|recovery[_ -]?phrase|seed[_ -]?phrase|mnemonic)"
-    r"\b\s*[:=]\s*\S+"
-)
-_BEARER_PATTERN = re.compile(r"(?i)\bbearer\s+[A-Za-z0-9._~+/=-]{8,}")
-_JWT_PATTERN = re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b")
 _POSIX_PATH_PATTERN = re.compile(r"(?<![:/\w])/(?:[^/\s]+/)*[^/\s]+")
-_WINDOWS_PATH_PATTERN = re.compile(r"(?i)\b[A-Z]:\\")
-_SECRET_KEYS = frozenset(
-    {
-        "password",
-        "passwd",
-        "secret",
-        "api_key",
-        "apikey",
-        "access_token",
-        "refresh_token",
-        "authorization",
-        "cookie",
-        "session_cookie",
-        "private_key",
-        "recovery_phrase",
-        "seed_phrase",
-        "mnemonic",
-        "credential",
-        "credentials",
-    }
-)
-
-_SECRET_KEY_PARTS = frozenset(
-    {
-        "password",
-        "passwd",
-        "secret",
-        "authorization",
-        "cookie",
-        "mnemonic",
-        "credential",
-        "credentials",
-    }
+_WINDOWS_PATH_PATTERN = re.compile(r"(?i)\b[A-Z]:\\(?:[^\\\s]+\\)*[^\\\s]+")
+_PRIVATE_ENVIRONMENT_ASSIGNMENT_PATTERN = re.compile(
+    r"(?i)\b(?P<label>username|user_name|os_user|login_name|hostname|host_name|"
+    r"machine_name|computer_name|cwd|current_working_directory|home_dir|home_directory)"
+    r"\s*[:=]\s*(?P<value>[^\s,;]{1,2048})"
 )
 
 AUDIT_SCHEMA_VERSION = 2
@@ -71,6 +42,9 @@ MAX_IDENTIFIER_LENGTH = 200
 MAX_SUMMARY_LENGTH = 500
 MAX_ERROR_CLASS_LENGTH = 120
 MAX_METADATA_BYTES = 8192
+MAX_METADATA_STRING_LENGTH = 4096
+MAX_METADATA_DEPTH = 6
+MAX_METADATA_ITEMS = 256
 MAX_AUDIT_LIMIT = 200
 
 
@@ -102,6 +76,12 @@ class AuditEvent:
 
 
 @dataclass(slots=True)
+class _MetadataState:
+    items_seen: int = 0
+    active_container_ids: set[int] = field(default_factory=set)
+
+
+@dataclass(slots=True)
 class AuditService:
     """Append and inspect audit events through an open state repository."""
 
@@ -127,7 +107,7 @@ class AuditService:
         error: BaseException | None = None,
         metadata: dict[str, object] | None = None,
     ) -> AuditEvent:
-        """Append one audit event and advance the authoritative state revision."""
+        """Append one sanitized audit event and advance the authoritative state revision."""
 
         if self.repository.read_only:
             raise ReadOnlyStateError("state repository is open in read-only mode")
@@ -149,9 +129,9 @@ class AuditService:
             else None
         )
         safe_target_id = _validate_optional_identifier("target ID", target_id)
-        safe_summary = _validate_summary(summary)
+        safe_summary = _sanitize_summary(summary)
         error_class = _safe_error_class(error)
-        metadata_json = _serialize_metadata(metadata or {})
+        metadata_json = _serialize_metadata_for_write(metadata or {})
 
         event_id = str(uuid4())
         occurred_at = _utc_now()
@@ -307,7 +287,7 @@ def _validate_token(name: str, value: str, maximum: int) -> str:
         raise AuditValidationError(f"{name} exceeds {maximum} characters")
     if not _TOKEN_PATTERN.fullmatch(normalized):
         raise AuditValidationError(f"{name} contains unsupported characters")
-    _reject_secret_text(normalized)
+    _reject_unsafe_identifier_text(normalized)
     return normalized
 
 
@@ -321,12 +301,11 @@ def _validate_optional_identifier(name: str, value: str | None) -> str | None:
         raise AuditValidationError(f"{name} exceeds {MAX_IDENTIFIER_LENGTH} characters")
     if any(ord(character) < 32 for character in normalized):
         raise AuditValidationError(f"{name} contains control characters")
-    _reject_secret_text(normalized)
-    _reject_local_path(normalized)
+    _reject_unsafe_identifier_text(normalized)
     return normalized
 
 
-def _validate_summary(summary: str | None) -> str | None:
+def _sanitize_summary(summary: str | None) -> str | None:
     if summary is None:
         return None
     normalized = " ".join(summary.split())
@@ -334,9 +313,15 @@ def _validate_summary(summary: str | None) -> str | None:
         return None
     if len(normalized) > MAX_SUMMARY_LENGTH:
         raise AuditValidationError(f"audit summary exceeds {MAX_SUMMARY_LENGTH} characters")
-    _reject_secret_text(normalized)
-    _reject_local_path(normalized)
-    return normalized
+    return _sanitize_free_text(normalized, max_scan_chars=MAX_SUMMARY_LENGTH)
+
+
+def _validate_stored_summary(summary: str | None) -> str | None:
+    sanitized = _sanitize_summary(summary)
+    normalized = None if summary is None else (" ".join(summary.split()) or None)
+    if sanitized != normalized:
+        raise AuditValidationError("audit summary contains unsafe data")
+    return sanitized
 
 
 def _safe_error_class(error: BaseException | None) -> str | None:
@@ -348,8 +333,95 @@ def _safe_error_class(error: BaseException | None) -> str | None:
     return error_class
 
 
-def _serialize_metadata(metadata: dict[str, object]) -> str:
-    _validate_metadata_value(metadata)
+def _serialize_metadata_for_write(metadata: dict[str, object]) -> str:
+    sanitized = _sanitize_metadata(metadata)
+    return _encode_metadata(sanitized)
+
+
+def _validate_stored_metadata(metadata: dict[str, object]) -> dict[str, object]:
+    sanitized = _sanitize_metadata(metadata)
+    if sanitized != metadata:
+        raise AuditValidationError("audit metadata contains unsafe data")
+    _encode_metadata(sanitized)
+    return sanitized
+
+
+def _sanitize_metadata(metadata: dict[str, object]) -> dict[str, object]:
+    state = _MetadataState()
+    sanitized = _sanitize_metadata_value(metadata, depth=0, state=state)
+    if not isinstance(sanitized, dict):
+        raise AuditValidationError("audit metadata is not a JSON object")
+    return cast(dict[str, object], sanitized)
+
+
+def _sanitize_metadata_value(
+    value: object,
+    *,
+    depth: int,
+    state: _MetadataState,
+) -> object:
+    if depth > MAX_METADATA_DEPTH:
+        raise AuditValidationError(f"audit metadata exceeds depth {MAX_METADATA_DEPTH}")
+    if isinstance(value, dict):
+        identity = id(value)
+        if identity in state.active_container_ids:
+            raise AuditValidationError("audit metadata must not contain cycles")
+        state.active_container_ids.add(identity)
+        result: dict[str, object] = {}
+        try:
+            for raw_key, nested in value.items():
+                _consume_metadata_item(state)
+                if not isinstance(raw_key, str):
+                    raise AuditValidationError("audit metadata keys must be strings")
+                key = raw_key.strip()
+                if not key:
+                    raise AuditValidationError("audit metadata keys must not be blank")
+                if is_secret_field_name(key):
+                    raise AuditValidationError(
+                        f"audit metadata contains a prohibited secret-like key: {raw_key}"
+                    )
+                if is_private_environment_field_name(key):
+                    raise AuditValidationError(
+                        f"audit metadata contains a prohibited private-environment key: {raw_key}"
+                    )
+                _reject_unsafe_identifier_text(key)
+                result[key] = _sanitize_metadata_value(nested, depth=depth + 1, state=state)
+        finally:
+            state.active_container_ids.remove(identity)
+        return result
+    if isinstance(value, list):
+        identity = id(value)
+        if identity in state.active_container_ids:
+            raise AuditValidationError("audit metadata must not contain cycles")
+        state.active_container_ids.add(identity)
+        result_list: list[object] = []
+        try:
+            for nested in value:
+                _consume_metadata_item(state)
+                result_list.append(
+                    _sanitize_metadata_value(nested, depth=depth + 1, state=state)
+                )
+        finally:
+            state.active_container_ids.remove(identity)
+        return result_list
+    if isinstance(value, str):
+        return _sanitize_free_text(value, max_scan_chars=MAX_METADATA_STRING_LENGTH)
+    if value is None or isinstance(value, (bool, int)):
+        return value
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            raise AuditValidationError("audit metadata numbers must be finite")
+        return value
+    raise AuditValidationError("audit metadata must be JSON-compatible")
+
+
+def _consume_metadata_item(state: _MetadataState) -> None:
+    if state.items_seen >= MAX_METADATA_ITEMS:
+        raise AuditValidationError(f"audit metadata exceeds {MAX_METADATA_ITEMS} items")
+    state.items_seen += 1
+
+
+def _encode_metadata(metadata: dict[str, object]) -> str:
     try:
         encoded = json.dumps(
             metadata,
@@ -365,66 +437,21 @@ def _serialize_metadata(metadata: dict[str, object]) -> str:
     return encoded
 
 
-def _validate_metadata_value(value: object) -> None:
-    if isinstance(value, dict):
-        for raw_key, nested in value.items():
-            if not isinstance(raw_key, str):
-                raise AuditValidationError("audit metadata keys must be strings")
-            normalized_key = raw_key.strip().lower().replace("-", "_").replace(" ", "_")
-            if _is_secret_key(normalized_key):
-                raise AuditValidationError(
-                    f"audit metadata contains a prohibited secret-like key: {raw_key}"
-                )
-            _validate_metadata_value(nested)
-        return
-    if isinstance(value, list):
-        for nested in value:
-            _validate_metadata_value(nested)
-        return
-    if isinstance(value, str):
-        _reject_secret_text(value)
-        return
-    if value is None or isinstance(value, (bool, int, float)):
-        return
-    raise AuditValidationError("audit metadata must be JSON-compatible")
-
-
-def _is_secret_key(normalized_key: str) -> bool:
-    if normalized_key in _SECRET_KEYS:
-        return True
-    parts = set(normalized_key.split("_"))
-    if parts & _SECRET_KEY_PARTS:
-        return True
-    return any(
-        pair <= parts
-        for pair in (
-            {"api", "key"},
-            {"access", "token"},
-            {"refresh", "token"},
-            {"session", "cookie"},
-            {"private", "key"},
-            {"recovery", "phrase"},
-            {"seed", "phrase"},
-        )
+def _sanitize_free_text(value: str, *, max_scan_chars: int) -> str:
+    normalized = " ".join(value.split())
+    redacted = redact_text(normalized, max_scan_chars=max_scan_chars).redacted_text
+    redacted = _PRIVATE_ENVIRONMENT_ASSIGNMENT_PATTERN.sub(
+        lambda match: f"{match.group('label')}=[REDACTED:private_environment]",
+        redacted,
     )
+    redacted = _POSIX_PATH_PATTERN.sub("[REDACTED:private_path]", redacted)
+    return _WINDOWS_PATH_PATTERN.sub("[REDACTED:private_path]", redacted)
 
 
-def _reject_secret_text(value: str) -> None:
-    if "-----BEGIN" in value and "PRIVATE KEY-----" in value:
-        raise AuditValidationError("audit data appears to contain private key material")
-    if (
-        _SECRET_ASSIGNMENT_PATTERN.search(value)
-        or _BEARER_PATTERN.search(value)
-        or _JWT_PATTERN.search(value)
-    ):
-        raise AuditValidationError("audit data appears to contain secret material")
-
-
-def _reject_local_path(value: str) -> None:
-    if "file://" in value or _POSIX_PATH_PATTERN.search(value):
-        raise AuditValidationError("audit data must not contain a local absolute path")
-    if _WINDOWS_PATH_PATTERN.search(value):
-        raise AuditValidationError("audit data must not contain a local absolute path")
+def _reject_unsafe_identifier_text(value: str) -> None:
+    sanitized = _sanitize_free_text(value, max_scan_chars=max(len(value), 1))
+    if sanitized != value:
+        raise AuditValidationError("audit identifier contains secret or private-environment data")
 
 
 def _reject_nonstandard_json(value: str) -> object:
@@ -469,7 +496,7 @@ def _event_from_row(row: sqlite3.Row) -> AuditEvent:
         result_value = cast(str, row["result"])
         if result_value not in _ALLOWED_RESULTS:
             raise AuditValidationError("audit result is invalid")
-        summary = _validate_summary(cast(str | None, row["summary"]))
+        summary = _validate_stored_summary(cast(str | None, row["summary"]))
         error_class_value = cast(str | None, row["error_class"])
         error_class = (
             _validate_token("error class", error_class_value, MAX_ERROR_CLASS_LENGTH)
@@ -482,8 +509,7 @@ def _event_from_row(row: sqlite3.Row) -> AuditEvent:
         )
         if not isinstance(metadata_value, dict):
             raise AuditValidationError("audit metadata is not a JSON object")
-        metadata = cast(dict[str, object], metadata_value)
-        _serialize_metadata(metadata)
+        metadata = _validate_stored_metadata(cast(dict[str, object], metadata_value))
     except (
         AuditValidationError,
         json.JSONDecodeError,
