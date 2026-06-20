@@ -35,23 +35,27 @@ jobs:
       - name: Install project
         run: uv sync --dev --locked
 
-      - name: Apply IMP-017 fixes
+      - name: Apply remaining IMP-017 quality fixes
         shell: bash
         run: |
-          sed -i '539,542c\    with pytest.raises(CredentialBrokerContractError, match="invalid reference ID"):\
-                  authority.issue(intent)' tests/test_credential_broker.py
-          uv run ruff check --fix \
+          sed -i 's/result=cast(AuditResult, event.result),/result=event.result,/' src/doll/credential_broker.py
+          sed -i 's/handler_result = cast(CredentialHandlerResult, result)/handler_result = result/' src/doll/credential_broker.py
+          if ! grep -q 'CredentialAuditPhase' tests/test_credential_broker_contract.py; then
+            sed -i '/    CredentialAuditEvent,/a\    CredentialAuditPhase,' tests/test_credential_broker_contract.py
+          fi
+          sed -i 's/phase=cast(object, "invented")/phase=cast(CredentialAuditPhase, "invented")/' tests/test_credential_broker_contract.py
+          uv run ruff check --fix --unsafe-fixes \
             src/doll/credential_broker.py \
             src/doll/credential_broker_contract.py \
             tests/test_credential_broker.py \
-            tests/test_credential_broker_contract.py || true
+            tests/test_credential_broker_contract.py
           uv run ruff format \
             src/doll/credential_broker.py \
             src/doll/credential_broker_contract.py \
             tests/test_credential_broker.py \
             tests/test_credential_broker_contract.py
 
-      - name: Commit IMP-017 fixes
+      - name: Commit remaining IMP-017 quality fixes
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
@@ -62,7 +66,7 @@ jobs:
             tests/test_credential_broker.py \
             tests/test_credential_broker_contract.py
           if ! git diff --cached --quiet; then
-            git commit -m "IMP-017: Apply test and quality fixes"
+            git commit -m "IMP-017: Resolve static quality findings"
             git push origin HEAD:${{ github.head_ref || github.ref_name }}
           fi
 
