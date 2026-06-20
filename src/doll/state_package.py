@@ -38,6 +38,11 @@ from doll.backup_manifest import (
     BackupManifestCorruptError,
     _backup_manifest_from_record,
 )
+from doll.instruction_origin import (
+    InstructionOriginCorruptError,
+    _instruction_origin_from_record,
+    _validate_instruction_origin_graph,
+)
 from doll.memory import MemoryCorruptError, _memory_from_record
 from doll.paths import canonicalize_path, find_doll_repository_ancestor
 from doll.project_state import (
@@ -103,6 +108,7 @@ _RECORD_PATHS: dict[str, str] = {
     "evidence": "records/evidence.jsonl",
     "inference": "records/inferences.jsonl",
     "trust_assessment": "records/trust-assessments.jsonl",
+    "instruction_origin": "records/instruction-origins.jsonl",
     "project": "records/projects.jsonl",
     "decision": "records/decisions.jsonl",
     "artifact": "records/artifacts.jsonl",
@@ -110,7 +116,14 @@ _RECORD_PATHS: dict[str, str] = {
 }
 _SUPPORTED_RECORD_TYPES = frozenset(_RECORD_PATHS)
 _OPTIONAL_RECORD_TYPES = frozenset(
-    {"backup_manifest", "claim", "evidence", "inference", "trust_assessment"}
+    {
+        "backup_manifest",
+        "claim",
+        "evidence",
+        "inference",
+        "trust_assessment",
+        "instruction_origin",
+    }
 )
 _ALWAYS_MEMBER_PATHS = (
     "manifest.json",
@@ -876,6 +889,8 @@ def _envelope_from_payload(payload: object, expected_type: str) -> RecordEnvelop
             _inference_from_record(record)
         elif record_type == "trust_assessment":
             _trust_assessment_from_record(record)
+        elif record_type == "instruction_origin":
+            _instruction_origin_from_record(record)
         elif record_type == "project":
             _project_from_record(record)
         elif record_type == "decision":
@@ -889,6 +904,7 @@ def _envelope_from_payload(payload: object, expected_type: str) -> RecordEnvelop
     except (
         ArtifactCorruptError,
         BackupManifestCorruptError,
+        InstructionOriginCorruptError,
         MemoryCorruptError,
         ProjectDecisionCorruptError,
         SettingsCorruptError,
@@ -899,6 +915,10 @@ def _envelope_from_payload(payload: object, expected_type: str) -> RecordEnvelop
 
 
 def _validate_cross_record_links(records: dict[str, RecordEnvelope]) -> None:
+    try:
+        _validate_instruction_origin_graph(records)
+    except InstructionOriginCorruptError as exc:
+        raise StatePackageValidationError("instruction-origin graph is invalid") from exc
     for record in records.values():
         metadata = record.metadata
         if record.record_type == "memory":
@@ -931,6 +951,21 @@ def _validate_cross_record_links(records: dict[str, RecordEnvelope]) -> None:
             }.get(subject_type)
             if expected_subject_type is not None:
                 _require_link_type(records, subject_id, expected_subject_type)
+        elif record.record_type == "instruction_origin":
+            derived_id = _metadata_optional_id(metadata, "derived_from_instruction_id")
+            if derived_id is not None:
+                if derived_id == record.id:
+                    raise StatePackageValidationError(
+                        "instruction origin cannot derive from itself"
+                    )
+                _require_link_type(records, derived_id, "instruction_origin")
+            if _metadata_string(metadata, "origin_class") == "durable_user_policy":
+                policy_id = _metadata_optional_id(metadata, "authority_reference_id")
+                if policy_id is None:
+                    raise StatePackageValidationError(
+                        "durable user policy requires a policy reference"
+                    )
+                _require_link_type(records, policy_id, "policy")
         elif record.record_type == "project":
             for linked_id in _metadata_id_list(metadata, "decision_ids"):
                 _require_link_type(records, linked_id, "decision")
