@@ -3,7 +3,7 @@ const PRODUCTION_HOST = "doll.badjoke-lab.com";
 const SITE_URL = "https://doll.badjoke-lab.com";
 const LOGO_URL = `${SITE_URL}/assets/doll-logo.png`;
 const DEV_ARTICLE_URL = "https://dev.to/badjoke-lab/why-im-building-doll-a-personal-ai-continuity-system-1a1c";
-const ASSET_VERSION = "20260620-2";
+const ASSET_VERSION = "20260620-3";
 
 function analyticsAllowed(request) {
   const cookie = request.headers.get("Cookie") || "";
@@ -101,7 +101,6 @@ function structuredDataFor(pathname) {
           codeRepository: "https://github.com/badjoke-lab/doll",
           license: "https://www.apache.org/licenses/LICENSE-2.0",
           programmingLanguage: ["Python", "JavaScript"],
-          creativeWorkStatus: "Pre-alpha",
           isAccessibleForFree: true,
           image: LOGO_URL,
           creator: { "@id": `${SITE_URL}/#organization` },
@@ -150,10 +149,11 @@ function copyResponseWithHeaders(response, requestUrl) {
 }
 
 function commonHead(metadata, canonical, structuredData, noindex) {
+  const faviconUrl = `/assets/doll-logo.png?v=${ASSET_VERSION}`;
   const tags = [
-    `<link rel="icon" type="image/png" href="/assets/doll-logo.png">`,
-    `<link rel="icon" type="image/svg+xml" href="/assets/doll-logo.svg">`,
-    `<link rel="apple-touch-icon" href="/assets/doll-logo.png">`,
+    `<link rel="icon" type="image/png" sizes="256x256" href="${faviconUrl}">`,
+    `<link rel="shortcut icon" type="image/png" href="${faviconUrl}">`,
+    `<link rel="apple-touch-icon" href="${faviconUrl}">`,
     `<link rel="manifest" href="/site.webmanifest">`,
     `<meta name="theme-color" content="#ffffff">`,
     `<link rel="alternate" type="text/plain" href="/llms.txt" title="LLM information">`,

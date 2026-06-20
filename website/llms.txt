@@ -2,7 +2,9 @@
 
 > doll is a local-complete, cloud-optional personal AI continuity system.
 
-Current status: pre-alpha. No model runtime is connected yet.
+Live public status:
+- Canonical maturity, phase, and runtime declaration: https://doll.badjoke-lab.com/project-status.json
+- Current and recent implementation activity: https://doll.badjoke-lab.com/api/project-status
 
 Core idea: models are replaceable reasoning engines; the user's state and work are the durable core.
 

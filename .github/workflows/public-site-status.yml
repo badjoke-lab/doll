@@ -1,0 +1,50 @@
+name: Public site status check
+
+on:
+  pull_request:
+    paths:
+      - "README.md"
+      - "website/**"
+      - "scripts/check-public-site-status.mjs"
+      - ".github/workflows/public-site-status.yml"
+      - "docs/spec/09-development-roadmap.md"
+  push:
+    branches:
+      - main
+    paths:
+      - "README.md"
+      - "website/**"
+      - "scripts/check-public-site-status.mjs"
+      - ".github/workflows/public-site-status.yml"
+      - "docs/spec/09-development-roadmap.md"
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate public status sources
+        run: node scripts/check-public-site-status.mjs
+
+      - name: Require public status review when roadmap changes
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          changed_files="$(git diff --name-only "$BASE_SHA"...HEAD)"
+          if printf '%s\n' "$changed_files" | grep -qx 'docs/spec/09-development-roadmap.md'; then
+            if ! printf '%s\n' "$changed_files" | grep -qx 'website/project-status.json'; then
+              echo 'website/project-status.json must be reviewed when the development roadmap changes.'
+              exit 1
+            fi
+          fi
