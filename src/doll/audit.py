@@ -414,9 +414,7 @@ def _sanitize_metadata_value(
         try:
             for nested in value:
                 _consume_metadata_item(state)
-                result_list.append(
-                    _sanitize_metadata_value(nested, depth=depth + 1, state=state)
-                )
+                result_list.append(_sanitize_metadata_value(nested, depth=depth + 1, state=state))
         finally:
             state.active_container_ids.remove(identity)
         return result_list

@@ -20,9 +20,7 @@ def test_secret_safe_logger_sanitizes_before_stream_persistence() -> None:
     logger = configure_secret_safe_logger("doll.test.secret-safe", stream=stream)
 
     try:
-        raise RuntimeError(
-            "api_key=synthetic-exception-secret at /Users/example/private/workspace"
-        )
+        raise RuntimeError("api_key=synthetic-exception-secret at /Users/example/private/workspace")
     except RuntimeError:
         logger.exception(
             "operation failed for %s\nfor retry",
@@ -153,8 +151,7 @@ def test_renderer_returns_static_omission_event_when_encoding_fails(
     rendered = render_log_record(record)
 
     assert rendered == (
-        '{"level":"ERROR","logger":"doll.safe_logging",'
-        '"message":"[LOG_RECORD_OMITTED]"}'
+        '{"level":"ERROR","logger":"doll.safe_logging","message":"[LOG_RECORD_OMITTED]"}'
     )
     assert "synthetic-render-secret" not in rendered
 
