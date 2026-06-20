@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   quality:
@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -47,9 +49,20 @@ jobs:
           echo $? > spec-status.txt
           exit 0
 
-      - name: Create formatted diagnostic copies
+      - name: Apply Ruff formatting
         run: |
           uv run ruff format src/doll/audit.py src/doll/safe_logging.py tests/test_safe_logging.py
+
+      - name: Commit Ruff formatting
+        shell: bash
+        run: |
+          if ! git diff --quiet -- src/doll/audit.py src/doll/safe_logging.py tests/test_safe_logging.py; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add src/doll/audit.py src/doll/safe_logging.py tests/test_safe_logging.py
+            git commit -m "IMP-015: Apply Ruff formatting"
+            git push origin HEAD:${{ github.head_ref || github.ref_name }}
+          fi
 
       - name: Upload quality output
         if: always()
@@ -65,17 +78,6 @@ jobs:
             mypy-status.txt
             spec-output.txt
             spec-status.txt
-          if-no-files-found: error
-
-      - name: Upload formatted files
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: formatted-files
-          path: |
-            src/doll/audit.py
-            src/doll/safe_logging.py
-            tests/test_safe_logging.py
           if-no-files-found: error
 
       - name: Enforce quality checks
