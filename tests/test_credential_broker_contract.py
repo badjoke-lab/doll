@@ -7,6 +7,7 @@ import pytest
 
 from doll.credential_broker_contract import (
     CredentialAuditEvent,
+    CredentialAuditPhase,
     CredentialAuthorizationGrant,
     CredentialBrokerContractError,
     CredentialBrokerResult,
@@ -230,7 +231,7 @@ def test_audit_event_enforces_attempt_and_result_shapes() -> None:
     with pytest.raises(CredentialBrokerContractError):
         replace(result, completion=None)
     with pytest.raises(CredentialBrokerContractError):
-        replace(result, phase=cast(object, "invented"))
+        replace(result, phase=cast(CredentialAuditPhase, "invented"))
 
 
 def test_handler_registry_is_immutable_exact_and_tier3_only() -> None:

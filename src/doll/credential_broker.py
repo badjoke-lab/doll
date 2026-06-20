@@ -157,7 +157,7 @@ class AuditServiceCredentialAuditSink:
             metadata["handler_result_code"] = event.handler_result_code
         self._audit.append(
             action=f"credential.use.{event.phase}",
-            result=cast(AuditResult, event.result),
+            result=event.result,
             actor_type=cast(AuditActorType, event.actor_type),
             operation_id=event.operation_id,
             actor_id=event.actor_id,
@@ -335,7 +335,7 @@ class CredentialBroker:
     ) -> CredentialBrokerResult:
         if type(result) is not CredentialHandlerResult:
             return self._result(intent, "malformed_handler_result", "unknown")
-        handler_result = cast(CredentialHandlerResult, result)
+        handler_result = result
         if handler_result.succeeded:
             return CredentialBrokerResult(
                 operation_id=intent.operation_id,

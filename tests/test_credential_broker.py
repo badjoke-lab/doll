@@ -219,7 +219,10 @@ def _components(
     CapturingAuditSink,
 ]:
     clock_values = now or [10.0]
-    clock = lambda: clock_values[0]
+
+    def clock():
+        return clock_values[0]
+
     selected_handler = handler or SyntheticHandler()
     selected_audit = audit or CapturingAuditSink()
     authority_kwargs: dict[str, object] = {"clock": clock}
@@ -350,7 +353,10 @@ def test_scope_destination_reference_and_handler_checks_precede_lookup() -> None
 
 def test_unregistered_handler_fails_closed() -> None:
     adapter = SyntheticSecretStoreAdapter()
-    clock = lambda: 10.0
+
+    def clock():
+        return 10.0
+
     authority = CredentialAuthorizationAuthority(clock=clock)
     audit = CapturingAuditSink()
     broker = CredentialBroker(
@@ -530,7 +536,7 @@ def test_terminal_audit_failure_does_not_hide_completed_side_effect() -> None:
 
 def test_forged_reference_is_rejected_before_audit_or_lookup() -> None:
     adapter = SyntheticSecretStoreAdapter()
-    broker, authority, _, handler, audit = _components(adapter=adapter)
+    _broker, authority, _, handler, audit = _components(adapter=adapter)
     forged = replace(_reference(), reference_id="bad id")
     intent = _intent(reference=forged)
     with pytest.raises(CredentialBrokerContractError, match="invalid reference ID"):
