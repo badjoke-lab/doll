@@ -4,6 +4,9 @@ import json
 import logging
 from io import StringIO
 
+import pytest
+
+import doll.safe_logging as safe_logging
 from doll.safe_logging import (
     MAX_LOG_LINE_BYTES,
     SecretSafeLogHandler,
@@ -128,3 +131,66 @@ def test_preformatted_exception_and_stack_text_are_not_reused() -> None:
     assert "synthetic-preformatted-secret" not in rendered
     assert "/Users/example" not in rendered
     assert payload["stack"] == "[STACK_INFO_OMITTED]"
+
+
+def test_renderer_returns_static_omission_event_when_encoding_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    record = logging.LogRecord(
+        name="doll.test.render-failure",
+        level=logging.ERROR,
+        pathname="ignored.py",
+        lineno=1,
+        msg="password=synthetic-render-secret",
+        args=(),
+        exc_info=None,
+    )
+
+    def fail_encoding(*args: object, **kwargs: object) -> str:
+        raise RuntimeError("synthetic encoder failure")
+
+    monkeypatch.setattr(safe_logging.json, "dumps", fail_encoding)
+    rendered = render_log_record(record)
+
+    assert rendered == (
+        '{"level":"ERROR","logger":"doll.safe_logging",'
+        '"message":"[LOG_RECORD_OMITTED]"}'
+    )
+    assert "synthetic-render-secret" not in rendered
+
+
+def test_handler_writes_static_omission_event_after_first_stream_failure() -> None:
+    class FailOnceStream(StringIO):
+        failed = False
+
+        def write(self, value: str) -> int:
+            if not self.failed:
+                self.failed = True
+                raise OSError("synthetic first write failure")
+            return super().write(value)
+
+    stream = FailOnceStream()
+    handler = SecretSafeLogHandler(stream=stream)
+    record = logging.LogRecord(
+        name="doll.test.stream-failure",
+        level=logging.ERROR,
+        pathname="ignored.py",
+        lineno=1,
+        msg="password=synthetic-stream-secret",
+        args=(),
+        exc_info=None,
+    )
+
+    handler.emit(record)
+
+    assert "[LOG_RECORD_OMITTED]" in stream.getvalue()
+    assert "synthetic-stream-secret" not in stream.getvalue()
+
+
+def test_handler_suppresses_flush_failure() -> None:
+    class FlushFailureStream(StringIO):
+        def flush(self) -> None:
+            raise OSError("synthetic flush failure")
+
+    handler = SecretSafeLogHandler(stream=FlushFailureStream())
+    handler.flush()
