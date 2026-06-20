@@ -333,6 +333,15 @@ def _safe_error_class(error: BaseException | None) -> str | None:
     return error_class
 
 
+def _serialize_metadata(metadata: dict[str, object]) -> str:
+    """Strict compatibility validator used by non-audit record services."""
+
+    sanitized = _sanitize_metadata(metadata)
+    if sanitized != metadata:
+        raise AuditValidationError("metadata contains unsafe data")
+    return _encode_metadata(sanitized)
+
+
 def _serialize_metadata_for_write(metadata: dict[str, object]) -> str:
     sanitized = _sanitize_metadata(metadata)
     return _encode_metadata(sanitized)
