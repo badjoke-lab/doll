@@ -47,6 +47,17 @@ jobs:
           echo $? > spec-status.txt
           exit 0
 
+      - name: Create fixed diagnostic copies
+        shell: bash
+        run: |
+          sed -i 's/  # type: ignore\[arg-type\]//' tests/test_secret_store_contract.py
+          uv run ruff check --fix src/doll/secret_store.py
+          uv run ruff format \
+            src/doll/secret_store.py \
+            src/doll/secret_store_contract.py \
+            tests/test_secret_store.py \
+            tests/test_secret_store_contract.py
+
       - name: Upload quality output
         if: always()
         uses: actions/upload-artifact@v4
@@ -61,6 +72,18 @@ jobs:
             mypy-status.txt
             spec-output.txt
             spec-status.txt
+          if-no-files-found: error
+
+      - name: Upload fixed files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fixed-files
+          path: |
+            src/doll/secret_store.py
+            src/doll/secret_store_contract.py
+            tests/test_secret_store.py
+            tests/test_secret_store_contract.py
           if-no-files-found: error
 
       - name: Enforce quality checks
