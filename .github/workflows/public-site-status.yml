@@ -3,6 +3,7 @@ name: Public site status check
 on:
   pull_request:
     paths:
+      - "README.md"
       - "website/**"
       - "scripts/check-public-site-status.mjs"
       - ".github/workflows/public-site-status.yml"
@@ -11,6 +12,7 @@ on:
     branches:
       - main
     paths:
+      - "README.md"
       - "website/**"
       - "scripts/check-public-site-status.mjs"
       - ".github/workflows/public-site-status.yml"
