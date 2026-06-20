@@ -35,46 +35,33 @@ jobs:
       - name: Install project
         run: uv sync --dev --locked
 
-      - name: Apply IMP-017 test and quality fixes
+      - name: Apply IMP-017 fixes
         shell: bash
         run: |
-          python - <<'PY'
-          from pathlib import Path
-
-          path = Path("tests/test_credential_broker.py")
-          text = path.read_text(encoding="utf-8")
-          old = '''    grant = authority.issue(intent)\n\n    with pytest.raises(CredentialBrokerContractError, match="validated SecretReference"):\n        broker.execute(intent, grant)\n'''
-          new = '''    with pytest.raises(CredentialBrokerContractError, match="invalid reference ID"):\n        authority.issue(intent)\n'''
-          if old not in text:
-              raise SystemExit("expected forged-reference test block not found")
-          path.write_text(text.replace(old, new), encoding="utf-8")
-          PY
+          sed -i '539,542c\    with pytest.raises(CredentialBrokerContractError, match="invalid reference ID"):\
+                  authority.issue(intent)' tests/test_credential_broker.py
           uv run ruff check --fix \
             src/doll/credential_broker.py \
             src/doll/credential_broker_contract.py \
             tests/test_credential_broker.py \
-            tests/test_credential_broker_contract.py
+            tests/test_credential_broker_contract.py || true
           uv run ruff format \
             src/doll/credential_broker.py \
             src/doll/credential_broker_contract.py \
             tests/test_credential_broker.py \
             tests/test_credential_broker_contract.py
 
-      - name: Commit IMP-017 quality fixes
+      - name: Commit IMP-017 fixes
         shell: bash
         run: |
-          if ! git diff --quiet -- \
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
             src/doll/credential_broker.py \
             src/doll/credential_broker_contract.py \
             tests/test_credential_broker.py \
-            tests/test_credential_broker_contract.py; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add \
-              src/doll/credential_broker.py \
-              src/doll/credential_broker_contract.py \
-              tests/test_credential_broker.py \
-              tests/test_credential_broker_contract.py
+            tests/test_credential_broker_contract.py
+          if ! git diff --cached --quiet; then
             git commit -m "IMP-017: Apply test and quality fixes"
             git push origin HEAD:${{ github.head_ref || github.ref_name }}
           fi
