@@ -461,6 +461,24 @@ def _reject_unsafe_identifier_text(value: str) -> None:
         raise AuditValidationError("audit identifier contains secret or private-environment data")
 
 
+def _reject_secret_text(value: str) -> None:
+    """Strict compatibility validator for callers that cannot accept redaction."""
+
+    normalized = " ".join(value.split())
+    redacted = redact_text(normalized, max_scan_chars=max(len(normalized), 1)).redacted_text
+    if redacted != normalized:
+        raise AuditValidationError("audit data appears to contain secret material")
+
+
+def _reject_local_path(value: str) -> None:
+    """Strict compatibility validator for portable package and record metadata."""
+
+    if "file://" in value or _POSIX_PATH_PATTERN.search(value):
+        raise AuditValidationError("audit data must not contain a local absolute path")
+    if _WINDOWS_PATH_PATTERN.search(value):
+        raise AuditValidationError("audit data must not contain a local absolute path")
+
+
 def _reject_nonstandard_json(value: str) -> object:
     raise ValueError(f"non-standard JSON constant: {value}")
 
