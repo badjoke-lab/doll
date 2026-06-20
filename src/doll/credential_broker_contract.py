@@ -367,9 +367,7 @@ class CredentialHandlerRegistry:
                         "credential handler operation scope must be exact"
                     )
                 if handler.risk_tier != "tier3":
-                    raise CredentialBrokerContractError(
-                        "credential handlers must use Tier 3 risk"
-                    )
+                    raise CredentialBrokerContractError("credential handlers must use Tier 3 risk")
             except Exception:
                 raise CredentialBrokerContractError(
                     "invalid credential handler registration"

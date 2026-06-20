@@ -15,7 +15,6 @@ from doll.credential_broker import (
 from doll.credential_broker_contract import (
     CredentialAuditEvent,
     CredentialAuditSink,
-    CredentialAuthorizationGrant,
     CredentialBrokerContractError,
     CredentialHandlerContext,
     CredentialHandlerRegistry,
@@ -284,7 +283,9 @@ def test_missing_authorization_denies_before_store_lookup() -> None:
 def test_grant_is_exact_one_time_and_replay_safe() -> None:
     adapter = SyntheticSecretStoreAdapter()
     broker, authority, _, handler, _ = _components(adapter=adapter)
-    intent = _intent(reference=_reference(destinations=("api.example.invalid", "api2.example.invalid")))
+    intent = _intent(
+        reference=_reference(destinations=("api.example.invalid", "api2.example.invalid"))
+    )
     grant = authority.issue(intent)
 
     changed = replace(intent, destination="api2.example.invalid")
@@ -337,9 +338,7 @@ def test_scope_destination_reference_and_handler_checks_precede_lookup() -> None
 
     rotated_intent = _intent(reference=_reference(status="rotated"))
     rotated_grant = authority.issue(rotated_intent)
-    assert broker.execute(rotated_intent, rotated_grant).failure_code == (
-        "invalid_reference_state"
-    )
+    assert broker.execute(rotated_intent, rotated_grant).failure_code == ("invalid_reference_state")
 
     handler.operation_scope = "other.read"
     mismatch_intent = _intent(operation_id="operation-4")
@@ -396,9 +395,7 @@ def test_absent_and_locked_store_fail_closed() -> None:
         user_presence="none",
         supported_operations=("lookup",),
     )
-    locked_broker, locked_authority, _, locked_handler, _ = _components(
-        adapter=locked_adapter
-    )
+    locked_broker, locked_authority, _, locked_handler, _ = _components(adapter=locked_adapter)
     locked_intent = _intent()
     locked = locked_broker.execute(locked_intent, locked_authority.issue(locked_intent))
     assert locked.failure_code == "locked"
@@ -536,10 +533,8 @@ def test_forged_reference_is_rejected_before_audit_or_lookup() -> None:
     broker, authority, _, handler, audit = _components(adapter=adapter)
     forged = replace(_reference(), reference_id="bad id")
     intent = _intent(reference=forged)
-    grant = authority.issue(intent)
-
-    with pytest.raises(CredentialBrokerContractError, match="validated SecretReference"):
-        broker.execute(intent, grant)
+    with pytest.raises(CredentialBrokerContractError, match="invalid reference ID"):
+        authority.issue(intent)
     assert audit.events == []
     assert handler.calls == 0
     assert adapter.calls == []
@@ -578,9 +573,9 @@ def test_authorization_authority_validates_ttl_ids_clocks_and_duplicates() -> No
     with pytest.raises(CredentialBrokerContractError, match="clock"):
         CredentialAuthorizationAuthority(clock=lambda: float("nan")).issue(intent)
     with pytest.raises(CredentialBrokerContractError, match="clock"):
-        CredentialAuthorizationAuthority(
-            clock=cast(Callable[[], float], lambda: "invalid")
-        ).issue(intent)
+        CredentialAuthorizationAuthority(clock=cast(Callable[[], float], lambda: "invalid")).issue(
+            intent
+        )
 
 
 def test_broker_constructor_and_runtime_types_fail_closed() -> None:

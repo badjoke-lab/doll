@@ -476,11 +476,7 @@ def _validate_authorization_ttl(value: float) -> float:
     if isinstance(value, bool) or not isinstance(value, int | float):
         raise CredentialBrokerContractError("invalid authorization TTL")
     ttl = float(value)
-    if (
-        not math.isfinite(ttl)
-        or ttl <= 0
-        or ttl > MAX_CREDENTIAL_AUTHORIZATION_TTL_SECONDS
-    ):
+    if not math.isfinite(ttl) or ttl <= 0 or ttl > MAX_CREDENTIAL_AUTHORIZATION_TTL_SECONDS:
         raise CredentialBrokerContractError("invalid authorization TTL")
     return ttl
 
