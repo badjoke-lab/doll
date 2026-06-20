@@ -202,9 +202,7 @@ class ExternalSecretStore:
         deadline = self._now() + float(request.timeout_seconds)
         adapter = self._registry.get(reference.store_adapter_class)
         if adapter is None:
-            return self._failure(
-                operation, reference, "adapter_not_configured", "not_completed"
-            )
+            return self._failure(operation, reference, "adapter_not_configured", "not_completed")
         status = self._adapter_status(reference.store_adapter_class, adapter)
         if request.cancellation.is_cancelled:
             return self._failure(operation, reference, "cancelled", "not_completed")
@@ -218,9 +216,7 @@ class ExternalSecretStore:
                 "not_completed",
             )
         if operation not in status.supported_operations:
-            return self._failure(
-                operation, reference, "unsupported_operation", "not_completed"
-            )
+            return self._failure(operation, reference, "unsupported_operation", "not_completed")
         if status.lock_state == "locked":
             return self._failure(operation, reference, "locked", "not_completed")
         presence_failure = _user_presence_failure(request.user_presence, status.user_presence)
@@ -341,9 +337,9 @@ def _user_presence_failure(
 
 __all__ = [
     "DEFAULT_SECRET_STORE_TIMEOUT_SECONDS",
-    "ExternalSecretStore",
     "MAX_SECRET_MATERIAL_BYTES",
     "MAX_SECRET_STORE_TIMEOUT_SECONDS",
+    "ExternalSecretStore",
     "SecretMaterial",
     "SecretMaterialClosedError",
     "SecretStoreAdapter",

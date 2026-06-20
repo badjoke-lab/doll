@@ -96,7 +96,7 @@ def test_secret_material_is_bounded_redacted_and_closed() -> None:
     with pytest.raises(SecretStoreContractError, match="size"):
         SecretMaterial(b"x" * (MAX_SECRET_MATERIAL_BYTES + 1))
     with pytest.raises(SecretStoreContractError, match="bytes-like"):
-        SecretMaterial(object())  # type: ignore[arg-type]
+        SecretMaterial(object())
     released_view = memoryview(b"synthetic")
     released_view.release()
     with pytest.raises(SecretStoreContractError, match="bytes-like"):
@@ -148,7 +148,7 @@ def test_request_validation_and_cancellation() -> None:
     )
     for kwargs in invalid_requests:
         with pytest.raises(SecretStoreContractError):
-            SecretStoreRequest(**kwargs)  # type: ignore[arg-type]
+            SecretStoreRequest(**kwargs)
 
 
 def test_adapter_context_validation() -> None:
@@ -214,7 +214,7 @@ def test_status_validation_is_closed_and_deterministic() -> None:
     for change in invalid_statuses:
         payload = base | change
         with pytest.raises(SecretStoreContractError):
-            SecretStoreStatus(**payload)  # type: ignore[arg-type]
+            SecretStoreStatus(**payload)
 
 
 def test_registry_is_immutable_validated_and_duplicate_safe() -> None:
@@ -267,15 +267,11 @@ def test_result_invariants_and_lookup_ownership() -> None:
     assert material.is_closed is True
     failed_lookup.close()
 
-    non_lookup = SecretStoreOperationResult(
-        "delete", "ref", "test.x", True, None, "confirmed"
-    )
+    non_lookup = SecretStoreOperationResult("delete", "ref", "test.x", True, None, "confirmed")
     with pytest.raises(SecretStoreContractError, match="lookup operation"):
         SecretStoreLookupResult(non_lookup)
 
-    success = SecretStoreOperationResult(
-        "lookup", "ref", "test.x", True, None, "confirmed"
-    )
+    success = SecretStoreOperationResult("lookup", "ref", "test.x", True, None, "confirmed")
     with pytest.raises(SecretStoreContractError, match="open secret material"):
         SecretStoreLookupResult(success)
     closed = SecretMaterial(b"synthetic")

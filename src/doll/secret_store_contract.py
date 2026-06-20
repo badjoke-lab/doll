@@ -173,15 +173,9 @@ class SecretStoreStatus:
 
     def __post_init__(self) -> None:
         validate_adapter_class(self.adapter_class)
-        if (
-            not isinstance(self.availability, str)
-            or self.availability not in _ALLOWED_AVAILABILITY
-        ):
+        if not isinstance(self.availability, str) or self.availability not in _ALLOWED_AVAILABILITY:
             raise SecretStoreContractError("invalid secret-store availability")
-        if (
-            not isinstance(self.lock_state, str)
-            or self.lock_state not in _ALLOWED_LOCK_STATES
-        ):
+        if not isinstance(self.lock_state, str) or self.lock_state not in _ALLOWED_LOCK_STATES:
             raise SecretStoreContractError("invalid secret-store lock state")
         if (
             not isinstance(self.user_presence, str)
@@ -201,8 +195,7 @@ class SecretStoreStatus:
                 "secret-store supported operations must be unique and sorted"
             )
         if self.failure_code is not None and (
-            not isinstance(self.failure_code, str)
-            or self.failure_code not in _STATUS_FAILURE_CODES
+            not isinstance(self.failure_code, str) or self.failure_code not in _STATUS_FAILURE_CODES
         ):
             raise SecretStoreContractError("invalid secret-store status failure code")
         if self.availability == "available" and self.failure_code is not None:

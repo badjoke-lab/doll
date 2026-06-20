@@ -182,9 +182,7 @@ def test_empty_registry_is_safe_and_core_constructs() -> None:
     status = store.status("test.synthetic")
     assert status.availability == "unavailable"
     assert status.failure_code == "adapter_not_configured"
-    assert store.lookup(_reference(), _request()).result.failure_code == (
-        "adapter_not_configured"
-    )
+    assert store.lookup(_reference(), _request()).result.failure_code == ("adapter_not_configured")
 
 
 def test_boundary_constructor_validation() -> None:
@@ -285,12 +283,11 @@ def test_preflight_availability_lock_support_and_user_presence() -> None:
         "required",
         ("lookup",),
     )
-    assert store.lookup(_reference(), _request()).result.failure_code == (
-        "user_presence_required"
+    assert store.lookup(_reference(), _request()).result.failure_code == ("user_presence_required")
+    assert (
+        store.lookup(_reference(), _request(user_presence="allow")).result.failure_code
+        == "not_found"
     )
-    assert store.lookup(
-        _reference(), _request(user_presence="allow")
-    ).result.failure_code == "not_found"
 
     adapter.status_value = SecretStoreStatus(
         adapter.adapter_class,
@@ -299,9 +296,10 @@ def test_preflight_availability_lock_support_and_user_presence() -> None:
         "none",
         ("lookup",),
     )
-    assert store.lookup(
-        _reference(), _request(user_presence="require")
-    ).result.failure_code == "user_presence_unavailable"
+    assert (
+        store.lookup(_reference(), _request(user_presence="require")).result.failure_code
+        == "user_presence_unavailable"
+    )
 
 
 def test_preflight_cancellation_and_timeout_after_status() -> None:
