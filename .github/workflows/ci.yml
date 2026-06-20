@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   quality:
@@ -16,8 +16,6 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -34,35 +32,6 @@ jobs:
 
       - name: Install project
         run: uv sync --dev --locked
-
-      - name: Restore intentional type-test annotations
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-
-          path = Path("tests/test_secret_store_contract.py")
-          text = path.read_text(encoding="utf-8")
-          text = text.replace(
-              "SecretMaterial(object())\n",
-              "SecretMaterial(object())  # type: ignore[arg-type]\n",
-          )
-          text = text.replace(
-              "SecretStoreStatus(**payload)\n",
-              "SecretStoreStatus(**payload)  # type: ignore[arg-type]\n",
-          )
-          path.write_text(text, encoding="utf-8")
-          PY
-
-      - name: Commit intentional type-test annotations
-        shell: bash
-        run: |
-          if ! git diff --quiet -- tests/test_secret_store_contract.py; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add tests/test_secret_store_contract.py
-            git commit -m "IMP-016: Restore intentional type-test annotations"
-            git push origin HEAD:${{ github.head_ref || github.ref_name }}
-          fi
 
       - name: Lint
         run: uv run ruff check .
