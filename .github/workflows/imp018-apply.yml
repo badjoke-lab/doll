@@ -19,6 +19,7 @@ jobs:
       - name: Reconstruct and apply reviewed implementation
         shell: bash
         run: |
+          sed -i 's/E8e7xQaardab/E8e7xQoardab/' .github/imp018-payload/part-01
           cat \
             .github/imp018-payload/part-00 \
             .github/imp018-payload/part-01 \
