@@ -47,6 +47,10 @@ jobs:
           echo $? > spec-status.txt
           exit 0
 
+      - name: Create formatted diagnostic copies
+        run: |
+          uv run ruff format src/doll/audit.py src/doll/safe_logging.py tests/test_safe_logging.py
+
       - name: Upload quality output
         if: always()
         uses: actions/upload-artifact@v4
@@ -61,6 +65,17 @@ jobs:
             mypy-status.txt
             spec-output.txt
             spec-status.txt
+          if-no-files-found: error
+
+      - name: Upload formatted files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: formatted-files
+          path: |
+            src/doll/audit.py
+            src/doll/safe_logging.py
+            tests/test_safe_logging.py
           if-no-files-found: error
 
       - name: Enforce quality checks
