@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import pytest
 
-from doll.diagnostics import redact_diagnostic, safe_exception_message
+from doll.diagnostics import redact_diagnostic, redact_exception_text, safe_exception_message
 
 
 def test_safe_exception_message_redacts_secret_and_private_path() -> None:
@@ -25,6 +25,14 @@ def test_safe_exception_message_handles_empty_message() -> None:
     )
 
 
+def test_exception_renderer_falls_back_when_str_raises() -> None:
+    class BrokenMessageError(RuntimeError):
+        def __str__(self) -> str:
+            raise RuntimeError("must not escape")
+
+    assert redact_exception_text(BrokenMessageError()) == "BrokenMessageError"
+
+
 def test_structured_diagnostic_redacts_nested_values_and_keys() -> None:
     payload = {
         "request": {
@@ -39,9 +47,26 @@ def test_structured_diagnostic_redacts_nested_values_and_keys() -> None:
     assert "user@example.invalid" not in rendered
     assert "90-1234-5678" not in rendered
     assert result.finding_count == 4
+    assert result.field_redaction_count == 0
     assert result.text_truncated is False
     assert result.depth_limit_reached is False
     assert result.item_limit_reached is False
+    assert result.cycle_detected is False
+
+
+def test_structured_diagnostic_redacts_values_selected_by_sensitive_field_name() -> None:
+    payload = {
+        "password": "synthetic-unlabeled-password",
+        "hostname": "private-machine-name",
+        "nested": {"client_secret": object()},
+    }
+    result = redact_diagnostic(payload)
+    rendered = repr(result.value)
+    assert "synthetic-unlabeled-password" not in rendered
+    assert "private-machine-name" not in rendered
+    assert "[REDACTED:secret_field]" in rendered
+    assert "[REDACTED:private_environment]" in rendered
+    assert result.field_redaction_count == 3
 
 
 def test_structured_diagnostic_omits_binary_and_unknown_object_representation() -> None:
@@ -63,7 +88,16 @@ def test_structured_diagnostic_omits_binary_and_unknown_object_representation() 
     assert secret not in repr(result.value)
 
 
-def test_structured_diagnostic_depth_and_item_limits_are_explicit() -> None:
+def test_structured_diagnostic_does_not_stringify_unknown_mapping_keys() -> None:
+    class DangerousKey:
+        def __str__(self) -> str:
+            raise AssertionError("must not be called")
+
+    result = redact_diagnostic({DangerousKey(): "safe"})
+    assert result.value == {"[OBJECT_KEY:DangerousKey]": "safe"}
+
+
+def test_structured_diagnostic_depth_item_and_cycle_limits_are_explicit() -> None:
     depth_result = redact_diagnostic({"a": {"b": {"c": "value"}}}, max_depth=1)
     assert depth_result.depth_limit_reached is True
     assert "[DIAGNOSTIC_DEPTH_LIMIT]" in repr(depth_result.value)
@@ -71,6 +105,12 @@ def test_structured_diagnostic_depth_and_item_limits_are_explicit() -> None:
     item_result = redact_diagnostic(["a", "b", "c"], max_items=2)
     assert item_result.item_limit_reached is True
     assert item_result.value == ["a", "b", "[DIAGNOSTIC_ITEM_LIMIT]"]
+
+    cyclic: list[object] = []
+    cyclic.append(cyclic)
+    cycle_result = redact_diagnostic(cyclic)
+    assert cycle_result.cycle_detected is True
+    assert cycle_result.value == [["[DIAGNOSTIC_CYCLE_OMITTED]"]]
 
 
 def test_structured_diagnostic_string_limit_omits_unscanned_suffix() -> None:
@@ -93,3 +133,8 @@ def test_invalid_diagnostic_limits_are_rejected(max_depth: int, max_items: int) 
 def test_scalar_diagnostic_values_are_preserved() -> None:
     result = redact_diagnostic([None, True, 3, 4.5])
     assert result.value == [None, True, 3, 4.5]
+
+
+def test_non_finite_diagnostic_numbers_are_omitted() -> None:
+    result = redact_diagnostic([float("nan"), float("inf")])
+    assert result.value == ["[NON_FINITE_NUMBER_OMITTED]", "[NON_FINITE_NUMBER_OMITTED]"]
