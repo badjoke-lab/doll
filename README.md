@@ -2,7 +2,7 @@
 
 > A personal AI continuity system.
 
-**Status:** Pre-alpha — model-independent continuity through IMP-012, secret classification through IMP-013, and bounded secret detection and redaction through IMP-014 are implemented. IMP-015 is next. No model runtime is connected yet.
+**Live project status:** [maturity, phase, and runtime declaration](https://doll.badjoke-lab.com/project-status.json) · [current, next, and recent implementation activity](https://doll.badjoke-lab.com/api/project-status)
 
 `doll` is an open-source project intended to keep a person's AI environment and ongoing work usable even when a cloud service, local AI application, model provider, runtime, user interface, conversation store, distribution source, network connection, primary machine, or upstream project becomes unavailable.
 
@@ -172,7 +172,7 @@ The accepted phase order is:
 10. tools and external services;
 11. distribution, encryption, and long-term operation.
 
-IMP-001 through IMP-014 are complete. IMP-015 is next. IMP-015 through IMP-023 complete and validate the remaining safety boundary. Phase 4A then establishes canonical conversation, adapter, generic import/export, provenance, idempotency, quarantine, and loss-report contracts. Phase 4B establishes Doll State Package v2, ProjectRecord v2, WorkItemRecord, ProcedureRecord, ProjectCheckpointRecord, deterministic status, Resume Bundle, and PROJ acceptance. Existing local model work remains IMP-024 through IMP-029 after those gates.
+The safety-boundary implementation sequence runs through IMP-023. The current position is derived from merged and open `IMP-*` work and published through the [live implementation activity endpoint](https://doll.badjoke-lab.com/api/project-status). Phase 4A then establishes canonical conversation, adapter, generic import/export, provenance, idempotency, quarantine, and loss-report contracts. Phase 4B establishes Doll State Package v2, ProjectRecord v2, WorkItemRecord, ProcedureRecord, ProjectCheckpointRecord, deterministic status, Resume Bundle, and PROJ acceptance. Existing local model work remains IMP-024 through IMP-029 after those gates.
 
 ## What doll is not
 
