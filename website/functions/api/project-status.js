@@ -52,37 +52,58 @@ async function buildStatus(env) {
     githubJson("/issues?state=open&per_page=100&sort=updated&direction=desc", env),
   ]);
 
+  const mergedImplementationPulls = closedPulls
+    .filter((pull) => pull.merged_at && implementationNumber(pull.title) !== null)
+    .sort((a, b) => b.merged_at.localeCompare(a.merged_at));
+
+  const latestMergedImplementation = mergedImplementationPulls.reduce(
+    (latest, pull) => Math.max(latest, implementationNumber(pull.title)),
+    -1,
+  );
+
   const implementationPulls = openPulls
-    .filter((pull) => implementationNumber(pull.title) !== null)
+    .filter((pull) => {
+      const number = implementationNumber(pull.title);
+      return number !== null && number > latestMergedImplementation;
+    })
     .sort((a, b) => b.updated_at.localeCompare(a.updated_at));
 
   const implementationIssues = openIssues
-    .filter((issue) => !issue.pull_request && implementationNumber(issue.title) !== null)
+    .filter((issue) => {
+      if (issue.pull_request) {
+        return false;
+      }
+
+      const number = implementationNumber(issue.title);
+      return number !== null && number > latestMergedImplementation;
+    })
     .sort((a, b) => {
       const numberDifference = implementationNumber(a.title) - implementationNumber(b.title);
       return numberDifference || a.created_at.localeCompare(b.created_at);
     });
 
-  const currentSource = implementationPulls[0] || implementationIssues[0] || null;
+  const currentPull = implementationPulls[0] || null;
+  const currentIssue = implementationIssues[0] || null;
+  const currentSource = currentPull || currentIssue;
   const current = currentSource
-    ? publicEntry(currentSource, implementationPulls[0] ? "pull_request" : "issue")
+    ? publicEntry(currentSource, currentPull ? "pull_request" : "issue")
     : null;
 
-  const currentImplementation = current?.implementation ?? -1;
+  const currentImplementation = current?.implementation ?? latestMergedImplementation;
   const nextSource = implementationIssues.find(
     (issue) => implementationNumber(issue.title) > currentImplementation,
   );
   const next = nextSource ? publicEntry(nextSource, "issue") : null;
 
-  const recent = closedPulls
-    .filter((pull) => pull.merged_at && implementationNumber(pull.title) !== null)
-    .sort((a, b) => b.merged_at.localeCompare(a.merged_at))
+  const recent = mergedImplementationPulls
     .slice(0, 3)
     .map((pull) => publicEntry(pull, "pull_request"));
 
   return {
     schema_version: 1,
     repository: REPOSITORY,
+    latest_merged_implementation:
+      latestMergedImplementation >= 0 ? latestMergedImplementation : null,
     current,
     next,
     recent,
@@ -90,7 +111,11 @@ async function buildStatus(env) {
   };
 }
 
-function jsonResponse(body, status = 200, cacheControl = "public, max-age=60, s-maxage=600") {
+function jsonResponse(
+  body,
+  status = 200,
+  cacheControl = `public, max-age=60, s-maxage=${CACHE_SECONDS}`,
+) {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
@@ -103,7 +128,7 @@ function jsonResponse(body, status = 200, cacheControl = "public, max-age=60, s-
 export async function onRequestGet(context) {
   const cache = caches.default;
   const cacheUrl = new URL(context.request.url);
-  cacheUrl.pathname = "/__doll-public-project-status-v1";
+  cacheUrl.pathname = "/__doll-public-project-status-v2";
   cacheUrl.search = "";
   const cacheKey = new Request(cacheUrl.toString(), { method: "GET" });
 
@@ -122,6 +147,7 @@ export async function onRequestGet(context) {
       {
         schema_version: 1,
         repository: REPOSITORY,
+        latest_merged_implementation: null,
         current: null,
         next: null,
         recent: [],
