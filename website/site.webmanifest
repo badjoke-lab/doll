@@ -8,15 +8,9 @@
   "theme_color": "#ffffff",
   "icons": [
     {
-      "src": "/assets/doll-logo.png",
+      "src": "/assets/doll-logo.png?v=20260620-3",
       "sizes": "256x256",
       "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/assets/doll-logo.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
       "purpose": "any"
     }
   ]
