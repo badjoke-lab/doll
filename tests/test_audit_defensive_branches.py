@@ -79,12 +79,14 @@ def test_defensive_validation_branches(tmp_path: Path) -> None:
                 result="denied",
                 actor_id="synthetic\x00actor",
             )
-        with pytest.raises(AuditValidationError, match="absolute path"):
-            service.append(
-                action="audit.path",
-                result="denied",
-                summary=r"opened C:\Users\synthetic\private.txt",
-            )
+
+        path_event = service.append(
+            action="audit.path",
+            result="denied",
+            summary=r"opened C:\Users\synthetic\private.txt",
+        )
+        assert path_event.summary == "opened [REDACTED:private_path]"
+
         with pytest.raises(AuditValidationError, match="timestamp is invalid"):
             audit._validate_utc_timestamp("2026-99-99T00:00:00Z")
         with pytest.raises(ValueError, match="non-standard JSON"):

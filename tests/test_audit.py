@@ -62,6 +62,48 @@ def test_append_get_list_and_filters_advance_revision(tmp_path: Path) -> None:
     assert workspace.load_workspace(initialized.root).record.state_revision == 2
 
 
+def test_audit_sanitizes_summary_and_metadata_before_persistence(tmp_path: Path) -> None:
+    initialized = initialized_workspace(tmp_path)
+    secret = "syntheticBearer123456"
+    with state.initialize_state_repository(initialized.root) as repository:
+        event = AuditService(repository).append(
+            action="audit.sanitize",
+            result="failed",
+            summary=(
+                "password=synthetic-password at /Users/example/private/workspace\n"
+                "hostname=private-machine"
+            ),
+            metadata={
+                "note": f"Authorization: Bearer {secret}",
+                "contact": "user@example.invalid",
+                "portable_path": "artifacts/report.txt",
+            },
+        )
+
+        rendered = repr(event)
+        assert "synthetic-password" not in rendered
+        assert secret not in rendered
+        assert "/Users/example" not in rendered
+        assert "private-machine" not in rendered
+        assert "user@example.invalid" not in rendered
+        assert "[REDACTED:credential_assignment]" in (event.summary or "")
+        assert "[REDACTED:private_path]" in (event.summary or "")
+        assert "[REDACTED:private_environment]" in (event.summary or "")
+        assert event.metadata["portable_path"] == "artifacts/report.txt"
+
+        row = repository.connection.execute(
+            "SELECT summary, metadata_json FROM audit_events WHERE event_id = ?",
+            (event.event_id,),
+        ).fetchone()
+        assert row is not None
+        persisted = f"{row['summary']} {row['metadata_json']}"
+        assert "synthetic-password" not in persisted
+        assert secret not in persisted
+        assert "/Users/example" not in persisted
+        assert "private-machine" not in persisted
+        assert "user@example.invalid" not in persisted
+
+
 def test_read_only_listing_and_write_rejection_do_not_mutate_files(
     tmp_path: Path,
 ) -> None:
@@ -85,7 +127,7 @@ def test_read_only_listing_and_write_rejection_do_not_mutate_files(
     assert workspace_path.stat().st_mtime_ns == before_workspace
 
 
-def test_audit_validation_rejects_secrets_paths_and_invalid_values(
+def test_audit_validation_rejects_unsafe_structure_and_invalid_values(
     tmp_path: Path,
 ) -> None:
     initialized = initialized_workspace(tmp_path)
@@ -97,12 +139,6 @@ def test_audit_validation_rejects_secrets_paths_and_invalid_values(
             {"action": "x", "result": "bogus"},
             {"action": "x", "result": "success", "actor_type": "bogus"},
             {"action": "x", "result": "success", "actor_id": "   "},
-            {"action": "x", "result": "success", "summary": "password=hunter2"},
-            {
-                "action": "x",
-                "result": "success",
-                "summary": "opened /Users/example/private.txt",
-            },
             {
                 "action": "x",
                 "result": "success",
@@ -111,7 +147,7 @@ def test_audit_validation_rejects_secrets_paths_and_invalid_values(
             {
                 "action": "x",
                 "result": "success",
-                "metadata": {"note": "access_token=must-not-persist"},
+                "metadata": {"hostname": "private-machine"},
             },
             {
                 "action": "x",
@@ -126,12 +162,38 @@ def test_audit_validation_rejects_secrets_paths_and_invalid_values(
             {
                 "action": "x",
                 "result": "success",
-                "metadata": {"large": "x" * 9000},
+                "summary": "x" * 501,
+            },
+            {
+                "action": "x",
+                "result": "success",
+                "metadata": {"a": "x" * 4000, "b": "y" * 4000, "c": "z" * 1000},
             },
         )
         for kwargs in invalid_calls:
             with pytest.raises(AuditValidationError):
                 service.append(**kwargs)
+
+        cyclic: dict[str, object] = {}
+        cyclic["self"] = cyclic
+        with pytest.raises(AuditValidationError, match="cycles"):
+            service.append(action="x", result="success", metadata=cyclic)
+
+        deep: dict[str, object] = {}
+        cursor = deep
+        for index in range(8):
+            nested: dict[str, object] = {}
+            cursor[f"level_{index}"] = nested
+            cursor = nested
+        with pytest.raises(AuditValidationError, match="depth"):
+            service.append(action="x", result="success", metadata=deep)
+
+        with pytest.raises(AuditValidationError, match="items"):
+            service.append(
+                action="x",
+                result="success",
+                metadata={"items": list(range(257))},
+            )
 
         with pytest.raises(AuditValidationError):
             service.list(limit=0)
@@ -183,6 +245,34 @@ def test_corrupt_audit_metadata_is_detected(tmp_path: Path) -> None:
             ) VALUES (?, ?, ?, 'system', 'audit.corrupt', 'failed', '[]')
             """,
             (str(uuid4()), str(uuid4()), "2026-06-14T00:00:00Z"),
+        )
+        with pytest.raises(state.StateCorruptError, match="invalid data"):
+            AuditService(repository).list()
+
+
+def test_unsafe_stored_audit_content_is_detected_instead_of_normalized(tmp_path: Path) -> None:
+    initialized = initialized_workspace(tmp_path)
+    with state.initialize_state_repository(initialized.root) as repository:
+        repository.connection.execute(
+            """
+            INSERT INTO audit_events (
+                event_id,
+                operation_id,
+                occurred_at,
+                actor_type,
+                action,
+                result,
+                summary,
+                metadata_json
+            ) VALUES (?, ?, ?, 'system', 'audit.unsafe', 'failed', ?, ?)
+            """,
+            (
+                str(uuid4()),
+                str(uuid4()),
+                "2026-06-14T00:00:00Z",
+                "password=synthetic-stored-secret",
+                '{"note":"Authorization: Bearer syntheticBearer123456"}',
+            ),
         )
         with pytest.raises(state.StateCorruptError, match="invalid data"):
             AuditService(repository).list()
