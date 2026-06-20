@@ -2,7 +2,10 @@ doll
 
 A personal AI continuity system.
 Local-complete, cloud-optional.
-Status: pre-alpha. No model runtime is connected yet.
+
+Live public status:
+https://doll.badjoke-lab.com/project-status.json
+https://doll.badjoke-lab.com/api/project-status
 
 Purpose:
 Preserve user-owned AI state and ongoing work across changes in models, runtimes, applications, providers, interfaces, networks, and machines.
