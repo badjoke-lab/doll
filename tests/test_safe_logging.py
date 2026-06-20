@@ -183,6 +183,69 @@ def test_handler_writes_static_omission_event_after_first_stream_failure() -> No
     assert "synthetic-stream-secret" not in stream.getvalue()
 
 
+def test_handler_suppresses_second_stream_failure() -> None:
+    class AlwaysFailStream(StringIO):
+        def write(self, value: str) -> int:
+            raise OSError("synthetic persistent write failure")
+
+    handler = SecretSafeLogHandler(stream=AlwaysFailStream())
+    record = logging.LogRecord(
+        name="doll.test.double-stream-failure",
+        level=logging.ERROR,
+        pathname="ignored.py",
+        lineno=1,
+        msg="password=synthetic-double-failure-secret",
+        args=(),
+        exc_info=None,
+    )
+
+    handler.emit(record)
+
+
+def test_renderer_handles_invalid_timestamp_and_scalar_messages() -> None:
+    invalid_time_record = logging.LogRecord(
+        name="doll.test.invalid-time",
+        level=logging.INFO,
+        pathname="ignored.py",
+        lineno=1,
+        msg=None,
+        args=(),
+        exc_info=None,
+    )
+    invalid_time_record.created = 1e300
+    invalid_time_record.operation_id = ""
+    invalid_time_record.event_id = 7
+    invalid_time = json.loads(render_log_record(invalid_time_record))
+    assert invalid_time["timestamp"] == "1970-01-01T00:00:00.000Z"
+    assert invalid_time["message"] == "None"
+    assert "operation_id" not in invalid_time
+    assert "event_id" not in invalid_time
+
+    non_finite_record = logging.LogRecord(
+        name="doll.test.non-finite",
+        level=logging.INFO,
+        pathname="ignored.py",
+        lineno=1,
+        msg=float("nan"),
+        args=(),
+        exc_info=None,
+    )
+    non_finite = json.loads(render_log_record(non_finite_record))
+    assert non_finite["message"] == "[NON_FINITE_NUMBER_OMITTED]"
+
+    blank_record = logging.LogRecord(
+        name="doll.test.blank",
+        level=logging.INFO,
+        pathname="ignored.py",
+        lineno=1,
+        msg="   ",
+        args=(),
+        exc_info=None,
+    )
+    blank = json.loads(render_log_record(blank_record))
+    assert blank["message"] == ""
+
+
 def test_handler_suppresses_flush_failure() -> None:
     class FlushFailureStream(StringIO):
         def flush(self) -> None:
