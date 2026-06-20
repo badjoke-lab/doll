@@ -16,13 +16,13 @@ from doll.secret_material import (
 )
 from doll.secret_policy import SecretReferenceMetadata
 
-SecretStoreOperation = Literal["create", "replace", "lookup", "revoke", "delete"]
-SecretStoreAvailability = Literal["available", "unavailable"]
-SecretStoreLockState = Literal["unlocked", "locked", "unknown", "not_applicable"]
-SecretStoreUserPresence = Literal["none", "optional", "required", "unknown"]
-SecretStoreUserPresencePolicy = Literal["forbid", "allow", "require"]
-SecretStoreCompletion = Literal["confirmed", "not_completed", "unknown"]
-SecretStoreFailureCode = Literal[
+type SecretStoreOperation = Literal["create", "replace", "lookup", "revoke", "delete"]
+type SecretStoreAvailability = Literal["available", "unavailable"]
+type SecretStoreLockState = Literal["unlocked", "locked", "unknown", "not_applicable"]
+type SecretStoreUserPresence = Literal["none", "optional", "required", "unknown"]
+type SecretStoreUserPresencePolicy = Literal["forbid", "allow", "require"]
+type SecretStoreCompletion = Literal["confirmed", "not_completed", "unknown"]
+type SecretStoreFailureCode = Literal[
     "adapter_not_configured",
     "adapter_failure",
     "already_exists",
