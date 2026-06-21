@@ -7,6 +7,7 @@ from typing import Literal, cast
 from urllib.parse import urlsplit
 
 import pytest
+
 from doll import state, workspace
 from doll.audit import AuditActorType, AuditResult, AuditService
 from doll.capabilities import (

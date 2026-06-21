@@ -5,6 +5,7 @@ from dataclasses import replace
 from typing import cast
 
 import pytest
+
 from doll import capabilities as cap
 from doll.capabilities import (
     MAX_TARGET_IDENTIFIER_LENGTH,
