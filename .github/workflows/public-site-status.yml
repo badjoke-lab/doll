@@ -6,6 +6,7 @@ on:
       - "README.md"
       - "website/**"
       - "scripts/check-public-site-status.mjs"
+      - "scripts/check-public-writing.mjs"
       - ".github/workflows/public-site-status.yml"
       - "docs/spec/09-development-roadmap.md"
   push:
@@ -15,6 +16,7 @@ on:
       - "README.md"
       - "website/**"
       - "scripts/check-public-site-status.mjs"
+      - "scripts/check-public-writing.mjs"
       - ".github/workflows/public-site-status.yml"
       - "docs/spec/09-development-roadmap.md"
 
@@ -35,6 +37,9 @@ jobs:
 
       - name: Validate public status sources
         run: node scripts/check-public-site-status.mjs
+
+      - name: Validate public writing sources
+        run: node scripts/check-public-writing.mjs
 
       - name: Require public status review when roadmap changes
         if: github.event_name == 'pull_request'
