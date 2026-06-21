@@ -26,8 +26,8 @@ for name in ("part-02-00.b64x", "part-02-01.b64x", "part-02-02.b64x"):
 clean_pieces = [b"".join(piece.split()) for piece in pieces]
 clean_encoded = b"".join(clean_pieces)
 if len(clean_encoded) % 4:
-    lengths = ",".join(str(len(piece)) for piece in clean_pieces)
-    raise RuntimeError(f"L={lengths};T={len(clean_encoded)};M={len(clean_encoded) % 4}")
+    tail = ",".join(str(len(piece)) for piece in clean_pieces[4:])
+    raise RuntimeError(f"T={tail}|N={len(clean_encoded)}|M={len(clean_encoded) % 4}")
 archive = base64.b64decode(clean_encoded, validate=True)
 expected = "6630cce4b4a9a553fd7e25087422198544882e6a86ba1697435bc091c8622b45"
 actual = hashlib.sha256(archive).hexdigest()
