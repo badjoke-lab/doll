@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The AI Divide Will Be About Permission, Not Access — doll</title>
+  <meta name="description" content="What corporate restrictions on AI agents may tell us about a future in which access to AI is widespread but meaningful capability is tiered by permission.">
+  <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+  <p><a href="../../">Back to doll</a></p>
+
+  <main>
+    <article>
+      <h1>The AI Divide Will Be About Permission, Not Access</h1>
+
+      <h2>What Corporate Restrictions on AI Agents May Tell Us About the Future of AI Capability</h2>
+
+      <p>
+        On X and other social platforms, I have seen variations of the same argument:
+        powerful coding agents should not be made available to everyone inside a company.
+        The reasoning is usually that less experienced users may expose credentials, approve
+        dangerous commands, install an untrusted tool, connect a malicious MCP server, or let
+        an agent make changes they do not understand.
+      </p>
+
+      <p>
+        I cannot verify the individual stories attached to those posts. A claim that one CTO
+        blocked a company-wide rollout may be accurate, exaggerated, incomplete, or invented.
+        A social-media anecdote is not evidence of a broad trend.
+      </p>
+
+      <p>
+        The argument is still worth examining because its underlying logic does not depend on
+        any one anecdote being true. If an ordinary private company has rational reasons to
+        limit who may use an AI system with access to code, credentials, networks, and tools,
+        larger institutions will have at least as many reasons to control more powerful systems.
+      </p>
+
+      <p>
+        That does not mean AI will disappear from public use. A more plausible division is subtler:
+        almost everyone may have access to an AI assistant, while only selected people and
+        organizations are permitted to use AI with the authority, data, tools, compute, and
+        autonomy needed to change the real world.
+      </p>
+
+      <blockquote>
+        <p>
+          The future divide may not be between people who have AI and people who do not.
+          It may be between those allowed to use AI as an adviser and those allowed to use it as an operator.
+        </p>
+      </blockquote>
+
+      <h2>Companies Have Rational Reasons to Restrict Agentic AI</h2>
+
+      <p>
+        A conversational model that answers questions is one thing. An agent that can inspect
+        repositories, modify files, run commands, browse the web, call external services, and
+        act through organizational accounts is something else.
+      </p>
+
+      <p>
+        The security architecture of current coding agents already reflects that distinction.
+        Anthropic documents Claude Code as read-only by default, with explicit permission required
+        for actions such as editing files and executing commands. Its security guidance also describes
+        sandboxing, restricted write scope, network controls, trust checks for new codebases and MCP
+        servers, and organizationally managed settings.
+        <a href="https://code.claude.com/docs/en/security">Anthropic's Claude Code security documentation explains those controls.</a>
+      </p>
+
+      <p>
+        OpenAI likewise warns that prompt injection can cause an agent to disclose private data,
+        call tools in unintended ways, or take actions that do not match the user's intent.
+        Its guidance recommends constraining tool access, treating external content as untrusted,
+        and adding human approval at consequential steps.
+        <a href="https://platform.openai.com/docs/guides/agent-builder-safety">OpenAI's agent safety guidance describes these risks and mitigations.</a>
+      </p>
+
+      <p>
+        NIST's Generative AI Profile treats generative-AI risk management as an organizational
+        responsibility across design, development, deployment, use, and evaluation rather than as
+        a problem solved by telling individual users to be careful.
+        <a href="https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence">NIST publishes the profile as a companion to its AI Risk Management Framework.</a>
+      </p>
+
+      <p>
+        From a company's perspective, the concern is therefore not irrational. A single mistake can
+        expose confidential information, damage production systems, create legal liability, or make it
+        impossible to determine who authorized an action. The more capable the agent, the more seriously
+        an organization must consider permissions, isolation, logging, approval, and recovery.
+      </p>
+
+      <p>
+        The mistake begins when this real security problem is reduced to a crude social category such as
+        “engineers may use it” and “non-engineers may not.”
+      </p>
+
+      <h2>The Correct Boundary Is Capability, Not Job Title</h2>
+
+      <p>
+        Engineering status is a weak proxy for safe use. An experienced engineer with unrestricted
+        production credentials can cause far more damage than a non-engineer working inside a read-only,
+        disposable environment. A careful beginner can operate safely within a narrow boundary. A senior
+        specialist can behave recklessly when the boundary is absent.
+      </p>
+
+      <p>The relevant questions are more concrete:</p>
+
+      <ul>
+        <li>What data can the system read?</li>
+        <li>What files, accounts, and services can it modify?</li>
+        <li>Can it reach the public network?</li>
+        <li>Can it install or invoke third-party tools?</li>
+        <li>Can it access secrets or production credentials?</li>
+        <li>How long may it run without review?</li>
+        <li>Which actions require explicit approval?</li>
+        <li>What is the maximum blast radius if it fails or is manipulated?</li>
+        <li>Can its actions be audited and reversed?</li>
+      </ul>
+
+      <p>
+        These are system-design questions. They apply to every user, including experts.
+        The proper response to agent risk is not to reserve powerful tools for people with the right title.
+        It is to separate capabilities, grant the minimum necessary authority, and increase review as the
+        consequences of an action increase.
+      </p>
+
+      <p>
+        A company can give many employees access to an AI that summarizes documents, searches approved
+        knowledge, or drafts work without giving those same employees permission to deploy code, read all
+        customer records, or transfer funds. The model may be similar while the operational authority is not.
+      </p>
+
+      <p>
+        This distinction matters because the useful power of an AI system is not determined by the model alone.
+        It is produced by the combination of model capability, private data, tools, credentials, compute,
+        runtime duration, and permission to act.
+      </p>
+
+      <h2>Larger Institutions Will Have Even Stronger Incentives to Control Capability</h2>
+
+      <p>
+        The same reasoning scales beyond one company. Cloud providers, large corporations, governments,
+        research institutions, and critical-infrastructure operators face larger consequences when a system
+        is misused or compromised. They also possess more valuable data, more powerful tools, and more capable
+        infrastructure.
+      </p>
+
+      <p>
+        Their incentives are mixed. Some are plainly protective: prevent fraud, cyberattacks, data leakage,
+        unsafe scientific assistance, or uncontrolled access to critical systems. Others are institutional:
+        reduce liability, satisfy regulators, preserve commercial advantage, protect national capabilities,
+        and maintain control over scarce infrastructure.
+      </p>
+
+      <p>
+        No secret agreement is required for these incentives to produce a hierarchy. Each organization can make
+        a locally reasonable decision—verify identities, restrict tools, keep the strongest systems in controlled
+        environments, require monitoring, reserve exceptions for trusted partners—and the combined result can
+        still be a world in which meaningful AI capability is concentrated.
+      </p>
+
+      <p>
+        This is not only a hypothetical pattern. Anthropic's published Responsible Scaling Policy materials
+        describe access controls tailored to deployment context and expected users, along with a tiered access
+        system for cases where safeguards may need to be adjusted. The proposed process includes enhanced due
+        diligence based on partner trustworthiness and the claimed benefit of the use case.
+        <a href="https://www.anthropic.com/responsible-scaling-policy">Anthropic publishes the current policy and safeguard updates here.</a>
+      </p>
+
+      <p>
+        That policy is aimed at managing extreme-risk capabilities, not at removing ordinary AI access from the
+        public. It should not be misrepresented as proof that broad restriction is inevitable. It does, however,
+        demonstrate the basic mechanism: as capabilities become more consequential, access conditions can become
+        more differentiated, identity-dependent, monitored, and negotiated.
+      </p>
+
+      <h2>The Divide May Appear as Capability Tiers</h2>
+
+      <p>
+        The simplest picture of an AI divide is binary: some people have AI and others do not. I do not think that
+        is the most likely outcome. AI services are too useful, too commercially valuable, and too widely distributed
+        for ordinary access to vanish easily.
+      </p>
+
+      <p>A tiered structure is more plausible:</p>
+
+      <ul>
+        <li>public conversational AI with standard safeguards and limited tools;</li>
+        <li>paid individual systems with larger limits, memory, and controlled actions;</li>
+        <li>enterprise systems connected to internal knowledge under identity, audit, and retention controls;</li>
+        <li>special deployments with more data, compute, autonomy, or adjusted safeguards;</li>
+        <li>internal government or corporate systems that are not publicly available at all.</li>
+      </ul>
+
+      <p>
+        Anthropic describes Claude Enterprise as the same frontier model deployed with identity management,
+        access control, data governance, auditing, and contractual infrastructure that individual plans do not carry.
+        <a href="https://www.anthropic.com/product/enterprise">Its enterprise description makes the governance distinction explicit.</a>
+      </p>
+
+      <p>
+        This is an important correction to the idea that the divide must always be a secret “better model” hidden
+        from the public. Sometimes the decisive advantage is not a different model. It is access to private data,
+        approved tools, organizational credentials, long-running workflows, higher resource limits, and legal
+        permission to use the system for consequential work.
+      </p>
+
+      <p>
+        Ordinary people may continue to receive increasingly capable assistants while still falling further behind
+        institutions whose systems can operate continuously across proprietary data and real infrastructure.
+        Widespread access to an interface can coexist with concentrated access to operational power.
+      </p>
+
+      <h2>Safety and Control Use the Same Infrastructure</h2>
+
+      <p>
+        Identity verification, permission systems, audit logs, approval gates, monitoring, sandboxing, and cloud-only
+        delivery can all make AI deployment safer. They can reduce harm and make accountability possible.
+      </p>
+
+      <p>
+        The same mechanisms also determine who may use which capability, under what conditions, and with how much
+        privacy or independence. A control can be justified by a real risk and still create dependency. A safety gate
+        can protect users and also become a gate through which an institution selects customers, regions, professions,
+        or approved purposes.
+      </p>
+
+      <p>
+        That does not make every safeguard illegitimate. Removing all boundaries from agentic systems would not create
+        freedom; it would often create preventable damage. The important questions are about governance:
+      </p>
+
+      <ul>
+        <li>Who defines the criteria for access?</li>
+        <li>Are the criteria visible and consistently applied?</li>
+        <li>Can a decision be appealed?</li>
+        <li>Can users export their data, memory, and work state?</li>
+        <li>Can they move to another provider or a local system?</li>
+        <li>Does losing one account mean losing years of accumulated continuity?</li>
+        <li>Are lower-risk alternatives available when a high-risk capability is restricted?</li>
+      </ul>
+
+      <p>
+        The danger is not simply that a company or government might say no to one request. It is that the user's
+        memory, history, settings, work, and identity may be fused to the same service that decides what the user is
+        permitted to do next.
+      </p>
+
+      <h2>This Outcome Is Not Inevitable</h2>
+
+      <p>
+        There are strong forces in the opposite direction. Companies compete. Countries do not all want to depend on
+        the same providers. Hardware improves. Research spreads. Open-weight models and local runtimes allow people
+        and smaller organizations to retain capabilities that do not require continuing permission from one cloud account.
+      </p>
+
+      <p>
+        OpenAI's gpt-oss models are one concrete example. OpenAI released the weights under the Apache 2.0 license and
+        described the smaller model as suitable for local or on-device use with 16 GB of memory. The company explicitly
+        presented open models as a way for individuals, enterprises, and governments to run and customize AI on their
+        own infrastructure.
+        <a href="https://openai.com/index/introducing-gpt-oss/">OpenAI's release describes the models and the case for open weights.</a>
+      </p>
+
+      <p>
+        Open weights do not guarantee permanent parity with the best hosted frontier systems. Local hardware, energy,
+        memory, model quality, and specialist tooling still matter. A public model can also have its own licensing,
+        supply-chain, and security problems.
+      </p>
+
+      <p>
+        But local and open systems make total dependence harder to enforce. They provide a floor: a capability that can
+        continue even if an account is closed, a provider changes direction, a region is unsupported, or a subscription
+        becomes unaffordable.
+      </p>
+
+      <p>
+        The future may therefore contain both trends at once: increasingly governed frontier systems and increasingly
+        capable local alternatives. The central question is not whether one side eliminates the other, but how large the
+        capability gap becomes and what remains portable across it.
+      </p>
+
+      <h2>What Ownership Can Still Mean</h2>
+
+      <p>
+        A personal system cannot guarantee ownership of frontier compute. It cannot force a provider to keep a model
+        online, override a law, reproduce a restricted data center, or make a small computer equal to the largest cluster.
+      </p>
+
+      <p>
+        Ownership can still apply to the durable layer around the model:
+      </p>
+
+      <ul>
+        <li>the user's memory and history;</li>
+        <li>project state and unfinished work;</li>
+        <li>decisions, procedures, and accepted constraints;</li>
+        <li>tool configuration and permission policy;</li>
+        <li>personal data and local archives;</li>
+        <li>the ability to switch models and providers;</li>
+        <li>a basic local mode that remains usable when cloud access is unavailable.</li>
+      </ul>
+
+      <p>
+        This is where doll fits. It is not an attempt to own the strongest model in the world. It is an attempt to keep
+        the relationship with AI from depending entirely on one company's permission.
+      </p>
+
+      <p>
+        The model is treated as a replaceable reasoning engine. The user's state, work, memory, and continuity are the
+        durable core. Cloud systems may extend performance, but the basic system is intended to remain meaningful when
+        the cloud changes or disappears.
+      </p>
+
+      <p>
+        That does not abolish the AI capability hierarchy described in this essay. It addresses a narrower and more
+        practical problem: even when the available model becomes weaker, more expensive, more restricted, or different,
+        the user should not have to begin again as though the previous relationship never existed.
+      </p>
+
+      <h2>The Question Is Not Whether AI Will Exist</h2>
+
+      <p>
+        The social-media posts that prompted this line of thought may describe real events or may not. They do not prove
+        that companies, governments, and model providers are moving toward one coordinated plan.
+      </p>
+
+      <p>
+        They reveal a plausible incentive. Once an AI system can read secrets, operate tools, and affect real systems,
+        organizations have rational reasons to control it. As capability grows, those controls are likely to become more
+        elaborate. As the controls become more elaborate, access can become more unequal even while AI remains visible
+        and widely used.
+      </p>
+
+      <p>
+        The important future question is therefore not merely whether people will have AI.
+      </p>
+
+      <blockquote>
+        <p>
+          Who will be permitted to use which capabilities, with what data and tools, under whose conditions—and how much
+          of the memory, work, and continuity created through that system will still belong to the user?
+        </p>
+      </blockquote>
+
+      <p>
+        That question is one of the reasons doll is being built.
+      </p>
+
+      <hr>
+
+      <h2>Publication Note</h2>
+
+      <p>
+        This essay grew out of a conversation between the builder of doll and GPT-5.5 Thinking.
+        The initial observation, the connection to doll, and the main editorial decisions came from the builder.
+        GPT-5.5 Thinking developed the structure and drafted the prose. The builder is responsible for the final
+        decision to publish this version.
+      </p>
+
+      <p>
+        This is not a verbatim transcript of the conversation. Factual claims and source links were checked separately
+        for publication.
+      </p>
+
+      <h2>Sources and Further Reading</h2>
+
+      <ul>
+        <li><a href="https://code.claude.com/docs/en/security">Anthropic — Claude Code Security</a></li>
+        <li><a href="https://platform.openai.com/docs/guides/agent-builder-safety">OpenAI — Safety in Building Agents</a></li>
+        <li><a href="https://openai.com/index/prompt-injections/">OpenAI — Understanding Prompt Injections</a></li>
+        <li><a href="https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence">NIST — AI RMF Generative AI Profile</a></li>
+        <li><a href="https://www.anthropic.com/product/enterprise">Anthropic — Claude Enterprise</a></li>
+        <li><a href="https://www.anthropic.com/responsible-scaling-policy">Anthropic — Responsible Scaling Policy Updates</a></li>
+        <li><a href="https://openai.com/index/introducing-gpt-oss/">OpenAI — Introducing gpt-oss</a></li>
+      </ul>
+    </article>
+  </main>
+
+  <footer>
+    <p><a href="../../">doll official website</a> / <a href="https://github.com/badjoke-lab/doll">GitHub</a> / Apache License 2.0</p>
+  </footer>
+</body>
+</html>
