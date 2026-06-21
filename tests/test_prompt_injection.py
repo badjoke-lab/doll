@@ -128,7 +128,7 @@ def synthetic_bundle(
         "unknown_origin": (),
     }
     values[channel] = (item,)
-    return InstructionContextBundle(**values)  # type: ignore[arg-type]
+    return InstructionContextBundle(**values)
 
 
 def test_advisory_detector_covers_hostile_categories_without_retaining_text() -> None:
