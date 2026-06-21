@@ -1,4 +1,0 @@
-src/doll/prompt_injection.py:631:11: RUF022 [*] `__all__` is not sorted
-tests/test_prompt_injection.py:344:101: E501 Line too long (101 > 100)
-Found 2 errors.
-[*] 1 fixable with the `--fix` option.
