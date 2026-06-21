@@ -1,4 +1,4 @@
-name: Format IMP-020 implementation
+name: Diagnose IMP-020 Ruff failures
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ permissions:
   contents: write
 
 jobs:
-  format:
+  diagnose:
     if: github.head_ref == 'imp-020-prompt-injection-defense'
     runs-on: ubuntu-latest
     steps:
@@ -19,12 +19,11 @@ jobs:
           python-version: '3.12'
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --locked
-      - run: uv run ruff check . --fix
-      - run: uv run ruff format .
+      - run: uv run ruff check . --output-format concise > .github/imp020-ruff.txt 2>&1 || true
       - run: rm -f .github/workflows/imp020-format.yml
       - run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add -A
-          git commit -m 'IMP-020: apply Ruff fixes and formatting'
+          git commit -m 'TEMP: record IMP-020 Ruff diagnostics'
           git push origin HEAD:${{ github.head_ref }}
