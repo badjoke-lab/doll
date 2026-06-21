@@ -1,9 +1,16 @@
+import {
+  ALL_WRITING,
+  EXTERNAL_PUBLICATIONS,
+  OFFICIAL_NOTES,
+  findOfficialNote,
+  findWritingById,
+} from "./writing-catalog.js";
+
 const MEASUREMENT_ID = "G-5NBSSFH77M";
 const PRODUCTION_HOST = "doll.badjoke-lab.com";
 const SITE_URL = "https://doll.badjoke-lab.com";
 const LOGO_URL = `${SITE_URL}/assets/doll-logo.png`;
-const DEV_ARTICLE_URL = "https://dev.to/badjoke-lab/why-im-building-doll-a-personal-ai-continuity-system-1a1c";
-const ASSET_VERSION = "20260620-3";
+const ASSET_VERSION = "20260621-1";
 
 function analyticsAllowed(request) {
   const cookie = request.headers.get("Cookie") || "";
@@ -17,12 +24,25 @@ function isHome(pathname) {
   return pathname === "/" || pathname === "/index.html";
 }
 
-function isNote(pathname) {
-  return pathname === "/notes/ai-will-remain/" || pathname === "/notes/ai-will-remain/index.html";
+function isWritingIndex(pathname) {
+  return pathname === "/writing/" || pathname === "/writing/index.html";
 }
 
 function isPrivacy(pathname) {
   return pathname === "/privacy/" || pathname === "/privacy/index.html";
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+function absoluteUrl(entry) {
+  return entry.kind === "official" ? `${SITE_URL}${entry.path}` : entry.url;
 }
 
 function canonicalFor(pathname) {
@@ -30,11 +50,12 @@ function canonicalFor(pathname) {
     return `${SITE_URL}/`;
   }
 
-  if (isNote(pathname)) {
-    return `${SITE_URL}/notes/ai-will-remain/`;
+  if (isWritingIndex(pathname)) {
+    return `${SITE_URL}/writing/`;
   }
 
-  return null;
+  const note = findOfficialNote(pathname);
+  return note ? `${SITE_URL}${note.path}` : null;
 }
 
 function metadataFor(pathname) {
@@ -47,12 +68,22 @@ function metadataFor(pathname) {
     };
   }
 
-  if (isNote(pathname)) {
+  if (isWritingIndex(pathname)) {
     return {
-      title: "AI will remain. Your access conditions may not. — doll",
-      description: "Why personal AI continuity requires user-owned state and resumable work outside any one model, provider, runtime, interface, or machine.",
+      title: "Writing — doll",
+      description: "Official notes and external publications about the purpose, design, risks, and development of doll.",
+      type: "website",
+      url: `${SITE_URL}/writing/`,
+    };
+  }
+
+  const note = findOfficialNote(pathname);
+  if (note) {
+    return {
+      title: `${note.title} — doll`,
+      description: note.description,
       type: "article",
-      url: `${SITE_URL}/notes/ai-will-remain/`,
+      url: `${SITE_URL}${note.path}`,
     };
   }
 
@@ -68,8 +99,8 @@ function metadataFor(pathname) {
   return null;
 }
 
-function structuredDataFor(pathname) {
-  const organization = {
+function organizationData() {
+  return {
     "@type": "Organization",
     "@id": `${SITE_URL}/#organization`,
     name: "badjoke-lab",
@@ -77,6 +108,19 @@ function structuredDataFor(pathname) {
     logo: LOGO_URL,
     sameAs: ["https://github.com/badjoke-lab"],
   };
+}
+
+function articleReference(entry) {
+  return {
+    "@type": "Article",
+    headline: entry.title,
+    url: absoluteUrl(entry),
+    datePublished: entry.published,
+  };
+}
+
+function structuredDataFor(pathname) {
+  const organization = organizationData();
 
   if (isHome(pathname)) {
     return {
@@ -104,26 +148,49 @@ function structuredDataFor(pathname) {
           isAccessibleForFree: true,
           image: LOGO_URL,
           creator: { "@id": `${SITE_URL}/#organization` },
-          subjectOf: {
-            "@type": "Article",
-            headline: "Why I'm Building doll: A Personal AI Continuity System",
-            url: DEV_ARTICLE_URL,
+          subjectOf: ALL_WRITING.map(articleReference),
+        },
+      ],
+    };
+  }
+
+  if (isWritingIndex(pathname)) {
+    return {
+      "@context": "https://schema.org",
+      "@graph": [
+        organization,
+        {
+          "@type": "CollectionPage",
+          "@id": `${SITE_URL}/writing/#page`,
+          name: "Writing — doll",
+          url: `${SITE_URL}/writing/`,
+          description: "Official notes and external publications about the purpose, design, risks, and development of doll.",
+          publisher: { "@id": `${SITE_URL}/#organization` },
+          inLanguage: "en",
+          mainEntity: {
+            "@type": "ItemList",
+            itemListElement: ALL_WRITING.map((entry, index) => ({
+              "@type": "ListItem",
+              position: index + 1,
+              item: articleReference(entry),
+            })),
           },
         },
       ],
     };
   }
 
-  if (isNote(pathname)) {
+  const note = findOfficialNote(pathname);
+  if (note) {
     return {
       "@context": "https://schema.org",
       "@type": "Article",
-      headline: "AI will remain. Your access conditions may not.",
-      description: "Why personal AI continuity requires user-owned state and resumable work outside any one model, provider, runtime, interface, or machine.",
+      headline: note.title,
+      description: note.description,
       image: LOGO_URL,
-      mainEntityOfPage: `${SITE_URL}/notes/ai-will-remain/`,
-      datePublished: "2026-06-19",
-      dateModified: "2026-06-20",
+      mainEntityOfPage: `${SITE_URL}${note.path}`,
+      datePublished: note.published,
+      dateModified: note.updated || note.published,
       author: { "@id": `${SITE_URL}/#organization` },
       publisher: organization,
       inLanguage: "en",
@@ -159,10 +226,11 @@ function commonHead(metadata, canonical, structuredData, noindex) {
     `<link rel="alternate" type="text/plain" href="/llms.txt" title="LLM information">`,
     `<link rel="alternate" type="text/plain" href="/ai.txt" title="AI-readable site summary">`,
     `<link rel="stylesheet" href="/style.css?v=${ASSET_VERSION}">`,
+    `<link rel="stylesheet" href="/writing.css?v=${ASSET_VERSION}">`,
   ];
 
   if (canonical) {
-    tags.push(`<link rel="canonical" href="${canonical}">`);
+    tags.push(`<link rel="canonical" href="${escapeHtml(canonical)}">`);
   }
 
   if (noindex) {
@@ -170,19 +238,22 @@ function commonHead(metadata, canonical, structuredData, noindex) {
   }
 
   if (metadata) {
+    const title = escapeHtml(metadata.title);
+    const description = escapeHtml(metadata.description);
+    const url = escapeHtml(metadata.url);
     tags.push(
-      `<meta property="og:type" content="${metadata.type}">`,
-      `<meta property="og:title" content="${metadata.title}">`,
-      `<meta property="og:description" content="${metadata.description}">`,
-      `<meta property="og:url" content="${metadata.url}">`,
+      `<meta property="og:type" content="${escapeHtml(metadata.type)}">`,
+      `<meta property="og:title" content="${title}">`,
+      `<meta property="og:description" content="${description}">`,
+      `<meta property="og:url" content="${url}">`,
       `<meta property="og:image" content="${LOGO_URL}">`,
       `<meta property="og:image:width" content="256">`,
       `<meta property="og:image:height" content="256">`,
       `<meta property="og:site_name" content="doll">`,
       `<meta property="og:locale" content="en_US">`,
       `<meta name="twitter:card" content="summary">`,
-      `<meta name="twitter:title" content="${metadata.title}">`,
-      `<meta name="twitter:description" content="${metadata.description}">`,
+      `<meta name="twitter:title" content="${title}">`,
+      `<meta name="twitter:description" content="${description}">`,
       `<meta name="twitter:image" content="${LOGO_URL}">`,
     );
   }
@@ -192,6 +263,73 @@ function commonHead(metadata, canonical, structuredData, noindex) {
   }
 
   return tags.join("\n");
+}
+
+function renderDate(entry) {
+  const updated = entry.updated
+    ? ` · Updated: <time datetime="${entry.updated}">${entry.updated}</time>`
+    : "";
+  return `Published: <time datetime="${entry.published}">${entry.published}</time>${updated}`;
+}
+
+function renderWritingEntry(entry) {
+  const href = escapeHtml(absoluteUrl(entry));
+  const external = entry.kind === "external-only" ? ' rel="external"' : "";
+  const source = entry.kind === "external-only" ? ` · ${escapeHtml(entry.publisher)}` : "";
+
+  return `<div class="writing-entry" data-writing-id="${escapeHtml(entry.id)}">
+<p class="writing-date">${renderDate(entry)}${source}</p>
+<h3><a href="${href}"${external}>${escapeHtml(entry.title)}</a></h3>
+<p>${escapeHtml(entry.summary)}</p>
+</div>`;
+}
+
+function renderHomeWriting() {
+  const official = [...OFFICIAL_NOTES]
+    .sort((left, right) => right.published.localeCompare(left.published))
+    .slice(0, 2)
+    .map(renderWritingEntry)
+    .join("\n");
+  const external = [...EXTERNAL_PUBLICATIONS]
+    .sort((left, right) => right.published.localeCompare(left.published))
+    .slice(0, 2)
+    .map(renderWritingEntry)
+    .join("\n");
+
+  return `<section id="writing">
+<h2>Writing</h2>
+<p>Official notes and external publications about the purpose, design, risks, and development of doll.</p>
+<h3>On this site</h3>
+${official}
+<h3>Elsewhere</h3>
+${external}
+<p><a href="/writing/">View all writing</a></p>
+</section>`;
+}
+
+function renderPublicationLine(note) {
+  const externalVersions = note.externalVersions.length
+    ? `<p class="publication-links">Also published on ${note.externalVersions
+        .map((version) => `<a href="${escapeHtml(version.url)}" rel="external">${escapeHtml(version.publisher)}</a>`)
+        .join(", ")}.</p>`
+    : "";
+
+  return `<p class="publication-date">${renderDate(note)}</p>${externalVersions}`;
+}
+
+function renderRelatedWriting(note) {
+  const related = note.related
+    .map(findWritingById)
+    .filter(Boolean);
+
+  if (related.length === 0) {
+    return "";
+  }
+
+  return `<section class="related-writing">
+<h2>Related writing</h2>
+${related.map(renderWritingEntry).join("\n")}
+</section>`;
 }
 
 export async function onRequest(context) {
@@ -204,6 +342,7 @@ export async function onRequest(context) {
     return response;
   }
 
+  const note = findOfficialNote(requestUrl.pathname);
   const metadata = metadataFor(requestUrl.pathname);
   const canonical = canonicalFor(requestUrl.pathname);
   const structuredData = structuredDataFor(requestUrl.pathname);
@@ -227,9 +366,6 @@ export async function onRequest(context) {
   const privacyControls = `
  / <a href="/privacy/">Privacy</a>
  / <button type="button" class="link-button" data-analytics-settings>Analytics settings</button>`;
-
-  const externalArticleLink = `<br>External article: <a href="${DEV_ARTICLE_URL}" rel="external">Why I'm Building doll: A Personal AI Continuity System — DEV Community</a>`;
-  const relatedArticleBlock = `<h2>Related external article</h2><p><a href="${DEV_ARTICLE_URL}" rel="external">Why I'm Building doll: A Personal AI Continuity System — DEV Community</a></p>`;
 
   let rewriter = new HTMLRewriter()
     .on("head", {
@@ -269,19 +405,54 @@ export async function onRequest(context) {
   }
 
   if (isHome(requestUrl.pathname)) {
-    rewriter = rewriter.on('a[href="./notes/ai-will-remain/"]', {
-      element(element) {
-        element.after(externalArticleLink, { html: true });
-      },
-    });
+    let sectionCount = 0;
+    rewriter = rewriter
+      .on(".site-links", {
+        element(element) {
+          element.append(' / <a href="/writing/">Writing</a>', { html: true });
+        },
+      })
+      .on("main > section", {
+        element(element) {
+          sectionCount += 1;
+          if (sectionCount === 4) {
+            element.before(renderHomeWriting(), { html: true });
+          }
+        },
+      })
+      .on('footer a[href="./notes/ai-will-remain/"]', {
+        element(element) {
+          element.setAttribute("href", "/writing/");
+          element.setInnerContent("Writing");
+        },
+      });
   }
 
-  if (isNote(requestUrl.pathname)) {
-    rewriter = rewriter.on("article", {
-      element(element) {
-        element.append(relatedArticleBlock, { html: true });
-      },
-    });
+  if (note) {
+    let headingCount = 0;
+    rewriter = rewriter
+      .on('body > p a[href="../../"]', {
+        element(element) {
+          element.setAttribute("href", "/writing/");
+          element.setInnerContent("Back to Writing");
+        },
+      })
+      .on("article > h2", {
+        element(element) {
+          headingCount += 1;
+          if (headingCount === 1) {
+            element.after(renderPublicationLine(note), { html: true });
+          }
+        },
+      })
+      .on("article", {
+        element(element) {
+          const related = renderRelatedWriting(note);
+          if (related) {
+            element.append(related, { html: true });
+          }
+        },
+      });
   }
 
   return rewriter.transform(response);
