@@ -14,7 +14,8 @@ Official resources:
 - Specifications: https://github.com/badjoke-lab/doll/tree/main/docs/spec
 - Roadmap: https://github.com/badjoke-lab/doll/blob/main/docs/spec/09-development-roadmap.md
 - Writing index: https://doll.badjoke-lab.com/writing/
-- Selected official note: https://doll.badjoke-lab.com/notes/ai-will-remain/
+- Official note: https://doll.badjoke-lab.com/notes/ai-permission-divide/
+- Official note: https://doll.badjoke-lab.com/notes/ai-will-remain/
 - Privacy: https://doll.badjoke-lab.com/privacy/
 
 External publications are listed in the Writing index.
