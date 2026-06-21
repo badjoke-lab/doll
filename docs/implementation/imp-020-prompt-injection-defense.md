@@ -2,7 +2,7 @@
 
 ## Status
 
-Implemented on the IMP-020 branch. Merge status is tracked by the pull request.
+Implementation complete; merge pending in PR #65.
 
 ## Purpose
 
