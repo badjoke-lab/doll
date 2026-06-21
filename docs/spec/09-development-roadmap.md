@@ -76,15 +76,15 @@ Completed:
 - Phase 0 specification baseline, subject to controlled specification changes;
 - Phase 1 local state foundation;
 - Phase 2 continuity, state-package transfer, backup, restore, and model-independent acceptance;
-- IMP-001 through IMP-014;
-- local workspace, SQLite state, migrations, audit, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package export/import, verified backup, restore, continuity acceptance, secret-classification enforcement, bounded secret detection, deterministic redaction, and secret-safe diagnostics.
+- IMP-001 through IMP-020;
+- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package export/import, verified backup, restore, continuity acceptance, secret classification and redaction, secret-safe audit and logging, external secret-store contracts, credential brokering, claim and evidence separation, instruction-origin authority, and prompt-injection defense.
 
 Current implementation point:
 
 - Phase 3 is in progress;
-- IMP-014 is complete;
-- IMP-015 is the next implementation item;
-- IMP-015 through IMP-023 complete and validate the remaining safety boundary;
+- IMP-020 is complete;
+- IMP-021 is the next implementation item;
+- IMP-021 through IMP-023 complete and validate the remaining safety boundary;
 - Phase 4A and Phase 4B work begins only after the Phase 3 gate;
 - local model execution begins only after the safety gate and both Phase 4 foundations.
 
@@ -213,29 +213,52 @@ Implemented:
 
 ### IMP-015 — Secret-Safe Audit and Logging
 
-Status: next.
+Status: complete.
 
-Implement centrally enforced sanitization, safe summaries, rejection or redaction of secret-bearing fields, private-environment minimization, and exceptional-path tests.
+Implemented centrally enforced secret-safe audit construction, bounded summaries and metadata,
+control-character defenses, private-environment minimization, safe exceptional paths, and
+failure-preserving tests.
 
 ### IMP-016 — External Secret Store Contract
 
-Define a replaceable operating-system or compatible secret-store contract with non-secret references, availability and lock state, user-presence requirements, lifecycle operations, and failure isolation.
+Status: complete.
+
+Implemented a replaceable secret-store contract with non-secret references, adapter capabilities,
+availability and lock state, user-presence requirements, lifecycle operations, validation,
+failure isolation, and synthetic in-memory acceptance fixtures.
 
 ### IMP-017 — Credential Broker
 
-Implement bounded credential use without returning stored values to models or ordinary callers, with destination, scope, approval, timeout, cancellation, result, and audit controls.
+Status: complete.
+
+Implemented bounded credential use without returning stored values to models or ordinary callers,
+with exact reference, destination, scope, purpose, approval, timeout, cancellation, result, audit,
+and failure controls.
 
 ### IMP-018 — Claim, Evidence, and Trust Model
 
-Implement separate confirmed facts, claims, evidence, and inferences with provenance, confidence, uncertainty, and review state. Imports do not create confirmed facts directly.
+Status: complete.
+
+Implemented separate confirmed facts, claims, evidence, and inferences with immutable provenance,
+confidence, uncertainty, review state, explicit support and contradiction links, and no automatic
+import-to-fact promotion.
 
 ### IMP-019 — Instruction Origin and Untrusted-Content Boundary
 
-Implement immutable source attribution and authority classes for system policy, user instruction, durable policy, external content, imported data, tool results, and model proposals.
+Status: complete.
+
+Implemented immutable source attribution, origin-derived authority classes, data-only treatment
+for external, imported, tool, runtime, model, and unknown content, stale durable-policy downgrade,
+non-escalating derivation links, structured context channels, and state-package validation.
 
 ### IMP-020 — Prompt Injection Defense
 
-Implement context packaging that preserves origin, policy enforcement outside the model, hostile source fixtures, exfiltration and unrelated-capability defenses, and no model-only authorization boundary.
+Status: complete.
+
+Implemented bounded advisory indicators that retain no matched content, secret-safe
+complete-or-fail context packaging, structural origin-channel separation, archive and stale-policy
+downgrade preservation, external authorization guards based only on IMP-019, hostile-source and
+exfiltration fixtures, unrelated-capability defenses, and no model-only authorization boundary.
 
 ### IMP-021 — Capability Taxonomy and Risk Tiers
 
@@ -499,20 +522,18 @@ An implementation PR is done when:
 
 ## 18. Immediate work
 
-The required order from `main` commit `0fa1fb78f49024f3b04dbd8c1b911064c6bdc7a1` is:
+The required order after IMP-020 is:
 
-1. merge the documentation-only specification-set 0.2 change adopting ADR-007, project continuity, PROJ tests, and this revised roadmap;
-2. confirm the generated combined specification and all documentation checks;
-3. return to Phase 3 without starting Phase 4 implementation;
-4. create and implement IMP-015 only;
-5. continue IMP-016 through IMP-023 in order;
-6. pass the Phase 3 safety gate;
-7. schedule Phase 4A portability-foundation issues with new non-conflicting identifiers;
-8. pass the Phase 4A portability gate;
-9. schedule Phase 4B package-v2 and project-continuity issues with new non-conflicting identifiers;
-10. pass the Phase 4B project-continuity gate;
-11. begin IMP-024 through IMP-029 local model work;
-12. prove a real local AI migration path before provider-specific cloud portability becomes a primary claim.
+1. create and implement IMP-021 only;
+2. continue IMP-022 and IMP-023 in order;
+3. pass the Phase 3 safety gate;
+4. schedule Phase 4A portability-foundation issues with new non-conflicting identifiers;
+5. pass the Phase 4A portability gate;
+6. schedule Phase 4B package-v2 and project-continuity issues with new non-conflicting identifiers;
+7. pass the Phase 4B project-continuity gate;
+8. begin IMP-024 through IMP-029 local model work;
+9. prove a real local AI migration path before provider-specific cloud portability becomes a
+   primary claim.
 
 ## 19. Roadmap change control
 
