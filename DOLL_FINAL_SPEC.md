@@ -24,7 +24,7 @@
 - `docs/spec/08-acceptance-and-continuity-tests.md` — SHA-256 `1ae9b70cf28257b35a30238bdc46c2caea93dbd17fdf8b516ff708c9e208a698`
 - `docs/spec/08a-ai-environment-portability-acceptance.md` — SHA-256 `3a1876d8b506204254ccd54eb58cfabcf2ddc92e3edd446d90650b9ae22ff305`
 - `docs/spec/08b-project-continuity-acceptance.md` — SHA-256 `b58623f21bdd183a21e1904ebcec954ffb2b6976254b72ac52f13deae83306cc`
-- `docs/spec/09-development-roadmap.md` — SHA-256 `9876c9f2f6303a4c08fd0438c0b91d48e40b5c3c05689e3edf9bcf0e5f721f81`
+- `docs/spec/09-development-roadmap.md` — SHA-256 `da0d9c20f66f2dd1f352a43c536d88cc02b2f2553dd5b110613b6145bbf4ba4a`
 
 ---
 
@@ -8559,15 +8559,15 @@ Completed:
 - Phase 0 specification baseline, subject to controlled specification changes;
 - Phase 1 local state foundation;
 - Phase 2 continuity, state-package transfer, backup, restore, and model-independent acceptance;
-- IMP-001 through IMP-020;
-- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package export/import, verified backup, restore, continuity acceptance, secret classification and redaction, secret-safe audit and logging, external secret-store contracts, credential brokering, claim and evidence separation, instruction-origin authority, and prompt-injection defense.
+- IMP-001 through IMP-021;
+- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package export/import, verified backup, restore, continuity acceptance, secret classification and redaction, secret-safe audit and logging, external secret-store contracts, credential brokering, claim and evidence separation, instruction-origin authority, prompt-injection defense, capability taxonomy, fixed risk tiers, and authorization preflight.
 
 Current implementation point:
 
 - Phase 3 is in progress;
-- IMP-020 is complete;
-- IMP-021 is the next implementation item;
-- IMP-021 through IMP-023 complete and validate the remaining safety boundary;
+- IMP-021 is complete;
+- IMP-022 is the next implementation item;
+- IMP-022 and IMP-023 complete and validate the remaining safety boundary;
 - Phase 4A and Phase 4B work begins only after the Phase 3 gate;
 - local model execution begins only after the safety gate and both Phase 4 foundations.
 
@@ -8745,7 +8745,9 @@ exfiltration fixtures, unrelated-capability defenses, and no model-only authoriz
 
 ### IMP-021 — Capability Taxonomy and Risk Tiers
 
-Implement a versioned capability registry, schemas, targets, side effects, limits, permission and network checks, risk tiers, denial of malformed requests, and no unrestricted shell.
+Status: complete.
+
+Implemented an immutable versioned capability registry, deterministic fingerprints, fixed Tier 0 through Tier 3 classifications, bounded argument and target contracts, exact side-effect and risk matching, target-to-permission binding, resource and timeout limits, read-only permission preflight, explicit network policy, release exclusion, secret-safe audit, Tier 3 denial pending IMP-022, and no unrestricted shell or arbitrary command capability.
 
 ### IMP-022 — Mandatory High-Risk Confirmation
 
@@ -9005,10 +9007,10 @@ An implementation PR is done when:
 
 ## 18. Immediate work
 
-The required order after IMP-020 is:
+The required order after IMP-021 is:
 
-1. create and implement IMP-021 only;
-2. continue IMP-022 and IMP-023 in order;
+1. create and implement IMP-022 only;
+2. continue IMP-023;
 3. pass the Phase 3 safety gate;
 4. schedule Phase 4A portability-foundation issues with new non-conflicting identifiers;
 5. pass the Phase 4A portability gate;
