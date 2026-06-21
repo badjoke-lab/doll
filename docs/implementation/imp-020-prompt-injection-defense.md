@@ -2,7 +2,7 @@
 
 ## Status
 
-Implementation complete; merge pending in PR #65.
+Complete.
 
 ## Purpose
 
