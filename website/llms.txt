@@ -13,9 +13,11 @@ Official resources:
 - Source repository: https://github.com/badjoke-lab/doll
 - Specifications: https://github.com/badjoke-lab/doll/tree/main/docs/spec
 - Roadmap: https://github.com/badjoke-lab/doll/blob/main/docs/spec/09-development-roadmap.md
-- Long-form note: https://doll.badjoke-lab.com/notes/ai-will-remain/
-- External DEV article: https://dev.to/badjoke-lab/why-im-building-doll-a-personal-ai-continuity-system-1a1c
+- Writing index: https://doll.badjoke-lab.com/writing/
+- Selected official note: https://doll.badjoke-lab.com/notes/ai-will-remain/
 - Privacy: https://doll.badjoke-lab.com/privacy/
+
+External publications are listed in the Writing index.
 
 Important limits:
 - doll is not a foundation model.

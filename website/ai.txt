@@ -15,7 +15,9 @@ https://doll.badjoke-lab.com/
 https://github.com/badjoke-lab/doll
 https://github.com/badjoke-lab/doll/tree/main/docs/spec
 https://github.com/badjoke-lab/doll/blob/main/docs/spec/09-development-roadmap.md
+https://doll.badjoke-lab.com/writing/
 https://doll.badjoke-lab.com/notes/ai-will-remain/
-https://dev.to/badjoke-lab/why-im-building-doll-a-personal-ai-continuity-system-1a1c
+
+External publications are listed in the Writing index.
 
 This file is informational. Verify current implementation claims against the repository and merged history.
