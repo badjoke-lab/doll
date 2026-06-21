@@ -23,14 +23,9 @@ pieces.append(base64.b64decode(nested, validate=True))
 for name in ("part-02-00.b64x", "part-02-01.b64x", "part-02-02.b64x"):
     pieces.append(base64.b64decode((payload / name).read_bytes(), validate=True))
 
-clean_pieces = [b"".join(piece.split()) for piece in pieces]
-clean_encoded = b"".join(clean_pieces)
-if len(clean_encoded) % 4:
-    values = [len(piece) for piece in clean_pieces]
-    raise RuntimeError(
-        f"{values[4]}/{values[5]}/{values[6]}/{values[7]}/{len(clean_encoded) % 4}"
-    )
-archive = base64.b64decode(clean_encoded, validate=True)
+clean_encoded = b"".join(b"".join(piece.split()) for piece in pieces)
+padded_encoded = clean_encoded + (b"=" * (-len(clean_encoded) % 4))
+archive = base64.b64decode(padded_encoded, validate=True)
 expected = "6630cce4b4a9a553fd7e25087422198544882e6a86ba1697435bc091c8622b45"
 actual = hashlib.sha256(archive).hexdigest()
 if actual != expected:
