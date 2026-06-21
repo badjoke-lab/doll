@@ -4,7 +4,7 @@ import {
   OFFICIAL_NOTES,
   findOfficialNote,
   findWritingById,
-} from "./writing-catalog.js";
+} from "../src/writing-catalog.js";
 
 const MEASUREMENT_ID = "G-5NBSSFH77M";
 const PRODUCTION_HOST = "doll.badjoke-lab.com";
