@@ -23,7 +23,10 @@ encoded.extend(base64.b64decode(nested, validate=True))
 for name in ("part-02-00.b64x", "part-02-01.b64x", "part-02-02.b64x"):
     encoded.extend(base64.b64decode((payload / name).read_bytes(), validate=True))
 
-archive = base64.b64decode(encoded, validate=True)
+clean_encoded = b"".join(bytes(encoded).split())
+if len(clean_encoded) % 4:
+    raise RuntimeError(f"IMP-020 encoded payload length is invalid: {len(clean_encoded)}")
+archive = base64.b64decode(clean_encoded, validate=True)
 expected = "6630cce4b4a9a553fd7e25087422198544882e6a86ba1697435bc091c8622b45"
 actual = hashlib.sha256(archive).hexdigest()
 if actual != expected:
