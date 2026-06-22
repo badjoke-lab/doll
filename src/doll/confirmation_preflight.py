@@ -105,7 +105,7 @@ class ConfirmedCapabilityPreflightService:
         if not resolution.approved:
             decision = base._deny(
                 envelope,
-                cast(CapabilityDecisionReason, "tier3_confirmation_unavailable"),
+                "tier3_confirmation_unavailable",
                 risk_tier=definition.risk_tier,
                 permission_mode=permission_mode,
             )
