@@ -53,7 +53,50 @@ def _has_test(path: Path) -> bool:
     )
 
 
-def _matrix_checks() -> tuple[dict[str, bool], list[str]]:
+def _stored_machine_gate(matrix: dict[str, Any], gate: dict[str, Any]) -> bool:
+    status = gate.get("status")
+    if status == "pending":
+        if matrix.get("phase3_gate_complete") is True:
+            raise RuntimeError("pending gate cannot complete Phase 3")
+        return False
+    if status != "pass":
+        raise RuntimeError("invalid machine gate status")
+    if matrix.get("phase3_gate_complete") is not True:
+        raise RuntimeError("passed gate must complete Phase 3")
+
+    relative = matrix.get("accepted_real_machine_result")
+    if not isinstance(relative, str):
+        raise RuntimeError("accepted machine result is missing")
+    result_path = _ROOT / relative
+    if not result_path.is_file():
+        raise RuntimeError("accepted machine result file is missing")
+    result = json.loads(result_path.read_text(encoding="utf-8"))
+    if not isinstance(result, dict):
+        raise RuntimeError("accepted machine result is invalid")
+    checks = result.get("checks")
+    if not isinstance(checks, dict) or not checks or not all(value is True for value in checks.values()):
+        raise RuntimeError("accepted machine checks are invalid")
+
+    expected = {
+        "test_id": TEST_ID,
+        "result": "pass",
+        "evidence_level": "real-machine",
+        "operating_system": gate.get("platform"),
+        "commit_sha": gate.get("commit_sha"),
+        "completed_at": gate.get("completed_at"),
+        "network_mode": gate.get("network_mode"),
+        "primary_intel_mac_gate": "pass",
+        "phase3_gate_complete": True,
+    }
+    if any(result.get(key) != value for key, value in expected.items()):
+        raise RuntimeError("accepted machine result does not match the matrix")
+    architectures = gate.get("architectures")
+    if not isinstance(architectures, list) or result.get("architecture") not in architectures:
+        raise RuntimeError("accepted machine architecture is invalid")
+    return True
+
+
+def _matrix_checks() -> tuple[dict[str, bool], list[str], bool]:
     matrix: dict[str, Any] = json.loads(_MATRIX.read_text(encoding="utf-8"))
     entries = matrix["security_tests"]
     if not isinstance(entries, list):
@@ -87,15 +130,18 @@ def _matrix_checks() -> tuple[dict[str, bool], list[str]]:
         isinstance(value, str) for value in limitations
     ):
         raise RuntimeError("invalid limitations")
+    stored_complete = _stored_machine_gate(matrix, gate)
     return (
         {
             "matrix_schema_valid": matrix.get("schema_version") == 1,
             "all_security_ids_mapped": ids == _IDS,
             "all_implemented_entries_executable": executable == 22,
             "only_unimplemented_listener_not_applicable": deferred == 1,
-            "real_machine_gate_declared": gate.get("status") == "pending",
+            "real_machine_gate_declared": gate.get("status") in {"pending", "pass"},
+            "stored_machine_evidence_valid": gate.get("status") != "pass" or stored_complete,
         },
         limitations,
+        stored_complete,
     )
 
 
@@ -139,11 +185,12 @@ def main() -> int:
     try:
         machine = _environment(arguments)
         stage = "matrix"
-        matrix, limitations = _matrix_checks()
+        matrix, limitations, stored_complete = _matrix_checks()
         stage = "fresh_process"
         checks = {**matrix, **_probe_checks()}
         if not all(checks.values()):
             raise RuntimeError("acceptance failure")
+        gate_complete = machine or stored_complete
         privacy = {
             "absolute_paths_in_report": False,
             "usernames_in_report": False,
@@ -169,8 +216,8 @@ def main() -> int:
             "model_runtime_used": False,
             "cloud_" + "credentials_used": False,
             "live_side_effect_used": False,
-            "primary_intel_mac_gate": "pass" if machine else "pending",
-            "phase3_gate_complete": machine,
+            "primary_intel_mac_gate": "pass" if gate_complete else "pending",
+            "phase3_gate_complete": gate_complete,
             "limitations": limitations,
             "privacy": privacy,
         }
