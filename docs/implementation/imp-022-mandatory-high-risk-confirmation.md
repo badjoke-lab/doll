@@ -2,7 +2,7 @@
 
 ## Status
 
-Implementation in progress on Issue #75.
+Complete in PR #77 for Issue #75.
 
 ## Purpose
 
@@ -102,6 +102,20 @@ Synthetic tests cover:
 - audit insertion failure with revision preservation;
 - repeated preview beyond the lifecycle event limit;
 - state backup, restore, and fresh-process preservation.
+
+## Accepted CI evidence
+
+PR #77 passed:
+
+- dependency-lock verification;
+- Ruff lint and formatting;
+- strict mypy across `src` and `tests`;
+- deterministic generated-specification check;
+- 736 tests on Ubuntu, macOS, and Windows;
+- 95.04% Linux coverage;
+- CLI and module-help checks.
+
+The final PR contains no workflow change or temporary diagnostic file.
 
 ## Explicit non-goals
 
