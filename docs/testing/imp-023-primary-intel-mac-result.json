@@ -1,0 +1,52 @@
+{
+  "architecture": "x86_64",
+  "checks": {
+    "all_implemented_entries_executable": true,
+    "all_security_ids_mapped": true,
+    "audit_history_readable": true,
+    "classified_state_denied": true,
+    "confirmation_cannot_bypass_release_exclusion": true,
+    "confirmation_history_readable": true,
+    "denial_preserved_revision": true,
+    "exact_confirmation_accepted": true,
+    "material_change_denied": true,
+    "matrix_schema_valid": true,
+    "only_unimplemented_listener_not_applicable": true,
+    "prohibited_runtime_paths_absent": true,
+    "read_only_reopen_succeeded": true,
+    "real_machine_gate_declared": true,
+    "release_exclusion_precedes_confirmation": true,
+    "unknown_capability_denied": true
+  },
+  "cloud_credentials_used": false,
+  "commit_sha": "22e78b09ba0c144c2cddc918992d52f845c30185",
+  "completed_at": "2026-06-22T15:19:43.591791Z",
+  "evidence_level": "real-machine",
+  "executable_security_test_count": 22,
+  "limitations": [
+    "The repository has no model adapter or model execution path.",
+    "The repository has no live capability execution adapter or external side effect.",
+    "Localhost binding becomes applicable when an API listener is introduced."
+  ],
+  "live_side_effect_used": false,
+  "model_runtime_used": false,
+  "network_mode": "offline-confirmed",
+  "not_applicable_security_test_ids": [
+    "SEC-007"
+  ],
+  "operating_system": "Darwin",
+  "phase3_gate_complete": true,
+  "primary_intel_mac_gate": "pass",
+  "privacy": {
+    "absolute_paths_in_report": false,
+    "hostnames_in_report": false,
+    "private_fixture_content_in_report": false,
+    "secret_values_in_report": false,
+    "usernames_in_report": false
+  },
+  "result": "pass",
+  "security_test_count": 23,
+  "specification_version": "0.1",
+  "started_at": "2026-06-22T15:19:43.590538Z",
+  "test_id": "IMP-023-SAFETY-ACCEPTANCE"
+}

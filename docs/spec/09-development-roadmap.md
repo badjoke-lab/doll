@@ -76,17 +76,18 @@ Completed:
 - Phase 0 specification baseline, subject to controlled specification changes;
 - Phase 1 local state foundation;
 - Phase 2 continuity, state-package transfer, backup, restore, and model-independent acceptance;
-- IMP-001 through IMP-021;
-- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package export/import, verified backup, restore, continuity acceptance, secret classification and redaction, secret-safe audit and logging, external secret-store contracts, credential brokering, claim and evidence separation, instruction-origin authority, prompt-injection defense, capability taxonomy, fixed risk tiers, and authorization preflight.
+- Phase 3 model-independent safety boundary;
+- IMP-001 through IMP-023;
+- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package export/import, verified backup, restore, continuity acceptance, secret classification and redaction, secret-safe audit and logging, external secret-store contracts, credential brokering, claim and evidence separation, instruction-origin authority, prompt-injection defense, capability taxonomy, fixed risk tiers, authorization preflight, mandatory high-risk confirmation, and safety acceptance evidence.
 
 Current implementation point:
 
-- Phase 3 is in progress;
-- IMP-021 is complete;
-- IMP-022 is the next implementation item;
-- IMP-022 and IMP-023 complete and validate the remaining safety boundary;
-- Phase 4A and Phase 4B work begins only after the Phase 3 gate;
-- local model execution begins only after the safety gate and both Phase 4 foundations.
+- Phase 3 is complete;
+- IMP-023 passed cross-platform CI and the primary Intel Mac offline real-process gate at main commit `22e78b09ba0c144c2cddc918992d52f845c30185`;
+- Phase 4A and Phase 4B are the next model-independent implementation foundations;
+- the first scheduled Phase 4 slice receives the next non-conflicting implementation identifier;
+- IMP-024 remains blocked until both Phase 4 foundation gates pass;
+- local model execution begins only after both Phase 4 foundations.
 
 The controlled specification-set 0.2 change does not reopen completed implementation evidence. It changes future requirements and sequencing.
 
@@ -268,11 +269,26 @@ Implemented an immutable versioned capability registry, deterministic fingerprin
 
 ### IMP-022 — Mandatory High-Risk Confirmation
 
-Implement fresh user-controlled confirmation for every Tier 3 operation, exact binding to capability and side effects, expiry, material-change invalidation, and no confirmation from content.
+Status: complete.
+
+Implemented fresh user-controlled confirmation for every Tier 3 operation, exact binding to capability and side effects, expiry, material-change invalidation, one-time consumption support, and no confirmation from content.
 
 ### IMP-023 — Safety Acceptance Test
 
-Prove secret separation, credential isolation, claim and evidence separation, instruction origin, hostile-content resistance, capability denial, risk enforcement, exact confirmation, audit safety, cross-platform CI, and applicable primary-machine checks.
+Status: complete.
+
+Proved secret separation, credential isolation, claim and evidence separation, instruction origin, hostile-content resistance, capability denial, risk enforcement, exact confirmation, audit safety, cross-platform CI, and the primary Intel Mac offline real-process gate.
+
+Accepted Phase 3 evidence:
+
+- merged implementation commit: `22e78b09ba0c144c2cddc918992d52f845c30185`;
+- Ubuntu, macOS, and Windows CI passed;
+- Windows reported 745 passed, 1 skipped, and 95.25% coverage;
+- the primary Intel Mac run passed on Darwin `x86_64` with networking disabled;
+- the accepted report returned `phase3_gate_complete = true`;
+- SEC-007 remains explicitly deferred because no API listener exists.
+
+Phase 3 gate status: passed on 2026-06-22.
 
 Phase 3 gate:
 

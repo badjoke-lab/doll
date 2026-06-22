@@ -31,7 +31,7 @@ def _run(*arguments: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def test_imp_023_ci_evidence_stays_machine_pending() -> None:
+def test_imp_023_ci_evidence_preserves_accepted_machine_gate() -> None:
     result = _run("--commit-sha", _head(), "--evidence-level", "ci")
 
     assert result.returncode == 0, result.stderr or result.stdout
@@ -39,14 +39,16 @@ def test_imp_023_ci_evidence_stays_machine_pending() -> None:
     assert payload["test_id"] == "IMP-023-SAFETY-ACCEPTANCE"
     assert payload["result"] == "pass"
     assert payload["evidence_level"] == "ci"
+    assert payload["network_mode"] == "no-network-path-in-probe"
     assert payload["security_test_count"] == 23
     assert payload["executable_security_test_count"] == 22
     assert payload["not_applicable_security_test_ids"] == ["SEC-007"]
-    assert payload["primary_intel_mac_gate"] == "pending"
-    assert payload["phase3_gate_complete"] is False
+    assert payload["primary_intel_mac_gate"] == "pass"
+    assert payload["phase3_gate_complete"] is True
     assert payload["model_runtime_used"] is False
     assert payload["cloud_credentials_used"] is False
     assert payload["live_side_effect_used"] is False
+    assert payload["checks"]["stored_machine_evidence_valid"] is True
     assert all(payload["checks"].values())
     assert all(value is False for value in payload["privacy"].values())
 

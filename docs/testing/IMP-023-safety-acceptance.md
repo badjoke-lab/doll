@@ -2,7 +2,7 @@
 
 ## Status
 
-Automated CI acceptance is implemented on Issue #78. The Phase 3 gate remains open until the exact final commit also passes the primary Intel Mac real-process run with networking disabled.
+IMP-023 and the Phase 3 safety gate are complete. Cross-platform CI and the primary Intel Mac offline real-process run passed for main commit `22e78b09ba0c144c2cddc918992d52f845c30185`.
 
 ## Purpose
 
@@ -51,12 +51,7 @@ python scripts/run_imp_023_safety_acceptance.py \
   --evidence-level ci
 ```
 
-A passing CI report deliberately contains:
-
-```text
-primary_intel_mac_gate = pending
-phase3_gate_complete = false
-```
+Before primary-machine evidence is accepted, CI reports `primary_intel_mac_gate = pending` and `phase3_gate_complete = false`. After the accepted result is stored in the repository, later CI runs validate that result and report `primary_intel_mac_gate = pass` and `phase3_gate_complete = true`, while the current invocation remains `evidence_level = ci` and performs no network operation.
 
 CI evidence must pass on Ubuntu, macOS, and Windows together with the repository dependency-lock, Ruff, formatting, strict mypy, generated-specification, coverage, CLI, and module-CLI checks.
 
@@ -73,7 +68,7 @@ python scripts/run_imp_023_safety_acceptance.py \
 
 The runner rejects real-machine claims unless the operating system is macOS, the architecture is Intel-compatible, the checked-out SHA matches exactly, and offline operation is explicitly confirmed.
 
-A passing report from this command is the remaining machine-level evidence required before the roadmap may mark IMP-023 and Phase 3 complete.
+The accepted primary-machine run completed at `2026-06-22T15:19:43.591791Z` on Darwin `x86_64`, with `network_mode = offline-confirmed`, `primary_intel_mac_gate = pass`, and `phase3_gate_complete = true`. The complete bounded report is stored in `docs/testing/imp-023-primary-intel-mac-result.json`.
 
 ## Failure and privacy behavior
 
@@ -83,7 +78,7 @@ The successful report contains bounded platform and acceptance metadata only. Al
 
 ## Gate interpretation
 
-Automated CI success proves that the implemented model-independent boundary is internally consistent across the supported CI operating systems. It does not by itself authorize Phase 4 or IMP-024.
+Combined cross-platform CI and primary Intel Mac evidence proves that the implemented model-independent Phase 3 boundary passed its accepted gate. This authorizes beginning Phase 4A and Phase 4B foundation work; it does not authorize IMP-024 or model integration before both Phase 4 gates pass.
 
 Phase 3 may be declared complete only when:
 
@@ -99,4 +94,4 @@ Phase 3 may be declared complete only when:
 - No live capability execution adapter exists.
 - No API listener exists, so SEC-007 remains deferred rather than falsely passed.
 - No live Web retrieval, credential, account, financial, posting, email, or process operation is exercised.
-- The primary Intel Mac result cannot be supplied by GitHub-hosted CI and must be recorded separately on the exact final commit.
+- Future listeners, runtimes, adapters, and executable capabilities require additional acceptance evidence for their newly introduced paths.

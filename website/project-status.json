@@ -2,13 +2,13 @@
   "schema_version": 1,
   "maturity": "Pre-alpha",
   "phase": {
-    "id": "3",
-    "name": "Safety boundary",
-    "state": "in progress"
+    "id": "4A/4B",
+    "name": "Portability and project continuity foundations",
+    "state": "next"
   },
   "model_runtime": {
     "connected": false,
-    "message": "No model runtime is connected yet."
+    "message": "No model runtime is connected yet. IMP-024 remains blocked until both Phase 4 foundation gates pass."
   },
   "last_reviewed": "2026-06-22"
 }
