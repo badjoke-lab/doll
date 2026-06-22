@@ -1,0 +1,37 @@
+name: IMP-023 temporary formatter
+
+on:
+  push:
+    branches:
+      - docs/complete-imp-023-phase-3
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.event.head_commit.message != 'Format IMP-023 completion files'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@v6
+      - name: Install locked development environment
+        run: uv sync --dev --locked
+      - name: Apply repository formatter
+        run: uv run ruff format scripts/run_imp_023_safety_acceptance.py tests/test_safety_acceptance.py
+      - name: Commit canonical formatting
+        run: |
+          if git diff --quiet -- scripts/run_imp_023_safety_acceptance.py tests/test_safety_acceptance.py; then
+            echo 'No formatting changes required.'
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/run_imp_023_safety_acceptance.py tests/test_safety_acceptance.py
+          git commit -m "Format IMP-023 completion files"
+          git push origin HEAD:docs/complete-imp-023-phase-3
