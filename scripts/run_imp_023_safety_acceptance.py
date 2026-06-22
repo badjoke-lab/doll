@@ -30,9 +30,7 @@ def _now() -> str:
 def _args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--commit-sha", required=True)
-    parser.add_argument(
-        "--evidence-level", choices=("ci", "real-machine"), default="ci"
-    )
+    parser.add_argument("--evidence-level", choices=("ci", "real-machine"), default="ci")
     parser.add_argument("--offline-confirmed", action="store_true")
     return parser.parse_args()
 
@@ -50,8 +48,7 @@ def _head() -> str:
 def _has_test(path: Path) -> bool:
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     return any(
-        isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
-        and node.name.startswith("test_")
+        isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name.startswith("test_")
         for node in tree.body
     )
 
@@ -70,9 +67,7 @@ def _matrix_checks() -> tuple[dict[str, bool], list[str]]:
         if not isinstance(item, dict):
             raise RuntimeError("invalid entry")
         files = item.get("pytest_files")
-        if not isinstance(files, list) or not all(
-            isinstance(value, str) for value in files
-        ):
+        if not isinstance(files, list) or not all(isinstance(value, str) for value in files):
             raise RuntimeError("invalid evidence")
         if item.get("status") == "not_applicable":
             deferred += 1
@@ -118,16 +113,9 @@ def _probe_checks() -> dict[str, bool]:
         )
     payload = json.loads(result.stdout)
     checks = payload.get("checks")
-    if (
-        result.returncode
-        or payload.get("result") != "pass"
-        or not isinstance(checks, dict)
-    ):
+    if result.returncode or payload.get("result") != "pass" or not isinstance(checks, dict):
         raise RuntimeError("probe failed")
-    if not all(
-        isinstance(key, str) and isinstance(value, bool)
-        for key, value in checks.items()
-    ):
+    if not all(isinstance(key, str) and isinstance(value, bool) for key, value in checks.items()):
         raise RuntimeError("invalid probe output")
     return checks
 
@@ -173,9 +161,7 @@ def main() -> int:
             "evidence_level": arguments.evidence_level,
             "operating_system": platform.system(),
             "architecture": platform.machine(),
-            "network_mode": "offline-confirmed"
-            if machine
-            else "no-network-path-in-probe",
+            "network_mode": "offline-confirmed" if machine else "no-network-path-in-probe",
             "checks": checks,
             "security_test_count": 23,
             "executable_security_test_count": 22,
