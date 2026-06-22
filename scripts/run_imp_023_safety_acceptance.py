@@ -48,7 +48,8 @@ def _head() -> str:
 def _has_test(path: Path) -> bool:
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     return any(
-        isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name.startswith("test_")
+        isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        and node.name.startswith("test_")
         for node in tree.body
     )
 
@@ -74,7 +75,12 @@ def _stored_machine_gate(matrix: dict[str, Any], gate: dict[str, Any]) -> bool:
     if not isinstance(result, dict):
         raise RuntimeError("accepted machine result is invalid")
     checks = result.get("checks")
-    if not isinstance(checks, dict) or not checks or not all(value is True for value in checks.values()):
+    checks_valid = (
+        isinstance(checks, dict)
+        and bool(checks)
+        and all(value is True for value in checks.values())
+    )
+    if not checks_valid:
         raise RuntimeError("accepted machine checks are invalid")
 
     expected = {
@@ -91,7 +97,9 @@ def _stored_machine_gate(matrix: dict[str, Any], gate: dict[str, Any]) -> bool:
     if any(result.get(key) != value for key, value in expected.items()):
         raise RuntimeError("accepted machine result does not match the matrix")
     architectures = gate.get("architectures")
-    if not isinstance(architectures, list) or result.get("architecture") not in architectures:
+    if not isinstance(architectures, list):
+        raise RuntimeError("accepted machine architectures are invalid")
+    if result.get("architecture") not in architectures:
         raise RuntimeError("accepted machine architecture is invalid")
     return True
 
@@ -110,7 +118,9 @@ def _matrix_checks() -> tuple[dict[str, bool], list[str], bool]:
         if not isinstance(item, dict):
             raise RuntimeError("invalid entry")
         files = item.get("pytest_files")
-        if not isinstance(files, list) or not all(isinstance(value, str) for value in files):
+        if not isinstance(files, list) or not all(
+            isinstance(value, str) for value in files
+        ):
             raise RuntimeError("invalid evidence")
         if item.get("status") == "not_applicable":
             deferred += 1
@@ -138,7 +148,8 @@ def _matrix_checks() -> tuple[dict[str, bool], list[str], bool]:
             "all_implemented_entries_executable": executable == 22,
             "only_unimplemented_listener_not_applicable": deferred == 1,
             "real_machine_gate_declared": gate.get("status") in {"pending", "pass"},
-            "stored_machine_evidence_valid": gate.get("status") != "pass" or stored_complete,
+            "stored_machine_evidence_valid": gate.get("status") != "pass"
+            or stored_complete,
         },
         limitations,
         stored_complete,
@@ -159,9 +170,16 @@ def _probe_checks() -> dict[str, bool]:
         )
     payload = json.loads(result.stdout)
     checks = payload.get("checks")
-    if result.returncode or payload.get("result") != "pass" or not isinstance(checks, dict):
+    if (
+        result.returncode
+        or payload.get("result") != "pass"
+        or not isinstance(checks, dict)
+    ):
         raise RuntimeError("probe failed")
-    if not all(isinstance(key, str) and isinstance(value, bool) for key, value in checks.items()):
+    if not all(
+        isinstance(key, str) and isinstance(value, bool)
+        for key, value in checks.items()
+    ):
         raise RuntimeError("invalid probe output")
     return checks
 
