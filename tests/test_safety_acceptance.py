@@ -65,10 +65,12 @@ def test_imp_023_failure_report_is_bounded_and_secret_safe() -> None:
         "commit_sha",
         "completed_at",
         "error_class",
+        "error_stage",
         "result",
         "test_id",
     }
     assert payload["result"] == "fail"
     assert payload["error_class"] == "RuntimeError"
+    assert payload["error_stage"] == "environment"
     assert "path" not in result.stdout.lower()
     assert "secret" not in result.stdout.lower()
