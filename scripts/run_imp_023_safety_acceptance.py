@@ -75,8 +75,7 @@ def _load_matrix() -> dict[str, object]:
 def _contains_tests(path: Path) -> bool:
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     return any(
-        isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
-        and node.name.startswith("test_")
+        isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name.startswith("test_")
         for node in tree.body
     )
 
@@ -99,25 +98,19 @@ def _validate_matrix(matrix: dict[str, object]) -> dict[str, bool]:
         files = entry.get("pytest_files")
         if not isinstance(note, str) or not note.strip():
             raise RuntimeError("safety matrix scope note is missing")
-        if not isinstance(files, list) or not all(
-            isinstance(item, str) for item in files
-        ):
+        if not isinstance(files, list) or not all(isinstance(item, str) for item in files):
             raise RuntimeError("safety matrix pytest files are invalid")
         if status == "not_applicable":
             not_applicable += 1
             if files:
-                raise RuntimeError(
-                    "not-applicable matrix entry must not claim pytest evidence"
-                )
+                raise RuntimeError("not-applicable matrix entry must not claim pytest evidence")
             continue
         if status != "pass" or not files:
             raise RuntimeError("blocking safety entry lacks executable evidence")
         for relative in files:
             path = _ROOT / relative
             if not path.is_file() or not _contains_tests(path):
-                raise RuntimeError(
-                    "safety matrix references missing executable tests"
-                )
+                raise RuntimeError("safety matrix references missing executable tests")
         executable += 1
 
     gate = matrix.get("real_machine_gate")
@@ -167,9 +160,7 @@ def _build_report(
         raise RuntimeError("one or more safety acceptance checks failed")
     real_machine = arguments.evidence_level == "real-machine"
     limitations = matrix.get("limitations")
-    if not isinstance(limitations, list) or not all(
-        isinstance(item, str) for item in limitations
-    ):
+    if not isinstance(limitations, list) or not all(isinstance(item, str) for item in limitations):
         raise RuntimeError("safety matrix limitations are invalid")
     return {
         "test_id": TEST_ID,
@@ -181,9 +172,7 @@ def _build_report(
         "evidence_level": arguments.evidence_level,
         "operating_system": platform.system(),
         "architecture": platform.machine(),
-        "network_mode": (
-            "offline-confirmed" if real_machine else "no-network-path-in-probe"
-        ),
+        "network_mode": ("offline-confirmed" if real_machine else "no-network-path-in-probe"),
         "checks": checks,
         "security_test_count": 23,
         "executable_security_test_count": 22,
