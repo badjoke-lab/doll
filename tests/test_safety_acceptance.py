@@ -31,7 +31,7 @@ def _run(*arguments: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def test_imp_023_ci_safety_acceptance_passes_without_claiming_real_machine_gate() -> None:
+def test_imp_023_ci_evidence_stays_machine_pending() -> None:
     result = _run("--commit-sha", _head(), "--evidence-level", "ci")
 
     assert result.returncode == 0, result.stderr or result.stdout
