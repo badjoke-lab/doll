@@ -28,18 +28,18 @@ SEC-007 is currently `not_applicable` because doll has an application factory bu
 
 The runner starts a separate Python process with a synthetic temporary workspace and verifies:
 
-- secret-bearing ordinary-state writes are denied;
+- classified ordinary-state writes are denied;
 - denial does not advance the state revision;
-- secret-shaped audit input is redacted;
 - unknown capabilities are denied;
 - release exclusion is applied before confirmation;
 - a fresh exact Tier 3 confirmation is accepted only by the confirmation-aware preflight;
 - a material session change invalidates that confirmation;
 - confirmation cannot bypass release exclusion;
-- state, audit history, and confirmation history remain readable after repository close and read-only reopen;
-- no model runtime, cloud credential, network path, or live side-effect adapter is used.
+- audit history and confirmation history remain readable after repository close and read-only reopen.
 
-The probe performs preflight and persistence validation only. It never invokes the synthetic Tier 3 adapter.
+Audit redaction, diagnostic safety, credential non-disclosure, instruction-origin authority, and other SEC requirements remain covered by the executable pytest files mapped in the acceptance matrix. The fresh-process probe supplements those tests rather than duplicating every unit and integration fixture.
+
+The probe performs state, preflight, and persistence validation only. It does not invoke a model runtime, credential operation, network adapter, capability executor, or the synthetic Tier 3 adapter.
 
 ## CI execution
 
@@ -77,7 +77,7 @@ A passing report from this command is the remaining machine-level evidence requi
 
 ## Failure and privacy behavior
 
-Failure output contains only the test identifier, supplied commit SHA, completion time, result, and exception class. It does not include exception text, absolute paths, usernames, hostnames, secret values, or private fixture content.
+Failure output contains only the test identifier, supplied commit SHA, completion time, result, safe failure stage, and exception class. It does not include exception text, absolute paths, usernames, hostnames, secret values, or private fixture content.
 
 The successful report contains bounded platform and acceptance metadata only. All fixtures are synthetic.
 
