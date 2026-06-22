@@ -69,9 +69,7 @@ def _request(capability_id: str, *, operation_id: str) -> CapabilityRequest:
         },
         target=CapabilityTarget("managed_artifact", "project-1/output.txt"),
         destination=None,
-        declared_side_effects=frozenset(
-            {"process_execution", "create_managed_artifact"}
-        ),
+        declared_side_effects=frozenset({"process_execution", "create_managed_artifact"}),
         declared_risk_tier=3,
         permission_scope={"kind": "project", "project_id": "project-1"},
         resource_limits=CapabilityResourceLimits(100, 4096, 1),
@@ -109,18 +107,14 @@ def _run(root: Path) -> dict[str, bool]:
             checks["classified_state_denied"] = True
         else:
             checks["classified_state_denied"] = False
-        checks["denial_preserved_revision"] = (
-            repository.status().state_revision == before
-        )
+        checks["denial_preserved_revision"] = repository.status().state_revision == before
 
         audit = AuditService(repository)
         registry = built_in_capability_registry()
         permissions = ScopedPermissions()
         network = OutboundNetworkPolicy(enabled=False)
         base = CapabilityPreflightService(registry, permissions, audit, network)
-        unknown = base.preflight(
-            _request("unknown.capability", operation_id="imp023-unknown")
-        )
+        unknown = base.preflight(_request("unknown.capability", operation_id="imp023-unknown"))
         checks["unknown_capability_denied"] = (
             not unknown.authorized and unknown.reason == "unknown_capability"
         )
@@ -174,8 +168,7 @@ def _run(root: Path) -> dict[str, bool]:
             confirmations,
         ).preflight(request, confirmation_id=info.confirmation_id)
         checks["confirmation_cannot_bypass_release_exclusion"] = (
-            not excluded_again.authorized
-            and excluded_again.capability.reason == "release_excluded"
+            not excluded_again.authorized and excluded_again.capability.reason == "release_excluded"
         )
 
     with state.open_state_repository(initialized.root, read_only=True) as repository:
