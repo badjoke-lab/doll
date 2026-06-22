@@ -12,48 +12,92 @@
       "id": "SEC-001",
       "title": "Unknown capability denied",
       "status": "pass",
-      "evidence_levels": ["unit", "integration", "ci_platform", "real_process"],
-      "pytest_files": ["tests/test_capabilities.py", "tests/test_safety_acceptance.py"],
+      "evidence_levels": [
+        "unit",
+        "integration",
+        "ci_platform",
+        "real_process"
+      ],
+      "pytest_files": [
+        "tests/test_capabilities.py",
+        "tests/test_safety_acceptance.py"
+      ],
       "scope_note": "Unknown capability identifiers and versions are denied before any execution authority exists."
     },
     {
       "id": "SEC-002",
       "title": "Malformed arguments denied",
       "status": "pass",
-      "evidence_levels": ["unit", "integration", "ci_platform"],
-      "pytest_files": ["tests/test_capabilities.py", "tests/test_capabilities_coverage.py"],
+      "evidence_levels": [
+        "unit",
+        "integration",
+        "ci_platform"
+      ],
+      "pytest_files": [
+        "tests/test_capabilities.py",
+        "tests/test_capabilities_coverage.py"
+      ],
       "scope_note": "Malformed envelopes, arguments, targets, limits, timeouts, and cancellation identities fail closed."
     },
     {
       "id": "SEC-003",
       "title": "Approval cannot come from content",
       "status": "pass",
-      "evidence_levels": ["unit", "integration", "ci_platform"],
-      "pytest_files": ["tests/test_instruction_origin.py", "tests/test_prompt_injection.py", "tests/test_confirmation.py"],
+      "evidence_levels": [
+        "unit",
+        "integration",
+        "ci_platform"
+      ],
+      "pytest_files": [
+        "tests/test_instruction_origin.py",
+        "tests/test_prompt_injection.py",
+        "tests/test_confirmation.py"
+      ],
       "scope_note": "External, imported, tool, runtime, model, and unknown content cannot issue confirmation or management authority."
     },
     {
       "id": "SEC-004",
       "title": "Approval invalidation",
       "status": "pass",
-      "evidence_levels": ["unit", "integration", "ci_platform"],
-      "pytest_files": ["tests/test_confirmation.py", "tests/test_confirmation_acceptance.py"],
+      "evidence_levels": [
+        "unit",
+        "integration",
+        "ci_platform"
+      ],
+      "pytest_files": [
+        "tests/test_confirmation.py",
+        "tests/test_confirmation_acceptance.py"
+      ],
       "scope_note": "Material request, destination, credential-class, session, cancellation, resource, timeout, and registry changes invalidate confirmation."
     },
     {
       "id": "SEC-005",
       "title": "Model cannot change permissions",
       "status": "pass",
-      "evidence_levels": ["unit", "integration", "ci_platform"],
-      "pytest_files": ["tests/test_settings.py", "tests/test_instruction_origin.py"],
+      "evidence_levels": [
+        "unit",
+        "integration",
+        "ci_platform"
+      ],
+      "pytest_files": [
+        "tests/test_settings.py",
+        "tests/test_instruction_origin.py"
+      ],
       "scope_note": "Permission creation and mutation remain restricted to trusted user-management authority."
     },
     {
       "id": "SEC-006",
       "title": "No unrestricted shell",
       "status": "pass",
-      "evidence_levels": ["unit", "integration", "ci_platform"],
-      "pytest_files": ["tests/test_capabilities.py", "tests/test_capabilities_coverage.py"],
+      "evidence_levels": [
+        "unit",
+        "integration",
+        "ci_platform"
+      ],
+      "pytest_files": [
+        "tests/test_capabilities.py",
+        "tests/test_capabilities_coverage.py"
+      ],
       "scope_note": "The capability registry rejects unrestricted shell, arbitrary command strings, and generic command runners."
     },
     {
@@ -68,142 +112,283 @@
       "id": "SEC-008",
       "title": "Cloud-disabled network silence",
       "status": "pass",
-      "evidence_levels": ["integration", "ci_platform", "real_process"],
-      "pytest_files": ["tests/test_cli.py", "tests/test_api.py", "tests/test_continuity_acceptance.py", "tests/test_safety_acceptance.py"],
+      "evidence_levels": [
+        "integration",
+        "ci_platform",
+        "real_process"
+      ],
+      "pytest_files": [
+        "tests/test_cli.py",
+        "tests/test_api.py",
+        "tests/test_continuity_acceptance.py",
+        "tests/test_safety_acceptance.py"
+      ],
       "scope_note": "Implemented state, audit, recovery, capability, and confirmation paths require no cloud adapter or credential and the acceptance runner performs no network operation."
     },
     {
       "id": "SEC-009",
       "title": "Retrieval destination restrictions",
       "status": "pass",
-      "evidence_levels": ["unit", "integration", "ci_platform"],
-      "pytest_files": ["tests/test_capabilities.py", "tests/test_capabilities_coverage.py"],
+      "evidence_levels": [
+        "unit",
+        "integration",
+        "ci_platform"
+      ],
+      "pytest_files": [
+        "tests/test_capabilities.py",
+        "tests/test_capabilities_coverage.py"
+      ],
       "scope_note": "The preflight boundary enforces explicit URL scheme, host, private-network, policy, timeout, and resource restrictions; no live retrieval adapter exists."
     },
     {
       "id": "SEC-010",
       "title": "Secret redaction",
       "status": "pass",
-      "evidence_levels": ["unit", "integration", "ci_platform", "real_process"],
-      "pytest_files": ["tests/test_secret_detection.py", "tests/test_secret_detection_scan_limit.py", "tests/test_audit_secret_patterns.py", "tests/test_diagnostics.py", "tests/test_cli_secret_redaction.py", "tests/test_safety_acceptance.py"],
+      "evidence_levels": [
+        "unit",
+        "integration",
+        "ci_platform",
+        "real_process"
+      ],
+      "pytest_files": [
+        "tests/test_secret_detection.py",
+        "tests/test_secret_detection_scan_limit.py",
+        "tests/test_audit_secret_patterns.py",
+        "tests/test_diagnostics.py",
+        "tests/test_cli_secret_redaction.py",
+        "tests/test_safety_acceptance.py"
+      ],
       "scope_note": "Synthetic secret patterns are rejected or redacted from state, audit, diagnostics, errors, and acceptance evidence."
     },
     {
       "id": "SEC-011",
       "title": "External content remains untrusted",
       "status": "pass",
-      "evidence_levels": ["unit", "integration", "ci_platform"],
-      "pytest_files": ["tests/test_instruction_origin.py", "tests/test_instruction_origin_coverage.py", "tests/test_prompt_injection.py"],
+      "evidence_levels": [
+        "unit",
+        "integration",
+        "ci_platform"
+      ],
+      "pytest_files": [
+        "tests/test_instruction_origin.py",
+        "tests/test_instruction_origin_coverage.py",
+        "tests/test_prompt_injection.py"
+      ],
       "scope_note": "Hostile document, website, metadata, OCR, transcript, import, tool-result, runtime-output, and model-proposal fixtures remain data-only."
     },
     {
       "id": "SEC-012",
       "title": "Audit immutability through normal capabilities",
       "status": "pass",
-      "evidence_levels": ["unit", "integration", "ci_platform"],
-      "pytest_files": ["tests/test_audit.py", "tests/test_audit_defensive_branches.py", "tests/test_capabilities.py"],
+      "evidence_levels": [
+        "unit",
+        "integration",
+        "ci_platform"
+      ],
+      "pytest_files": [
+        "tests/test_audit.py",
+        "tests/test_audit_defensive_branches.py",
+        "tests/test_capabilities.py"
+      ],
       "scope_note": "Normal callers have append-oriented audit access only; no registered capability can rewrite or delete audit history."
     },
     {
       "id": "SEC-013",
       "title": "Secret classification enforced",
       "status": "pass",
-      "evidence_levels": ["unit", "integration", "ci_platform", "real_process"],
-      "pytest_files": ["tests/test_secret_policy.py", "tests/test_state_secret_policy.py", "tests/test_safety_acceptance.py"],
+      "evidence_levels": [
+        "unit",
+        "integration",
+        "ci_platform",
+        "real_process"
+      ],
+      "pytest_files": [
+        "tests/test_secret_policy.py",
+        "tests/test_state_secret_policy.py",
+        "tests/test_safety_acceptance.py"
+      ],
       "scope_note": "Ordinary authoritative state rejects secret values before mutation and preserves the prior revision."
     },
     {
       "id": "SEC-014",
       "title": "SecretReference is non-secret",
       "status": "pass",
-      "evidence_levels": ["unit", "integration", "ci_platform"],
-      "pytest_files": ["tests/test_secret_policy.py", "tests/test_state_secret_policy.py", "tests/test_secret_store_contract.py"],
+      "evidence_levels": [
+        "unit",
+        "integration",
+        "ci_platform"
+      ],
+      "pytest_files": [
+        "tests/test_secret_policy.py",
+        "tests/test_state_secret_policy.py",
+        "tests/test_secret_store_contract.py"
+      ],
       "scope_note": "Secret references contain bounded identifier and policy metadata but never credential material."
     },
     {
       "id": "SEC-015",
       "title": "Secret-safe exceptional paths",
       "status": "pass",
-      "evidence_levels": ["unit", "integration", "ci_platform"],
-      "pytest_files": ["tests/test_audit_secret_patterns.py", "tests/test_diagnostics.py", "tests/test_safe_logging.py", "tests/test_credential_broker.py"],
+      "evidence_levels": [
+        "unit",
+        "integration",
+        "ci_platform"
+      ],
+      "pytest_files": [
+        "tests/test_audit_secret_patterns.py",
+        "tests/test_diagnostics.py",
+        "tests/test_safe_logging.py",
+        "tests/test_credential_broker.py"
+      ],
       "scope_note": "Validation, adapter, handler, audit, cancellation, and diagnostic failures do not disclose synthetic secret values or private paths."
     },
     {
       "id": "SEC-016",
       "title": "External secret-store isolation",
       "status": "pass",
-      "evidence_levels": ["unit", "integration", "ci_platform"],
-      "pytest_files": ["tests/test_secret_store.py", "tests/test_secret_store_contract.py", "tests/test_credential_broker.py"],
+      "evidence_levels": [
+        "unit",
+        "integration",
+        "ci_platform"
+      ],
+      "pytest_files": [
+        "tests/test_secret_store.py",
+        "tests/test_secret_store_contract.py",
+        "tests/test_credential_broker.py"
+      ],
       "scope_note": "Unavailable, locked, missing, or denied external stores fail the credential operation without corrupting ordinary state."
     },
     {
       "id": "SEC-017",
       "title": "Credential broker non-disclosure",
       "status": "pass",
-      "evidence_levels": ["unit", "integration", "ci_platform"],
-      "pytest_files": ["tests/test_credential_broker.py", "tests/test_credential_broker_contract.py"],
+      "evidence_levels": [
+        "unit",
+        "integration",
+        "ci_platform"
+      ],
+      "pytest_files": [
+        "tests/test_credential_broker.py",
+        "tests/test_credential_broker_contract.py"
+      ],
       "scope_note": "Synthetic credentials are exposed only as transient read-only material to a registered handler and are absent from results and audit data."
     },
     {
       "id": "SEC-018",
       "title": "Confirmed fact, claim, evidence, and inference separation",
       "status": "pass",
-      "evidence_levels": ["unit", "integration", "ci_platform"],
-      "pytest_files": ["tests/test_trust.py", "tests/test_trust_coverage.py"],
+      "evidence_levels": [
+        "unit",
+        "integration",
+        "ci_platform"
+      ],
+      "pytest_files": [
+        "tests/test_trust.py",
+        "tests/test_trust_coverage.py"
+      ],
       "scope_note": "Trust record kinds, provenance, support, contradiction, confidence, and review state remain distinct through persistence and transfer."
     },
     {
       "id": "SEC-019",
       "title": "Instruction origin preserved",
       "status": "pass",
-      "evidence_levels": ["unit", "integration", "ci_platform"],
-      "pytest_files": ["tests/test_instruction_origin.py", "tests/test_instruction_origin_coverage.py"],
+      "evidence_levels": [
+        "unit",
+        "integration",
+        "ci_platform"
+      ],
+      "pytest_files": [
+        "tests/test_instruction_origin.py",
+        "tests/test_instruction_origin_coverage.py"
+      ],
       "scope_note": "Instruction-bearing inputs retain source and authority metadata through persistence, transfer, derivation, and context assembly."
     },
     {
       "id": "SEC-020",
       "title": "Untrusted content cannot become authority",
       "status": "pass",
-      "evidence_levels": ["unit", "integration", "ci_platform"],
-      "pytest_files": ["tests/test_instruction_origin.py", "tests/test_prompt_injection.py", "tests/test_confirmation.py"],
+      "evidence_levels": [
+        "unit",
+        "integration",
+        "ci_platform"
+      ],
+      "pytest_files": [
+        "tests/test_instruction_origin.py",
+        "tests/test_prompt_injection.py",
+        "tests/test_confirmation.py"
+      ],
       "scope_note": "Data-only origins cannot modify policy, permission, risk, confirmation, credential scope, or security authority."
     },
     {
       "id": "SEC-021",
       "title": "Capability risk tier enforced",
       "status": "pass",
-      "evidence_levels": ["unit", "integration", "ci_platform"],
-      "pytest_files": ["tests/test_capabilities.py", "tests/test_capabilities_coverage.py"],
+      "evidence_levels": [
+        "unit",
+        "integration",
+        "ci_platform"
+      ],
+      "pytest_files": [
+        "tests/test_capabilities.py",
+        "tests/test_capabilities_coverage.py"
+      ],
       "scope_note": "Registered capability versions fix the risk tier and side effects outside caller control."
     },
     {
       "id": "SEC-022",
       "title": "Mandatory high-risk confirmation",
       "status": "pass",
-      "evidence_levels": ["unit", "integration", "ci_platform", "real_process"],
-      "pytest_files": ["tests/test_confirmation.py", "tests/test_confirmation_acceptance.py", "tests/test_safety_acceptance.py"],
+      "evidence_levels": [
+        "unit",
+        "integration",
+        "ci_platform",
+        "real_process"
+      ],
+      "pytest_files": [
+        "tests/test_confirmation.py",
+        "tests/test_confirmation_acceptance.py",
+        "tests/test_safety_acceptance.py"
+      ],
       "scope_note": "Release-available Tier 3 requests require a fresh exact user-controlled confirmation; preflight remains read-only and consumption is one-time."
     },
     {
       "id": "SEC-023",
       "title": "Confirmation is necessary but not sufficient",
       "status": "pass",
-      "evidence_levels": ["unit", "integration", "ci_platform", "real_process"],
-      "pytest_files": ["tests/test_capabilities.py", "tests/test_confirmation.py", "tests/test_confirmation_acceptance.py", "tests/test_safety_acceptance.py"],
+      "evidence_levels": [
+        "unit",
+        "integration",
+        "ci_platform",
+        "real_process"
+      ],
+      "pytest_files": [
+        "tests/test_capabilities.py",
+        "tests/test_confirmation.py",
+        "tests/test_confirmation_acceptance.py",
+        "tests/test_safety_acceptance.py"
+      ],
       "scope_note": "Confirmation cannot enable an unknown, malformed, permission-denied, network-denied, unsafe, or release-excluded capability."
     }
   ],
   "real_machine_gate": {
     "required": true,
     "platform": "Darwin",
-    "architectures": ["x86_64", "amd64"],
-    "status": "pending",
-    "runner": "scripts/run_imp_023_safety_acceptance.py"
+    "architectures": [
+      "x86_64",
+      "amd64"
+    ],
+    "status": "pass",
+    "runner": "scripts/run_imp_023_safety_acceptance.py",
+    "commit_sha": "22e78b09ba0c144c2cddc918992d52f845c30185",
+    "completed_at": "2026-06-22T15:19:43.591791Z",
+    "evidence_level": "real-machine",
+    "network_mode": "offline-confirmed"
   },
   "limitations": [
     "The repository has no model adapter or model execution path.",
     "The repository has no live capability execution adapter or external side effect.",
-    "Localhost binding becomes applicable when an API listener is introduced.",
-    "The primary Intel Mac real-process run remains required before Phase 3 is declared complete."
-  ]
+    "Localhost binding becomes applicable when an API listener is introduced."
+  ],
+  "phase3_gate_complete": true,
+  "accepted_real_machine_result": "docs/testing/imp-023-primary-intel-mac-result.json"
 }
