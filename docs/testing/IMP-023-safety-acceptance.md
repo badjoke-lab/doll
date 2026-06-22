@@ -51,12 +51,7 @@ python scripts/run_imp_023_safety_acceptance.py \
   --evidence-level ci
 ```
 
-A passing CI report deliberately contains:
-
-```text
-primary_intel_mac_gate = pending
-phase3_gate_complete = false
-```
+Before primary-machine evidence is accepted, CI reports `primary_intel_mac_gate = pending` and `phase3_gate_complete = false`. After the accepted result is stored in the repository, later CI runs validate that result and report `primary_intel_mac_gate = pass` and `phase3_gate_complete = true`, while the current invocation remains `evidence_level = ci` and performs no network operation.
 
 CI evidence must pass on Ubuntu, macOS, and Windows together with the repository dependency-lock, Ruff, formatting, strict mypy, generated-specification, coverage, CLI, and module-CLI checks.
 
