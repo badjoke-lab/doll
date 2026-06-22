@@ -55,9 +55,7 @@ def _tier3_request() -> CapabilityRequest:
         },
         target=CapabilityTarget("managed_artifact", "project-1/output.txt"),
         destination=None,
-        declared_side_effects=frozenset(
-            {"process_execution", "create_managed_artifact"}
-        ),
+        declared_side_effects=frozenset({"process_execution", "create_managed_artifact"}),
         declared_risk_tier=3,
         permission_scope={"kind": "project", "project_id": "project-1"},
         resource_limits=CapabilityResourceLimits(100, 4096, 1),
@@ -112,9 +110,7 @@ def _probe(root: Path) -> dict[str, bool]:
             checks["secret_write_denied"] = True
         else:
             checks["secret_write_denied"] = False
-        checks["denial_preserved_revision"] = (
-            repository.status().state_revision == before
-        )
+        checks["denial_preserved_revision"] = repository.status().state_revision == before
 
         secret_value = "Bearer synthetic-imp023-credential"
         event = AuditService(repository).append(
@@ -139,8 +135,7 @@ def _probe(root: Path) -> dict[str, bool]:
         )
         unknown_decision = base.preflight(_unknown_request())
         checks["unknown_capability_denied"] = (
-            not unknown_decision.authorized
-            and unknown_decision.reason == "unknown_capability"
+            not unknown_decision.authorized and unknown_decision.reason == "unknown_capability"
         )
 
         request = _tier3_request()
@@ -208,13 +203,9 @@ def _probe(root: Path) -> dict[str, bool]:
             registry_fingerprint=released.fingerprint,
             normalized_destination=None,
         )
-        checks["fresh_process_state_opened"] = (
-            repository.status().record_count == 0
-        )
+        checks["fresh_process_state_opened"] = repository.status().record_count == 0
         checks["fresh_process_audit_readable"] = len(events) >= 5
-        checks["fresh_process_confirmation_readable"] = (
-            resolution.reason == "approved"
-        )
+        checks["fresh_process_confirmation_readable"] = resolution.reason == "approved"
 
     checks["model_runtime_used"] = False
     checks["cloud_credentials_used"] = False
