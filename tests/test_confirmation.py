@@ -38,9 +38,7 @@ def test_exact_approved_confirmation_authorizes_without_consuming(
     clock = MutableClock()
     request = tier3_request()
     with state.open_state_repository(initialized.root) as repository:
-        registry, confirmations, permissions, service = preflight_service(
-            repository, clock
-        )
+        registry, confirmations, permissions, service = preflight_service(repository, clock)
         confirmation = confirmations.issue(
             request,
             registry=registry,
@@ -49,9 +47,7 @@ def test_exact_approved_confirmation_authorizes_without_consuming(
         )
 
         first = service.preflight(request, confirmation_id=confirmation.confirmation_id)
-        second = service.preflight(
-            request, confirmation_id=confirmation.confirmation_id
-        )
+        second = service.preflight(request, confirmation_id=confirmation.confirmation_id)
 
         assert first.authorized is True
         assert second.authorized is True
@@ -116,9 +112,7 @@ def test_missing_denied_expired_revoked_and_consumed_confirmation_fail_closed(
             revoked_info.confirmation_id,
             operation_id=request.operation_id,
         )
-        revoked = service.preflight(
-            request, confirmation_id=revoked_info.confirmation_id
-        )
+        revoked = service.preflight(request, confirmation_id=revoked_info.confirmation_id)
         assert revoked.authorized is False
         assert revoked.confirmation_reason == "revoked"
 
@@ -134,9 +128,7 @@ def test_missing_denied_expired_revoked_and_consumed_confirmation_fail_closed(
             registry_fingerprint=registry.fingerprint,
             normalized_destination=None,
         )
-        consumed = service.preflight(
-            request, confirmation_id=consumed_info.confirmation_id
-        )
+        consumed = service.preflight(request, confirmation_id=consumed_info.confirmation_id)
         assert consumed.authorized is False
         assert consumed.confirmation_reason == "consumed"
         with pytest.raises(ConfirmationUnavailableError):
@@ -246,9 +238,7 @@ def test_confirmation_is_necessary_but_cannot_override_other_gates(
             network_policy=OutboundNetworkPolicy(enabled=False),
             confirmations=confirmations,
         )
-        denied = denied_permission_service.preflight(
-            request, confirmation_id=info.confirmation_id
-        )
+        denied = denied_permission_service.preflight(request, confirmation_id=info.confirmation_id)
         assert denied.authorized is False
         assert denied.capability.reason == "permission_denied"
 

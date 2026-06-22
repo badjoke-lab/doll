@@ -27,9 +27,7 @@ class FakePermissionResolver:
         self.mode = mode
         self.calls: list[tuple[str, dict[str, object]]] = []
 
-    def resolve(
-        self, *, capability_id: str, scope: dict[str, object]
-    ) -> PermissionDecision:
+    def resolve(self, *, capability_id: str, scope: dict[str, object]) -> PermissionDecision:
         self.calls.append((capability_id, scope))
         reason = "active" if self.mode != "denied" else "no_record"
         return PermissionDecision(
@@ -79,9 +77,7 @@ def tier3_request() -> CapabilityRequest:
         },
         target=CapabilityTarget("managed_artifact", "project-1/output.txt"),
         destination=None,
-        declared_side_effects=frozenset(
-            {"process_execution", "create_managed_artifact"}
-        ),
+        declared_side_effects=frozenset({"process_execution", "create_managed_artifact"}),
         declared_risk_tier=3,
         permission_scope={"kind": "project", "project_id": "project-1"},
         resource_limits=CapabilityResourceLimits(100, 4096, 1),

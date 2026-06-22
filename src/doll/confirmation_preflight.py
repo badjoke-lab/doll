@@ -9,6 +9,7 @@ from doll._confirmation_types import ConfirmationReason, ConfirmationResolution
 from doll._confirmation_validation import audit_actor
 from doll.audit import AuditService
 from doll.capabilities import (
+    _DESTINATION_MISMATCH,
     CapabilityAuditError,
     CapabilityDecisionReason,
     CapabilityDefinition,
@@ -19,7 +20,6 @@ from doll.capabilities import (
     CapabilityRiskTier,
     OutboundNetworkPolicy,
     PermissionResolver,
-    _DESTINATION_MISMATCH,
     _actor_matches_origin,
     _arguments_match,
     _bindings_match,
@@ -74,13 +74,8 @@ class ConfirmedCapabilityPreflightService:
             audit=self.audit,
             network_policy=self.network_policy,
         )
-        definition = self.registry.get(
-            envelope.capability_id, envelope.capability_version
-        )
-        if (
-            definition is None
-            or definition.risk_tier is not CapabilityRiskTier.HIGH_RISK
-        ):
+        definition = self.registry.get(envelope.capability_id, envelope.capability_version)
+        if definition is None or definition.risk_tier is not CapabilityRiskTier.HIGH_RISK:
             decision = base.preflight(envelope)
             return ConfirmedCapabilityPreflightDecision(
                 capability=decision,

@@ -136,9 +136,7 @@ def safe_now(clock: Callable[[], datetime]) -> datetime:
     except Exception:
         raise ConfirmationValidationError("confirmation clock failed") from None
     if not isinstance(value, datetime) or value.tzinfo is None:
-        raise ConfirmationValidationError(
-            "confirmation clock must return a timezone-aware value"
-        )
+        raise ConfirmationValidationError("confirmation clock must return a timezone-aware value")
     return value.astimezone(UTC)
 
 
@@ -160,11 +158,7 @@ def validate_token(name: str, value: object, maximum: int) -> str:
     if not isinstance(value, str):
         raise ConfirmationValidationError(f"{name} must be text")
     normalized = value.strip()
-    if (
-        not normalized
-        or len(normalized) > maximum
-        or not _TOKEN_PATTERN.fullmatch(normalized)
-    ):
+    if not normalized or len(normalized) > maximum or not _TOKEN_PATTERN.fullmatch(normalized):
         raise ConfirmationValidationError(f"{name} is invalid")
     return normalized
 
@@ -182,18 +176,14 @@ def validate_fingerprint(name: str, value: str) -> str:
 def validate_preview(preview: ConfirmationPreview) -> ConfirmationPreview:
     if not isinstance(preview, ConfirmationPreview):
         raise ConfirmationValidationError("confirmation preview is invalid")
-    effect_summary = _validate_preview_text(
-        "effect summary", preview.effect_summary, required=True
-    )
+    effect_summary = _validate_preview_text("effect summary", preview.effect_summary, required=True)
     recovery = _validate_preview_text(
         "recovery description", preview.recovery_description, required=False
     )
     credential = validate_optional_token(
         "credential class", preview.credential_class, MAX_CREDENTIAL_CLASS_LENGTH
     )
-    account = _validate_preview_text(
-        "account label", preview.account_label, required=False
-    )
+    account = _validate_preview_text("account label", preview.account_label, required=False)
     if not isinstance(preview.irreversible, bool):
         raise ConfirmationValidationError("irreversible flag must be boolean")
     return ConfirmationPreview(
@@ -221,9 +211,7 @@ def _validate_preview_text(
             raise ConfirmationValidationError(f"{name} is required")
         return None
     if len(normalized) > MAX_PREVIEW_TEXT_LENGTH:
-        raise ConfirmationValidationError(
-            f"{name} exceeds {MAX_PREVIEW_TEXT_LENGTH} characters"
-        )
+        raise ConfirmationValidationError(f"{name} exceeds {MAX_PREVIEW_TEXT_LENGTH} characters")
     try:
         _serialize_metadata({"value": normalized})
     except StateError as exc:
@@ -294,9 +282,7 @@ def _canonical_value(value: object) -> object:
         return [_canonical_value(item) for item in value]
     if value is None or isinstance(value, (str, int, bool)):
         return value
-    raise ConfirmationValidationError(
-        "confirmation input contains unsupported JSON data"
-    )
+    raise ConfirmationValidationError("confirmation input contains unsupported JSON data")
 
 
 def _reject_secret_strings(value: object) -> None:

@@ -82,9 +82,7 @@ def test_repeated_preview_does_not_pollute_confirmation_lifecycle(
             decision="approved",
         )
         for _ in range(40):
-            assert service.preflight(
-                request, confirmation_id=info.confirmation_id
-            ).authorized
+            assert service.preflight(request, confirmation_id=info.confirmation_id).authorized
         resolution = confirmations.resolve(
             info.confirmation_id,
             request,

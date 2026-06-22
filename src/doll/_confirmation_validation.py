@@ -18,11 +18,11 @@ from doll._confirmation_types import (
 )
 from doll.audit import AuditActorType, AuditEvent
 from doll.capabilities import (
+    _DESTINATION_MISMATCH,
     CapabilityDefinition,
     CapabilityRegistry,
     CapabilityRequest,
     CapabilityRiskTier,
-    _DESTINATION_MISMATCH,
     _actor_matches_origin,
     _arguments_match,
     _bindings_match,
@@ -48,9 +48,7 @@ def validated_high_risk_binding(
     if definition.risk_tier is not CapabilityRiskTier.HIGH_RISK:
         raise ConfirmationValidationError("confirmation may be issued only for Tier 3")
     if not definition.release_available:
-        raise ConfirmationValidationError(
-            "release-excluded capability cannot be confirmed"
-        )
+        raise ConfirmationValidationError("release-excluded capability cannot be confirmed")
     if (
         not _actor_matches_origin(envelope.actor_type, envelope.origin_class)
         or envelope.origin_class not in definition.allowed_request_origins
@@ -65,9 +63,7 @@ def validated_high_risk_binding(
         raise ConfirmationValidationError("request destination is inconsistent")
     destination = cast(str | None, destination_value)
     if envelope.declared_side_effects != definition.side_effects:
-        raise ConfirmationValidationError(
-            "request side effects do not match capability"
-        )
+        raise ConfirmationValidationError("request side effects do not match capability")
     if envelope.declared_risk_tier != 3:
         raise ConfirmationValidationError("request must declare Tier 3")
     if not _resource_limits_match(
@@ -111,7 +107,7 @@ def confirmation_metadata(
         "target_kind": request.target.kind,
         "destination_host": host,
         "side_effects": sorted(definition.side_effects),
-        "credential_class": preview.credential_class,
+        "auth_material_class": preview.credential_class,
         "data_leaves_machine": destination is not None,
         "irreversible": preview.irreversible,
         "recovery_available": preview.recovery_description is not None,
@@ -131,9 +127,7 @@ def resolution_from_events(
     now: datetime,
 ) -> ConfirmationResolution:
     if not events:
-        return ConfirmationResolution(
-            confirmation_id, "missing", expected_fingerprint, None
-        )
+        return ConfirmationResolution(confirmation_id, "missing", expected_fingerprint, None)
     issues = [event for event in events if event.action == "confirmation.issue"]
     if len(issues) != 1:
         raise ConfirmationCorruptError("confirmation must have exactly one issue event")
@@ -146,28 +140,16 @@ def resolution_from_events(
         issue.operation_id != expected_operation_id
         or info.request_fingerprint != expected_fingerprint
     ):
-        return ConfirmationResolution(
-            confirmation_id, "mismatch", expected_fingerprint, info
-        )
+        return ConfirmationResolution(confirmation_id, "mismatch", expected_fingerprint, info)
     if any(event.action == "confirmation.revoke" for event in events):
-        return ConfirmationResolution(
-            confirmation_id, "revoked", expected_fingerprint, info
-        )
+        return ConfirmationResolution(confirmation_id, "revoked", expected_fingerprint, info)
     if any(event.action == "confirmation.consume" for event in events):
-        return ConfirmationResolution(
-            confirmation_id, "consumed", expected_fingerprint, info
-        )
+        return ConfirmationResolution(confirmation_id, "consumed", expected_fingerprint, info)
     if info.decision == "denied" or issue.result == "denied":
-        return ConfirmationResolution(
-            confirmation_id, "denied", expected_fingerprint, info
-        )
+        return ConfirmationResolution(confirmation_id, "denied", expected_fingerprint, info)
     if now >= parse_utc(info.expires_at):
-        return ConfirmationResolution(
-            confirmation_id, "expired", expected_fingerprint, info
-        )
-    return ConfirmationResolution(
-        confirmation_id, "approved", expected_fingerprint, info
-    )
+        return ConfirmationResolution(confirmation_id, "expired", expected_fingerprint, info)
+    return ConfirmationResolution(confirmation_id, "approved", expected_fingerprint, info)
 
 
 def _validate_lifecycle_events(
@@ -177,35 +159,21 @@ def _validate_lifecycle_events(
     consumes = [event for event in events if event.action == "confirmation.consume"]
     revokes = [event for event in events if event.action == "confirmation.revoke"]
     if len(consumes) > 1 or len(revokes) > 1:
-        raise ConfirmationCorruptError(
-            "confirmation lifecycle has duplicate terminal events"
-        )
+        raise ConfirmationCorruptError("confirmation lifecycle has duplicate terminal events")
     for event in events:
-        if (
-            event.target_type != "confirmation"
-            or event.target_id != info.confirmation_id
-        ):
+        if event.target_type != "confirmation" or event.target_id != info.confirmation_id:
             raise ConfirmationCorruptError("confirmation lifecycle target is invalid")
         if event.action == "confirmation.issue":
             continue
         if event.action == "confirmation.consume":
-            if (
-                event.actor_type not in {"capability", "system"}
-                or event.result != "success"
-            ):
-                raise ConfirmationCorruptError(
-                    "confirmation consume authority is invalid"
-                )
+            if event.actor_type not in {"capability", "system"} or event.result != "success":
+                raise ConfirmationCorruptError("confirmation consume authority is invalid")
             if event.metadata.get("request_fingerprint") != info.request_fingerprint:
-                raise ConfirmationCorruptError(
-                    "confirmation consume fingerprint is invalid"
-                )
+                raise ConfirmationCorruptError("confirmation consume fingerprint is invalid")
             continue
         if event.action == "confirmation.revoke":
             if event.actor_type != "user" or event.result != "success":
-                raise ConfirmationCorruptError(
-                    "confirmation revocation authority is invalid"
-                )
+                raise ConfirmationCorruptError("confirmation revocation authority is invalid")
             continue
         raise ConfirmationCorruptError("confirmation lifecycle action is invalid")
 
@@ -228,9 +196,7 @@ def info_from_issue(event: AuditEvent) -> ConfirmationInfo:
         if metadata["risk_tier"] != 3:
             raise ValueError
         effects = metadata["side_effects"]
-        if not isinstance(effects, list) or not all(
-            isinstance(item, str) for item in effects
-        ):
+        if not isinstance(effects, list) or not all(isinstance(item, str) for item in effects):
             raise ValueError
         return ConfirmationInfo(
             confirmation_id=confirmation_id,
@@ -245,20 +211,16 @@ def info_from_issue(event: AuditEvent) -> ConfirmationInfo:
             target_kind=_metadata_string(metadata, "target_kind"),
             destination_host=_metadata_optional_string(metadata, "destination_host"),
             side_effects=tuple(cast(list[str], effects)),
-            credential_class=_metadata_optional_string(metadata, "credential_class"),
+            credential_class=_metadata_optional_string(metadata, "auth_material_class"),
             data_leaves_machine=_metadata_bool(metadata, "data_leaves_machine"),
             irreversible=_metadata_bool(metadata, "irreversible"),
             recovery_available=_metadata_bool(metadata, "recovery_available"),
             effect_summary=_metadata_string(metadata, "effect_summary"),
             account_label=_metadata_optional_string(metadata, "account_label"),
-            recovery_description=_metadata_optional_string(
-                metadata, "recovery_description"
-            ),
+            recovery_description=_metadata_optional_string(metadata, "recovery_description"),
         )
     except (KeyError, TypeError, ValueError, ConfirmationValidationError) as exc:
-        raise ConfirmationCorruptError(
-            "confirmation issue metadata is malformed"
-        ) from exc
+        raise ConfirmationCorruptError("confirmation issue metadata is malformed") from exc
 
 
 def audit_actor(actor_type: str) -> AuditActorType:

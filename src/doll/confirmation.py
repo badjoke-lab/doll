@@ -92,14 +92,10 @@ class ConfirmationService:
 
         require_user_management(actor_type, origin_class)
         self._require_writable()
-        envelope, definition, destination = validated_high_risk_binding(
-            request, registry
-        )
+        envelope, definition, destination = validated_high_risk_binding(request, registry)
         safe_preview = validate_preview(preview)
         if decision not in {"approved", "denied"}:
-            raise ConfirmationValidationError(
-                "confirmation decision must be approved or denied"
-            )
+            raise ConfirmationValidationError("confirmation decision must be approved or denied")
         ttl = validate_ttl(ttl_seconds)
         expires_at = safe_now(self.clock) + timedelta(seconds=ttl)
         fingerprint = confirmation_fingerprint(
@@ -113,9 +109,7 @@ class ConfirmationService:
                 "confirmation ID", self.id_factory(), MAX_CONFIRMATION_ID_LENGTH
             )
         except Exception:
-            raise ConfirmationValidationError(
-                "confirmation ID generation failed"
-            ) from None
+            raise ConfirmationValidationError("confirmation ID generation failed") from None
         metadata = confirmation_metadata(
             confirmation_id=confirmation_id,
             request=envelope,
@@ -127,9 +121,7 @@ class ConfirmationService:
             expires_at=format_utc(expires_at),
             preview=safe_preview,
         )
-        result: Literal["success", "denied"] = (
-            "success" if decision == "approved" else "denied"
-        )
+        result: Literal["success", "denied"] = "success" if decision == "approved" else "denied"
         self._append_unique_issue(
             confirmation_id=confirmation_id,
             operation_id=envelope.operation_id,
@@ -167,9 +159,7 @@ class ConfirmationService:
         )
         if confirmation_id is None:
             return ConfirmationResolution(None, "missing", fingerprint, None)
-        safe_id = validate_token(
-            "confirmation ID", confirmation_id, MAX_CONFIRMATION_ID_LENGTH
-        )
+        safe_id = validate_token("confirmation ID", confirmation_id, MAX_CONFIRMATION_ID_LENGTH)
         try:
             return resolution_from_events(
                 safe_id,
@@ -199,9 +189,7 @@ class ConfirmationService:
             )
         self._require_writable()
         envelope = _validate_request_envelope(request)
-        safe_id = validate_token(
-            "confirmation ID", confirmation_id, MAX_CONFIRMATION_ID_LENGTH
-        )
+        safe_id = validate_token("confirmation ID", confirmation_id, MAX_CONFIRMATION_ID_LENGTH)
         fingerprint = confirmation_fingerprint(
             envelope,
             registry_fingerprint=registry_fingerprint,
@@ -258,9 +246,7 @@ class ConfirmationService:
 
         require_user_management(actor_type, origin_class)
         self._require_writable()
-        safe_id = validate_token(
-            "confirmation ID", confirmation_id, MAX_CONFIRMATION_ID_LENGTH
-        )
+        safe_id = validate_token("confirmation ID", confirmation_id, MAX_CONFIRMATION_ID_LENGTH)
         safe_operation = validate_token("operation ID", operation_id, 200)
         connection = self.repository.connection
         connection.execute("BEGIN IMMEDIATE")
@@ -333,13 +319,9 @@ class ConfirmationService:
                 (confirmation_id, MAX_CONFIRMATION_EVENTS + 1),
             ).fetchall()
         except sqlite3.DatabaseError as exc:
-            raise ConfirmationCorruptError(
-                "confirmation history is unreadable"
-            ) from exc
+            raise ConfirmationCorruptError("confirmation history is unreadable") from exc
         if len(rows) > MAX_CONFIRMATION_EVENTS:
-            raise ConfirmationCorruptError(
-                "confirmation history exceeds the event limit"
-            )
+            raise ConfirmationCorruptError("confirmation history exceeds the event limit")
         try:
             return tuple(_event_from_row(cast(sqlite3.Row, row)) for row in rows)
         except StateError as exc:
