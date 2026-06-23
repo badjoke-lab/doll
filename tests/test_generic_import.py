@@ -230,6 +230,7 @@ def test_branch_linearization_and_attachment_metadata_are_explicit_losses() -> N
         "attachment-metadata-only",
         "branch-linearization",
     }
+    assert {item.recorded_at for item in result.loss_records} == {STARTED}
 
 
 def test_result_is_deterministic_for_same_context_and_bytes() -> None:
