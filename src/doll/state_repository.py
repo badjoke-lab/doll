@@ -8,13 +8,19 @@ from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
 from typing import cast
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from doll.secret_policy import SecretPolicyError, validate_ordinary_state_record
 from doll.state import (
     _ALLOWED_PROVENANCE,
     _ALLOWED_SENSITIVITY,
     _ALLOWED_STATUSES,
+    ConversationActorType,
+    ConversationEventKind,
+    ConversationEventRecord,
+    ConversationOriginClass,
+    ConversationRecord,
+    ConversationValidationError,
     ReadOnlyStateError,
     RecordEnvelope,
     RecordProvenance,
@@ -28,6 +34,34 @@ from doll.state import (
 )
 from doll.state_db import _metadata_row
 from doll.workspace import InitializedWorkspace, load_workspace, update_workspace_state_revision
+
+_CONVERSATION_RECORD_TYPE = "conversation"
+_CONVERSATION_EVENT_RECORD_TYPE = "conversation_event"
+_CONVERSATION_SCHEMA_VERSION = 1
+_MAX_CONVERSATION_LIST_LIMIT = 500
+_CONVERSATION_METADATA_KEYS = frozenset({"source_environment_id", "source_conversation_id"})
+_CONVERSATION_EVENT_METADATA_KEYS = frozenset(
+    {
+        "conversation_id",
+        "event_kind",
+        "actor_type",
+        "origin_class",
+        "parent_event_ids",
+        "sequence_hint",
+        "content_reference",
+        "occurred_at",
+        "source_event_kind",
+        "source_environment_id",
+        "source_object_id",
+        "provider_id",
+        "application_id",
+        "interface_id",
+        "model_manifest_id",
+        "runtime_adapter_id",
+        "operation_id",
+        "extensions",
+    }
+)
 
 
 @dataclass(slots=True)
@@ -106,6 +140,7 @@ class StateRepository:
         sensitivity: RecordSensitivity = "personal",
         title: str | None = None,
         metadata: dict[str, object] | None = None,
+        record_id: str | None = None,
     ) -> RecordEnvelope:
         """Create one authoritative record and advance the workspace state revision."""
 
@@ -123,12 +158,18 @@ class StateRepository:
             sensitivity=sensitivity,
             metadata=metadata_value,
         )
-        record_id = str(uuid4())
+        canonical_record_id = _validate_record_id(record_id) if record_id else str(uuid4())
         now = _utc_now()
         metadata_json = _serialize_metadata(metadata_value)
 
         self.connection.execute("BEGIN IMMEDIATE")
         try:
+            duplicate = self.connection.execute(
+                "SELECT 1 FROM records WHERE id = ?",
+                (canonical_record_id,),
+            ).fetchone()
+            if duplicate is not None:
+                raise RecordValidationError("record identifier already exists")
             self.connection.execute(
                 """
                 INSERT INTO records (
@@ -146,7 +187,7 @@ class StateRepository:
                 ) VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?)
                 """,
                 (
-                    record_id,
+                    canonical_record_id,
                     record_type,
                     schema_version,
                     now,
@@ -165,7 +206,7 @@ class StateRepository:
             raise
 
         self._sync_after_commit(state_revision)
-        return self.get_record(record_id)
+        return self.get_record(canonical_record_id)
 
     def get_record(self, record_id: str) -> RecordEnvelope:
         """Return one common-envelope record."""
@@ -261,6 +302,137 @@ class StateRepository:
         self._sync_after_commit(state_revision)
         return self.get_record(record_id)
 
+    def save_conversation(
+        self,
+        record: ConversationRecord,
+        *,
+        provenance: RecordProvenance = "user-created",
+        sensitivity: RecordSensitivity = "personal",
+    ) -> ConversationRecord:
+        """Persist one canonical conversation with its stable identifier."""
+
+        self.create_record(
+            record_id=record.conversation_id,
+            record_type=_CONVERSATION_RECORD_TYPE,
+            schema_version=_CONVERSATION_SCHEMA_VERSION,
+            provenance=provenance,
+            sensitivity=sensitivity,
+            title=record.title,
+            metadata=record.canonical_metadata(),
+        )
+        return self.get_conversation(record.conversation_id)
+
+    def get_conversation(self, conversation_id: str) -> ConversationRecord:
+        """Restore one validated canonical conversation."""
+
+        return _conversation_from_envelope(self.get_record(conversation_id))
+
+    def list_conversations(self, *, limit: int = 100) -> tuple[ConversationRecord, ...]:
+        """List canonical conversations in deterministic creation order."""
+
+        _validate_conversation_limit(limit)
+        rows = self.connection.execute(
+            """
+            SELECT id
+            FROM records
+            WHERE record_type = ?
+            ORDER BY created_at ASC, id ASC
+            LIMIT ?
+            """,
+            (_CONVERSATION_RECORD_TYPE, limit),
+        ).fetchall()
+        return tuple(self.get_conversation(cast(str, row[0])) for row in rows)
+
+    def save_conversation_event(
+        self,
+        record: ConversationEventRecord,
+        *,
+        provenance: RecordProvenance = "user-created",
+        sensitivity: RecordSensitivity = "personal",
+    ) -> ConversationEventRecord:
+        """Persist one event after validating its conversation graph."""
+
+        self.get_conversation(record.conversation_id)
+        self._validate_event_parent_ownership(record)
+        self.create_record(
+            record_id=record.event_id,
+            record_type=_CONVERSATION_EVENT_RECORD_TYPE,
+            schema_version=_CONVERSATION_SCHEMA_VERSION,
+            provenance=provenance,
+            sensitivity=sensitivity,
+            metadata=record.canonical_metadata(),
+        )
+        return self.get_conversation_event(record.event_id)
+
+    def get_conversation_event(self, event_id: str) -> ConversationEventRecord:
+        """Restore one event and verify its persisted relationships."""
+
+        event = self._get_conversation_event_without_relationship_check(event_id)
+        try:
+            self.get_conversation(event.conversation_id)
+        except KeyError as exc:
+            raise StateCorruptError("persisted event conversation is missing") from exc
+        self._validate_persisted_event_parent_ownership(event)
+        return event
+
+    def list_conversation_events(
+        self,
+        conversation_id: str,
+        *,
+        limit: int = 500,
+    ) -> tuple[ConversationEventRecord, ...]:
+        """List one conversation's events using a deterministic presentation order."""
+
+        self.get_conversation(conversation_id)
+        _validate_conversation_limit(limit)
+        rows = self.connection.execute(
+            """
+            SELECT id
+            FROM records
+            WHERE record_type = ?
+            ORDER BY created_at ASC, id ASC
+            """,
+            (_CONVERSATION_EVENT_RECORD_TYPE,),
+        ).fetchall()
+        events = tuple(
+            event
+            for event in (self.get_conversation_event(cast(str, row[0])) for row in rows)
+            if event.conversation_id == conversation_id
+        )
+        return tuple(sorted(events, key=_conversation_event_order_key)[:limit])
+
+    def _get_conversation_event_without_relationship_check(
+        self,
+        event_id: str,
+    ) -> ConversationEventRecord:
+        return _conversation_event_from_envelope(self.get_record(event_id))
+
+    def _validate_event_parent_ownership(
+        self,
+        record: ConversationEventRecord,
+    ) -> None:
+        for parent_id in record.parent_event_ids:
+            try:
+                parent = self.get_conversation_event(parent_id)
+            except KeyError as exc:
+                raise ConversationValidationError("parent event does not exist") from exc
+            if parent.conversation_id != record.conversation_id:
+                raise ConversationValidationError(
+                    "parent event belongs to a different conversation"
+                )
+
+    def _validate_persisted_event_parent_ownership(
+        self,
+        record: ConversationEventRecord,
+    ) -> None:
+        for parent_id in record.parent_event_ids:
+            try:
+                parent = self._get_conversation_event_without_relationship_check(parent_id)
+            except KeyError as exc:
+                raise StateCorruptError("persisted parent event is missing") from exc
+            if parent.conversation_id != record.conversation_id:
+                raise StateCorruptError("persisted parent event belongs to another conversation")
+
 
 def _validate_record_fields(
     *,
@@ -280,6 +452,16 @@ def _validate_record_fields(
         raise RecordValidationError(f"invalid record provenance: {provenance}")
     if sensitivity not in _ALLOWED_SENSITIVITY:
         raise RecordValidationError(f"invalid record sensitivity: {sensitivity}")
+
+
+def _validate_record_id(value: str) -> str:
+    try:
+        canonical = str(UUID(value))
+    except (ValueError, AttributeError) as exc:
+        raise RecordValidationError("record identifier is invalid") from exc
+    if canonical != value:
+        raise RecordValidationError("record identifier must use canonical UUID text")
+    return canonical
 
 
 def _validate_secret_boundary(
@@ -338,3 +520,124 @@ def _record_from_row(row: sqlite3.Row) -> RecordEnvelope:
         title=cast(str | None, row["title"]),
         metadata=metadata,
     )
+
+
+def _conversation_from_envelope(envelope: RecordEnvelope) -> ConversationRecord:
+    if (
+        envelope.record_type != _CONVERSATION_RECORD_TYPE
+        or envelope.schema_version != _CONVERSATION_SCHEMA_VERSION
+    ):
+        raise StateCorruptError("record is not a supported canonical conversation")
+    if frozenset(envelope.metadata) != _CONVERSATION_METADATA_KEYS:
+        raise StateCorruptError("canonical conversation metadata shape is invalid")
+    try:
+        return ConversationRecord(
+            conversation_id=envelope.id,
+            title=envelope.title,
+            source_environment_id=cast(
+                str | None,
+                envelope.metadata["source_environment_id"],
+            ),
+            source_conversation_id=cast(
+                str | None,
+                envelope.metadata["source_conversation_id"],
+            ),
+        )
+    except ConversationValidationError as exc:
+        raise StateCorruptError("canonical conversation metadata is invalid") from exc
+
+
+def _conversation_event_from_envelope(
+    envelope: RecordEnvelope,
+) -> ConversationEventRecord:
+    if (
+        envelope.record_type != _CONVERSATION_EVENT_RECORD_TYPE
+        or envelope.schema_version != _CONVERSATION_SCHEMA_VERSION
+    ):
+        raise StateCorruptError("record is not a supported canonical conversation event")
+    if frozenset(envelope.metadata) != _CONVERSATION_EVENT_METADATA_KEYS:
+        raise StateCorruptError("canonical conversation event metadata shape is invalid")
+    parent_value = envelope.metadata["parent_event_ids"]
+    if not isinstance(parent_value, list) or not all(
+        isinstance(value, str) for value in parent_value
+    ):
+        raise StateCorruptError("canonical conversation parent metadata is invalid")
+    extensions_value = envelope.metadata["extensions"]
+    if not isinstance(extensions_value, dict) or not all(
+        isinstance(key, str) for key in extensions_value
+    ):
+        raise StateCorruptError("canonical conversation extensions are invalid")
+    try:
+        return ConversationEventRecord(
+            event_id=envelope.id,
+            conversation_id=cast(str, envelope.metadata["conversation_id"]),
+            event_kind=cast(
+                ConversationEventKind,
+                envelope.metadata["event_kind"],
+            ),
+            actor_type=cast(
+                ConversationActorType,
+                envelope.metadata["actor_type"],
+            ),
+            origin_class=cast(
+                ConversationOriginClass,
+                envelope.metadata["origin_class"],
+            ),
+            parent_event_ids=tuple(parent_value),
+            sequence_hint=cast(int | None, envelope.metadata["sequence_hint"]),
+            content_reference=cast(
+                str | None,
+                envelope.metadata["content_reference"],
+            ),
+            occurred_at=cast(str | None, envelope.metadata["occurred_at"]),
+            source_event_kind=cast(
+                str | None,
+                envelope.metadata["source_event_kind"],
+            ),
+            source_environment_id=cast(
+                str | None,
+                envelope.metadata["source_environment_id"],
+            ),
+            source_object_id=cast(
+                str | None,
+                envelope.metadata["source_object_id"],
+            ),
+            provider_id=cast(str | None, envelope.metadata["provider_id"]),
+            application_id=cast(
+                str | None,
+                envelope.metadata["application_id"],
+            ),
+            interface_id=cast(str | None, envelope.metadata["interface_id"]),
+            model_manifest_id=cast(
+                str | None,
+                envelope.metadata["model_manifest_id"],
+            ),
+            runtime_adapter_id=cast(
+                str | None,
+                envelope.metadata["runtime_adapter_id"],
+            ),
+            operation_id=cast(str | None, envelope.metadata["operation_id"]),
+            extensions=cast(dict[str, object], extensions_value),
+        )
+    except ConversationValidationError as exc:
+        raise StateCorruptError("canonical conversation event metadata is invalid") from exc
+
+
+def _conversation_event_order_key(
+    record: ConversationEventRecord,
+) -> tuple[bool, int, str, str]:
+    return (
+        record.sequence_hint is None,
+        record.sequence_hint if record.sequence_hint is not None else 0,
+        record.occurred_at or "",
+        record.event_id,
+    )
+
+
+def _validate_conversation_limit(value: object) -> None:
+    if (
+        isinstance(value, bool)
+        or not isinstance(value, int)
+        or not 1 <= value <= _MAX_CONVERSATION_LIST_LIMIT
+    ):
+        raise ConversationValidationError("list limit is invalid")
