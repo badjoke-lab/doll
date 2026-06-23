@@ -39,12 +39,8 @@ _ALLOWED_ATTACHMENT_BEHAVIORS = frozenset(
         "unsupported",
     }
 )
-_ALLOWED_BRANCH_BEHAVIORS = frozenset(
-    {"preserve", "linearize_with_loss", "unsupported"}
-)
-_ALLOWED_NETWORK_BEHAVIORS = frozenset(
-    {"none", "declared_read_only", "declared_read_write"}
-)
+_ALLOWED_BRANCH_BEHAVIORS = frozenset({"preserve", "linearize_with_loss", "unsupported"})
+_ALLOWED_NETWORK_BEHAVIORS = frozenset({"none", "declared_read_only", "declared_read_write"})
 _SOURCE_ENVIRONMENT_KEYS = frozenset(
     {
         "environment_class",
@@ -357,13 +353,9 @@ class PortabilityState:
             envelope.record_type != _SOURCE_ENVIRONMENT_RECORD_TYPE
             or envelope.schema_version != _SOURCE_ENVIRONMENT_SCHEMA_VERSION
         ):
-            raise PortabilityStateCorruptError(
-                "record is not a supported source environment"
-            )
+            raise PortabilityStateCorruptError("record is not a supported source environment")
         if frozenset(envelope.metadata) != _SOURCE_ENVIRONMENT_KEYS:
-            raise PortabilityStateCorruptError(
-                "source environment metadata shape is invalid"
-            )
+            raise PortabilityStateCorruptError("source environment metadata shape is invalid")
         try:
             return SourceEnvironmentRecord(
                 environment_id=envelope.id,
@@ -377,9 +369,7 @@ class PortabilityState:
                 observed_at=cast(str | None, envelope.metadata["observed_at"]),
             )
         except PortabilityContractError as exc:
-            raise PortabilityStateCorruptError(
-                "source environment metadata is invalid"
-            ) from exc
+            raise PortabilityStateCorruptError("source environment metadata is invalid") from exc
 
     def list_source_environments(
         self,
@@ -397,9 +387,7 @@ class PortabilityState:
             """,
             (_SOURCE_ENVIRONMENT_RECORD_TYPE, limit),
         ).fetchall()
-        return tuple(
-            self.get_source_environment(cast(str, row[0])) for row in rows
-        )
+        return tuple(self.get_source_environment(cast(str, row[0])) for row in rows)
 
 
 def _validate_behaviors(
@@ -491,11 +479,7 @@ def _validate_optional_timestamp(name: str, value: object) -> str | None:
 
 
 def _validate_list_limit(value: object) -> None:
-    if (
-        isinstance(value, bool)
-        or not isinstance(value, int)
-        or not 1 <= value <= _MAX_LIST_LIMIT
-    ):
+    if isinstance(value, bool) or not isinstance(value, int) or not 1 <= value <= _MAX_LIST_LIMIT:
         raise PortabilityContractError("list limit is invalid")
 
 
