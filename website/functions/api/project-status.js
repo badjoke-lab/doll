@@ -1,6 +1,6 @@
-const REPOSITORY = "badjoke-lab/doll";
+import { REPOSITORY, buildProjectActivity } from "../../project-status-core.mjs";
+
 const CACHE_SECONDS = 10 * 60;
-const IMPLEMENTATION_TITLE = /^IMP-(\d+)\s*:/i;
 
 function githubHeaders(env) {
   const headers = {
@@ -14,23 +14,6 @@ function githubHeaders(env) {
   }
 
   return headers;
-}
-
-function implementationNumber(title) {
-  const match = IMPLEMENTATION_TITLE.exec(title || "");
-  return match ? Number.parseInt(match[1], 10) : null;
-}
-
-function publicEntry(item, kind) {
-  return {
-    kind,
-    number: item.number,
-    implementation: implementationNumber(item.title),
-    title: item.title,
-    url: item.html_url,
-    updated_at: item.updated_at,
-    merged_at: item.merged_at || null,
-  };
 }
 
 async function githubJson(path, env) {
@@ -52,61 +35,8 @@ async function buildStatus(env) {
     githubJson("/issues?state=open&per_page=100&sort=updated&direction=desc", env),
   ]);
 
-  const mergedImplementationPulls = closedPulls
-    .filter((pull) => pull.merged_at && implementationNumber(pull.title) !== null)
-    .sort((a, b) => b.merged_at.localeCompare(a.merged_at));
-
-  const latestMergedImplementation = mergedImplementationPulls.reduce(
-    (latest, pull) => Math.max(latest, implementationNumber(pull.title)),
-    -1,
-  );
-
-  const implementationPulls = openPulls
-    .filter((pull) => {
-      const number = implementationNumber(pull.title);
-      return number !== null && number > latestMergedImplementation;
-    })
-    .sort((a, b) => b.updated_at.localeCompare(a.updated_at));
-
-  const implementationIssues = openIssues
-    .filter((issue) => {
-      if (issue.pull_request) {
-        return false;
-      }
-
-      const number = implementationNumber(issue.title);
-      return number !== null && number > latestMergedImplementation;
-    })
-    .sort((a, b) => {
-      const numberDifference = implementationNumber(a.title) - implementationNumber(b.title);
-      return numberDifference || a.created_at.localeCompare(b.created_at);
-    });
-
-  const currentPull = implementationPulls[0] || null;
-  const currentIssue = implementationIssues[0] || null;
-  const currentSource = currentPull || currentIssue;
-  const current = currentSource
-    ? publicEntry(currentSource, currentPull ? "pull_request" : "issue")
-    : null;
-
-  const currentImplementation = current?.implementation ?? latestMergedImplementation;
-  const nextSource = implementationIssues.find(
-    (issue) => implementationNumber(issue.title) > currentImplementation,
-  );
-  const next = nextSource ? publicEntry(nextSource, "issue") : null;
-
-  const recent = mergedImplementationPulls
-    .slice(0, 3)
-    .map((pull) => publicEntry(pull, "pull_request"));
-
   return {
-    schema_version: 1,
-    repository: REPOSITORY,
-    latest_merged_implementation:
-      latestMergedImplementation >= 0 ? latestMergedImplementation : null,
-    current,
-    next,
-    recent,
+    ...buildProjectActivity({ openPulls, closedPulls, openIssues }),
     fetched_at: new Date().toISOString(),
   };
 }
@@ -128,7 +58,7 @@ function jsonResponse(
 export async function onRequestGet(context) {
   const cache = caches.default;
   const cacheUrl = new URL(context.request.url);
-  cacheUrl.pathname = "/__doll-public-project-status-v2";
+  cacheUrl.pathname = "/__doll-public-project-status-v3";
   cacheUrl.search = "";
   const cacheKey = new Request(cacheUrl.toString(), { method: "GET" });
 
@@ -145,10 +75,16 @@ export async function onRequestGet(context) {
   } catch (error) {
     return jsonResponse(
       {
-        schema_version: 1,
+        schema_version: 2,
         repository: REPOSITORY,
+        numbering_policy: {
+          mode: "monotonic",
+          retired_implementations: [24, 25, 26, 27, 28, 29],
+          next_planned_implementation: null,
+        },
         latest_merged_implementation: null,
         current: null,
+        last_completed: null,
         next: null,
         recent: [],
         fetched_at: new Date().toISOString(),
