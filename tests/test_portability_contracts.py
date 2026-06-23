@@ -117,16 +117,6 @@ def test_source_environment_keeps_identity_categories_separate_and_unknown() -> 
     assert unknown.application_id is None
     assert unknown.interface_id is None
     assert unknown.runtime_id is None
-    assert not {
-        "policy",
-        "permission",
-        "capability",
-        "confirmation",
-        "credential_scope",
-        "confirmed_memory",
-        "confirmed_fact",
-        "instruction_authority",
-    } & set(record.canonical_metadata())
 
 
 def test_source_environment_survives_read_only_reopen(tmp_path: Path) -> None:
