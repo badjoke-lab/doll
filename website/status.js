@@ -24,6 +24,34 @@ function setLink(container, entry, fallback) {
   container.appendChild(link);
 }
 
+function displayState(value) {
+  if (typeof value !== "string" || value.length === 0) {
+    return "Status unavailable";
+  }
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function renderRoadmap(status) {
+  const completed = new Set(Array.isArray(status.completed_phases) ? status.completed_phases : []);
+  const currentPhase = status.phase?.id || null;
+
+  document.querySelectorAll("[data-roadmap-phase]").forEach((item) => {
+    const phaseId = item.dataset.roadmapPhase;
+    const state = item.querySelector("[data-roadmap-state]");
+    if (!state) {
+      return;
+    }
+
+    if (completed.has(phaseId)) {
+      state.textContent = "Complete";
+    } else if (phaseId === currentPhase) {
+      state.textContent = displayState(status.phase?.state);
+    } else {
+      state.textContent = "Planned";
+    }
+  });
+}
+
 function renderCanonicalStatus(status) {
   if (!status || typeof status !== "object") {
     return;
@@ -43,19 +71,29 @@ function renderCanonicalStatus(status) {
   if (runtime && typeof runtime.message === "string") {
     setText("[data-project-runtime]", runtime.message);
   }
+
+  renderRoadmap(status);
 }
 
 function renderActivity(activity) {
   const current = document.getElementById("project-current");
+  const lastCompleted = document.getElementById("project-last-completed");
   const next = document.getElementById("project-next");
   const developmentCurrent = document.getElementById("development-current");
+  const developmentLastCompleted = document.getElementById("development-last-completed");
   const developmentNext = document.getElementById("development-next");
   const developmentLog = document.getElementById("development-log");
 
-  setLink(current, activity?.current, "No implementation PR is currently open.");
-  setLink(developmentCurrent, activity?.current, "No implementation PR is currently open.");
-  setLink(next, activity?.next, "No next implementation issue is currently identified.");
-  setLink(developmentNext, activity?.next, "No next implementation issue is currently identified.");
+  setLink(current, activity?.current, "No implementation is currently active.");
+  setLink(developmentCurrent, activity?.current, "No implementation is currently active.");
+  setLink(lastCompleted, activity?.last_completed, "No completed implementation is available.");
+  setLink(
+    developmentLastCompleted,
+    activity?.last_completed,
+    "No completed implementation is available.",
+  );
+  setLink(next, activity?.next, "No next implementation is currently identified.");
+  setLink(developmentNext, activity?.next, "No next implementation is currently identified.");
 
   if (!developmentLog) {
     return;
@@ -66,7 +104,7 @@ function renderActivity(activity) {
   const recent = Array.isArray(activity?.recent) ? activity.recent : [];
   if (recent.length === 0) {
     const fallback = document.createElement("p");
-    fallback.textContent = "Recent implementation history is available on GitHub.";
+    fallback.textContent = "Recent development history is available on GitHub.";
     developmentLog.appendChild(fallback);
     return;
   }
