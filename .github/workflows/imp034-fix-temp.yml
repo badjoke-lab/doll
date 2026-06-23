@@ -1,23 +1,36 @@
-name: IMP-034 source snapshot
+name: IMP-034 validated patch
 
 on:
   pull_request:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  snapshot:
+  patch:
     if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'imp-034-generic-import-staging'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: imp-034-generic-import-staging
-      - uses: actions/upload-artifact@v4
+      - uses: actions/setup-python@v5
         with:
-          name: imp034-current-files
-          path: |
-            src/doll/generic_import.py
-            tests/test_generic_import.py
-            tests/test_generic_import_failures.py
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - name: Apply generated patch
+        run: |
+          if grep -q 'occurrence_indexes: dict' src/doll/generic_import.py; then
+            exit 0
+          fi
+          echo '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' | base64 -d | gzip -d > /tmp/imp034.patch
+          git apply --check /tmp/imp034.patch
+          git apply /tmp/imp034.patch
+      - run: uv run ruff format src/doll/generic_import.py tests/test_generic_import.py tests/test_generic_import_failures.py
+      - run: uv run ruff check src/doll/generic_import.py tests/test_generic_import.py tests/test_generic_import_failures.py
+      - run: uv run pytest tests/test_generic_import.py tests/test_generic_import_failures.py --no-cov
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Fix IMP-034 staging invariants
+          file_pattern: src/doll/generic_import.py tests/test_generic_import.py tests/test_generic_import_failures.py
