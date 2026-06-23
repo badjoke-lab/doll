@@ -39,9 +39,7 @@ _CONVERSATION_RECORD_TYPE = "conversation"
 _CONVERSATION_EVENT_RECORD_TYPE = "conversation_event"
 _CONVERSATION_SCHEMA_VERSION = 1
 _MAX_CONVERSATION_LIST_LIMIT = 500
-_CONVERSATION_METADATA_KEYS = frozenset(
-    {"source_environment_id", "source_conversation_id"}
-)
+_CONVERSATION_METADATA_KEYS = frozenset({"source_environment_id", "source_conversation_id"})
 _CONVERSATION_EVENT_METADATA_KEYS = frozenset(
     {
         "conversation_id",
@@ -398,9 +396,7 @@ class StateRepository:
         ).fetchall()
         events = tuple(
             event
-            for event in (
-                self.get_conversation_event(cast(str, row[0])) for row in rows
-            )
+            for event in (self.get_conversation_event(cast(str, row[0])) for row in rows)
             if event.conversation_id == conversation_id
         )
         return tuple(sorted(events, key=_conversation_event_order_key)[:limit])
@@ -419,9 +415,7 @@ class StateRepository:
             try:
                 parent = self.get_conversation_event(parent_id)
             except KeyError as exc:
-                raise ConversationValidationError(
-                    "parent event does not exist"
-                ) from exc
+                raise ConversationValidationError("parent event does not exist") from exc
             if parent.conversation_id != record.conversation_id:
                 raise ConversationValidationError(
                     "parent event belongs to a different conversation"
@@ -433,15 +427,11 @@ class StateRepository:
     ) -> None:
         for parent_id in record.parent_event_ids:
             try:
-                parent = self._get_conversation_event_without_relationship_check(
-                    parent_id
-                )
+                parent = self._get_conversation_event_without_relationship_check(parent_id)
             except KeyError as exc:
                 raise StateCorruptError("persisted parent event is missing") from exc
             if parent.conversation_id != record.conversation_id:
-                raise StateCorruptError(
-                    "persisted parent event belongs to another conversation"
-                )
+                raise StateCorruptError("persisted parent event belongs to another conversation")
 
 
 def _validate_record_fields(
@@ -564,13 +554,9 @@ def _conversation_event_from_envelope(
         envelope.record_type != _CONVERSATION_EVENT_RECORD_TYPE
         or envelope.schema_version != _CONVERSATION_SCHEMA_VERSION
     ):
-        raise StateCorruptError(
-            "record is not a supported canonical conversation event"
-        )
+        raise StateCorruptError("record is not a supported canonical conversation event")
     if frozenset(envelope.metadata) != _CONVERSATION_EVENT_METADATA_KEYS:
-        raise StateCorruptError(
-            "canonical conversation event metadata shape is invalid"
-        )
+        raise StateCorruptError("canonical conversation event metadata shape is invalid")
     parent_value = envelope.metadata["parent_event_ids"]
     if not isinstance(parent_value, list) or not all(
         isinstance(value, str) for value in parent_value
@@ -634,9 +620,7 @@ def _conversation_event_from_envelope(
             extensions=cast(dict[str, object], extensions_value),
         )
     except ConversationValidationError as exc:
-        raise StateCorruptError(
-            "canonical conversation event metadata is invalid"
-        ) from exc
+        raise StateCorruptError("canonical conversation event metadata is invalid") from exc
 
 
 def _conversation_event_order_key(

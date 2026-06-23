@@ -233,13 +233,9 @@ def test_contract_validation_covers_text_enum_parent_and_extension_failures() ->
             **cast(dict[str, Any], {**common, "origin_class": "future-origin"})
         )
     with pytest.raises(state.ConversationValidationError, match="must be a tuple"):
-        state.ConversationEventRecord(
-            **cast(dict[str, Any], {**common, "parent_event_ids": []})
-        )
+        state.ConversationEventRecord(**cast(dict[str, Any], {**common, "parent_event_ids": []}))
     with pytest.raises(state.ConversationValidationError, match="non-negative"):
-        state.ConversationEventRecord(
-            **cast(dict[str, Any], {**common, "sequence_hint": -1})
-        )
+        state.ConversationEventRecord(**cast(dict[str, Any], {**common, "sequence_hint": -1}))
     with pytest.raises(state.ConversationValidationError, match="occurred at is invalid"):
         state.ConversationEventRecord(
             **cast(dict[str, Any], {**common, "occurred_at": "not-a-time"})

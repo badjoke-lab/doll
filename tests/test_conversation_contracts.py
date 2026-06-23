@@ -154,9 +154,7 @@ def test_conversation_state_survives_close_and_read_only_reopen(tmp_path: Path) 
             child,
         )
         with pytest.raises(state.ReadOnlyStateError):
-            repository.save_conversation(
-                state.ConversationRecord(conversation_id=str(uuid4()))
-            )
+            repository.save_conversation(state.ConversationRecord(conversation_id=str(uuid4())))
 
 
 def test_conversation_event_listing_uses_deterministic_view_order(tmp_path: Path) -> None:
