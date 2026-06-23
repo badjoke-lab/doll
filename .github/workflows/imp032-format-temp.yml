@@ -1,9 +1,7 @@
 name: IMP-032 temporary formatter
 
 on:
-  push:
-    branches:
-      - imp-032-portability-adapter-contracts
+  pull_request:
 
 permissions:
   contents: read
