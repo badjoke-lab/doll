@@ -58,7 +58,9 @@ ConversationOriginClass = Literal[
     "unknown",
 ]
 
-_ALLOWED_STATUSES = frozenset({"active", "archived", "superseded", "deleted", "invalid"})
+_ALLOWED_STATUSES = frozenset(
+    {"active", "archived", "superseded", "deleted", "invalid"}
+)
 _ALLOWED_PROVENANCE = frozenset(
     {
         "user-created",
@@ -70,7 +72,9 @@ _ALLOWED_PROVENANCE = frozenset(
         "restored",
     }
 )
-_ALLOWED_SENSITIVITY = frozenset({"public", "internal", "personal", "sensitive", "secret"})
+_ALLOWED_SENSITIVITY = frozenset(
+    {"public", "internal", "personal", "sensitive", "secret"}
+)
 _ALLOWED_CONVERSATION_EVENT_KINDS = frozenset(
     {
         "user_message",
@@ -88,7 +92,16 @@ _ALLOWED_CONVERSATION_EVENT_KINDS = frozenset(
     }
 )
 _ALLOWED_CONVERSATION_ACTORS = frozenset(
-    {"user", "assistant", "system", "model", "runtime", "tool", "importer", "unknown"}
+    {
+        "user",
+        "assistant",
+        "system",
+        "model",
+        "runtime",
+        "tool",
+        "importer",
+        "unknown",
+    }
 )
 _ALLOWED_CONVERSATION_ORIGINS = frozenset(
     {
@@ -205,13 +218,18 @@ class ConversationRecord:
         object.__setattr__(
             self,
             "conversation_id",
-            _validate_conversation_uuid("conversation identifier", self.conversation_id),
+            _validate_conversation_uuid(
+                "conversation identifier",
+                self.conversation_id,
+            ),
         )
         object.__setattr__(
             self,
             "title",
             _validate_conversation_text(
-                "conversation title", self.title, _MAX_CONVERSATION_TITLE
+                "conversation title",
+                self.title,
+                _MAX_CONVERSATION_TITLE,
             ),
         )
         object.__setattr__(
@@ -265,11 +283,18 @@ class ConversationEventRecord:
     extensions: dict[str, object] | None = None
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "event_id", _validate_conversation_uuid("event identifier", self.event_id))
+        object.__setattr__(
+            self,
+            "event_id",
+            _validate_conversation_uuid("event identifier", self.event_id),
+        )
         object.__setattr__(
             self,
             "conversation_id",
-            _validate_conversation_uuid("conversation identifier", self.conversation_id),
+            _validate_conversation_uuid(
+                "conversation identifier",
+                self.conversation_id,
+            ),
         )
         if self.event_kind not in _ALLOWED_CONVERSATION_EVENT_KINDS:
             raise ConversationValidationError("event kind is invalid")
@@ -277,14 +302,22 @@ class ConversationEventRecord:
             raise ConversationValidationError("actor type is invalid")
         if self.origin_class not in _ALLOWED_CONVERSATION_ORIGINS:
             raise ConversationValidationError("origin class is invalid")
-        parents = _validate_conversation_parents(self.event_id, self.parent_event_ids)
+
+        parents = _validate_conversation_parents(
+            self.event_id,
+            self.parent_event_ids,
+        )
         object.__setattr__(self, "parent_event_ids", parents)
+
         if self.sequence_hint is not None and (
             isinstance(self.sequence_hint, bool)
             or not isinstance(self.sequence_hint, int)
             or self.sequence_hint < 0
         ):
-            raise ConversationValidationError("sequence hint must be a non-negative integer")
+            raise ConversationValidationError(
+                "sequence hint must be a non-negative integer"
+            )
+
         object.__setattr__(
             self,
             "content_reference",
@@ -297,8 +330,12 @@ class ConversationEventRecord:
         object.__setattr__(
             self,
             "occurred_at",
-            _validate_conversation_timestamp("occurred at", self.occurred_at),
+            _validate_conversation_timestamp(
+                "occurred at",
+                self.occurred_at,
+            ),
         )
+
         for field_name in (
             "source_event_kind",
             "source_environment_id",
@@ -319,10 +356,15 @@ class ConversationEventRecord:
                     _MAX_CONVERSATION_IDENTIFIER,
                 ),
             )
-        if self.event_kind == "imported_unknown_event" and self.source_event_kind is None:
+
+        if (
+            self.event_kind == "imported_unknown_event"
+            and self.source_event_kind is None
+        ):
             raise ConversationValidationError(
                 "imported unknown event requires a source event kind"
             )
+
         object.__setattr__(
             self,
             "extensions",
@@ -361,7 +403,11 @@ def _validate_conversation_uuid(name: str, value: object) -> str:
         raise ConversationValidationError(f"{name} is invalid") from exc
 
 
-def _validate_conversation_text(name: str, value: object, maximum: int) -> str | None:
+def _validate_conversation_text(
+    name: str,
+    value: object,
+    maximum: int,
+) -> str | None:
     if value is None:
         return None
     if not isinstance(value, str):
@@ -371,13 +417,25 @@ def _validate_conversation_text(name: str, value: object, maximum: int) -> str |
         raise ConversationValidationError(f"{name} must not be blank")
     if len(normalized) > maximum:
         raise ConversationValidationError(f"{name} exceeds the maximum length")
-    if any(ord(character) < 32 or ord(character) == 127 for character in normalized):
-        raise ConversationValidationError(f"{name} contains a control character")
+    if any(
+        ord(character) < 32 or ord(character) == 127
+        for character in normalized
+    ):
+        raise ConversationValidationError(
+            f"{name} contains a control character"
+        )
     return normalized
 
 
-def _validate_conversation_timestamp(name: str, value: object) -> str | None:
-    normalized = _validate_conversation_text(name, value, _MAX_CONVERSATION_IDENTIFIER)
+def _validate_conversation_timestamp(
+    name: str,
+    value: object,
+) -> str | None:
+    normalized = _validate_conversation_text(
+        name,
+        value,
+        _MAX_CONVERSATION_IDENTIFIER,
+    )
     if normalized is None:
         return None
     try:
@@ -389,36 +447,62 @@ def _validate_conversation_timestamp(name: str, value: object) -> str | None:
     return normalized
 
 
-def _validate_conversation_parents(event_id: str, value: object) -> tuple[str, ...]:
+def _validate_conversation_parents(
+    event_id: str,
+    value: object,
+) -> tuple[str, ...]:
     if not isinstance(value, tuple):
-        raise ConversationValidationError("parent event identifiers must be a tuple")
+        raise ConversationValidationError(
+            "parent event identifiers must be a tuple"
+        )
     if len(value) > _MAX_CONVERSATION_PARENTS:
-        raise ConversationValidationError("too many parent event identifiers")
+        raise ConversationValidationError(
+            "too many parent event identifiers"
+        )
     parents = tuple(
-        _validate_conversation_uuid("parent event identifier", parent) for parent in value
+        _validate_conversation_uuid(
+            "parent event identifier",
+            parent,
+        )
+        for parent in value
     )
     if event_id in parents:
         raise ConversationValidationError("event cannot be its own parent")
     if len(parents) != len(set(parents)):
-        raise ConversationValidationError("parent event identifiers must be unique")
+        raise ConversationValidationError(
+            "parent event identifiers must be unique"
+        )
     return parents
 
 
 def _validate_conversation_extensions(value: object) -> dict[str, object]:
-    if not isinstance(value, dict) or not all(isinstance(key, str) for key in value):
-        raise ConversationValidationError("extensions must be a string-keyed object")
+    if not isinstance(value, dict) or not all(
+        isinstance(key, str) for key in value
+    ):
+        raise ConversationValidationError(
+            "extensions must be a string-keyed object"
+        )
     if len(value) > _MAX_CONVERSATION_EXTENSIONS:
         raise ConversationValidationError("too many extensions")
+
     normalized: dict[str, object] = {}
     for key, item in value.items():
         normalized_key = key.strip().lower()
         if not _EXTENSION_KEY_PATTERN.fullmatch(normalized_key):
             raise ConversationValidationError("extension key is invalid")
         normalized[normalized_key] = item
+
     try:
-        json.dumps(normalized, ensure_ascii=False, sort_keys=True, allow_nan=False)
+        json.dumps(
+            normalized,
+            ensure_ascii=False,
+            sort_keys=True,
+            allow_nan=False,
+        )
     except (TypeError, ValueError) as exc:
-        raise ConversationValidationError("extensions must be JSON-compatible") from exc
+        raise ConversationValidationError(
+            "extensions must be JSON-compatible"
+        ) from exc
     return normalized
 
 
