@@ -108,9 +108,7 @@ _TERMINAL_EXPORT_STATUSES = frozenset(
         "cancelled",
     }
 )
-_MANIFEST_EXPORT_STATUSES = frozenset(
-    {"completed", "completed_with_loss", "partially_completed"}
-)
+_MANIFEST_EXPORT_STATUSES = frozenset({"completed", "completed_with_loss", "partially_completed"})
 _FAILURE_EXPORT_STATUSES = frozenset({"denied", "incompatible", "failed", "cancelled"})
 
 
@@ -192,16 +190,9 @@ class ImportBatchRecord:
     def _validate_status_invariants(self) -> None:
         terminal = self.status in _TERMINAL_IMPORT_STATUSES
         if terminal != (self.completed_at is not None):
-            raise PortabilityContractError(
-                "import completion timestamp does not match status"
-            )
-        if (
-            self.published_object_count + self.quarantined_object_count
-            > self.staged_object_count
-        ):
-            raise PortabilityContractError(
-                "import object counts exceed staged object count"
-            )
+            raise PortabilityContractError("import completion timestamp does not match status")
+        if self.published_object_count + self.quarantined_object_count > self.staged_object_count:
+            raise PortabilityContractError("import object counts exceed staged object count")
         if self.status in {
             "staged",
             "awaiting_review",
@@ -210,22 +201,16 @@ class ImportBatchRecord:
             "rolled_back",
         }:
             if self.published_object_count != 0:
-                raise PortabilityContractError(
-                    "import status cannot retain published objects"
-                )
+                raise PortabilityContractError("import status cannot retain published objects")
         elif self.status == "published":
             if (
                 self.published_object_count != self.staged_object_count
                 or self.quarantined_object_count != 0
             ):
-                raise PortabilityContractError(
-                    "published import counts are inconsistent"
-                )
+                raise PortabilityContractError("published import counts are inconsistent")
         elif self.status == "partially_published":
             if not 0 < self.published_object_count < self.staged_object_count:
-                raise PortabilityContractError(
-                    "partially published import counts are inconsistent"
-                )
+                raise PortabilityContractError("partially published import counts are inconsistent")
 
     def canonical_metadata(self) -> dict[str, object]:
         return {
@@ -296,22 +281,16 @@ class MappingReportRecord:
         ):
             _validate_count(field_name.replace("_", " "), getattr(self, field_name))
         if self.total_object_count != sum(self.mapping_counts.values()):
-            raise PortabilityContractError(
-                "mapping counts do not match total object count"
-            )
+            raise PortabilityContractError("mapping counts do not match total object count")
         if self.material_loss_count > self.total_object_count:
-            raise PortabilityContractError(
-                "material loss count exceeds total object count"
-            )
+            raise PortabilityContractError("material loss count exceeds total object count")
         object.__setattr__(
             self,
             "loss_record_ids",
             _validate_uuid_declarations("loss record ids", self.loss_record_ids),
         )
         if self.material_loss_count and not self.loss_record_ids:
-            raise PortabilityContractError(
-                "material loss requires at least one loss record"
-            )
+            raise PortabilityContractError("material loss requires at least one loss record")
 
     @property
     def mapping_counts(self) -> dict[str, int]:
@@ -507,32 +486,19 @@ class ExportBatchRecord:
     def _validate_status_invariants(self) -> None:
         terminal = self.status in _TERMINAL_EXPORT_STATUSES
         if terminal != (self.completed_at is not None):
-            raise PortabilityContractError(
-                "export completion timestamp does not match status"
-            )
+            raise PortabilityContractError("export completion timestamp does not match status")
         if self.status in _MANIFEST_EXPORT_STATUSES:
             if self.manifest_hash is None:
-                raise PortabilityContractError(
-                    "completed export requires a manifest hash"
-                )
+                raise PortabilityContractError("completed export requires a manifest hash")
         elif self.manifest_hash is not None:
-            raise PortabilityContractError(
-                "non-completed export cannot have a manifest hash"
-            )
-        if (
-            self.status in _FAILURE_EXPORT_STATUSES
-            and self.exported_object_count != 0
-        ):
-            raise PortabilityContractError(
-                "failed export status cannot retain exported objects"
-            )
+            raise PortabilityContractError("non-completed export cannot have a manifest hash")
+        if self.status in _FAILURE_EXPORT_STATUSES and self.exported_object_count != 0:
+            raise PortabilityContractError("failed export status cannot retain exported objects")
         if (
             self.status in {"completed_with_loss", "partially_completed"}
             and self.loss_report_id is None
         ):
-            raise PortabilityContractError(
-                "lossy export status requires a loss report"
-            )
+            raise PortabilityContractError("lossy export status requires a loss report")
 
     def canonical_metadata(self) -> dict[str, object]:
         return {
@@ -607,16 +573,12 @@ def _validate_time_window(started_at: str, completed_at: str | None) -> None:
     started = datetime.fromisoformat(started_at.replace("Z", "+00:00"))
     completed = datetime.fromisoformat(completed_at.replace("Z", "+00:00"))
     if completed < started:
-        raise PortabilityContractError(
-            "completion timestamp precedes start timestamp"
-        )
+        raise PortabilityContractError("completion timestamp precedes start timestamp")
 
 
 def _validate_sha256(name: str, value: object) -> str:
     if not isinstance(value, str) or not _SHA256_PATTERN.fullmatch(value):
-        raise PortabilityContractError(
-            f"{name} must be a lowercase SHA-256 digest"
-        )
+        raise PortabilityContractError(f"{name} must be a lowercase SHA-256 digest")
     return value
 
 
@@ -625,14 +587,8 @@ def _validate_optional_sha256(name: str, value: object) -> str | None:
 
 
 def _validate_count(name: str, value: object) -> int:
-    if (
-        isinstance(value, bool)
-        or not isinstance(value, int)
-        or not 0 <= value <= _MAX_COUNT
-    ):
-        raise PortabilityContractError(
-            f"{name} must be a non-negative bounded integer"
-        )
+    if isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= _MAX_COUNT:
+        raise PortabilityContractError(f"{name} must be a non-negative bounded integer")
     return value
 
 
@@ -644,10 +600,7 @@ def _validate_text(name: str, value: object) -> str:
         raise PortabilityContractError(f"{name} must not be blank")
     if len(normalized) > _MAX_TEXT_LENGTH:
         raise PortabilityContractError(f"{name} exceeds the maximum length")
-    if any(
-        ord(character) < 32 and character not in "\t\n\r"
-        for character in normalized
-    ):
+    if any(ord(character) < 32 and character not in "\t\n\r" for character in normalized):
         raise PortabilityContractError(f"{name} contains a control character")
     return normalized
 

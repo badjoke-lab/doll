@@ -148,29 +148,17 @@ def test_loss_record_rejects_invalid_classification_and_text() -> None:
         "recorded_at": COMPLETED,
     }
     with pytest.raises(PortabilityContractError, match="loss category is invalid"):
-        PortabilityLossRecord(
-            **cast(dict[str, Any], {**common, "category": "Bad Category"})
-        )
+        PortabilityLossRecord(**cast(dict[str, Any], {**common, "category": "Bad Category"}))
     with pytest.raises(PortabilityContractError, match="loss severity"):
-        PortabilityLossRecord(
-            **cast(dict[str, Any], {**common, "severity": "major"})
-        )
+        PortabilityLossRecord(**cast(dict[str, Any], {**common, "severity": "major"}))
     with pytest.raises(PortabilityContractError, match="preservation state"):
-        PortabilityLossRecord(
-            **cast(dict[str, Any], {**common, "preservation_state": "deleted"})
-        )
+        PortabilityLossRecord(**cast(dict[str, Any], {**common, "preservation_state": "deleted"}))
     with pytest.raises(PortabilityContractError, match="future recoverability"):
-        PortabilityLossRecord(
-            **cast(dict[str, Any], {**common, "future_recoverability": "maybe"})
-        )
+        PortabilityLossRecord(**cast(dict[str, Any], {**common, "future_recoverability": "maybe"}))
     with pytest.raises(PortabilityContractError, match="must not be blank"):
-        PortabilityLossRecord(
-            **cast(dict[str, Any], {**common, "description": "   "})
-        )
+        PortabilityLossRecord(**cast(dict[str, Any], {**common, "description": "   "}))
     with pytest.raises(PortabilityContractError, match="control character"):
-        PortabilityLossRecord(
-            **cast(dict[str, Any], {**common, "description": "bad\x01text"})
-        )
+        PortabilityLossRecord(**cast(dict[str, Any], {**common, "description": "bad\x01text"}))
 
 
 def test_export_batch_rejects_invalid_declarations() -> None:
