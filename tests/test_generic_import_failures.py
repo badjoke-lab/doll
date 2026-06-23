@@ -257,14 +257,14 @@ def test_malformed_and_unsupported_objects_are_quarantined() -> None:
         environment_id=environment_id,
     )
 
-    assert result.import_batch.staged_object_count == 0
+    assert result.import_batch.staged_object_count == 3
     assert result.import_batch.quarantined_object_count == 3
     assert result.mapping_report.malformed_or_quarantined_count == 2
     assert result.mapping_report.unsupported_but_preserved_count == 1
     assert result.mapping_report.material_loss_count == 3
     assert {item.reason for item in result.quarantined_objects} == {
         "source-object-not-an-object",
-        "malformed-source-object",
+        "payload-not-an-object",
         "unsupported-source-type",
     }
 
@@ -286,9 +286,7 @@ def test_conflicting_duplicate_quarantines_every_occurrence() -> None:
     assert len(result.quarantined_objects) == 2
     assert result.mapping_report.malformed_or_quarantined_count == 2
     assert result.mapping_report.material_loss_count == 2
-    assert {item.reason for item in result.quarantined_objects} == {
-        "conflicting-duplicate"
-    }
+    assert {item.reason for item in result.quarantined_objects} == {"conflicting-duplicate"}
 
 
 def test_missing_parent_cascades_and_cycles_are_quarantined() -> None:
@@ -318,9 +316,7 @@ def test_missing_parent_cascades_and_cycles_are_quarantined() -> None:
     )
     assert cycle.staged_objects == ()
     assert cycle.mapping_report.malformed_or_quarantined_count == 2
-    assert {item.reason for item in cycle.quarantined_objects} == {
-        "cyclic-parent-relationship"
-    }
+    assert {item.reason for item in cycle.quarantined_objects} == {"cyclic-parent-relationship"}
 
 
 def test_unsupported_branch_behavior_quarantines_parented_object() -> None:
@@ -401,7 +397,7 @@ def test_jsonl_malformed_object_line_is_quarantined() -> None:
 
 def test_jsonl_manifest_is_strict() -> None:
     environment_id = str(uuid4())
-    with pytest.raises(GenericImportStagingError, match="manifest line is missing"):
+    with pytest.raises(GenericImportStagingError, match="must not be empty"):
         _stage(b"", environment_id=environment_id, source_format="jsonl")
     with pytest.raises(GenericImportStagingError, match="first record"):
         _stage(

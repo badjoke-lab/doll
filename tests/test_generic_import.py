@@ -161,18 +161,13 @@ def test_json_and_jsonl_stage_the_same_generic_object_model() -> None:
     assert [item.source_hash for item in json_result.staged_objects] == [
         item.source_hash for item in jsonl_result.staged_objects
     ]
-    assert json_result.mapping_report.mapping_counts == (
-        jsonl_result.mapping_report.mapping_counts
-    )
+    assert json_result.mapping_report.mapping_counts == (jsonl_result.mapping_report.mapping_counts)
     assert json_result.mapping_report.mapped_without_known_loss_count == 3
     assert json_result.mapping_report.full_fidelity_possible is True
     assert json_result.import_batch.staged_object_count == 3
     assert json_result.import_batch.quarantined_object_count == 0
     assert json_result.loss_records == ()
-    assert all(
-        item.authority_class == "external_data"
-        for item in json_result.staged_objects
-    )
+    assert all(item.authority_class == "external_data" for item in json_result.staged_objects)
     json.dumps(json_result.canonical_summary(), allow_nan=False)
 
 
@@ -221,9 +216,7 @@ def test_branch_linearization_and_attachment_metadata_are_explicit_losses() -> N
         started_at=STARTED,
     )
 
-    statuses = {
-        item.source_object_id: item.mapping_status for item in result.staged_objects
-    }
+    statuses = {item.source_object_id: item.mapping_status for item in result.staged_objects}
     assert statuses == {
         "attachment-1": "mapped_with_transformation",
         "conversation-1": "mapped_without_known_loss",

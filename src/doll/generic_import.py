@@ -27,15 +27,11 @@ StagedMappingStatus = Literal[
 
 _FORMAT_NAME = "doll-generic-import"
 _FORMATS = frozenset({"json", "jsonl"})
-_JSON_ENVELOPE_KEYS = frozenset(
-    {"format", "format_version", "source_environment_id", "objects"}
-)
+_JSON_ENVELOPE_KEYS = frozenset({"format", "format_version", "source_environment_id", "objects"})
 _JSONL_MANIFEST_KEYS = frozenset(
     {"record_kind", "format", "format_version", "source_environment_id"}
 )
-_OBJECT_KEYS = frozenset(
-    {"source_object_id", "source_type", "parent_source_object_ids", "payload"}
-)
+_OBJECT_KEYS = frozenset({"source_object_id", "source_type", "parent_source_object_ids", "payload"})
 _JSONL_OBJECT_KEYS = _OBJECT_KEYS | {"record_kind"}
 _MAX_SOURCE_ID_LENGTH = 1024
 _MAX_REASON_LENGTH = 256
@@ -122,12 +118,8 @@ class GenericImportStageResult:
             "adapter_fingerprint": self.adapter_fingerprint,
             "import_batch": self.import_batch.canonical_metadata(),
             "mapping_report": self.mapping_report.canonical_metadata(),
-            "staged_objects": [
-                item.canonical_metadata() for item in self.staged_objects
-            ],
-            "quarantined_objects": [
-                item.canonical_metadata() for item in self.quarantined_objects
-            ],
+            "staged_objects": [item.canonical_metadata() for item in self.staged_objects],
+            "quarantined_objects": [item.canonical_metadata() for item in self.quarantined_objects],
             "loss_records": [item.canonical_metadata() for item in self.loss_records],
             "duplicate_object_count": self.duplicate_object_count,
         }
@@ -145,10 +137,7 @@ class GenericImportStager:
             raise GenericImportStagingError(
                 "generic in-memory staging requires network behavior none"
             )
-        if (
-            self.adapter.source_environment_class
-            != self.source_environment.environment_class
-        ):
+        if self.adapter.source_environment_class != self.source_environment.environment_class:
             raise GenericImportStagingError(
                 "source environment class does not match adapter contract"
             )
@@ -175,9 +164,7 @@ class GenericImportStager:
             self.source_environment.export_format is not None
             and self.source_environment.export_format != source_format
         ):
-            raise GenericImportStagingError(
-                "source format does not match source environment"
-            )
+            raise GenericImportStagingError("source format does not match source environment")
 
         try:
             source_text = source_bytes.decode("utf-8", errors="strict")
@@ -206,9 +193,7 @@ class GenericImportStager:
                         "source nesting exceeds safe parser depth"
                     ) from exc
                 if depth > self.adapter.resource_limits.max_nesting_depth:
-                    raise GenericImportStagingError(
-                        "source nesting exceeds adapter limit"
-                    )
+                    raise GenericImportStagingError("source nesting exceeds adapter limit")
 
         return self._build_stage_result(
             raw_objects,
@@ -234,6 +219,7 @@ class GenericImportStager:
         losses: list[PortabilityLossRecord] = []
         mapping_counts = _empty_mapping_counts()
         material_object_indexes: set[int] = set()
+        occurrence_indexes: dict[str, tuple[int, ...]] = {}
 
         for raw in raw_objects:
             if raw.parse_reason is not None:
@@ -251,6 +237,7 @@ class GenericImportStager:
                     _make_loss(
                         import_batch_id,
                         raw.input_index,
+                        recorded_at=started_at,
                         category="malformed-object",
                         source_object_id=None,
                         description="A source object could not be parsed safely.",
@@ -274,6 +261,7 @@ class GenericImportStager:
                     _make_loss(
                         import_batch_id,
                         raw.input_index,
+                        recorded_at=started_at,
                         category="malformed-object",
                         source_object_id=problem.source_object_id,
                         description="A source object failed structural validation.",
@@ -285,22 +273,28 @@ class GenericImportStager:
         accepted, duplicate_count = self._classify_duplicates_and_support(
             parsed,
             import_batch_id=import_batch_id,
+            started_at=started_at,
             quarantined=quarantined,
             losses=losses,
             mapping_counts=mapping_counts,
             material_object_indexes=material_object_indexes,
+            occurrence_indexes=occurrence_indexes,
         )
         self._quarantine_cycles_and_missing_dependencies(
             accepted,
             import_batch_id=import_batch_id,
+            started_at=started_at,
             quarantined=quarantined,
             losses=losses,
             mapping_counts=mapping_counts,
             material_object_indexes=material_object_indexes,
+            occurrence_indexes=occurrence_indexes,
         )
 
         staged_objects: list[StagedSourceObject] = []
         for candidate in accepted.values():
+            indexes = occurrence_indexes[candidate.source_object_id]
+            occurrence_count = len(indexes)
             mapping_status: StagedMappingStatus = "mapped_without_known_loss"
             transformed = False
             if (
@@ -308,40 +302,45 @@ class GenericImportStager:
                 and self.adapter.branch_behavior == "linearize_with_loss"
             ):
                 transformed = True
-                material_object_indexes.add(candidate.input_index)
-                losses.append(
-                    _make_loss(
-                        import_batch_id,
-                        candidate.input_index,
-                        category="branch-linearization",
-                        source_object_id=candidate.source_object_id,
-                        description=(
-                            "The adapter declares branch linearization for this source object."
-                        ),
+                material_object_indexes.update(indexes)
+                for input_index in indexes:
+                    losses.append(
+                        _make_loss(
+                            import_batch_id,
+                            input_index,
+                            recorded_at=started_at,
+                            category="branch-linearization",
+                            source_object_id=candidate.source_object_id,
+                            description=(
+                                "The adapter declares branch linearization for this source object."
+                            ),
+                        )
                     )
-                )
             if (
                 candidate.source_type == "attachment"
                 and self.adapter.attachment_behavior == "metadata_only"
             ):
                 transformed = True
-                material_object_indexes.add(candidate.input_index)
-                losses.append(
-                    _make_loss(
-                        import_batch_id,
-                        candidate.input_index,
-                        category="attachment-metadata-only",
-                        source_object_id=candidate.source_object_id,
-                        description=(
-                            "The adapter preserves attachment metadata without attachment bytes."
-                        ),
+                material_object_indexes.update(indexes)
+                for input_index in indexes:
+                    losses.append(
+                        _make_loss(
+                            import_batch_id,
+                            input_index,
+                            recorded_at=started_at,
+                            category="attachment-metadata-only",
+                            source_object_id=candidate.source_object_id,
+                            description=(
+                                "The adapter preserves attachment metadata without "
+                                "attachment bytes."
+                            ),
+                        )
                     )
-                )
             if transformed:
                 mapping_status = "mapped_with_transformation"
-                mapping_counts["mapped_with_transformation"] += 1
+                mapping_counts["mapped_with_transformation"] += occurrence_count
             else:
-                mapping_counts["mapped_without_known_loss"] += 1
+                mapping_counts["mapped_without_known_loss"] += occurrence_count
             staged_objects.append(
                 StagedSourceObject(
                     source_object_id=candidate.source_object_id,
@@ -363,23 +362,13 @@ class GenericImportStager:
             batch_id=import_batch_id,
             generated_at=started_at,
             total_object_count=len(raw_objects),
-            mapped_without_known_loss_count=mapping_counts[
-                "mapped_without_known_loss"
-            ],
-            mapped_with_transformation_count=mapping_counts[
-                "mapped_with_transformation"
-            ],
+            mapped_without_known_loss_count=mapping_counts["mapped_without_known_loss"],
+            mapped_with_transformation_count=mapping_counts["mapped_with_transformation"],
             partially_mapped_count=mapping_counts["partially_mapped"],
-            unsupported_but_preserved_count=mapping_counts[
-                "unsupported_but_preserved"
-            ],
-            unsupported_and_omitted_count=mapping_counts[
-                "unsupported_and_omitted"
-            ],
+            unsupported_but_preserved_count=mapping_counts["unsupported_but_preserved"],
+            unsupported_and_omitted_count=mapping_counts["unsupported_and_omitted"],
             missing_dependency_count=mapping_counts["missing_dependency"],
-            malformed_or_quarantined_count=mapping_counts[
-                "malformed_or_quarantined"
-            ],
+            malformed_or_quarantined_count=mapping_counts["malformed_or_quarantined"],
             unknown_count=mapping_counts["unknown"],
             material_loss_count=len(material_object_indexes),
             loss_record_ids=tuple(item.loss_record_id for item in losses),
@@ -392,7 +381,7 @@ class GenericImportStager:
             started_at=started_at,
             status="staged",
             source_root_hash=source_root_hash,
-            staged_object_count=len(staged_objects),
+            staged_object_count=len(raw_objects),
             published_object_count=0,
             quarantined_object_count=len(quarantined),
             mapping_report_id=mapping_report_id,
@@ -415,10 +404,12 @@ class GenericImportStager:
         candidates: list[_Candidate],
         *,
         import_batch_id: str,
+        started_at: str,
         quarantined: list[QuarantinedSourceObject],
         losses: list[PortabilityLossRecord],
         mapping_counts: dict[str, int],
         material_object_indexes: set[int],
+        occurrence_indexes: dict[str, tuple[int, ...]],
     ) -> dict[str, _Candidate]:
         grouped: dict[str, list[_Candidate]] = {}
         for candidate in candidates:
@@ -445,16 +436,42 @@ class GenericImportStager:
                         _make_loss(
                             import_batch_id,
                             item.input_index,
+                            recorded_at=started_at,
                             category="conflicting-duplicate",
                             source_object_id=item.source_object_id,
-                            description=(
-                                "The same source identifier has conflicting content."
-                            ),
+                            description=("The same source identifier has conflicting content."),
                         )
                     )
                 continue
 
             representative = min(group, key=lambda item: item.input_index)
+            if (
+                representative.source_type == "attachment"
+                and len(representative.payload_json.encode("utf-8"))
+                > self.adapter.resource_limits.max_attachment_bytes
+            ):
+                for item in group:
+                    quarantined.append(
+                        QuarantinedSourceObject(
+                            input_index=item.input_index,
+                            source_object_id=item.source_object_id,
+                            source_hash=item.source_hash,
+                            reason="attachment-byte-limit",
+                        )
+                    )
+                    mapping_counts["malformed_or_quarantined"] += 1
+                    material_object_indexes.add(item.input_index)
+                    losses.append(
+                        _make_loss(
+                            import_batch_id,
+                            item.input_index,
+                            recorded_at=started_at,
+                            category="attachment-byte-limit",
+                            source_object_id=item.source_object_id,
+                            description=("The attachment payload exceeds the declared byte limit."),
+                        )
+                    )
+                continue
             if not self._source_type_supported(representative):
                 for item in group:
                     quarantined.append(
@@ -471,6 +488,7 @@ class GenericImportStager:
                         _make_loss(
                             import_batch_id,
                             item.input_index,
+                            recorded_at=started_at,
                             category="unsupported-source-type",
                             source_object_id=item.source_object_id,
                             description=(
@@ -498,18 +516,17 @@ class GenericImportStager:
                         _make_loss(
                             import_batch_id,
                             item.input_index,
+                            recorded_at=started_at,
                             category="unsupported-branch-relationship",
                             source_object_id=item.source_object_id,
-                            description=(
-                                "The adapter does not support parent relationships."
-                            ),
+                            description=("The adapter does not support parent relationships."),
                         )
                     )
                 continue
 
             accepted[source_object_id] = representative
+            occurrence_indexes[source_object_id] = tuple(sorted(item.input_index for item in group))
             duplicate_count += len(group) - 1
-            mapping_counts["mapped_without_known_loss"] += len(group) - 1
         return accepted, duplicate_count
 
     def _source_type_supported(self, candidate: _Candidate) -> bool:
@@ -524,33 +541,38 @@ class GenericImportStager:
         accepted: dict[str, _Candidate],
         *,
         import_batch_id: str,
+        started_at: str,
         quarantined: list[QuarantinedSourceObject],
         losses: list[PortabilityLossRecord],
         mapping_counts: dict[str, int],
         material_object_indexes: set[int],
+        occurrence_indexes: dict[str, tuple[int, ...]],
     ) -> None:
         cycle_ids = _cycle_source_ids(accepted)
         for source_object_id in sorted(cycle_ids):
             candidate = accepted.pop(source_object_id)
-            quarantined.append(
-                QuarantinedSourceObject(
-                    input_index=candidate.input_index,
-                    source_object_id=candidate.source_object_id,
-                    source_hash=candidate.source_hash,
-                    reason="cyclic-parent-relationship",
+            indexes = occurrence_indexes.pop(source_object_id)
+            for input_index in indexes:
+                quarantined.append(
+                    QuarantinedSourceObject(
+                        input_index=input_index,
+                        source_object_id=candidate.source_object_id,
+                        source_hash=candidate.source_hash,
+                        reason="cyclic-parent-relationship",
+                    )
                 )
-            )
-            mapping_counts["malformed_or_quarantined"] += 1
-            material_object_indexes.add(candidate.input_index)
-            losses.append(
-                _make_loss(
-                    import_batch_id,
-                    candidate.input_index,
-                    category="cyclic-parent-relationship",
-                    source_object_id=candidate.source_object_id,
-                    description="The source parent graph contains a cycle.",
+                mapping_counts["malformed_or_quarantined"] += 1
+                material_object_indexes.add(input_index)
+                losses.append(
+                    _make_loss(
+                        import_batch_id,
+                        input_index,
+                        recorded_at=started_at,
+                        category="cyclic-parent-relationship",
+                        source_object_id=candidate.source_object_id,
+                        description="The source parent graph contains a cycle.",
+                    )
                 )
-            )
 
         changed = True
         while changed:
@@ -566,25 +588,28 @@ class GenericImportStager:
             ]
             for candidate in sorted(missing, key=lambda item: item.source_object_id):
                 accepted.pop(candidate.source_object_id)
-                quarantined.append(
-                    QuarantinedSourceObject(
-                        input_index=candidate.input_index,
-                        source_object_id=candidate.source_object_id,
-                        source_hash=candidate.source_hash,
-                        reason="missing-parent-dependency",
+                indexes = occurrence_indexes.pop(candidate.source_object_id)
+                for input_index in indexes:
+                    quarantined.append(
+                        QuarantinedSourceObject(
+                            input_index=input_index,
+                            source_object_id=candidate.source_object_id,
+                            source_hash=candidate.source_hash,
+                            reason="missing-parent-dependency",
+                        )
                     )
-                )
-                mapping_counts["missing_dependency"] += 1
-                material_object_indexes.add(candidate.input_index)
-                losses.append(
-                    _make_loss(
-                        import_batch_id,
-                        candidate.input_index,
-                        category="missing-parent-dependency",
-                        source_object_id=candidate.source_object_id,
-                        description="A declared parent source object is unavailable.",
+                    mapping_counts["missing_dependency"] += 1
+                    material_object_indexes.add(input_index)
+                    losses.append(
+                        _make_loss(
+                            import_batch_id,
+                            input_index,
+                            recorded_at=started_at,
+                            category="missing-parent-dependency",
+                            source_object_id=candidate.source_object_id,
+                            description="A declared parent source object is unavailable.",
+                        )
                     )
-                )
                 changed = True
 
 
@@ -709,9 +734,7 @@ def _validate_manifest(
         source_environment.export_version is not None
         and source_environment.export_version != format_version
     ):
-        raise GenericImportStagingError(
-            "source version does not match source environment"
-        )
+        raise GenericImportStagingError("source version does not match source environment")
     source_environment_id = manifest["source_environment_id"]
     if source_environment_id != source_environment.environment_id:
         raise GenericImportStagingError(
@@ -763,16 +786,10 @@ def _extract_source_id(value: dict[str, object]) -> str:
 
 def _validate_parent_ids(value: object) -> tuple[str, ...]:
     if not isinstance(value, list):
-        raise GenericImportStagingError(
-            "parent source object identifiers must be a list"
-        )
-    parents = tuple(
-        _validate_source_id("parent source object id", item) for item in value
-    )
+        raise GenericImportStagingError("parent source object identifiers must be a list")
+    parents = tuple(_validate_source_id("parent source object id", item) for item in value)
     if len(parents) != len(set(parents)):
-        raise GenericImportStagingError(
-            "parent source object identifiers contain duplicates"
-        )
+        raise GenericImportStagingError("parent source object identifiers contain duplicates")
     return tuple(sorted(parents))
 
 
@@ -821,8 +838,7 @@ def _validate_identifier(name: str, value: object) -> str:
     if len(normalized) > 128:
         raise GenericImportStagingError(f"{name} exceeds the maximum length")
     if not normalized[0].isalnum() or any(
-        not (character.isalnum() or character in "._-")
-        for character in normalized
+        not (character.isalnum() or character in "._-") for character in normalized
     ):
         raise GenericImportStagingError(f"{name} is invalid")
     return normalized
@@ -836,10 +852,7 @@ def _validate_source_id(name: str, value: object) -> str:
         raise GenericImportStagingError(f"{name} must not be blank")
     if len(normalized) > _MAX_SOURCE_ID_LENGTH:
         raise GenericImportStagingError(f"{name} exceeds the maximum length")
-    if any(
-        ord(character) < 32 and character not in "\t\n\r"
-        for character in normalized
-    ):
+    if any(ord(character) < 32 and character not in "\t\n\r" for character in normalized):
         raise GenericImportStagingError(f"{name} contains a control character")
     return normalized
 
@@ -886,6 +899,7 @@ def _make_loss(
     import_batch_id: str,
     input_index: int,
     *,
+    recorded_at: str,
     category: str,
     source_object_id: str | None,
     description: str,
@@ -904,7 +918,7 @@ def _make_loss(
         description=description,
         preservation_state="preserved_metadata",
         future_recoverability="unknown",
-        recorded_at="1970-01-01T00:00:00Z",
+        recorded_at=recorded_at,
         source_object_id=source_object_id,
         required_user_action="Review the original source before publication.",
     )
