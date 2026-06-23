@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
 from typing import cast
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from doll.secret_policy import SecretPolicyError, validate_ordinary_state_record
 from doll.state import (
@@ -106,6 +106,7 @@ class StateRepository:
         sensitivity: RecordSensitivity = "personal",
         title: str | None = None,
         metadata: dict[str, object] | None = None,
+        record_id: str | None = None,
     ) -> RecordEnvelope:
         """Create one authoritative record and advance the workspace state revision."""
 
@@ -123,12 +124,18 @@ class StateRepository:
             sensitivity=sensitivity,
             metadata=metadata_value,
         )
-        record_id = str(uuid4())
+        canonical_record_id = _validate_record_id(record_id) if record_id else str(uuid4())
         now = _utc_now()
         metadata_json = _serialize_metadata(metadata_value)
 
         self.connection.execute("BEGIN IMMEDIATE")
         try:
+            duplicate = self.connection.execute(
+                "SELECT 1 FROM records WHERE id = ?",
+                (canonical_record_id,),
+            ).fetchone()
+            if duplicate is not None:
+                raise RecordValidationError("record identifier already exists")
             self.connection.execute(
                 """
                 INSERT INTO records (
@@ -146,7 +153,7 @@ class StateRepository:
                 ) VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?)
                 """,
                 (
-                    record_id,
+                    canonical_record_id,
                     record_type,
                     schema_version,
                     now,
@@ -165,7 +172,7 @@ class StateRepository:
             raise
 
         self._sync_after_commit(state_revision)
-        return self.get_record(record_id)
+        return self.get_record(canonical_record_id)
 
     def get_record(self, record_id: str) -> RecordEnvelope:
         """Return one common-envelope record."""
@@ -280,6 +287,16 @@ def _validate_record_fields(
         raise RecordValidationError(f"invalid record provenance: {provenance}")
     if sensitivity not in _ALLOWED_SENSITIVITY:
         raise RecordValidationError(f"invalid record sensitivity: {sensitivity}")
+
+
+def _validate_record_id(value: str) -> str:
+    try:
+        canonical = str(UUID(value))
+    except (ValueError, AttributeError) as exc:
+        raise RecordValidationError("record identifier is invalid") from exc
+    if canonical != value:
+        raise RecordValidationError("record identifier must use canonical UUID text")
+    return canonical
 
 
 def _validate_secret_boundary(
