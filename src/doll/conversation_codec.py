@@ -1,0 +1,1 @@
+"""Canonical conversation envelope codec."""
