@@ -1,14 +1,16 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "maturity": "Pre-alpha",
+  "completed_phases": ["0", "1", "2", "3"],
   "phase": {
-    "id": "4A/4B",
-    "name": "Portability and project continuity foundations",
-    "state": "next"
+    "id": "4A",
+    "name": "AI environment portability foundation",
+    "state": "in progress",
+    "started_by_implementation": 30
   },
   "model_runtime": {
     "connected": false,
-    "message": "No model runtime is connected yet. IMP-024 remains blocked until both Phase 4 foundation gates pass."
+    "message": "No model runtime is connected yet. Local runtime work remains blocked until the Phase 4A and Phase 4B gates pass."
   },
-  "last_reviewed": "2026-06-22"
+  "last_reviewed": "2026-06-23"
 }

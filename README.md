@@ -172,7 +172,7 @@ The accepted phase order is:
 10. tools and external services;
 11. distribution, encryption, and long-term operation.
 
-The safety-boundary implementation sequence runs through IMP-023. The current position is derived from merged and open `IMP-*` work and published through the [live implementation activity endpoint](https://doll.badjoke-lab.com/api/project-status). Phase 4A then establishes canonical conversation, adapter, generic import/export, provenance, idempotency, quarantine, and loss-report contracts. Phase 4B establishes Doll State Package v2, ProjectRecord v2, WorkItemRecord, ProcedureRecord, ProjectCheckpointRecord, deterministic status, Resume Bundle, and PROJ acceptance. Existing local model work remains IMP-024 through IMP-029 after those gates.
+The safety-boundary implementation sequence runs through IMP-023. Phase 4A is now in progress: IMP-030 established canonical conversation and event contracts, IMP-031 added their persistence, and IMP-032 is the next planned adapter-contract and source-environment foundation. The current position is published through the [live implementation activity endpoint](https://doll.badjoke-lab.com/api/project-status). Phase 4B then establishes Doll State Package v2, ProjectRecord v2, WorkItemRecord, ProcedureRecord, ProjectCheckpointRecord, deterministic status, Resume Bundle, and PROJ acceptance. Local runtime and model work follows both Phase 4 gates and receives the next monotonic implementation identifiers when scheduled. Unused legacy identifiers IMP-024 through IMP-029 are retired and are not reused.
 
 ## What doll is not
 
