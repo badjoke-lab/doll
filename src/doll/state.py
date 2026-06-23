@@ -58,9 +58,7 @@ ConversationOriginClass = Literal[
     "unknown",
 ]
 
-_ALLOWED_STATUSES = frozenset(
-    {"active", "archived", "superseded", "deleted", "invalid"}
-)
+_ALLOWED_STATUSES = frozenset({"active", "archived", "superseded", "deleted", "invalid"})
 _ALLOWED_PROVENANCE = frozenset(
     {
         "user-created",
@@ -72,9 +70,7 @@ _ALLOWED_PROVENANCE = frozenset(
         "restored",
     }
 )
-_ALLOWED_SENSITIVITY = frozenset(
-    {"public", "internal", "personal", "sensitive", "secret"}
-)
+_ALLOWED_SENSITIVITY = frozenset({"public", "internal", "personal", "sensitive", "secret"})
 _ALLOWED_CONVERSATION_EVENT_KINDS = frozenset(
     {
         "user_message",
@@ -314,9 +310,7 @@ class ConversationEventRecord:
             or not isinstance(self.sequence_hint, int)
             or self.sequence_hint < 0
         ):
-            raise ConversationValidationError(
-                "sequence hint must be a non-negative integer"
-            )
+            raise ConversationValidationError("sequence hint must be a non-negative integer")
 
         object.__setattr__(
             self,
@@ -357,13 +351,8 @@ class ConversationEventRecord:
                 ),
             )
 
-        if (
-            self.event_kind == "imported_unknown_event"
-            and self.source_event_kind is None
-        ):
-            raise ConversationValidationError(
-                "imported unknown event requires a source event kind"
-            )
+        if self.event_kind == "imported_unknown_event" and self.source_event_kind is None:
+            raise ConversationValidationError("imported unknown event requires a source event kind")
 
         object.__setattr__(
             self,
@@ -417,13 +406,8 @@ def _validate_conversation_text(
         raise ConversationValidationError(f"{name} must not be blank")
     if len(normalized) > maximum:
         raise ConversationValidationError(f"{name} exceeds the maximum length")
-    if any(
-        ord(character) < 32 or ord(character) == 127
-        for character in normalized
-    ):
-        raise ConversationValidationError(
-            f"{name} contains a control character"
-        )
+    if any(ord(character) < 32 or ord(character) == 127 for character in normalized):
+        raise ConversationValidationError(f"{name} contains a control character")
     return normalized
 
 
@@ -452,13 +436,9 @@ def _validate_conversation_parents(
     value: object,
 ) -> tuple[str, ...]:
     if not isinstance(value, tuple):
-        raise ConversationValidationError(
-            "parent event identifiers must be a tuple"
-        )
+        raise ConversationValidationError("parent event identifiers must be a tuple")
     if len(value) > _MAX_CONVERSATION_PARENTS:
-        raise ConversationValidationError(
-            "too many parent event identifiers"
-        )
+        raise ConversationValidationError("too many parent event identifiers")
     parents = tuple(
         _validate_conversation_uuid(
             "parent event identifier",
@@ -469,19 +449,13 @@ def _validate_conversation_parents(
     if event_id in parents:
         raise ConversationValidationError("event cannot be its own parent")
     if len(parents) != len(set(parents)):
-        raise ConversationValidationError(
-            "parent event identifiers must be unique"
-        )
+        raise ConversationValidationError("parent event identifiers must be unique")
     return parents
 
 
 def _validate_conversation_extensions(value: object) -> dict[str, object]:
-    if not isinstance(value, dict) or not all(
-        isinstance(key, str) for key in value
-    ):
-        raise ConversationValidationError(
-            "extensions must be a string-keyed object"
-        )
+    if not isinstance(value, dict) or not all(isinstance(key, str) for key in value):
+        raise ConversationValidationError("extensions must be a string-keyed object")
     if len(value) > _MAX_CONVERSATION_EXTENSIONS:
         raise ConversationValidationError("too many extensions")
 
@@ -500,9 +474,7 @@ def _validate_conversation_extensions(value: object) -> dict[str, object]:
             allow_nan=False,
         )
     except (TypeError, ValueError) as exc:
-        raise ConversationValidationError(
-            "extensions must be JSON-compatible"
-        ) from exc
+        raise ConversationValidationError("extensions must be JSON-compatible") from exc
     return normalized
 
 
