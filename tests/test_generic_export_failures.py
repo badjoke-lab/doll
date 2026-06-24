@@ -8,19 +8,20 @@ from typing import Any, cast
 from uuid import UUID, uuid5
 
 import pytest
-from doll.generic_export import (
-    GenericExportBuilder,
-    GenericExportBundle,
-    GenericExportError,
-    GenericExportFile,
-    verify_generic_export_bundle,
-)
 from doll.state import ConversationEventRecord, ConversationRecord
 from doll.workspace import initialize_workspace
 from doll.workspace_files import (
     ManagedFileExistsError,
     UnsafeManagedPathError,
     publish_new_workspace_file,
+)
+
+from doll.generic_export import (
+    GenericExportBuilder,
+    GenericExportBundle,
+    GenericExportError,
+    GenericExportFile,
+    verify_generic_export_bundle,
 )
 
 STARTED = "2026-06-24T03:00:00Z"
@@ -80,9 +81,7 @@ def _build(
         ({"max_total_bytes": 0}, "total byte limit"),
     ],
 )
-def test_builder_rejects_invalid_configuration(
-    kwargs: dict[str, object], message: str
-) -> None:
+def test_builder_rejects_invalid_configuration(kwargs: dict[str, object], message: str) -> None:
     with pytest.raises(GenericExportError, match=message):
         GenericExportBuilder(**cast(Any, kwargs))
 
@@ -119,13 +118,9 @@ def test_export_rejects_invalid_input_sequences_and_counts() -> None:
 def test_export_rejects_duplicate_and_colliding_identifiers() -> None:
     conversation = _conversation("one")
     event = _event("one", conversation.conversation_id)
-    with pytest.raises(
-        GenericExportError, match="conversation identifiers contain duplicates"
-    ):
+    with pytest.raises(GenericExportError, match="conversation identifiers contain duplicates"):
         _build([conversation, conversation], [])
-    with pytest.raises(
-        GenericExportError, match="event identifiers contain duplicates"
-    ):
+    with pytest.raises(GenericExportError, match="event identifiers contain duplicates"):
         _build([conversation], [event, event])
 
     colliding_event = replace(event, event_id=conversation.conversation_id)
@@ -136,22 +131,16 @@ def test_export_rejects_duplicate_and_colliding_identifiers() -> None:
 def test_export_rejects_missing_cross_conversation_and_cyclic_relationships() -> None:
     first = _conversation("first")
     second = _conversation("second")
-    missing_conversation = _event(
-        "missing-conversation", _id("unavailable-conversation")
-    )
+    missing_conversation = _event("missing-conversation", _id("unavailable-conversation"))
     with pytest.raises(GenericExportError, match="unavailable conversation"):
         _build([first], [missing_conversation])
 
-    missing_parent = _event(
-        "missing-parent", first.conversation_id, parents=(_id("missing"),)
-    )
+    missing_parent = _event("missing-parent", first.conversation_id, parents=(_id("missing"),))
     with pytest.raises(GenericExportError, match="parent is unavailable"):
         _build([first], [missing_parent])
 
     parent = _event("parent", first.conversation_id)
-    cross_child = _event(
-        "cross-child", second.conversation_id, parents=(parent.event_id,)
-    )
+    cross_child = _event("cross-child", second.conversation_id, parents=(parent.event_id,))
     with pytest.raises(GenericExportError, match="another conversation"):
         _build([first, second], [parent, cross_child])
 
@@ -229,9 +218,7 @@ def _replace_file(
 ) -> GenericExportBundle:
     return replace(
         bundle,
-        files=tuple(
-            replacement if item.name == name else item for item in bundle.files
-        ),
+        files=tuple(replacement if item.name == name else item for item in bundle.files),
     )
 
 
@@ -240,9 +227,7 @@ def test_verifier_rejects_content_checksum_manifest_and_jsonl_tampering() -> Non
     records = bundle.file("records.json")
     tampered_records = replace(records, content=records.content + b" ")
     with pytest.raises(GenericExportError, match="digest"):
-        verify_generic_export_bundle(
-            _replace_file(bundle, records.name, tampered_records)
-        )
+        verify_generic_export_bundle(_replace_file(bundle, records.name, tampered_records))
 
     checksum = bundle.file("checksums.sha256")
     invalid_checksum_content = b"invalid checksum line\n"
@@ -252,18 +237,13 @@ def test_verifier_rejects_content_checksum_manifest_and_jsonl_tampering() -> Non
         sha256=hashlib.sha256(invalid_checksum_content).hexdigest(),
     )
     with pytest.raises(GenericExportError, match="checksum declaration is invalid"):
-        verify_generic_export_bundle(
-            _replace_file(bundle, checksum.name, invalid_checksum)
-        )
+        verify_generic_export_bundle(_replace_file(bundle, checksum.name, invalid_checksum))
 
     manifest = bundle.file("manifest.json")
     manifest_value = json.loads(manifest.content)
     manifest_value["format"] = "other"
     changed_manifest_content = (
-        json.dumps(
-            manifest_value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
-        )
-        + "\n"
+        json.dumps(manifest_value, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n"
     ).encode()
     changed_manifest = replace(
         manifest,
@@ -306,10 +286,7 @@ def test_verifier_rejects_content_checksum_manifest_and_jsonl_tampering() -> Non
             entry["sha256"] = changed_jsonl.sha256
             entry["size_bytes"] = len(changed_jsonl_content)
     changed_manifest_content = (
-        json.dumps(
-            manifest_value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
-        )
-        + "\n"
+        json.dumps(manifest_value, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n"
     ).encode()
     changed_manifest = replace(
         changed.file("manifest.json"),
