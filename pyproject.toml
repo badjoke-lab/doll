@@ -76,5 +76,9 @@ warn_unused_configs = true
 module = "doll.restore_impl"
 disable_error_code = ["assignment", "arg-type"]
 
+[[tool.mypy.overrides]]
+module = "doll.generic_import_publication"
+disable_error_code = ["redundant-cast", "no-any-return"]
+
 [tool.uv]
 default-groups = ["dev"]
