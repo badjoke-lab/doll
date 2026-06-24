@@ -410,7 +410,7 @@ class GenericImportStager:
         mapping_counts: dict[str, int],
         material_object_indexes: set[int],
         occurrence_indexes: dict[str, tuple[int, ...]],
-    ) -> dict[str, _Candidate]:
+    ) -> tuple[dict[str, _Candidate], int]:
         grouped: dict[str, list[_Candidate]] = {}
         for candidate in candidates:
             grouped.setdefault(candidate.source_object_id, []).append(candidate)

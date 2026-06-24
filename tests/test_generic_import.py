@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Sequence
 from uuid import uuid4
 
 from doll.generic_import import GenericImportStager
@@ -80,7 +81,7 @@ def _source_object(
 
 def _json_bytes(
     environment_id: str,
-    objects: list[object],
+    objects: Sequence[object],
     *,
     version: str = "1",
 ) -> bytes:

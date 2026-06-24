@@ -6,7 +6,11 @@ from uuid import uuid4
 
 import pytest
 
-from doll.generic_import import GenericImportStager, GenericImportStagingError
+from doll.generic_import import (
+    GenericImportStager,
+    GenericImportStageResult,
+    GenericImportStagingError,
+)
 from doll.portability import (
     AdapterResourceLimits,
     SourceAdapterContract,
@@ -102,7 +106,7 @@ def _stage(
     adapter: SourceAdapterContract | None = None,
     environment: SourceEnvironmentRecord | None = None,
     source_format: str = "json",
-):
+) -> GenericImportStageResult:
     stager = GenericImportStager(
         adapter or _adapter(),
         environment or _environment(environment_id),
