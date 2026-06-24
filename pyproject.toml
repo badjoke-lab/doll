@@ -70,6 +70,10 @@ line-ending = "lf"
 python_version = "3.12"
 strict = true
 files = ["src", "tests"]
+exclude = [
+  "tests/import_publication_support\\.py$",
+  "tests/test_generic_import_publication_.*\\.py$",
+]
 warn_unused_configs = true
 
 [[tool.mypy.overrides]]
@@ -79,13 +83,6 @@ disable_error_code = ["assignment", "arg-type"]
 [[tool.mypy.overrides]]
 module = "doll.generic_import_publication"
 disable_error_code = ["redundant-cast", "no-any-return"]
-
-[[tool.mypy.overrides]]
-module = [
-  "tests.import_publication_support",
-  "tests.test_generic_import_publication_*",
-]
-ignore_errors = true
 
 [tool.uv]
 default-groups = ["dev"]
