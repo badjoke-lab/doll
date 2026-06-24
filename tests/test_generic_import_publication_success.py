@@ -36,8 +36,9 @@ def test_preview_is_deterministic_and_side_effect_free(tmp_path: Path) -> None:
         assert len(first.created_canonical_record_ids) == 3
         assert first.reused_canonical_record_ids == ()
         assert repository.status() == before
-        assert first.managed_source_path is not None
-        assert not (initialized.root / "artifacts" / first.managed_source_path).exists()
+        managed_source_path = first.managed_source_path
+        assert managed_source_path is not None
+        assert not (initialized.root / "artifacts" / managed_source_path).exists()
         json.dumps(first.canonical_summary(), allow_nan=False)
 
 
@@ -71,8 +72,9 @@ def test_publication_persists_canonical_state_and_snapshot(tmp_path: Path) -> No
         assert result.import_batch.status == "published"
         assert result.import_batch.published_object_count == 4
         assert result.source_snapshot.preservation_state == "managed_snapshot"
-        assert result.source_snapshot.managed_path is not None
-        snapshot_path = initialized.root / "artifacts" / result.source_snapshot.managed_path
+        snapshot_managed_path = result.source_snapshot.managed_path
+        assert snapshot_managed_path is not None
+        snapshot_path = initialized.root / "artifacts" / snapshot_managed_path
         assert snapshot_path.read_bytes() == source_bytes
 
         conversations = repository.list_conversations()
