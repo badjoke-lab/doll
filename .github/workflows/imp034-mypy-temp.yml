@@ -68,6 +68,7 @@ jobs:
           )
           failures.write_text(text)
           PY
+      - run: uv run ruff check --fix src/doll/generic_import.py tests/test_generic_import.py tests/test_generic_import_failures.py
       - run: uv run ruff format src/doll/generic_import.py tests/test_generic_import.py tests/test_generic_import_failures.py
       - run: uv run ruff check src/doll/generic_import.py tests/test_generic_import.py tests/test_generic_import_failures.py
       - run: uv run mypy src tests
