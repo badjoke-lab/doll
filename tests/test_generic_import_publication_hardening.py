@@ -29,7 +29,11 @@ def _publish(
     source_bytes: bytes,
     *,
     preserve_source: bool = False,
-) -> tuple[publication.GenericImportPublisher, Any, publication.GenericImportPublicationResult]:
+) -> tuple[
+    publication.GenericImportPublisher,
+    Any,
+    publication.GenericImportPublicationResult,
+]:
     staged = _stage(environment, source_bytes)
     publisher = publication.GenericImportPublisher(repository, environment)
     preview = publisher.preview(staged, source_bytes, preserve_source=preserve_source)
@@ -42,10 +46,20 @@ def _publish(
     return publisher, staged, result
 
 
-def _set_metadata(repository: state.StateRepository, record_id: str, metadata: dict[str, object]) -> None:
+def _set_metadata(
+    repository: state.StateRepository,
+    record_id: str,
+    metadata: dict[str, object],
+) -> None:
+    metadata_json = json.dumps(
+        metadata,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
     repository.connection.execute(
         "UPDATE records SET metadata_json = ? WHERE id = ?",
-        (json.dumps(metadata, ensure_ascii=False, sort_keys=True, separators=(",", ":")), record_id),
+        (metadata_json, record_id),
     )
 
 
@@ -256,7 +270,10 @@ def test_preview_detects_environment_and_canonical_state_conflicts(tmp_path: Pat
     initialized = _initialized(tmp_path / "canonical")
     with state.initialize_state_repository(initialized.root) as repository:
         conversation = staged.staged_objects[0]
-        canonical_id = publication._canonical_record_id(environment.environment_id, conversation)
+        canonical_id = publication._canonical_record_id(
+            environment.environment_id,
+            conversation,
+        )
         repository.create_record(
             record_id=canonical_id,
             record_type="conversation",
@@ -357,7 +374,9 @@ def test_reader_rejects_corrupt_reports_envelopes_and_snapshot(tmp_path: Path) -
             reader.get_mapping_report(report_id)
 
         bad_fidelity = dict(report_envelope.metadata)
-        bad_fidelity["full_fidelity_possible"] = not staged.mapping_report.full_fidelity_possible
+        bad_fidelity["full_fidelity_possible"] = (
+            not staged.mapping_report.full_fidelity_possible
+        )
         _set_metadata(repository, report_id, bad_fidelity)
         with pytest.raises(state.StateCorruptError, match="fidelity"):
             reader.get_mapping_report(report_id)
