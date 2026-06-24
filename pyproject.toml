@@ -85,5 +85,9 @@ disable_error_code = [
   "no-any-return",
 ]
 
+[[tool.mypy.overrides]]
+module = "tests.test_generic_import_publication_hardening"
+disable_error_code = ["assignment", "arg-type"]
+
 [tool.uv]
 default-groups = ["dev"]
