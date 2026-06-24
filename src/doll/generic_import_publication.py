@@ -8,7 +8,6 @@ import re
 import sqlite3
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Literal, cast
 from uuid import UUID, uuid5
 
@@ -573,8 +572,7 @@ class GenericImportPublisher:
             for source_id, item in source_objects.items()
         }
         roots = {
-            source_id: _conversation_root(source_id, source_objects)
-            for source_id in source_objects
+            source_id: _conversation_root(source_id, source_objects) for source_id in source_objects
         }
         state = GenericImportPublicationState(self.repository)
         planned: list[_PlannedRecord] = []
