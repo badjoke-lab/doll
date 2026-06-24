@@ -56,8 +56,9 @@ def test_transaction_failure_removes_new_snapshot_and_rolls_back_state(
             )
         assert repository.status().state_revision == 0
         assert repository.status().record_count == 0
-        assert preview.managed_source_path is not None
-        assert not (initialized.root / "artifacts" / preview.managed_source_path).exists()
+        managed_source_path = preview.managed_source_path
+        assert managed_source_path is not None
+        assert not (initialized.root / "artifacts" / managed_source_path).exists()
 
 
 def test_existing_snapshot_target_prevents_database_publication(tmp_path: Path) -> None:
@@ -69,8 +70,8 @@ def test_existing_snapshot_target_prevents_database_publication(tmp_path: Path) 
     with state.initialize_state_repository(initialized.root) as repository:
         publisher = publication.GenericImportPublisher(repository, environment)
         preview = publisher.preview(staged, source_bytes, preserve_source=True)
-        assert preview.managed_source_path is not None
         managed_source_path = preview.managed_source_path
+        assert managed_source_path is not None
         existing = publish_new_workspace_file(
             initialized.root / "artifacts",
             managed_source_path,
