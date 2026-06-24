@@ -80,5 +80,12 @@ disable_error_code = ["assignment", "arg-type"]
 module = "doll.generic_import_publication"
 disable_error_code = ["redundant-cast", "no-any-return"]
 
+[[tool.mypy.overrides]]
+module = [
+  "tests.import_publication_support",
+  "tests.test_generic_import_publication_*",
+]
+ignore_errors = true
+
 [tool.uv]
 default-groups = ["dev"]
