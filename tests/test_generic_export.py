@@ -4,13 +4,14 @@ import json
 from pathlib import Path
 from uuid import UUID, uuid5
 
+from doll.state import ConversationEventRecord, ConversationRecord
+from doll.workspace import initialize_workspace
+
 from doll.generic_export import (
     GenericExportBuilder,
     GenericExportBundle,
     verify_generic_export_bundle,
 )
-from doll.state import ConversationEventRecord, ConversationRecord
-from doll.workspace import initialize_workspace
 
 STARTED = "2026-06-24T03:00:00Z"
 COMPLETED = "2026-06-24T03:00:01Z"
@@ -134,10 +135,7 @@ def test_generic_export_is_deterministic_and_formats_agree() -> None:
     assert first_result.export_batch.exported_object_count == 5
     assert first_result.mapping_report.mapped_without_known_loss_count == 5
     assert first_result.mapping_report.full_fidelity_possible is True
-    assert (
-        first_result.export_batch.manifest_hash
-        == first_result.file("manifest.json").sha256
-    )
+    assert first_result.export_batch.manifest_hash == first_result.file("manifest.json").sha256
 
     records_document = json.loads(first_result.file("records.json").content)
     jsonl_lines = first_result.file("records.jsonl").content.decode().splitlines()
@@ -231,9 +229,7 @@ def test_managed_publication_creates_only_bundle_files(tmp_path: Path) -> None:
 
     assert published.export_batch_id == bundle.export_batch.export_batch_id
     assert published.managed_prefix == prefix
-    assert [item.name for item in published.files] == [
-        item.name for item in bundle.files
-    ]
+    assert [item.name for item in published.files] == [item.name for item in bundle.files]
     for metadata, source in zip(published.files, bundle.files, strict=True):
         path = workspace.root / "artifacts" / metadata.managed_path
         assert path.read_bytes() == source.content
