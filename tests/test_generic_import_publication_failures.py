@@ -3,11 +3,12 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
-import doll.generic_import_publication as publication
 import pytest
+
+import doll.generic_import_publication as publication
 from doll import state
 from doll.workspace_files import ManagedFileExistsError, publish_new_workspace_file
-from import_publication_support import (
+from tests.import_publication_support import (
     COMPLETED,
     _environment,
     _initialized,
@@ -42,11 +43,11 @@ def test_transaction_failure_removes_new_snapshot_and_rolls_back_state(
             nonlocal calls
             calls += 1
             if calls == 2:
-                raise RuntimeError("injected failure")
+                raise RuntimeError("test failure")
             original(connection, record, created_at)
 
         monkeypatch.setattr(publication, "_insert_planned_record", fail_after_first)
-        with pytest.raises(RuntimeError, match="injected failure"):
+        with pytest.raises(RuntimeError, match="test failure"):
             publisher.publish(
                 preview,
                 source_bytes,
