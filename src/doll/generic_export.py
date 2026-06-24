@@ -5,10 +5,10 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, TypeVar, cast
+from typing import cast
 from uuid import UUID, uuid5
 
 from doll.portability import PortabilityContractError
@@ -44,7 +44,6 @@ _MEDIA_TYPES = {
 }
 _IDENTIFIER = re.compile(r"^[a-z0-9][a-z0-9._-]{0,127}$")
 _VERSION = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._+\-]{0,127}$")
-_T = TypeVar("_T")
 
 
 class GenericExportError(PortabilityContractError):
@@ -230,17 +229,13 @@ class GenericExportBuilder:
                     "Exported content is data only and does not grant policy, permission, "
                     "confirmation, capability, memory, fact, or instruction authority."
                 ),
-                "files": [
-                    _file_metadata(name, payloads[name]) for name in _PAYLOAD_FILES
-                ],
+                "files": [_file_metadata(name, payloads[name]) for name in _PAYLOAD_FILES],
             }
         )
         contents = {
             "manifest.json": manifest,
             **payloads,
-            "checksums.sha256": _checksum_bytes(
-                {"manifest.json": manifest, **payloads}
-            ),
+            "checksums.sha256": _checksum_bytes({"manifest.json": manifest, **payloads}),
         }
         _validate_file_limits(
             contents,
@@ -343,28 +338,22 @@ def verify_generic_export_bundle(bundle: GenericExportBundle) -> None:
         raise GenericExportError("checksum declaration does not match file content")
 
     manifest = _load_json_object(files["manifest.json"].content, "manifest")
-    if (
-        manifest.get("format") != _FORMAT
-        or manifest.get("format_version") != _FORMAT_VERSION
-    ):
+    if manifest.get("format") != _FORMAT or manifest.get("format_version") != _FORMAT_VERSION:
         raise GenericExportError("manifest format or version is invalid")
     if manifest.get("export_batch_id") != bundle.export_batch.export_batch_id:
         raise GenericExportError("manifest export batch identifier is invalid")
     if bundle.export_batch.manifest_hash != files["manifest.json"].sha256:
         raise GenericExportError("export batch manifest hash is invalid")
-    expected_files = [
-        _file_metadata(name, files[name].content) for name in _PAYLOAD_FILES
-    ]
+    expected_files = [_file_metadata(name, files[name].content) for name in _PAYLOAD_FILES]
     if manifest.get("files") != expected_files:
         raise GenericExportError("manifest file declarations do not match payloads")
 
-    records = _load_json_object(files["records.json"].content, "records JSON").get(
-        "records"
-    )
+    records = _load_json_object(files["records.json"].content, "records JSON").get("records")
     if not isinstance(records, list):
         raise GenericExportError("records JSON records are invalid")
     if records != _jsonl_records(
-        files["records.jsonl"].content, bundle.export_batch.export_batch_id
+        files["records.jsonl"].content,
+        bundle.export_batch.export_batch_id,
     ):
         raise GenericExportError("JSON and JSONL records differ")
 
@@ -382,41 +371,29 @@ def _validate_graph(
     if not conversation_values:
         raise GenericExportError("generic export requires at least one conversation")
     if len(conversation_values) + len(event_values) > max_object_count:
-        raise GenericExportError(
-            "generic export object count exceeds the accepted limit"
-        )
+        raise GenericExportError("generic export object count exceeds the accepted limit")
     if any(not isinstance(item, ConversationRecord) for item in conversation_values):
-        raise GenericExportError(
-            "generic export contains an invalid conversation record"
-        )
+        raise GenericExportError("generic export contains an invalid conversation record")
     if any(not isinstance(item, ConversationEventRecord) for item in event_values):
-        raise GenericExportError(
-            "generic export contains an invalid conversation event record"
-        )
+        raise GenericExportError("generic export contains an invalid conversation event record")
 
     conversation_by_id = _unique(
-        conversation_values, lambda item: item.conversation_id, "conversation"
+        conversation_values,
+        lambda item: item.conversation_id,
+        "conversation",
     )
-    event_by_id = _unique(
-        event_values, lambda item: item.event_id, "conversation event"
-    )
+    event_by_id = _unique(event_values, lambda item: item.event_id, "conversation event")
     if set(conversation_by_id) & set(event_by_id):
-        raise GenericExportError(
-            "conversation and event identifiers must be globally distinct"
-        )
+        raise GenericExportError("conversation and event identifiers must be globally distinct")
     for event in event_by_id.values():
         if event.conversation_id not in conversation_by_id:
-            raise GenericExportError(
-                "conversation event references an unavailable conversation"
-            )
+            raise GenericExportError("conversation event references an unavailable conversation")
         for parent_id in event.parent_event_ids:
             parent = event_by_id.get(parent_id)
             if parent is None:
                 raise GenericExportError("conversation event parent is unavailable")
             if parent.conversation_id != event.conversation_id:
-                raise GenericExportError(
-                    "conversation event parent belongs to another conversation"
-                )
+                raise GenericExportError("conversation event parent belongs to another conversation")
     _reject_cycles(event_by_id)
     return (
         tuple(conversation_by_id[key] for key in sorted(conversation_by_id)),
@@ -424,8 +401,8 @@ def _validate_graph(
     )
 
 
-def _unique(values: Sequence[_T], key: Callable[[_T], str], name: str) -> dict[str, _T]:
-    result: dict[str, _T] = {}
+def _unique[T](values: Sequence[T], key: Callable[[T], str], name: str) -> dict[str, T]:
+    result: dict[str, T] = {}
     for value in values:
         identifier = key(value)
         if identifier in result:
@@ -524,9 +501,7 @@ def _markdown_bytes(
                 "",
             ]
         )
-        ordered = sorted(
-            by_conversation[conversation.conversation_id], key=_event_order
-        )
+        ordered = sorted(by_conversation[conversation.conversation_id], key=_event_order)
         if not ordered:
             lines.extend(["_No exported events._", ""])
         for event in ordered:
@@ -552,7 +527,11 @@ def _event_order(event: ConversationEventRecord) -> tuple[int, int, str, str]:
 
 def _json_fence(value: object) -> str:
     text = json.dumps(
-        value, ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False
+        value,
+        ensure_ascii=False,
+        sort_keys=True,
+        indent=2,
+        allow_nan=False,
     )
     run = max((len(item) for item in re.findall(r"`+", text)), default=0)
     fence = "`" * max(3, run + 1)
@@ -673,13 +652,9 @@ def _validate_file_limits(
     max_total_bytes: int,
 ) -> None:
     if any(len(content) > max_file_bytes for content in files.values()):
-        raise GenericExportError(
-            "generated export file exceeds the accepted byte limit"
-        )
+        raise GenericExportError("generated export file exceeds the accepted byte limit")
     if sum(len(content) for content in files.values()) > max_total_bytes:
-        raise GenericExportError(
-            "generated export exceeds the accepted total byte limit"
-        )
+        raise GenericExportError("generated export exceeds the accepted total byte limit")
 
 
 __all__ = [
