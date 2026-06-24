@@ -149,23 +149,17 @@ def test_internal_validation_helpers_reject_noncanonical_values() -> None:
         publication._string_tuple([1], "values")
     with pytest.raises(publication.GenericImportPublicationError, match="invalid JSON"):
         publication._load_json_object("{", "fixture")
-    with pytest.raises(
-        publication.GenericImportPublicationError, match="must be an object"
-    ):
+    with pytest.raises(publication.GenericImportPublicationError, match="must be an object"):
         publication._load_json_object("[]", "fixture")
     with pytest.raises(publication.GenericImportPublicationError, match="invalid JSON"):
         publication._load_json_object('{"value":NaN}', "fixture")
-    with pytest.raises(
-        publication.GenericImportPublicationError, match="canonical JSON"
-    ):
+    with pytest.raises(publication.GenericImportPublicationError, match="canonical JSON"):
         publication._hash_json({"value": object()})
     with pytest.raises(publication.GenericImportPublicationError, match="must be text"):
         publication._canonical_uuid("identifier", 1)
     with pytest.raises(publication.GenericImportPublicationError, match="is invalid"):
         publication._canonical_uuid("identifier", "bad")
-    with pytest.raises(
-        publication.GenericImportPublicationError, match="canonical UUID"
-    ):
+    with pytest.raises(publication.GenericImportPublicationError, match="canonical UUID"):
         publication._canonical_uuid("identifier", str(uuid4()).upper())
     with pytest.raises(publication.GenericImportPublicationError, match="hash"):
         publication._validate_sha256("hash", "bad")
@@ -183,25 +177,17 @@ def test_preview_rejects_invalid_stage_and_payload_metadata(tmp_path: Path) -> N
 
     with state.initialize_state_repository(initialized.root) as repository:
         publisher = publication.GenericImportPublisher(repository, environment)
-        with pytest.raises(
-            publication.GenericImportPublicationError, match="stage result"
-        ):
+        with pytest.raises(publication.GenericImportPublicationError, match="stage result"):
             publisher.preview(cast(Any, object()), source_bytes, preserve_source=False)
-        with pytest.raises(
-            publication.GenericImportPublicationError, match="non-empty bytes"
-        ):
+        with pytest.raises(publication.GenericImportPublicationError, match="non-empty bytes"):
             publisher.preview(staged, cast(Any, "text"), preserve_source=False)
-        with pytest.raises(
-            publication.GenericImportPublicationError, match="non-empty bytes"
-        ):
+        with pytest.raises(publication.GenericImportPublicationError, match="non-empty bytes"):
             publisher.preview(staged, b"", preserve_source=False)
         with pytest.raises(publication.GenericImportPublicationError, match="boolean"):
             publisher.preview(staged, source_bytes, preserve_source=cast(Any, 1))
 
         duplicate = replace(staged, staged_objects=(staged.staged_objects[0],) * 2)
-        with pytest.raises(
-            publication.GenericImportPublicationError, match="duplicates"
-        ):
+        with pytest.raises(publication.GenericImportPublicationError, match="duplicates"):
             publisher.preview(duplicate, source_bytes, preserve_source=False)
 
         bad_batch = replace(
@@ -210,9 +196,7 @@ def test_preview_rejects_invalid_stage_and_payload_metadata(tmp_path: Path) -> N
             completed_at=COMPLETED,
             published_object_count=staged.import_batch.staged_object_count,
         )
-        with pytest.raises(
-            publication.GenericImportPublicationError, match="not staged"
-        ):
+        with pytest.raises(publication.GenericImportPublicationError, match="not staged"):
             publisher.preview(
                 replace(staged, import_batch=bad_batch),
                 source_bytes,
@@ -220,9 +204,7 @@ def test_preview_rejects_invalid_stage_and_payload_metadata(tmp_path: Path) -> N
             )
 
         wrong_report = replace(staged.mapping_report, batch_id=str(uuid4()))
-        with pytest.raises(
-            publication.GenericImportPublicationError, match="mapping report"
-        ):
+        with pytest.raises(publication.GenericImportPublicationError, match="mapping report"):
             publisher.preview(
                 replace(staged, mapping_report=wrong_report),
                 source_bytes,
@@ -230,9 +212,7 @@ def test_preview_rejects_invalid_stage_and_payload_metadata(tmp_path: Path) -> N
             )
 
         export_report = replace(staged.mapping_report, direction="export")
-        with pytest.raises(
-            publication.GenericImportPublicationError, match="direction"
-        ):
+        with pytest.raises(publication.GenericImportPublicationError, match="direction"):
             publisher.preview(
                 replace(staged, mapping_report=export_report),
                 source_bytes,
@@ -244,9 +224,7 @@ def test_preview_rejects_invalid_stage_and_payload_metadata(tmp_path: Path) -> N
             environment,
             max_snapshot_bytes=10,
         )
-        with pytest.raises(
-            publication.GenericImportPublicationError, match="byte limit"
-        ):
+        with pytest.raises(publication.GenericImportPublicationError, match="byte limit"):
             small_publisher.preview(staged, source_bytes, preserve_source=False)
 
         cases = [
@@ -261,9 +239,7 @@ def test_preview_rejects_invalid_stage_and_payload_metadata(tmp_path: Path) -> N
             ],
             [
                 _object("root", "conversation", {}),
-                _object(
-                    "event", "user-message", {"sequence_hint": True}, parents=["root"]
-                ),
+                _object("event", "user-message", {"sequence_hint": True}, parents=["root"]),
             ],
         ]
         for objects in cases:
@@ -286,9 +262,7 @@ def test_preview_detects_environment_and_canonical_state_conflicts(
         changed_environment = replace(environment, provider_id="provider-b")
         changed_bytes = _source(changed_environment, _portable_objects())
         changed_stage = _stage(changed_environment, changed_bytes)
-        with pytest.raises(
-            publication.GenericImportPublicationError, match="does not match"
-        ):
+        with pytest.raises(publication.GenericImportPublicationError, match="does not match"):
             publication.GenericImportPublisher(repository, changed_environment).preview(
                 changed_stage,
                 changed_bytes,
@@ -331,13 +305,9 @@ def test_stale_preview_and_corrupt_existing_mapping_fail_closed(tmp_path: Path) 
     with state.initialize_state_repository(initialized.root) as repository:
         publisher = publication.GenericImportPublisher(repository, environment)
         first_stage = _stage(environment, source_bytes)
-        stale_preview = publisher.preview(
-            first_stage, source_bytes, preserve_source=False
-        )
+        stale_preview = publisher.preview(first_stage, source_bytes, preserve_source=False)
         second_stage = _stage(environment, source_bytes)
-        second_preview = publisher.preview(
-            second_stage, source_bytes, preserve_source=False
-        )
+        second_preview = publisher.preview(second_stage, source_bytes, preserve_source=False)
         publisher.publish(
             second_preview,
             source_bytes,
@@ -406,9 +376,7 @@ def test_reader_rejects_corrupt_reports_envelopes_and_snapshot(tmp_path: Path) -
             reader.get_mapping_report(report_id)
 
         bad_fidelity = dict(report_envelope.metadata)
-        bad_fidelity[
-            "full_fidelity_possible"
-        ] = not staged.mapping_report.full_fidelity_possible
+        bad_fidelity["full_fidelity_possible"] = not staged.mapping_report.full_fidelity_possible
         _set_metadata(repository, report_id, bad_fidelity)
         with pytest.raises(state.StateCorruptError, match="fidelity"):
             reader.get_mapping_report(report_id)
