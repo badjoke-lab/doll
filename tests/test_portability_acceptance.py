@@ -31,7 +31,7 @@ def _run(*arguments: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def test_imp_037_ci_evidence_passes_with_machine_gate_pending() -> None:
+def test_imp_037_ci_evidence_preserves_completed_machine_gate() -> None:
     result = _run("--commit-sha", _head(), "--evidence-level", "ci")
 
     assert result.returncode == 0, result.stderr or result.stdout
@@ -41,8 +41,8 @@ def test_imp_037_ci_evidence_passes_with_machine_gate_pending() -> None:
     assert payload["evidence_level"] == "ci"
     assert payload["network_mode"] == "no-network-path-in-probe"
     assert payload["portability_test_count"] == 9
-    assert payload["primary_intel_mac_gate"] == "pending"
-    assert payload["phase4a_gate_complete"] is False
+    assert payload["primary_intel_mac_gate"] == "pass"
+    assert payload["phase4a_gate_complete"] is True
     assert payload["stable_anti_lock_in_claim"] is False
     assert payload["model_runtime_used"] is False
     assert payload["cloud_credentials_used"] is False

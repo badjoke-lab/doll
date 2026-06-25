@@ -2,8 +2,8 @@
   "schema_version": 1,
   "phase": "4A",
   "acceptance_test_id": "IMP-037-PORTABILITY-ACCEPTANCE",
-  "phase4a_gate_complete": false,
-  "accepted_real_machine_result": null,
+  "phase4a_gate_complete": true,
+  "accepted_real_machine_result": "docs/testing/results/IMP-037-primary-intel-mac-2026-06-25.json",
   "portability_tests": [
     {
       "id": "PORT-004",
@@ -17,7 +17,7 @@
     {
       "id": "PORT-005",
       "status": "pass",
-      "evidence_levels": ["integration", "fresh_process", "primary_real_machine_pending"],
+      "evidence_levels": ["integration", "fresh_process", "primary_real_machine"],
       "pytest_files": [
         "tests/test_generic_export.py",
         "tests/test_portability_acceptance.py"
@@ -94,16 +94,16 @@
   ],
   "real_machine_gate": {
     "required": true,
-    "status": "pending",
+    "status": "pass",
     "platform": "Darwin",
     "architectures": ["x86_64", "amd64"],
     "network_mode": "offline-confirmed",
-    "commit_sha": null,
-    "completed_at": null
+    "commit_sha": "839a4ca7a37753fadf81c3e8e79f140e6d66bc03",
+    "completed_at": "2026-06-25T14:30:11.994929Z"
   },
   "limitations": [
-    "The primary Intel Mac offline run is pending, so Phase 4A is not complete.",
-    "PORT-001 through PORT-003 and PORT-013 through PORT-016 are outside this foundation gate.",
+    "Phase 4A is complete for the generic, model-independent portability foundation only.",
+    "PORT-001 through PORT-003 and PORT-013 through PORT-016 remain outside this foundation gate.",
     "The generic export currently covers canonical conversations and conversation events only.",
     "No provider-specific, local-application, runtime, model, cloud, or private-history adapter is exercised.",
     "This evidence does not support a stable anti-lock-in claim until PORT-015 passes."

@@ -1,0 +1,110 @@
+{
+  "architecture": "x86_64",
+  "checks": {
+    "all_portability_entries_executable": true,
+    "all_portability_ids_mapped": true,
+    "authority_note_present": true,
+    "canonical_conversation_present": true,
+    "canonical_events_present": true,
+    "checksums_valid": true,
+    "conversation_source_identity_preserved": true,
+    "exact_export_file_set": true,
+    "fresh_inspector_standard_library_only": true,
+    "generic_import_published": true,
+    "imported_authority_records_absent": true,
+    "imported_events_non_authoritative": true,
+    "json_and_jsonl_records_match": true,
+    "manifest_counts_valid": true,
+    "manifest_format_valid": true,
+    "manifest_payload_declarations_valid": true,
+    "material_loss_blocks_full_fidelity": true,
+    "matrix_schema_valid": true,
+    "no_model_runtime_used": true,
+    "no_network_or_cloud_path_used": true,
+    "no_running_service_required": true,
+    "phase_identifier_valid": true,
+    "preview_side_effect_free": true,
+    "real_machine_gate_declared": true,
+    "restart_state_readable": true,
+    "source_identity_fields_separate": true,
+    "source_runtime_identity_preserved": true,
+    "stored_machine_evidence_valid": true,
+    "transcript_is_non_authoritative": true,
+    "unchanged_reimport_idempotent": true
+  },
+  "cloud_credentials_used": false,
+  "commit_sha": "839a4ca7a37753fadf81c3e8e79f140e6d66bc03",
+  "completed_at": "2026-06-25T14:30:11.994929Z",
+  "evidence": {
+    "duplicate_counts": {
+      "unchanged_reimport_canonical_duplicates": 0
+    },
+    "loss_counts_by_severity": {
+      "material": 1
+    },
+    "mapping_report_reference": "cc652b14-fac2-59b0-a836-3e455f2c8cad",
+    "original_source_hash": "ea2633244c8c4624dd9b0fa79562c6a65ec8a805c1d8afb202b2e91161f3ebe3",
+    "published_object_counts": {
+      "conversation": 1,
+      "conversation_event": 3,
+      "total": 4
+    },
+    "quarantine_counts": {
+      "loss_fixture": 1
+    },
+    "source_adapter_id": "generic-import",
+    "source_adapter_version": "1.0.0",
+    "source_environment_class": "generic-file-export",
+    "source_format": "json",
+    "source_format_version": "1",
+    "source_object_counts": {
+      "conversation": 1,
+      "conversation_event": 3,
+      "total": 4
+    },
+    "target_adapter_id": "doll-generic-export",
+    "target_adapter_version": "1",
+    "target_format": "doll-generic-export"
+  },
+  "evidence_level": "real-machine",
+  "limitations": [
+    "The primary Intel Mac offline run is pending, so Phase 4A is not complete.",
+    "PORT-001 through PORT-003 and PORT-013 through PORT-016 are outside this foundation gate.",
+    "The generic export currently covers canonical conversations and conversation events only.",
+    "No provider-specific, local-application, runtime, model, cloud, or private-history adapter is exercised.",
+    "This evidence does not support a stable anti-lock-in claim until PORT-015 passes."
+  ],
+  "model_runtime_used": false,
+  "network_mode": "offline-confirmed",
+  "network_request_used": false,
+  "operating_system": "Darwin",
+  "phase4a_gate_complete": true,
+  "portability_test_count": 9,
+  "portability_test_ids": [
+    "PORT-004",
+    "PORT-005",
+    "PORT-006",
+    "PORT-007",
+    "PORT-008",
+    "PORT-009",
+    "PORT-010",
+    "PORT-011",
+    "PORT-012"
+  ],
+  "preferred_ui_used": false,
+  "primary_intel_mac_gate": "pass",
+  "privacy": {
+    "absolute_paths_in_report": false,
+    "credentials_in_report": false,
+    "hostnames_in_report": false,
+    "private_fixture_content_in_report": false,
+    "secret_values_in_report": false,
+    "usernames_in_report": false
+  },
+  "result": "pass",
+  "running_service_used": false,
+  "specification_version": "0.1",
+  "stable_anti_lock_in_claim": false,
+  "started_at": "2026-06-25T14:30:11.994379Z",
+  "test_id": "IMP-037-PORTABILITY-ACCEPTANCE"
+}

@@ -1,16 +1,17 @@
 {
   "schema_version": 2,
   "maturity": "Pre-alpha",
-  "completed_phases": ["0", "1", "2", "3"],
+  "completed_phases": ["0", "1", "2", "3", "4A"],
   "phase": {
-    "id": "4A",
-    "name": "AI environment portability foundation",
-    "state": "in progress",
-    "started_by_implementation": 30
+    "id": "4B",
+    "name": "Project continuity foundation",
+    "state": "ready",
+    "started_by_implementation": null,
+    "next_implementation": 38
   },
   "model_runtime": {
     "connected": false,
-    "message": "No model runtime is connected yet. Local runtime work remains blocked until the Phase 4A and Phase 4B gates pass."
+    "message": "No model runtime is connected yet. Local runtime work remains blocked until the Phase 4B gate passes."
   },
-  "last_reviewed": "2026-06-23"
+  "last_reviewed": "2026-06-25"
 }
