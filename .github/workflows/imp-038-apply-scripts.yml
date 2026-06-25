@@ -1,0 +1,48 @@
+name: Apply IMP-038 source updates
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/imp-038-apply-scripts.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Apply source updates
+        run: |
+          python scripts/imp_038_update_state_package.py
+          python scripts/imp_038_update_status.py
+          python scripts/build_final_spec.py
+          python -m compileall -q src tests
+          node scripts/check-public-site-status.mjs
+          git diff --check
+
+      - name: Commit implementation
+        run: |
+          rm scripts/imp-038-state-package.patch
+          rm scripts/imp-038-roadmap-status.patch
+          rm scripts/imp-038-apply-diagnostics.txt
+          rm scripts/imp_038_update_state_package.py
+          rm scripts/imp_038_update_status.py
+          rm .github/workflows/imp-038-apply.yml
+          rm .github/workflows/imp-038-apply-retry.yml
+          rm .github/workflows/imp-038-apply-pr.yml
+          rm .github/workflows/imp-038-diagnose.yml
+          rm .github/workflows/imp-038-apply-scripts.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "IMP-038: add state package v2 foundation"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
