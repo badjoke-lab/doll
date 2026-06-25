@@ -1,44 +1,14 @@
 name: Diagnose IMP-040 pytest
 
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - ".github/workflows/imp-040-pytest-diagnose.yml"
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  diagnose:
-    if: github.event.pull_request.head.repo.full_name == github.repository
+  disabled:
+    if: false
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: imp-040-project-record-v2
-      - uses: astral-sh/setup-uv@v6
-      - run: uv sync --dev --locked
-      - name: Build generated implementation
-        run: |
-          python scripts/imp_040_prepare_source.py prepare
-          python scripts/imp_040_update_project_state.py
-          python scripts/imp_040_prepare_source.py cleanup
-          python scripts/imp_040_update_package_status.py
-          python scripts/build_final_spec.py
-          uv run ruff check . --fix --ignore E501
-          uv run ruff format .
-      - name: Capture pytest output
-        run: |
-          set +e
-          uv run pytest -q tests/test_project_state.py tests/test_project_record_v2.py tests/test_state_package.py tests/test_state_package_v2.py tests/test_state_package_registry.py tests/test_state_package_registry_compatibility.py > docs/implementation/imp-040-pytest-diagnostic.txt 2>&1
-          echo "exit_code=$?" >> docs/implementation/imp-040-pytest-diagnostic.txt
-          exit 0
-      - name: Publish diagnostic
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/implementation/imp-040-pytest-diagnostic.txt
-          git commit -m "TEMP: record IMP-040 pytest diagnostic"
-          git push origin HEAD:imp-040-project-record-v2
+      - run: echo "IMP-040 pytest diagnosis is complete."
