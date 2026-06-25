@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
+from typing import TypedDict
 from uuid import uuid4
 
 import pytest
@@ -8,6 +10,7 @@ import pytest
 from doll import state, workspace
 from doll.procedure import (
     ProcedureService,
+    ProcedureStatus,
     ProcedureValidationError,
     _validate_persisted_semantics,
     _validate_procedure_links,
@@ -15,6 +18,12 @@ from doll.procedure import (
 )
 from doll.project_state import ProjectService
 from doll.state_repository import StateRepository
+
+
+class LinkCase(TypedDict):
+    version: int
+    supersedes_id: str | None
+    superseded_by_id: str | None
 
 
 def _project(repository: StateRepository, name: str = "Project") -> str:
@@ -39,7 +48,7 @@ def _values(
     *,
     self_id: str,
     project_id: str,
-    procedure_status: str = "draft",
+    procedure_status: ProcedureStatus = "draft",
     source_ids: tuple[str, ...] = (),
     last_verified_at: str | None = None,
     verification_evidence_ids: tuple[str, ...] = (),
@@ -81,7 +90,7 @@ def test_requested_metadata_semantics_fail_closed(tmp_path: Path) -> None:
         self_id = str(uuid4())
         other_id = str(uuid4())
 
-        invalid_calls = (
+        invalid_calls: tuple[Callable[[], object], ...] = (
             lambda: _values(
                 repository,
                 self_id=self_id,
@@ -198,7 +207,7 @@ def test_procedure_relation_validation_branches(tmp_path: Path) -> None:
             supersedes_id=unrelated_predecessor.procedure_id,
         )
 
-        cases = (
+        cases: tuple[LinkCase, ...] = (
             {
                 "version": 2,
                 "supersedes_id": str(uuid4()),
