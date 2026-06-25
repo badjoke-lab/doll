@@ -1,0 +1,40 @@
+name: Verify IMP-042 branch tests
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/imp-042-branch-tests.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-042-procedure-record
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - name: Apply and verify
+        run: |
+          python scripts/imp_042_type_branch_tests.py
+          uv run ruff check . --fix --ignore E501
+          uv run ruff format .
+          uv run ruff check . --ignore E501
+          uv run mypy src tests
+          uv run pytest -q --no-cov tests/test_procedure_branch_coverage.py tests/test_procedure_coverage.py tests/test_procedure_reciprocity.py
+      - name: Commit tests
+        run: |
+          rm scripts/imp_042_type_branch_tests.py
+          rm .github/workflows/imp-042-branch-tests.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Cover IMP-042 integrity branches"
+          git push origin HEAD:imp-042-procedure-record
