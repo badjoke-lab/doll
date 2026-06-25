@@ -11,6 +11,7 @@ import sqlite3
 import stat
 import tempfile
 import zipfile
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path, PurePosixPath
@@ -67,6 +68,15 @@ from doll.state import (
     initialize_state_repository,
     open_state_repository,
 )
+from doll.state_package_registry import (
+    PACKAGE_SYSTEM_CATEGORIES,
+    AuthoritativeRecordRegistry,
+    StatePackageRegistryError,
+    get_authoritative_record_registry,
+)
+from doll.state_package_registry import (
+    SUPPORTED_PACKAGE_FORMAT_VERSIONS as _SUPPORTED_PACKAGE_FORMAT_VERSIONS,
+)
 from doll.state_repository import StateRepository, _validate_record_fields
 from doll.trust import (
     TruthCorruptError,
@@ -89,7 +99,7 @@ from doll.workspace_files import (
 )
 
 PACKAGE_FORMAT_VERSION = 2
-SUPPORTED_PACKAGE_FORMAT_VERSIONS = frozenset({1, PACKAGE_FORMAT_VERSION})
+SUPPORTED_PACKAGE_FORMAT_VERSIONS = _SUPPORTED_PACKAGE_FORMAT_VERSIONS
 PACKAGE_ROOT = "doll-state-package"
 CHECKSUM_ALGORITHM = "sha256"
 ENCRYPTION_STATE = "none"
@@ -100,40 +110,9 @@ MAX_PACKAGE_TOTAL_BYTES = 512 * 1024 * 1024
 MAX_COMPRESSION_RATIO = 1000
 MAX_JSONL_LINE_BYTES = 2 * 1024 * 1024
 
-_RECORD_PATHS: dict[str, str] = {
-    "preference": "records/preferences.jsonl",
-    "policy": "records/policies.jsonl",
-    "permission": "records/permissions.jsonl",
-    "memory": "records/memories.jsonl",
-    "claim": "records/claims.jsonl",
-    "evidence": "records/evidence.jsonl",
-    "inference": "records/inferences.jsonl",
-    "trust_assessment": "records/trust-assessments.jsonl",
-    "instruction_origin": "records/instruction-origins.jsonl",
-    "project": "records/projects.jsonl",
-    "decision": "records/decisions.jsonl",
-    "artifact": "records/artifacts.jsonl",
-    "backup_manifest": "records/backup-manifests.jsonl",
-}
-_SUPPORTED_RECORD_TYPES = frozenset(_RECORD_PATHS)
-_OPTIONAL_RECORD_TYPES = frozenset(
-    {
-        "backup_manifest",
-        "claim",
-        "evidence",
-        "inference",
-        "trust_assessment",
-        "instruction_origin",
-    }
-)
-_ALWAYS_MEMBER_PATHS = (
+_FIXED_MEMBER_PATHS = (
     "manifest.json",
     "records/workspace.json",
-    *tuple(
-        path
-        for record_type, path in _RECORD_PATHS.items()
-        if record_type not in _OPTIONAL_RECORD_TYPES
-    ),
     "records/audit-events.jsonl",
     "records/migration-history.jsonl",
     "README.txt",
@@ -170,6 +149,23 @@ _PACKAGE_FORMAT_REQUIRED_FIELDS: dict[int, frozenset[str]] = {
 }
 
 
+_PACKAGE_RECORD_VALIDATORS: dict[str, Callable[[RecordEnvelope], object]] = {
+    "preference": _preference_from_record,
+    "policy": _policy_from_record,
+    "permission": _permission_from_record,
+    "memory": _memory_from_record,
+    "claim": _claim_from_record,
+    "evidence": _evidence_from_record,
+    "inference": _inference_from_record,
+    "trust_assessment": _trust_assessment_from_record,
+    "instruction_origin": _instruction_origin_from_record,
+    "project": _project_from_record,
+    "decision": _decision_from_record,
+    "artifact": _artifact_from_record,
+    "backup_manifest": _backup_manifest_from_record,
+}
+
+
 class StatePackageError(StateError):
     """Base class for Doll State package failures."""
 
@@ -200,6 +196,21 @@ class StatePackageExportError(StatePackageError):
 
 class StatePackageImportError(StatePackageError):
     """Raised when staged import cannot be completed safely."""
+
+
+def _package_record_registry(package_format_version: int) -> AuthoritativeRecordRegistry:
+    try:
+        return get_authoritative_record_registry(package_format_version)
+    except StatePackageRegistryError as exc:
+        raise StatePackageValidationError("package format version is unsupported") from exc
+
+
+def _validate_registry_validators(registry: AuthoritativeRecordRegistry) -> None:
+    for category in registry.categories:
+        if category.validator_id not in _PACKAGE_RECORD_VALIDATORS:
+            raise StatePackageValidationError(
+                "registered authoritative record validator is unavailable"
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -405,11 +416,13 @@ def _build_export_members(
     repository: StateRepository,
     exported_at: str,
 ) -> dict[str, bytes]:
+    registry = _package_record_registry(PACKAGE_FORMAT_VERSION)
+    _validate_registry_validators(registry)
     records_by_type: dict[str, list[dict[str, object]]] = {
-        record_type: [] for record_type in _SUPPORTED_RECORD_TYPES
+        category.record_type: [] for category in registry.categories
     }
     omitted_secret_counts: dict[str, int] = {
-        record_type: 0 for record_type in _SUPPORTED_RECORD_TYPES
+        category.record_type: 0 for category in registry.categories
     }
     artifact_files: dict[str, bytes] = {}
 
@@ -423,13 +436,14 @@ def _build_export_members(
     for row in rows:
         record_id = cast(str, row["id"])
         record_type = cast(str, row["record_type"])
-        if record_type not in _SUPPORTED_RECORD_TYPES:
+        category = registry.by_record_type.get(record_type)
+        if category is None:
             raise StatePackageValidationError("unsupported authoritative record type")
         record = repository.get_record(record_id)
         if record.sensitivity == "secret":
             omitted_secret_counts[record_type] += 1
             continue
-        _validate_export_record(record)
+        _validate_export_record(record, category.validator_id)
         records_by_type[record_type].append(_record_payload(record))
         if record_type == "artifact":
             artifact = _artifact_from_record(record)
@@ -452,14 +466,14 @@ def _build_export_members(
         "records/migration-history.jsonl": _jsonl_bytes(migration_history),
         "README.txt": _readme_bytes(),
     }
-    for record_type, member_path in _RECORD_PATHS.items():
-        members[member_path] = _jsonl_bytes(records_by_type[record_type])
+    for category in registry.categories:
+        members[category.member_path] = _jsonl_bytes(records_by_type[category.record_type])
     members.update(artifact_files)
 
     payload_size = sum(len(value) for value in members.values())
     record_counts = {
         record_type: len(records_by_type[record_type])
-        for record_type in sorted(_SUPPORTED_RECORD_TYPES)
+        for record_type in sorted(registry.record_types)
     }
     manifest: dict[str, object] = {
         "package_format_version": PACKAGE_FORMAT_VERSION,
@@ -469,9 +483,7 @@ def _build_export_members(
         "source_workspace_schema_version": repository.workspace.record.schema_version,
         "source_state_schema_version": repository.status().schema_version,
         "state_revision": repository.status().state_revision,
-        "included_categories": sorted(
-            [*record_counts, "audit_events", "migration_history", "authoritative_files"]
-        ),
+        "included_categories": sorted([*record_counts, *PACKAGE_SYSTEM_CATEGORIES]),
         "excluded_categories": [
             "caches",
             "reproducible_indexes",
@@ -559,7 +571,14 @@ def _load_package(package_path: Path) -> _PackageData:
         "checksums",
     )
     checksum_entries = _validate_checksums(checksums_value)
-    _validate_member_inventory_paths(set(checksum_entries))
+    manifest_path = f"{PACKAGE_ROOT}/manifest.json"
+    manifest = _load_json_bytes(_required_member(members, manifest_path), "manifest")
+    if not isinstance(manifest, dict):
+        raise StatePackageValidationError("manifest must be a JSON object")
+    package_format_version = _validate_package_format_version(manifest)
+    registry = _package_record_registry(package_format_version)
+    _validate_registry_validators(registry)
+    _validate_member_inventory_paths(set(checksum_entries), registry)
     expected_members = {checksums_path, *checksum_entries}
     if set(members) != expected_members:
         raise StatePackageIntegrityError("package member inventory does not match checksums")
@@ -572,14 +591,12 @@ def _load_package(package_path: Path) -> _PackageData:
         if hashlib.sha256(content).hexdigest() != expected["sha256"]:
             raise StatePackageIntegrityError("package member checksum mismatch")
 
-    manifest_path = f"{PACKAGE_ROOT}/manifest.json"
-    manifest = _load_json_bytes(_required_member(members, manifest_path), "manifest")
     workspace_path = f"{PACKAGE_ROOT}/records/workspace.json"
     workspace_payload = _load_json_bytes(
         _required_member(members, workspace_path),
         "workspace",
     )
-    data = _validate_package_payloads(manifest, workspace_payload, members)
+    data = _validate_package_payloads(manifest, workspace_payload, members, registry)
     return data
 
 
@@ -665,13 +682,16 @@ def _validate_checksums(value: object) -> dict[str, dict[str, object]]:
     return result
 
 
-def _validate_member_inventory_paths(paths: set[str]) -> None:
-    fixed = {f"{PACKAGE_ROOT}/{path}" for path in _ALWAYS_MEMBER_PATHS}
+def _validate_member_inventory_paths(
+    paths: set[str],
+    registry: AuthoritativeRecordRegistry | None = None,
+) -> None:
+    selected = registry or _package_record_registry(PACKAGE_FORMAT_VERSION)
+    fixed = {f"{PACKAGE_ROOT}/{path}" for path in _FIXED_MEMBER_PATHS}
+    fixed.update(f"{PACKAGE_ROOT}/{path}" for path in selected.required_member_paths)
     if not fixed.issubset(paths):
         raise StatePackageIntegrityError("required package member is missing")
-    optional = {
-        f"{PACKAGE_ROOT}/{_RECORD_PATHS[record_type]}" for record_type in _OPTIONAL_RECORD_TYPES
-    }
+    optional = {f"{PACKAGE_ROOT}/{path}" for path in selected.optional_member_paths}
     artifact_prefix = f"{PACKAGE_ROOT}/files/authoritative/"
     for path in paths - fixed - optional:
         if not path.startswith(artifact_prefix) or path == artifact_prefix:
@@ -680,6 +700,7 @@ def _validate_member_inventory_paths(paths: set[str]) -> None:
 
 def _validate_package_format_version(manifest: dict[str, object]) -> int:
     version = _required_positive_int(manifest, "package_format_version")
+    _package_record_registry(version)
     required_fields = _PACKAGE_FORMAT_REQUIRED_FIELDS.get(version)
     if required_fields is None:
         raise StatePackageValidationError("package format version is unsupported")
@@ -690,15 +711,56 @@ def _validate_package_format_version(manifest: dict[str, object]) -> int:
     return version
 
 
+def _required_unique_string_list(
+    mapping: dict[str, object],
+    key: str,
+) -> tuple[str, ...]:
+    value = mapping.get(key)
+    if not isinstance(value, list) or any(not isinstance(item, str) or not item for item in value):
+        raise StatePackageValidationError(f"{key} must be a string list")
+    result = tuple(value)
+    if len(result) != len(set(result)):
+        raise StatePackageValidationError(f"{key} contains duplicates")
+    return result
+
+
+def _validate_manifest_categories(
+    manifest: dict[str, object],
+    registry: AuthoritativeRecordRegistry,
+) -> frozenset[str]:
+    included = frozenset(_required_unique_string_list(manifest, "included_categories"))
+    allowed = registry.record_types | PACKAGE_SYSTEM_CATEGORIES
+    if not included.issubset(allowed):
+        raise StatePackageValidationError(
+            "manifest includes a category outside the package registry"
+        )
+    required = PACKAGE_SYSTEM_CATEGORIES | frozenset(
+        category.record_type for category in registry.categories if category.required_member
+    )
+    if not required.issubset(included):
+        raise StatePackageValidationError("manifest omits a required package category")
+    excluded = frozenset(_required_unique_string_list(manifest, "excluded_categories"))
+    if included.intersection(excluded):
+        raise StatePackageValidationError("manifest included and excluded categories overlap")
+    return included
+
+
 def _validate_package_payloads(
     manifest_value: object,
     workspace_value: object,
     members: dict[str, bytes],
+    registry: AuthoritativeRecordRegistry | None = None,
 ) -> _PackageData:
     if not isinstance(manifest_value, dict):
         raise StatePackageValidationError("manifest must be a JSON object")
     manifest = cast(dict[str, object], manifest_value)
     package_format_version = _validate_package_format_version(manifest)
+    selected_registry = _package_record_registry(package_format_version)
+    if registry is not None and registry.package_format_version != package_format_version:
+        raise StatePackageIntegrityError("package registry version does not match manifest")
+    registry = selected_registry
+    _validate_registry_validators(registry)
+    included_categories = _validate_manifest_categories(manifest, registry)
     if manifest.get("checksum_algorithm") != CHECKSUM_ALGORITHM:
         raise StatePackageValidationError("manifest checksum algorithm is unsupported")
     if manifest.get("encryption_state") != ENCRYPTION_STATE:
@@ -751,33 +813,58 @@ def _validate_package_payloads(
     records: list[RecordEnvelope] = []
     records_by_id: dict[str, RecordEnvelope] = {}
     actual_counts: dict[str, int] = {}
-    for record_type, relative_path in _RECORD_PATHS.items():
-        member_name = f"{PACKAGE_ROOT}/{relative_path}"
+    payloads: list[object]
+    for category in registry.categories:
+        member_name = f"{PACKAGE_ROOT}/{category.member_path}"
         member = members.get(member_name)
-        if member is None and record_type in _OPTIONAL_RECORD_TYPES:
+        declared = category.record_type in included_categories
+        if not declared:
+            if (
+                member is not None
+                or category.record_type in record_counts_value
+                or category.record_type in omitted_value
+            ):
+                raise StatePackageValidationError(
+                    "package contains an undeclared authoritative category"
+                )
+            payloads = []
+        elif member is None and not category.required_member:
             payloads = []
         else:
             payloads = _load_jsonl_bytes(
                 _required_member(members, member_name),
-                relative_path,
+                category.member_path,
             )
-        actual_counts[record_type] = len(payloads)
+        actual_counts[category.record_type] = len(payloads)
         for payload in payloads:
-            record = _envelope_from_payload(payload, record_type)
+            record = _envelope_from_payload(
+                payload,
+                category.record_type,
+                category.validator_id,
+            )
             if record.id in records_by_id:
                 raise StatePackageValidationError("duplicate authoritative record ID")
             records_by_id[record.id] = record
             records.append(record)
 
     expected_counts = {
-        key: _mapping_record_count(record_counts_value, key)
-        for key in sorted(_SUPPORTED_RECORD_TYPES)
+        category.record_type: _mapping_record_count(
+            record_counts_value,
+            category.record_type,
+            required=category.required_member,
+        )
+        for category in registry.categories
     }
     if actual_counts != expected_counts:
         raise StatePackageIntegrityError("record counts do not match manifest")
 
     omitted_counts = {
-        key: _mapping_record_count(omitted_value, key) for key in sorted(_SUPPORTED_RECORD_TYPES)
+        category.record_type: _mapping_record_count(
+            omitted_value,
+            category.record_type,
+            required=category.required_member,
+        )
+        for category in registry.categories
     }
     _validate_active_setting_identities(records)
     _validate_cross_record_links(records_by_id)
@@ -865,7 +952,11 @@ def _validate_workspace_record(record: WorkspaceRecord) -> None:
         raise StatePackageValidationError("workspace metadata is not portable") from exc
 
 
-def _envelope_from_payload(payload: object, expected_type: str) -> RecordEnvelope:
+def _envelope_from_payload(
+    payload: object,
+    expected_type: str,
+    validator_id: str | None = None,
+) -> RecordEnvelope:
     if not isinstance(payload, dict):
         raise StatePackageValidationError("record payload must be a JSON object")
     value = cast(dict[str, object], payload)
@@ -912,35 +1003,11 @@ def _envelope_from_payload(payload: object, expected_type: str) -> RecordEnvelop
         title=title,
         metadata=cast(dict[str, object], metadata),
     )
+    validator = _PACKAGE_RECORD_VALIDATORS.get(validator_id or record_type)
+    if validator is None:
+        raise StatePackageValidationError("typed record validator is unavailable")
     try:
-        if record_type == "preference":
-            _preference_from_record(record)
-        elif record_type == "policy":
-            _policy_from_record(record)
-        elif record_type == "permission":
-            _permission_from_record(record)
-        elif record_type == "memory":
-            _memory_from_record(record)
-        elif record_type == "claim":
-            _claim_from_record(record)
-        elif record_type == "evidence":
-            _evidence_from_record(record)
-        elif record_type == "inference":
-            _inference_from_record(record)
-        elif record_type == "trust_assessment":
-            _trust_assessment_from_record(record)
-        elif record_type == "instruction_origin":
-            _instruction_origin_from_record(record)
-        elif record_type == "project":
-            _project_from_record(record)
-        elif record_type == "decision":
-            _decision_from_record(record)
-        elif record_type == "artifact":
-            _artifact_from_record(record)
-        elif record_type == "backup_manifest":
-            _backup_manifest_from_record(record)
-        else:  # pragma: no cover - expected type is selected from a fixed mapping.
-            raise StatePackageValidationError("record type is unsupported")
+        validator(record)
     except (
         ArtifactCorruptError,
         BackupManifestCorruptError,
@@ -1415,10 +1482,17 @@ def _rollback_import_publication(
         raise StatePackageImportError("import publication rollback failed") from exc
 
 
-def _validate_export_record(record: RecordEnvelope) -> None:
+def _validate_export_record(
+    record: RecordEnvelope,
+    validator_id: str | None = None,
+) -> None:
     if record.status not in _ALLOWED_LIFECYCLE:
         raise StatePackageValidationError("unsupported record lifecycle for export")
-    _envelope_from_payload(_record_payload(record), record.record_type)
+    _envelope_from_payload(
+        _record_payload(record),
+        record.record_type,
+        validator_id or record.record_type,
+    )
 
 
 def _read_artifact_bytes(
@@ -1625,8 +1699,13 @@ def _mapping_nonnegative_int(mapping: dict[object, object], key: str) -> int:
     return value
 
 
-def _mapping_record_count(mapping: dict[object, object], key: str) -> int:
-    if key in _OPTIONAL_RECORD_TYPES and key not in mapping:
+def _mapping_record_count(
+    mapping: dict[object, object],
+    key: str,
+    *,
+    required: bool = True,
+) -> int:
+    if not required and key not in mapping:
         return 0
     return _mapping_nonnegative_int(mapping, key)
 
