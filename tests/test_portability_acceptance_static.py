@@ -17,9 +17,7 @@ def test_phase_4a_matrix_maps_port_004_through_port_012() -> None:
     assert matrix["schema_version"] == 1
     assert matrix["phase"] == "4A"
     assert matrix["phase4a_gate_complete"] is True
-    assert result_path == Path(
-        "docs/testing/results/IMP-037-primary-intel-mac-2026-06-25.json"
-    )
+    assert result_path == Path("docs/testing/results/IMP-037-primary-intel-mac-2026-06-25.json")
     assert [item["id"] for item in entries] == [f"PORT-{number:03d}" for number in range(4, 13)]
     assert all(item["status"] == "pass" for item in entries)
     assert all(item["pytest_files"] for item in entries)
