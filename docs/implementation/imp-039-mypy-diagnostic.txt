@@ -1,4 +1,0 @@
-src/doll/state_package.py:826: error: Need type annotation for "payloads" (hint: "payloads: list[<type>] = ...")  [var-annotated]
-tests/test_state_package_v2.py:104: error: Module "doll.state_package" does not explicitly export attribute "SUPPORTED_PACKAGE_FORMAT_VERSIONS"  [attr-defined]
-Found 2 errors in 2 files (checked 151 source files)
-exit_code=1

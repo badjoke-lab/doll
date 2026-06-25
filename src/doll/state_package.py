@@ -70,10 +70,12 @@ from doll.state import (
 )
 from doll.state_package_registry import (
     PACKAGE_SYSTEM_CATEGORIES,
-    SUPPORTED_PACKAGE_FORMAT_VERSIONS,
     AuthoritativeRecordRegistry,
     StatePackageRegistryError,
     get_authoritative_record_registry,
+)
+from doll.state_package_registry import (
+    SUPPORTED_PACKAGE_FORMAT_VERSIONS as _SUPPORTED_PACKAGE_FORMAT_VERSIONS,
 )
 from doll.state_repository import StateRepository, _validate_record_fields
 from doll.trust import (
@@ -97,6 +99,7 @@ from doll.workspace_files import (
 )
 
 PACKAGE_FORMAT_VERSION = 2
+SUPPORTED_PACKAGE_FORMAT_VERSIONS = _SUPPORTED_PACKAGE_FORMAT_VERSIONS
 PACKAGE_ROOT = "doll-state-package"
 CHECKSUM_ALGORITHM = "sha256"
 ENCRYPTION_STATE = "none"
@@ -810,6 +813,7 @@ def _validate_package_payloads(
     records: list[RecordEnvelope] = []
     records_by_id: dict[str, RecordEnvelope] = {}
     actual_counts: dict[str, int] = {}
+    payloads: list[object]
     for category in registry.categories:
         member_name = f"{PACKAGE_ROOT}/{category.member_path}"
         member = members.get(member_name)
