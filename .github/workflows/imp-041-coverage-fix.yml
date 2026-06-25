@@ -21,14 +21,17 @@ jobs:
           fetch-depth: 0
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --dev --locked
-      - name: Apply and verify
+      - name: Apply fixture fix
+        run: python scripts/imp_041_fix_coverage_fixture.py
+      - name: Ruff
         run: |
-          python scripts/imp_041_fix_coverage_fixture.py
           uv run ruff check . --fix
           uv run ruff format .
           uv run ruff check .
-          uv run mypy src tests
-          uv run pytest -q --no-cov tests/test_work_item.py tests/test_work_item_coverage.py tests/test_work_item_validation_coverage.py tests/test_state_package_v2.py
+      - name: Strict typing
+        run: uv run mypy src tests
+      - name: Focused tests
+        run: uv run pytest -q --no-cov tests/test_work_item.py tests/test_work_item_coverage.py tests/test_work_item_validation_coverage.py tests/test_state_package_v2.py
       - name: Commit fix
         run: |
           rm scripts/imp_041_fix_coverage_fixture.py
