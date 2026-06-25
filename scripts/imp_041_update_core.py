@@ -57,6 +57,21 @@ PACKAGE_RECORD_REGISTRIES: Mapping[int, AuthoritativeRecordRegistry] = MappingPr
         priority = _priority(record.metadata.get("priority"))
 ''',
     )
+    replace_once(
+        work_item,
+        '''        if safe_status == "completed":
+            started_at = started_at or timestamp
+            completed_at = timestamp
+        elif safe_status != "completed":
+            completed_at = None
+''',
+        '''        if safe_status == "completed":
+            started_at = started_at or timestamp
+            completed_at = timestamp
+        else:
+            completed_at = None
+''',
+    )
 
     tests = ROOT / "tests/test_work_item.py"
     replace_once(tests, "import io\n", "")
@@ -67,18 +82,13 @@ PACKAGE_RECORD_REGISTRIES: Mapping[int, AuthoritativeRecordRegistry] = MappingPr
     )
     replace_once(
         tests,
-        "    WorkItemCorruptError,\n",
-        "    WorkItemCorruptError,\n    WorkItemStatus,\n",
-    )
-    replace_once(
-        tests,
         'def _project(repository: state.StateRepository, name: str = "Project") -> str:\n',
         'def _project(repository: StateRepository, name: str = "Project") -> str:\n',
     )
     replace_once(
         tests,
         '                    to_status=cast("str", target),\n',
-        "                    to_status=cast(WorkItemStatus, target),\n",
+        "                    to_status=target,\n",
     )
 
 
