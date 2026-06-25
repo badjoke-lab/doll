@@ -23,7 +23,7 @@ Begin Phase 4B without introducing project-continuity records before their trans
 
 Version 2 is intentionally a foundation format in this slice. It retains the current authoritative record inventory and member paths. The next bounded Phase 4B slice may add the versioned authoritative record registry and then extend version 2 validation without changing how version 1 packages are identified.
 
-Version 1 support is read compatibility only. New exports are always version 2.
+Version 1 support is read compatibility only. New exports are always version 2. Inspection and import evidence preserve the original version number and never relabel a version 1 package as version 2.
 
 ## Preserved guarantees
 
