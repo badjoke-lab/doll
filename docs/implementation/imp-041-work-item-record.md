@@ -63,6 +63,7 @@ The IMP-041 tests prove:
 - an untrusted persisted accepted state fails closed;
 - missing, self, duplicate, wrong-type, cross-project, and cyclic relations are rejected;
 - blocked state requires an accepted blocker representation;
+- completion timestamps, blocker declarations, relation overlap, self-sources, verification evidence, malformed envelopes, read-only repositories, and non-portable source links fail closed;
 - decision and verification-evidence links remain typed;
 - deterministic export is stable;
 - valid work items survive restart, Doll State Package v2 transfer, and verified state-backup creation;
