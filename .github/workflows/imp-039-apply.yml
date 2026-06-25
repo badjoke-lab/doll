@@ -54,3 +54,5 @@ jobs:
           git add -A
           git commit -m "IMP-039: add versioned package record registry"
           git push origin HEAD:${{ github.event.pull_request.head.ref }}
+
+# trigger: synchronize
