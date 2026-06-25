@@ -165,3 +165,33 @@ def test_missing_registered_validator_fails_closed(
 
     with pytest.raises(package.StatePackageValidationError):
         package.verify_state_package(source)
+
+
+def test_registry_definition_rejects_invalid_fields() -> None:
+    with pytest.raises(StatePackageRegistryError):
+        AuthoritativeRecordRegistry(0, ())
+    with pytest.raises(StatePackageRegistryError):
+        AuthoritativeRecordRegistry(1, ())
+    with pytest.raises(StatePackageRegistryError):
+        AuthoritativeRecordCategory("Invalid-Type", "records/invalid.jsonl", True, "invalid")
+    with pytest.raises(StatePackageRegistryError):
+        AuthoritativeRecordCategory("invalid", "records/invalid.jsonl", True, "Invalid-Validator")
+    with pytest.raises(StatePackageRegistryError):
+        AuthoritativeRecordCategory("invalid", "records/invalid.jsonl", cast(bool, 1), "invalid")
+    with pytest.raises(StatePackageRegistryError):
+        AuthoritativeRecordCategory("invalid", "/records/invalid.jsonl", True, "invalid")
+
+
+def test_undeclared_optional_category_member_is_rejected(tmp_path: Path) -> None:
+    source = _export_package(tmp_path)
+    members = _read_members(source)
+    manifest_name = f"{package.PACKAGE_ROOT}/manifest.json"
+    manifest = cast(dict[str, object], json.loads(members[manifest_name]))
+    included = cast(list[str], manifest["included_categories"])
+    included.remove("backup_manifest")
+    members[manifest_name] = package._json_bytes(manifest)
+    target = tmp_path / "undeclared-optional.zip"
+    _write_members(target, members)
+
+    with pytest.raises(package.StatePackageValidationError):
+        package.verify_state_package(target)

@@ -724,16 +724,22 @@ def _required_unique_string_list(
 def _validate_manifest_categories(
     manifest: dict[str, object],
     registry: AuthoritativeRecordRegistry,
-) -> None:
-    included = _required_unique_string_list(manifest, "included_categories")
-    expected = registry.record_types | PACKAGE_SYSTEM_CATEGORIES
-    if set(included) != expected:
+) -> frozenset[str]:
+    included = frozenset(_required_unique_string_list(manifest, "included_categories"))
+    allowed = registry.record_types | PACKAGE_SYSTEM_CATEGORIES
+    if not included.issubset(allowed):
         raise StatePackageValidationError(
-            "manifest included categories do not match the package registry"
+            "manifest includes a category outside the package registry"
         )
-    excluded = _required_unique_string_list(manifest, "excluded_categories")
-    if set(included).intersection(excluded):
+    required = PACKAGE_SYSTEM_CATEGORIES | frozenset(
+        category.record_type for category in registry.categories if category.required_member
+    )
+    if not required.issubset(included):
+        raise StatePackageValidationError("manifest omits a required package category")
+    excluded = frozenset(_required_unique_string_list(manifest, "excluded_categories"))
+    if included.intersection(excluded):
         raise StatePackageValidationError("manifest included and excluded categories overlap")
+    return included
 
 
 def _validate_package_payloads(
@@ -751,7 +757,7 @@ def _validate_package_payloads(
         raise StatePackageIntegrityError("package registry version does not match manifest")
     registry = selected_registry
     _validate_registry_validators(registry)
-    _validate_manifest_categories(manifest, registry)
+    included_categories = _validate_manifest_categories(manifest, registry)
     if manifest.get("checksum_algorithm") != CHECKSUM_ALGORITHM:
         raise StatePackageValidationError("manifest checksum algorithm is unsupported")
     if manifest.get("encryption_state") != ENCRYPTION_STATE:
@@ -807,7 +813,18 @@ def _validate_package_payloads(
     for category in registry.categories:
         member_name = f"{PACKAGE_ROOT}/{category.member_path}"
         member = members.get(member_name)
-        if member is None and not category.required_member:
+        declared = category.record_type in included_categories
+        if not declared:
+            if (
+                member is not None
+                or category.record_type in record_counts_value
+                or category.record_type in omitted_value
+            ):
+                raise StatePackageValidationError(
+                    "package contains an undeclared authoritative category"
+                )
+            payloads = []
+        elif member is None and not category.required_member:
             payloads = []
         else:
             payloads = _load_jsonl_bytes(
@@ -1461,13 +1478,16 @@ def _rollback_import_publication(
         raise StatePackageImportError("import publication rollback failed") from exc
 
 
-def _validate_export_record(record: RecordEnvelope, validator_id: str) -> None:
+def _validate_export_record(
+    record: RecordEnvelope,
+    validator_id: str | None = None,
+) -> None:
     if record.status not in _ALLOWED_LIFECYCLE:
         raise StatePackageValidationError("unsupported record lifecycle for export")
     _envelope_from_payload(
         _record_payload(record),
         record.record_type,
-        validator_id,
+        validator_id or record.record_type,
     )
 
 
