@@ -62,5 +62,5 @@ TOTAL                                    11958   8567   3950    395  25.62%
 
 1 file skipped due to complete coverage.
 FAIL Required test coverage of 95% not reached. Total coverage: 25.62%
-42 passed in 3.42s
+42 passed in 3.09s
 exit_code=1
