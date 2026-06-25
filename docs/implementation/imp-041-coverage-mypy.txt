@@ -1,0 +1,7 @@
+tests/test_work_item_validation_coverage.py:223: error: Call to untyped function (unknown) in typed context  [no-untyped-call]
+tests/test_work_item_coverage.py:175: error: Redundant cast to "Literal['user', 'model', 'runtime', 'capability', 'system']"  [redundant-cast]
+tests/test_work_item_coverage.py:364: error: Redundant cast to "Literal['active', 'archived', 'superseded', 'deleted', 'invalid']"  [redundant-cast]
+tests/test_work_item_coverage.py:367: error: Redundant cast to "Literal['user-created', 'user-confirmed', 'imported', 'model-proposed', 'system-generated', 'migrated', 'restored']"  [redundant-cast]
+tests/test_work_item_coverage.py:427: error: Incompatible types in assignment (expression has type "object", variable has type "str | int | None")  [assignment]
+Found 5 errors in 2 files (checked 157 source files)
+exit_code=1
