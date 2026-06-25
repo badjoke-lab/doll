@@ -16,16 +16,20 @@ from doll.state_repository import StateRepository
 
 
 def _project(repository: StateRepository) -> str:
-    return ProjectService(repository).create_v2(
-        name="Procedure reciprocity project",
-        description="Procedure supersession reciprocity test.",
-        objective="Keep predecessor and replacement relations reciprocal.",
-        in_scope=("Procedure supersession",),
-        out_of_scope=("Procedure execution",),
-        success_criteria=("Conflicting replacements fail closed",),
-        project_status="active",
-        started_at="2026-06-25T00:00:00Z",
-    ).project_id
+    return (
+        ProjectService(repository)
+        .create_v2(
+            name="Procedure reciprocity project",
+            description="Procedure supersession reciprocity test.",
+            objective="Keep predecessor and replacement relations reciprocal.",
+            in_scope=("Procedure supersession",),
+            out_of_scope=("Procedure execution",),
+            success_criteria=("Conflicting replacements fail closed",),
+            project_status="active",
+            started_at="2026-06-25T00:00:00Z",
+        )
+        .project_id
+    )
 
 
 def _approved(
