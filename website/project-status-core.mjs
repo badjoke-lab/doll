@@ -23,19 +23,6 @@ export function publicEntry(item, kind) {
   };
 }
 
-export function plannedEntry(implementation) {
-  const identifier = String(implementation).padStart(3, "0");
-  return {
-    kind: "planned",
-    number: null,
-    implementation,
-    title: `IMP-${identifier} — not opened yet`,
-    url: `https://github.com/${REPOSITORY}/issues`,
-    updated_at: null,
-    merged_at: null,
-  };
-}
-
 export function isMeaningfulDevelopmentPull(pull) {
   if (!pull?.merged_at || typeof pull.title !== "string") {
     return false;
@@ -101,7 +88,6 @@ export function buildProjectActivity({ openPulls = [], closedPulls = [], openIss
   const nextImplementation = nextIssue
     ? implementationNumber(nextIssue.title)
     : currentImplementation + 1;
-  const next = nextIssue ? publicEntry(nextIssue, "issue") : plannedEntry(nextImplementation);
 
   const recent = closedPulls
     .filter(isMeaningfulDevelopmentPull)
@@ -122,7 +108,7 @@ export function buildProjectActivity({ openPulls = [], closedPulls = [], openIss
     last_completed: lastCompletedSource
       ? publicEntry(lastCompletedSource, "pull_request")
       : null,
-    next,
+    next: nextIssue ? publicEntry(nextIssue, "issue") : null,
     recent,
   };
 }
