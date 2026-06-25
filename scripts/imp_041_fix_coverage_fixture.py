@@ -76,6 +76,17 @@ def main() -> None:
         "            metadata: dict[str, object] = dict(record.metadata)\n"
         "            metadata[key] = value\n",
     )
+    replace_once(
+        COVERAGE,
+        '''    for value in invalid_criteria:
+        with pytest.raises(WorkItemValidationError):
+            _metadata_criteria({"criteria": value}, "criteria")
+''',
+        '''    for invalid_criterion in invalid_criteria:
+        with pytest.raises(WorkItemValidationError):
+            _metadata_criteria({"criteria": invalid_criterion}, "criteria")
+''',
+    )
 
     replace_once(
         VALIDATION,
