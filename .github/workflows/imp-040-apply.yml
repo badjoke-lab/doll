@@ -28,16 +28,21 @@ jobs:
           python scripts/imp_040_prepare_source.py cleanup
           python scripts/imp_040_update_package_status.py
           python scripts/build_final_spec.py
-      - name: Format and verify
+      - name: Ruff
         run: |
           uv run ruff check . --fix
           uv run ruff format .
           uv run ruff check .
-          uv run mypy src tests
+      - name: Strict typing
+        run: uv run mypy src tests
+      - name: Specification and public status
+        run: |
           uv run python scripts/build_final_spec.py --check
           node scripts/check-public-site-status.mjs
-          uv run pytest -q tests/test_project_state.py tests/test_project_record_v2.py tests/test_state_package.py tests/test_state_package_v2.py tests/test_state_package_registry.py tests/test_state_package_registry_compatibility.py
-          git diff --check
+      - name: Project and package tests
+        run: uv run pytest -q tests/test_project_state.py tests/test_project_record_v2.py tests/test_state_package.py tests/test_state_package_v2.py tests/test_state_package_registry.py tests/test_state_package_registry_compatibility.py
+      - name: Diff integrity
+        run: git diff --check
       - name: Commit implementation
         run: |
           rm scripts/imp_040_prepare_source.py
