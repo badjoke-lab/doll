@@ -16,16 +16,20 @@ def test_external_origin_stays_draft(tmp_path: Path) -> None:
         pass
 
     with state.open_state_repository(initialized.root) as repository:
-        project_id = ProjectService(repository).create_v2(
-            name="Procedure origin project",
-            description="Procedure origin boundary test.",
-            objective="Preserve external methods without acceptance.",
-            in_scope=("Procedure drafts",),
-            out_of_scope=("Automatic acceptance",),
-            success_criteria=("External method remains draft",),
-            project_status="active",
-            started_at="2026-06-25T00:00:00Z",
-        ).project_id
+        project_id = (
+            ProjectService(repository)
+            .create_v2(
+                name="Procedure origin project",
+                description="Procedure origin boundary test.",
+                objective="Preserve external methods without acceptance.",
+                in_scope=("Procedure drafts",),
+                out_of_scope=("Automatic acceptance",),
+                success_criteria=("External method remains draft",),
+                project_status="active",
+                started_at="2026-06-25T00:00:00Z",
+            )
+            .project_id
+        )
         service = ProcedureService(repository)
         draft = service.create_draft(
             project_id=project_id,
