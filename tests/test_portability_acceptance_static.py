@@ -16,9 +16,7 @@ def test_phase_4a_matrix_maps_port_004_through_port_012() -> None:
     assert matrix["phase"] == "4A"
     assert matrix["phase4a_gate_complete"] is False
     assert matrix["accepted_real_machine_result"] is None
-    assert [item["id"] for item in entries] == [
-        f"PORT-{number:03d}" for number in range(4, 13)
-    ]
+    assert [item["id"] for item in entries] == [f"PORT-{number:03d}" for number in range(4, 13)]
     assert all(item["status"] == "pass" for item in entries)
     assert all(item["pytest_files"] for item in entries)
     assert matrix["real_machine_gate"]["status"] == "pending"
