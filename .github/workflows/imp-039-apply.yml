@@ -1,0 +1,56 @@
+name: Apply IMP-039 implementation
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/imp-039-apply.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Install project
+        run: uv sync --dev --locked
+
+      - name: Apply bounded implementation updates
+        run: |
+          python scripts/imp_039_update_registry_core.py
+          python scripts/imp_039_update_registry_flow.py
+          python scripts/imp_039_update_status.py
+          python scripts/build_final_spec.py
+
+      - name: Format and verify
+        run: |
+          uv run ruff check . --fix
+          uv run ruff format .
+          uv run ruff check .
+          uv run mypy src tests
+          uv run python scripts/build_final_spec.py --check
+          node scripts/check-public-site-status.mjs
+          uv run python scripts/run_ci_tests.py
+          git diff --check
+
+      - name: Commit implementation
+        run: |
+          rm scripts/imp_039_update_registry_core.py
+          rm scripts/imp_039_update_registry_flow.py
+          rm scripts/imp_039_update_status.py
+          rm .github/workflows/imp-039-apply.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "IMP-039: add versioned package record registry"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
