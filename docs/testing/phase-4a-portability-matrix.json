@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "phase": "4A",
+  "acceptance_test_id": "IMP-037-PORTABILITY-ACCEPTANCE",
+  "phase4a_gate_complete": false,
+  "accepted_real_machine_result": null,
+  "portability_tests": [
+    {
+      "id": "PORT-004",
+      "status": "pass",
+      "evidence_levels": ["integration", "ci"],
+      "pytest_files": [
+        "tests/test_generic_import.py",
+        "tests/test_generic_import_publication_success.py"
+      ]
+    },
+    {
+      "id": "PORT-005",
+      "status": "pass",
+      "evidence_levels": ["integration", "fresh_process", "primary_real_machine_pending"],
+      "pytest_files": [
+        "tests/test_generic_export.py",
+        "tests/test_portability_acceptance.py"
+      ]
+    },
+    {
+      "id": "PORT-006",
+      "status": "pass",
+      "evidence_levels": ["integration", "fresh_process"],
+      "pytest_files": [
+        "tests/test_generic_import_publication_success.py",
+        "tests/test_portability_acceptance.py"
+      ]
+    },
+    {
+      "id": "PORT-007",
+      "status": "pass",
+      "evidence_levels": ["integration", "ci", "fresh_process"],
+      "pytest_files": [
+        "tests/test_generic_import_publication_reimport.py",
+        "tests/test_portability_acceptance.py"
+      ]
+    },
+    {
+      "id": "PORT-008",
+      "status": "pass",
+      "evidence_levels": ["integration", "fresh_process"],
+      "pytest_files": [
+        "tests/test_generic_import.py",
+        "tests/test_generic_export.py",
+        "tests/test_portability_acceptance.py"
+      ]
+    },
+    {
+      "id": "PORT-009",
+      "status": "pass",
+      "evidence_levels": ["integration", "fresh_process"],
+      "pytest_files": [
+        "tests/test_generic_import_publication_success.py",
+        "tests/test_portability_acceptance.py"
+      ]
+    },
+    {
+      "id": "PORT-010",
+      "status": "pass",
+      "evidence_levels": ["hostile_integration", "fresh_process"],
+      "pytest_files": [
+        "tests/test_generic_import_publication_contracts_static.py",
+        "tests/test_generic_import_publication_success.py",
+        "tests/test_portability_acceptance.py"
+      ]
+    },
+    {
+      "id": "PORT-011",
+      "status": "pass",
+      "evidence_levels": ["integration", "fresh_process"],
+      "pytest_files": [
+        "tests/test_generic_import_publication_contracts_static.py",
+        "tests/test_portability_acceptance.py"
+      ]
+    },
+    {
+      "id": "PORT-012",
+      "status": "pass",
+      "evidence_levels": ["ci_macos", "ci_windows", "ci_ubuntu"],
+      "pytest_files": [
+        "tests/test_generic_import_failures.py",
+        "tests/test_generic_import_publication_failures.py",
+        "tests/test_generic_import_publication_hardening.py",
+        "tests/test_generic_export_failures.py",
+        "tests/test_generic_export_validation.py"
+      ]
+    }
+  ],
+  "real_machine_gate": {
+    "required": true,
+    "status": "pending",
+    "platform": "Darwin",
+    "architectures": ["x86_64", "amd64"],
+    "network_mode": "offline-confirmed",
+    "commit_sha": null,
+    "completed_at": null
+  },
+  "limitations": [
+    "The primary Intel Mac offline run is pending, so Phase 4A is not complete.",
+    "PORT-001 through PORT-003 and PORT-013 through PORT-016 are outside this foundation gate.",
+    "The generic export currently covers canonical conversations and conversation events only.",
+    "No provider-specific, local-application, runtime, model, cloud, or private-history adapter is exercised.",
+    "This evidence does not support a stable anti-lock-in claim until PORT-015 passes."
+  ]
+}
