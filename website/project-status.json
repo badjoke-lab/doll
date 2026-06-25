@@ -7,7 +7,7 @@
     "name": "Project continuity foundation",
     "state": "in_progress",
     "started_by_implementation": 38,
-    "next_implementation": 40
+    "next_implementation": 41
   },
   "model_runtime": {
     "connected": false,

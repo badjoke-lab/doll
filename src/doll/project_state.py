@@ -15,6 +15,7 @@ from doll.artifact import ArtifactError, WorkspaceFileService
 from doll.audit import _serialize_metadata as _serialize_audit_metadata
 from doll.audit import _validate_token as _validate_audit_token
 from doll.memory import ConfirmedMemoryError, ConfirmedMemoryService
+from doll.settings import SettingsCorruptError, _policy_from_record
 from doll.state import (
     ReadOnlyStateError,
     RecordEnvelope,
@@ -35,6 +36,11 @@ from doll.state_repository import (
 )
 
 ProjectStatus = Literal["planned", "active", "on_hold", "completed", "cancelled"]
+PROJECT_SCHEMA_VERSION_V1 = 1
+PROJECT_SCHEMA_VERSION_V2 = 2
+SUPPORTED_PROJECT_SCHEMA_VERSIONS = frozenset(
+    {PROJECT_SCHEMA_VERSION_V1, PROJECT_SCHEMA_VERSION_V2}
+)
 DecisionStatus = Literal["accepted", "superseded", "reversed"]
 AuthorityActor = Literal["user", "model", "runtime", "capability", "system"]
 
@@ -78,14 +84,20 @@ class ProjectDecisionCorruptError(ProjectDecisionError):
 @dataclass(frozen=True, slots=True)
 class ProjectInfo:
     project_id: str
+    schema_version: int
     name: str
     description: str
+    objective: str | None
+    in_scope: tuple[str, ...]
+    out_of_scope: tuple[str, ...]
+    success_criteria: tuple[str, ...]
     project_status: ProjectStatus
     started_at: str
     ended_at: str | None
     decision_ids: tuple[str, ...]
     memory_ids: tuple[str, ...]
     artifact_ids: tuple[str, ...]
+    governing_policy_ids: tuple[str, ...]
     revision: int
     lifecycle_status: RecordStatus
     provenance: RecordProvenance
@@ -159,6 +171,58 @@ class ProjectService:
         )
         return self.get(project_id)
 
+    def create_v2(
+        self,
+        *,
+        name: str,
+        description: str,
+        objective: str,
+        in_scope: Sequence[str],
+        out_of_scope: Sequence[str],
+        success_criteria: Sequence[str],
+        project_status: ProjectStatus,
+        started_at: str,
+        ended_at: str | None = None,
+        decision_ids: Sequence[str] = (),
+        memory_ids: Sequence[str] = (),
+        artifact_ids: Sequence[str] = (),
+        governing_policy_ids: Sequence[str] = (),
+        sensitivity: RecordSensitivity = "personal",
+        operation_id: str | None = None,
+        actor_type: AuthorityActor = "user",
+    ) -> ProjectInfo:
+        """Create one explicit ProjectRecord v2 charter through the user path."""
+
+        _require_user_actor(actor_type)
+        metadata = _validated_project_v2_values(
+            self.repository,
+            name=name,
+            description=description,
+            objective=objective,
+            in_scope=in_scope,
+            out_of_scope=out_of_scope,
+            success_criteria=success_criteria,
+            project_status=project_status,
+            started_at=started_at,
+            ended_at=ended_at,
+            decision_ids=decision_ids,
+            memory_ids=memory_ids,
+            artifact_ids=artifact_ids,
+            governing_policy_ids=governing_policy_ids,
+        )
+        project_id = _create_record(
+            self.repository,
+            record_type="project",
+            title=cast(str, metadata["name"]),
+            metadata=metadata,
+            provenance="user-created",
+            sensitivity=sensitivity,
+            operation_id=operation_id,
+            action="project.create_v2",
+            schema_version=PROJECT_SCHEMA_VERSION_V2,
+        )
+        return self.get(project_id)
+
     def update(
         self,
         project_id: str,
@@ -179,6 +243,10 @@ class ProjectService:
         current_record = _require_record(self.repository, project_id, "project")
         current = _project_from_record(current_record, self.repository)
         _require_active(current.lifecycle_status)
+        if current.schema_version != PROJECT_SCHEMA_VERSION_V1:
+            raise ProjectDecisionValidationError(
+                "ProjectRecord v2 requires the explicit update_v2 path"
+            )
         metadata = _validated_project_values(
             self.repository,
             name=name,
@@ -200,6 +268,63 @@ class ProjectService:
             provenance="user-created",
             operation_id=operation_id,
             action="project.update",
+        )
+        return self.get(project_id)
+
+    def update_v2(
+        self,
+        project_id: str,
+        *,
+        expected_revision: int,
+        name: str,
+        description: str,
+        objective: str,
+        in_scope: Sequence[str],
+        out_of_scope: Sequence[str],
+        success_criteria: Sequence[str],
+        project_status: ProjectStatus,
+        started_at: str,
+        ended_at: str | None = None,
+        decision_ids: Sequence[str] = (),
+        memory_ids: Sequence[str] = (),
+        artifact_ids: Sequence[str] = (),
+        governing_policy_ids: Sequence[str] = (),
+        operation_id: str | None = None,
+        actor_type: AuthorityActor = "user",
+    ) -> ProjectInfo:
+        """Write a ProjectRecord v2 charter, explicitly upgrading v1 when needed."""
+
+        _require_user_actor(actor_type)
+        current_record = _require_record(self.repository, project_id, "project")
+        current = _project_from_record(current_record, self.repository)
+        _require_active(current.lifecycle_status)
+        metadata = _validated_project_v2_values(
+            self.repository,
+            name=name,
+            description=description,
+            objective=objective,
+            in_scope=in_scope,
+            out_of_scope=out_of_scope,
+            success_criteria=success_criteria,
+            project_status=project_status,
+            started_at=started_at,
+            ended_at=ended_at,
+            decision_ids=decision_ids,
+            memory_ids=memory_ids,
+            artifact_ids=artifact_ids,
+            governing_policy_ids=governing_policy_ids,
+        )
+        _update_record(
+            self.repository,
+            current_record=current_record,
+            expected_revision=expected_revision,
+            title=cast(str, metadata["name"]),
+            metadata=metadata,
+            lifecycle_status="active",
+            provenance="user-created",
+            operation_id=operation_id,
+            action="project.update_v2",
+            schema_version=PROJECT_SCHEMA_VERSION_V2,
         )
         return self.get(project_id)
 
@@ -251,13 +376,33 @@ class ProjectService:
     def export_json(self, project_id: str) -> str:
         project = self.get(project_id)
         _require_exportable(project.sensitivity)
+        project_payload: dict[str, object] = {
+            "name": project.name,
+            "description": project.description,
+            "status": project.project_status,
+            "started_at": project.started_at,
+            "ended_at": project.ended_at,
+            "decision_ids": list(project.decision_ids),
+            "memory_ids": list(project.memory_ids),
+            "artifact_ids": list(project.artifact_ids),
+        }
+        if project.schema_version == PROJECT_SCHEMA_VERSION_V2:
+            project_payload.update(
+                {
+                    "objective": project.objective,
+                    "in_scope": list(project.in_scope),
+                    "out_of_scope": list(project.out_of_scope),
+                    "success_criteria": list(project.success_criteria),
+                    "governing_policy_ids": list(project.governing_policy_ids),
+                }
+            )
         return _deterministic_json(
             {
-                "export_schema": "doll.project.v1",
+                "export_schema": f"doll.project.v{project.schema_version}",
                 "record": {
                     "id": project.project_id,
                     "record_type": "project",
-                    "schema_version": 1,
+                    "schema_version": project.schema_version,
                     "created_at": project.created_at,
                     "updated_at": project.updated_at,
                     "revision": project.revision,
@@ -265,16 +410,7 @@ class ProjectService:
                     "provenance": project.provenance,
                     "sensitivity": project.sensitivity,
                     "title": project.name,
-                    "project": {
-                        "name": project.name,
-                        "description": project.description,
-                        "status": project.project_status,
-                        "started_at": project.started_at,
-                        "ended_at": project.ended_at,
-                        "decision_ids": list(project.decision_ids),
-                        "memory_ids": list(project.memory_ids),
-                        "artifact_ids": list(project.artifact_ids),
-                    },
+                    "project": project_payload,
                 },
             }
         )
@@ -510,6 +646,62 @@ def _validated_project_values(
     }
 
 
+def _validated_project_v2_values(
+    repository: StateRepository,
+    *,
+    name: str,
+    description: str,
+    objective: str,
+    in_scope: Sequence[str],
+    out_of_scope: Sequence[str],
+    success_criteria: Sequence[str],
+    project_status: ProjectStatus,
+    started_at: str,
+    ended_at: str | None,
+    decision_ids: Sequence[str],
+    memory_ids: Sequence[str],
+    artifact_ids: Sequence[str],
+    governing_policy_ids: Sequence[str],
+) -> dict[str, object]:
+    metadata = _validated_project_values(
+        repository,
+        name=name,
+        description=description,
+        project_status=project_status,
+        started_at=started_at,
+        ended_at=ended_at,
+        decision_ids=decision_ids,
+        memory_ids=memory_ids,
+        artifact_ids=artifact_ids,
+    )
+    safe_objective = _validate_text(
+        "project objective",
+        objective,
+        MAX_DESCRIPTION_LENGTH,
+    )
+    safe_in_scope = _validate_text_items("project in-scope work", in_scope)
+    safe_out_of_scope = _validate_text_items("project out-of-scope work", out_of_scope)
+    safe_success_criteria = _validate_text_items(
+        "project success criteria",
+        success_criteria,
+    )
+    safe_policies = _validate_reference_ids(
+        "project governing policy IDs",
+        governing_policy_ids,
+    )
+    _validate_typed_links(repository, policy_ids=safe_policies)
+    metadata.update(
+        {
+            "objective": safe_objective,
+            "in_scope": list(safe_in_scope),
+            "out_of_scope": list(safe_out_of_scope),
+            "success_criteria": list(safe_success_criteria),
+            "governing_policy_ids": list(safe_policies),
+        }
+    )
+    return metadata
+
+
 def _validated_decision_values(
     repository: StateRepository,
     *,
@@ -583,12 +775,13 @@ def _create_record(
     sensitivity: RecordSensitivity,
     operation_id: str | None,
     action: str,
+    schema_version: int = 1,
 ) -> str:
     if repository.read_only:
         raise ReadOnlyStateError("state repository is open in read-only mode")
     _validate_record_fields(
         record_type=record_type,
-        schema_version=1,
+        schema_version=schema_version,
         status="active",
         provenance=provenance,
         sensitivity=sensitivity,
@@ -605,11 +798,12 @@ def _create_record(
             INSERT INTO records (
                 id, record_type, schema_version, created_at, updated_at,
                 revision, status, provenance, sensitivity, title, metadata_json
-            ) VALUES (?, ?, 1, ?, ?, 1, 'active', ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, 1, 'active', ?, ?, ?, ?)
             """,
             (
                 record_id,
                 record_type,
+                schema_version,
                 now,
                 now,
                 provenance,
@@ -653,10 +847,12 @@ def _update_record(
     provenance: RecordProvenance,
     operation_id: str | None,
     action: str,
+    schema_version: int | None = None,
 ) -> None:
     if repository.read_only:
         raise ReadOnlyStateError("state repository is open in read-only mode")
     safe_operation_id = _validate_operation_id(operation_id)
+    target_schema_version = schema_version or current_record.schema_version
     connection = repository.connection
     now = _utc_now()
 
@@ -672,11 +868,12 @@ def _update_record(
         connection.execute(
             """
             UPDATE records
-            SET updated_at = ?, revision = revision + 1, status = ?,
-                provenance = ?, title = ?, metadata_json = ?
+            SET schema_version = ?, updated_at = ?, revision = revision + 1,
+                status = ?, provenance = ?, title = ?, metadata_json = ?
             WHERE id = ? AND revision = ? AND status = 'active'
             """,
             (
+                target_schema_version,
                 now,
                 lifecycle_status,
                 provenance,
@@ -791,26 +988,55 @@ def _project_from_record(
         decision_ids = _metadata_reference_ids(record.metadata, "decision_ids")
         memory_ids = _metadata_reference_ids(record.metadata, "memory_ids")
         artifact_ids = _metadata_reference_ids(record.metadata, "artifact_ids")
+        if record.schema_version == PROJECT_SCHEMA_VERSION_V1:
+            objective = None
+            in_scope: tuple[str, ...] = ()
+            out_of_scope: tuple[str, ...] = ()
+            success_criteria: tuple[str, ...] = ()
+            governing_policy_ids: tuple[str, ...] = ()
+        else:
+            objective = _validate_text(
+                "project objective",
+                _required_string(record.metadata, "objective"),
+                MAX_DESCRIPTION_LENGTH,
+            )
+            in_scope = _metadata_text_items(record.metadata, "in_scope")
+            out_of_scope = _metadata_text_items(record.metadata, "out_of_scope")
+            success_criteria = _metadata_text_items(
+                record.metadata,
+                "success_criteria",
+            )
+            governing_policy_ids = _metadata_reference_ids(
+                record.metadata,
+                "governing_policy_ids",
+            )
         if repository is not None:
             _validate_typed_links(
                 repository,
                 decision_ids=decision_ids,
                 memory_ids=memory_ids,
                 artifact_ids=artifact_ids,
+                policy_ids=governing_policy_ids,
             )
     except (KeyError, TypeError, ValueError, ProjectDecisionValidationError) as exc:
         raise ProjectDecisionCorruptError("project record is malformed") from exc
 
     return ProjectInfo(
         project_id=record.id,
+        schema_version=record.schema_version,
         name=name,
         description=description,
+        objective=objective,
+        in_scope=in_scope,
+        out_of_scope=out_of_scope,
+        success_criteria=success_criteria,
         project_status=project_status,
         started_at=started_at,
         ended_at=ended_at,
         decision_ids=decision_ids,
         memory_ids=memory_ids,
         artifact_ids=artifact_ids,
+        governing_policy_ids=governing_policy_ids,
         revision=record.revision,
         lifecycle_status=record.status,
         provenance=record.provenance,
@@ -904,7 +1130,10 @@ def _validate_envelope(
 ) -> None:
     if record.record_type != record_type:
         raise ProjectDecisionValidationError("record type is inconsistent")
-    if record.schema_version != 1:
+    supported_versions = (
+        SUPPORTED_PROJECT_SCHEMA_VERSIONS if record_type == "project" else frozenset({1})
+    )
+    if record.schema_version not in supported_versions:
         raise ProjectDecisionValidationError("record schema version is unsupported")
     if record.revision < 1:
         raise ProjectDecisionValidationError("record revision must be positive")
@@ -927,6 +1156,7 @@ def _validate_typed_links(
     decision_ids: Sequence[str] = (),
     memory_ids: Sequence[str] = (),
     artifact_ids: Sequence[str] = (),
+    policy_ids: Sequence[str] = (),
 ) -> None:
     if project_id is not None:
         try:
@@ -972,6 +1202,25 @@ def _validate_typed_links(
         ) as exc:
             raise ProjectDecisionValidationError(
                 "artifact link does not reference a valid managed artifact"
+            ) from exc
+
+    for policy_id in policy_ids:
+        try:
+            policy_record = repository.get_record(policy_id)
+            if policy_record.record_type != "policy":
+                raise ProjectDecisionValidationError(
+                    "governing policy link target has the wrong record type"
+                )
+            policy = _policy_from_record(policy_record)
+            if policy.status != "active":
+                raise ProjectDecisionValidationError("governing policy link target is not active")
+        except (
+            KeyError,
+            SettingsCorruptError,
+            ProjectDecisionValidationError,
+        ) as exc:
+            raise ProjectDecisionValidationError(
+                "governing policy link does not reference a valid active policy"
             ) from exc
 
 

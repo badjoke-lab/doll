@@ -248,7 +248,7 @@ def test_project_decision_envelope_defense_branches(tmp_path: Path) -> None:
 
         invalid_records = [
             replace(record, record_type="decision"),
-            replace(record, schema_version=2),
+            replace(record, schema_version=3),
             replace(record, revision=0),
             replace(record, status="deleted"),
             replace(
@@ -271,6 +271,8 @@ def test_project_decision_envelope_defense_branches(tmp_path: Path) -> None:
 
         with pytest.raises(ProjectDecisionCorruptError):
             _project_from_record(replace(record, title="different"))
+        with pytest.raises(ProjectDecisionCorruptError):
+            _project_from_record(replace(record, schema_version=2))
 
 
 def test_project_decision_additional_typed_link_paths(tmp_path: Path) -> None:

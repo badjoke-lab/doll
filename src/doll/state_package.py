@@ -1080,6 +1080,12 @@ def _validate_cross_record_links(records: dict[str, RecordEnvelope]) -> None:
                 _require_link_type(records, linked_id, "memory")
             for linked_id in _metadata_id_list(metadata, "artifact_ids"):
                 _require_link_type(records, linked_id, "artifact")
+            if record.schema_version == 2:
+                for linked_id in _metadata_id_list(
+                    metadata,
+                    "governing_policy_ids",
+                ):
+                    _require_link_type(records, linked_id, "policy")
         elif record.record_type == "decision":
             project_id = _metadata_optional_id(metadata, "project_id")
             if project_id is not None:
