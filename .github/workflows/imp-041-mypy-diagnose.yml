@@ -1,43 +1,14 @@
 name: Diagnose IMP-041 mypy
 
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - ".github/workflows/imp-041-mypy-diagnose.yml"
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  diagnose:
-    if: github.event.pull_request.head.repo.full_name == github.repository
+  disabled:
+    if: false
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: imp-041-work-item-record
-      - uses: astral-sh/setup-uv@v6
-      - run: uv sync --dev --locked
-      - name: Build generated implementation
-        run: |
-          python scripts/imp_041_update_core.py
-          python scripts/imp_041_update_package.py
-          python scripts/imp_041_update_status.py
-          python scripts/build_final_spec.py
-          uv run ruff check . --fix --ignore E501
-          uv run ruff format .
-      - name: Capture mypy output
-        run: |
-          set +e
-          uv run mypy src tests > docs/implementation/imp-041-mypy-diagnostic.txt 2>&1
-          echo "exit_code=$?" >> docs/implementation/imp-041-mypy-diagnostic.txt
-          exit 0
-      - name: Publish diagnostic
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/implementation/imp-041-mypy-diagnostic.txt
-          git commit -m "TEMP: record IMP-041 mypy diagnostic"
-          git push origin HEAD:imp-041-work-item-record
+      - run: echo "IMP-041 mypy diagnosis is complete."
