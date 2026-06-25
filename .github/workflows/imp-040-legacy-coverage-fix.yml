@@ -31,14 +31,14 @@ jobs:
           text = path.read_text(encoding="utf-8")
           old_version = "            replace(record, schema_version=2),\n"
           new_version = "            replace(record, schema_version=3),\n"
-          old_corrupt = '''        with pytest.raises(ProjectDecisionCorruptError):
-              _project_from_record(replace(record, title="different"))
-          '''
-          new_corrupt = '''        with pytest.raises(ProjectDecisionCorruptError):
-              _project_from_record(replace(record, title="different"))
-          with pytest.raises(ProjectDecisionCorruptError):
-              _project_from_record(replace(record, schema_version=2))
-          '''
+          old_corrupt = (
+              "        with pytest.raises(ProjectDecisionCorruptError):\n"
+              "            _project_from_record(replace(record, title=\"different\"))\n"
+          )
+          new_corrupt = old_corrupt + (
+              "        with pytest.raises(ProjectDecisionCorruptError):\n"
+              "            _project_from_record(replace(record, schema_version=2))\n"
+          )
           if text.count(old_version) != 1 or text.count(old_corrupt) != 1:
               raise SystemExit("legacy coverage anchors changed")
           path.write_text(
