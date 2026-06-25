@@ -71,10 +71,14 @@ def test_supported_registries_are_explicit_and_immutable() -> None:
 
     assert version_one.package_format_version == 1
     assert version_two.package_format_version == 2
-    assert version_two.record_types - version_one.record_types == {"work_item"}
+    assert version_two.record_types - version_one.record_types == {
+        "work_item",
+        "procedure",
+    }
     assert version_one.required_member_paths == version_two.required_member_paths
     assert version_two.optional_member_paths - version_one.optional_member_paths == {
-        "records/work-items.jsonl"
+        "records/work-items.jsonl",
+        "records/procedures.jsonl",
     }
     assert package._package_record_registry(1) == version_one
     assert package._package_record_registry(2) == version_two
@@ -131,7 +135,7 @@ def test_manifest_categories_must_match_versioned_registry(tmp_path: Path) -> No
         if mutate == "missing":
             categories.remove("preference")
         elif mutate == "unknown":
-            categories.append("procedure")
+            categories.append("project_checkpoint")
         else:
             categories.append(categories[0])
         members[manifest_name] = package._json_bytes(manifest)
@@ -144,7 +148,7 @@ def test_manifest_categories_must_match_versioned_registry(tmp_path: Path) -> No
 def test_unknown_authoritative_member_fails_before_target_mutation(tmp_path: Path) -> None:
     source = _export_package(tmp_path)
     members = _read_members(source)
-    members[f"{package.PACKAGE_ROOT}/records/procedures.jsonl"] = b""
+    members[f"{package.PACKAGE_ROOT}/records/project-checkpoints.jsonl"] = b""
     hostile = tmp_path / "unknown-member.zip"
     _write_members(hostile, members)
 

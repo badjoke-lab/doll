@@ -79,8 +79,8 @@ Completed:
 - Phase 3 model-independent safety boundary;
 - Phase 4A AI environment portability foundation;
 - IMP-001 through IMP-023;
-- IMP-030 through IMP-041;
-- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package v2 export with v1 read compatibility, a versioned authoritative record registry, ProjectRecord v2 with v1 read compatibility, and WorkItemRecord v1 lifecycle and dependency integrity, verified backup, restore, continuity acceptance, the model-independent safety boundary, canonical conversation and event state, portability adapter and result records, generic import staging, generic export, reviewed publication, source preservation, idempotency, loss visibility, and Phase 4A acceptance evidence.
+- IMP-030 through IMP-042;
+- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package v2 export with v1 read compatibility, a versioned authoritative record registry, ProjectRecord v2 with v1 read compatibility, WorkItemRecord v1 lifecycle and dependency integrity, and ProcedureRecord v1 lifecycle and non-authority guarantees, verified backup, restore, continuity acceptance, the model-independent safety boundary, canonical conversation and event state, portability adapter and result records, generic import staging, generic export, reviewed publication, source preservation, idempotency, loss visibility, and Phase 4A acceptance evidence.
 
 Current implementation point:
 
@@ -91,7 +91,8 @@ Current implementation point:
 - IMP-039 adds the versioned authoritative record registry used by package export, manifest validation, typed-validator selection, and source-version inventory checks;
 - IMP-040 adds ProjectRecord v2 charters and preserves neutral ProjectRecord v1 read compatibility;
 - IMP-041 adds WorkItemRecord v1 lifecycle, dependency, blocker, acceptance-criterion, and verification-state integrity;
-- the next bounded Phase 4B implementation issue receives IMP-042;
+- IMP-042 adds ProcedureRecord v1 lifecycle, versioning, validation, rollback description, and non-authority guarantees;
+- the next bounded Phase 4B implementation issue receives IMP-043;
 - local model execution begins only after Phase 4B passes.
 
 Implementation identifier policy:
@@ -360,7 +361,7 @@ Goal: preserve the work itself before a model is connected to it.
 
 This phase is model-independent and follows `03b-project-continuity-and-resumption.md` and `08b-project-continuity-acceptance.md`.
 
-Status: in progress through IMP-041.
+Status: in progress through IMP-042.
 
 Completed implementation slices:
 
@@ -368,15 +369,15 @@ Completed implementation slices:
 - IMP-039 — versioned authoritative record registry for package validation.
 - IMP-040 — ProjectRecord v2 with neutral ProjectRecord v1 read compatibility.
 - IMP-041 — WorkItemRecord v1 lifecycle and dependency integrity.
+- IMP-042 — ProcedureRecord v1 lifecycle and non-authority guarantees.
 
 Remaining implementation slices, with identifiers assigned only when scheduled:
 
-1. ProcedureRecord lifecycle, versioning, non-authority rule, validation, and rollback description;
-2. ProjectCheckpointRecord basis revisions, deterministic fingerprint, confirmation, and stale detection;
-3. deterministic `doll project status` view;
-4. deterministic project-scoped Resume Bundle with manifest, checksums, machine-readable records, and generated HANDOFF.md;
-5. package, backup, restore, fresh-process, hostile-import, and secret-safe output coverage;
-6. PROJ-001 through PROJ-012 acceptance evidence.
+1. ProjectCheckpointRecord basis revisions, deterministic fingerprint, confirmation, and stale detection;
+2. deterministic `doll project status` view;
+3. deterministic project-scoped Resume Bundle with manifest, checksums, machine-readable records, and generated HANDOFF.md;
+4. package, backup, restore, fresh-process, hostile-import, and secret-safe output coverage;
+5. PROJ-001 through PROJ-012 acceptance evidence.
 
 Implementation rule:
 

@@ -219,7 +219,11 @@ class ProcedureService:
         include_archived: bool = False,
         limit: int = 100,
     ) -> tuple[ProcedureInfo, ...]:
-        if not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= MAX_LIST_LIMIT:
+        if (
+            not isinstance(limit, int)
+            or isinstance(limit, bool)
+            or not 1 <= limit <= MAX_LIST_LIMIT
+        ):
             raise ProcedureValidationError("procedure list limit is invalid")
         safe_project_id = _optional_uuid("project ID", project_id)
         rows = self.repository.connection.execute(
@@ -415,7 +419,9 @@ class ProcedureService:
         if replacement.version <= current.version:
             raise ProcedureValidationError("replacement procedure version must increase")
         if replacement.supersedes_id != current.procedure_id:
-            raise ProcedureValidationError("replacement procedure does not identify its predecessor")
+            raise ProcedureValidationError(
+                "replacement procedure does not identify its predecessor"
+            )
         metadata = dict(current_record.metadata)
         metadata["status"] = "superseded"
         metadata["superseded_by_id"] = replacement.procedure_id
@@ -564,7 +570,9 @@ def _procedure_from_record(
         if record.status not in {"active", "archived"} or record.revision < 1:
             raise ProcedureValidationError("procedure envelope state is invalid")
         project_id = _uuid("procedure project ID", _required_string(record.metadata, "project_id"))
-        title = _text("procedure title", _required_string(record.metadata, "title"), MAX_TITLE_LENGTH)
+        title = _text(
+            "procedure title", _required_string(record.metadata, "title"), MAX_TITLE_LENGTH
+        )
         if record.title != title:
             raise ProcedureValidationError("procedure title is inconsistent")
         purpose = _text(
@@ -592,7 +600,9 @@ def _procedure_from_record(
             record.metadata,
             "verification_evidence_ids",
         )
-        supersedes_id = _optional_uuid("procedure supersedes ID", record.metadata.get("supersedes_id"))
+        supersedes_id = _optional_uuid(
+            "procedure supersedes ID", record.metadata.get("supersedes_id")
+        )
         superseded_by_id = _optional_uuid(
             "procedure replacement ID",
             record.metadata.get("superseded_by_id"),
@@ -907,7 +917,7 @@ def _insert_audit(
             str(uuid4()),
             operation_id,
             _utc_now(),
-            actor_type,
+            _audit_actor(actor_type),
             _validate_audit_token("action", action, 120),
             target_id,
             "Changed authoritative procedure record",
@@ -935,6 +945,10 @@ def _require_active(procedure: ProcedureInfo) -> None:
 def _require_user(actor_type: ProcedureActor) -> None:
     if actor_type != "user":
         raise ProcedureValidationError("accepted procedure mutation requires the user path")
+
+
+def _audit_actor(actor_type: ProcedureActor) -> str:
+    return "system" if actor_type == "importer" else actor_type
 
 
 def _draft_provenance(actor_type: ProcedureActor) -> RecordProvenance:

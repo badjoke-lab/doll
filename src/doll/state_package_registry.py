@@ -130,6 +130,12 @@ _V2_RECORD_CATEGORIES = (
         False,
         "work_item",
     ),
+    AuthoritativeRecordCategory(
+        "procedure",
+        "records/procedures.jsonl",
+        False,
+        "procedure",
+    ),
 )
 
 PACKAGE_RECORD_REGISTRIES: Mapping[int, AuthoritativeRecordRegistry] = MappingProxyType(

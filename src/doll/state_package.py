@@ -46,6 +46,7 @@ from doll.instruction_origin import (
 )
 from doll.memory import MemoryCorruptError, _memory_from_record
 from doll.paths import canonicalize_path, find_doll_repository_ancestor
+from doll.procedure import ProcedureCorruptError, _procedure_from_record
 from doll.project_state import (
     ProjectDecisionCorruptError,
     _decision_from_record,
@@ -165,6 +166,7 @@ _PACKAGE_RECORD_VALIDATORS: dict[str, Callable[[RecordEnvelope], object]] = {
     "artifact": _artifact_from_record,
     "backup_manifest": _backup_manifest_from_record,
     "work_item": _work_item_from_record,
+    "procedure": _procedure_from_record,
 }
 
 
@@ -1015,6 +1017,7 @@ def _envelope_from_payload(
         BackupManifestCorruptError,
         InstructionOriginCorruptError,
         MemoryCorruptError,
+        ProcedureCorruptError,
         ProjectDecisionCorruptError,
         SettingsCorruptError,
         TruthCorruptError,
@@ -1119,7 +1122,29 @@ def _validate_cross_record_links(records: dict[str, RecordEnvelope]) -> None:
                     raise StatePackageValidationError(
                         "work-item source link is missing or inactive"
                     )
+        elif record.record_type == "procedure":
+            _require_link_type(
+                records,
+                _metadata_string(metadata, "project_id"),
+                "project",
+            )
+            for linked_id in _metadata_id_list(
+                metadata,
+                "verification_evidence_ids",
+            ):
+                _require_link_type(records, linked_id, "evidence")
+            for linked_id in _metadata_id_list(metadata, "source_ids"):
+                linked = records.get(linked_id)
+                if linked is None or linked.status != "active":
+                    raise StatePackageValidationError(
+                        "procedure source link is missing or inactive"
+                    )
+            for key in ("supersedes_id", "superseded_by_id"):
+                optional_link_id = _metadata_optional_id(metadata, key)
+                if optional_link_id is not None:
+                    _require_link_type(records, optional_link_id, "procedure")
     _validate_work_item_package_graph(records)
+    _validate_procedure_package_graph(records)
 
 
 def _validate_work_item_package_graph(records: dict[str, RecordEnvelope]) -> None:
@@ -1165,6 +1190,37 @@ def _validate_work_item_package_graph(records: dict[str, RecordEnvelope]) -> Non
 
     for node in graph:
         visit(node)
+
+
+def _validate_procedure_package_graph(
+    records: dict[str, RecordEnvelope],
+) -> None:
+    procedures = {
+        record.id: _procedure_from_record(record)
+        for record in records.values()
+        if record.record_type == "procedure"
+    }
+    for procedure in procedures.values():
+        project = records.get(procedure.project_id)
+        if project is None or project.record_type != "project" or project.status != "active":
+            raise StatePackageValidationError("procedure requires an active project")
+        if procedure.supersedes_id is not None:
+            predecessor = procedures.get(procedure.supersedes_id)
+            if (
+                predecessor is None
+                or predecessor.project_id != procedure.project_id
+                or predecessor.version >= procedure.version
+            ):
+                raise StatePackageValidationError("procedure predecessor relation is invalid")
+        if procedure.superseded_by_id is not None:
+            replacement = procedures.get(procedure.superseded_by_id)
+            if (
+                replacement is None
+                or replacement.project_id != procedure.project_id
+                or replacement.version <= procedure.version
+                or replacement.supersedes_id != procedure.procedure_id
+            ):
+                raise StatePackageValidationError("procedure replacement relation is invalid")
 
 
 def _validate_active_setting_identities(records: list[RecordEnvelope]) -> None:

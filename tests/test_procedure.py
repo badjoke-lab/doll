@@ -5,7 +5,7 @@ import json
 import zipfile
 from dataclasses import replace
 from pathlib import Path
-from typing import cast
+from typing import TypedDict, cast
 from uuid import uuid4
 
 import pytest
@@ -35,19 +35,33 @@ def _workspace(tmp_path: Path, name: str = "workspace") -> workspace.Initialized
 
 
 def _project(repository: StateRepository, name: str = "Project") -> str:
-    return ProjectService(repository).create_v2(
-        name=name,
-        description="Synthetic ProcedureRecord project.",
-        objective="Preserve inspectable methods without granting authority.",
-        in_scope=("ProcedureRecord",),
-        out_of_scope=("Procedure execution",),
-        success_criteria=("Accepted procedures remain inspectable",),
-        project_status="active",
-        started_at="2026-06-25T00:00:00Z",
-    ).project_id
+    return (
+        ProjectService(repository)
+        .create_v2(
+            name=name,
+            description="Synthetic ProcedureRecord project.",
+            objective="Preserve inspectable methods without granting authority.",
+            in_scope=("ProcedureRecord",),
+            out_of_scope=("Procedure execution",),
+            success_criteria=("Accepted procedures remain inspectable",),
+            project_status="active",
+            started_at="2026-06-25T00:00:00Z",
+        )
+        .project_id
+    )
 
 
-def _complete_values() -> dict[str, object]:
+class CompleteValues(TypedDict):
+    prerequisites: tuple[str, ...]
+    ordered_steps: tuple[str, ...]
+    required_capability_ids: tuple[str, ...]
+    expected_outputs: tuple[str, ...]
+    validation_steps: tuple[str, ...]
+    rollback_steps: tuple[str, ...]
+    platform_constraints: tuple[str, ...]
+
+
+def _complete_values() -> CompleteValues:
     return {
         "prerequisites": ("A writable local workspace exists.",),
         "ordered_steps": (
