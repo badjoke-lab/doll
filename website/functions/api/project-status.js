@@ -58,7 +58,7 @@ function jsonResponse(
 export async function onRequestGet(context) {
   const cache = caches.default;
   const cacheUrl = new URL(context.request.url);
-  cacheUrl.pathname = "/__doll-public-project-status-v3";
+  cacheUrl.pathname = "/__doll-public-project-status-v4";
   cacheUrl.search = "";
   const cacheKey = new Request(cacheUrl.toString(), { method: "GET" });
 

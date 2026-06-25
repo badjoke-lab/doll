@@ -75,26 +75,37 @@ function renderCanonicalStatus(status) {
   renderRoadmap(status);
 }
 
-function renderActivity(activity) {
-  const current = document.getElementById("project-current");
-  const lastCompleted = document.getElementById("project-last-completed");
-  const next = document.getElementById("project-next");
-  const developmentCurrent = document.getElementById("development-current");
-  const developmentLastCompleted = document.getElementById("development-last-completed");
-  const developmentNext = document.getElementById("development-next");
+function renderPrimaryActivity(activity) {
+  const active = activity?.current || null;
+  const entry = active || activity?.last_completed || null;
+  const headerLabel = active ? "Current" : "Latest completed";
+  const developmentLabel = active ? "Current implementation" : "Latest completed implementation";
+  const fallback = "Project implementation activity is temporarily unavailable.";
+
+  setText("#project-primary-label", headerLabel);
+  setText("#development-primary-label", developmentLabel);
+  setLink(document.getElementById("project-primary"), entry, fallback);
+  setLink(document.getElementById("development-primary"), entry, fallback);
+}
+
+function renderUpNext(activity) {
+  const section = document.getElementById("development-up-next-section");
+  const container = document.getElementById("development-up-next");
+  if (!section || !container) {
+    return;
+  }
+
+  const next = activity?.next || null;
+  section.hidden = !next;
+  if (next) {
+    setLink(container, next, "");
+  } else {
+    container.replaceChildren();
+  }
+}
+
+function renderRecentDevelopment(activity) {
   const developmentLog = document.getElementById("development-log");
-
-  setLink(current, activity?.current, "No implementation is currently active.");
-  setLink(developmentCurrent, activity?.current, "No implementation is currently active.");
-  setLink(lastCompleted, activity?.last_completed, "No completed implementation is available.");
-  setLink(
-    developmentLastCompleted,
-    activity?.last_completed,
-    "No completed implementation is available.",
-  );
-  setLink(next, activity?.next, "No next implementation is currently identified.");
-  setLink(developmentNext, activity?.next, "No next implementation is currently identified.");
-
   if (!developmentLog) {
     return;
   }
@@ -130,6 +141,12 @@ function renderActivity(activity) {
     wrapper.append(date, title, linkLine);
     developmentLog.appendChild(wrapper);
   });
+}
+
+function renderActivity(activity) {
+  renderPrimaryActivity(activity);
+  renderUpNext(activity);
+  renderRecentDevelopment(activity);
 }
 
 async function readJson(url) {

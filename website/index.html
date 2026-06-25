@@ -20,9 +20,7 @@
     <div class="site-status">
       <p><strong>Status:</strong> <span data-project-maturity>Loading project status</span>.</p>
       <p><strong>Phase:</strong> <span data-project-phase>Loading current phase</span>.</p>
-      <p><strong>Current:</strong> <span id="project-current">Loading current implementation from GitHub.</span></p>
-      <p><strong>Last completed:</strong> <span id="project-last-completed">Loading the last completed implementation from GitHub.</span></p>
-      <p><strong>Next:</strong> <span id="project-next">Loading next implementation from GitHub.</span></p>
+      <p><strong><span id="project-primary-label">Current</span>:</strong> <span id="project-primary">Loading implementation activity from GitHub.</span></p>
       <p data-project-runtime>Loading runtime status.</p>
     </div>
   </header>
@@ -116,16 +114,8 @@
         <span data-project-phase>Loading current phase</span>.
       </p>
       <p>
-        <strong>Current implementation:</strong>
-        <span id="development-current">Loading current implementation from GitHub.</span>
-      </p>
-      <p>
-        <strong>Last completed implementation:</strong>
-        <span id="development-last-completed">Loading the last completed implementation from GitHub.</span>
-      </p>
-      <p>
-        <strong>Next implementation:</strong>
-        <span id="development-next">Loading next implementation from GitHub.</span>
+        <strong><span id="development-primary-label">Current implementation</span>:</strong>
+        <span id="development-primary">Loading implementation activity from GitHub.</span>
       </p>
       <p data-project-runtime>Loading runtime status.</p>
 
@@ -151,6 +141,12 @@
       <div id="development-log">
         <p>Loading recent implementation history from GitHub.</p>
       </div>
+
+      <div id="development-up-next-section" hidden>
+        <h3>Up next</h3>
+        <p id="development-up-next"></p>
+      </div>
+
       <p>
         <a href="https://github.com/badjoke-lab/doll/pulls?q=is%3Apr+is%3Amerged">View all merged pull requests</a>
       </p>
