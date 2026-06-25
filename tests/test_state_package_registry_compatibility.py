@@ -56,3 +56,22 @@ def test_manifest_categories_still_require_required_categories() -> None:
             },
             registry,
         )
+
+
+def test_manifest_categories_reject_unknown_categories() -> None:
+    registry = _compatibility_registry()
+
+    with pytest.raises(package.StatePackageValidationError):
+        package._validate_manifest_categories(
+            {
+                "included_categories": sorted(
+                    {
+                        "required_record",
+                        "future_record",
+                        *PACKAGE_SYSTEM_CATEGORIES,
+                    }
+                ),
+                "excluded_categories": [],
+            },
+            registry,
+        )
