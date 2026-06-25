@@ -10,11 +10,12 @@ import pytest
 
 import doll.state_package as package
 from doll import state, workspace
-from doll.procedure import ProcedureService, ProcedureValidationError
+from doll.procedure import ProcedureInfo, ProcedureService, ProcedureValidationError
 from doll.project_state import ProjectService
+from doll.state_repository import StateRepository
 
 
-def _project(repository: state.StateRepository) -> str:
+def _project(repository: StateRepository) -> str:
     return ProjectService(repository).create_v2(
         name="Procedure reciprocity project",
         description="Procedure supersession reciprocity test.",
@@ -34,7 +35,7 @@ def _approved(
     title: str,
     version: int,
     supersedes_id: str | None = None,
-):
+) -> ProcedureInfo:
     return service.create_approved(
         project_id=project_id,
         title=title,
