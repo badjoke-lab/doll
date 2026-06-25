@@ -79,15 +79,16 @@ Completed:
 - Phase 3 model-independent safety boundary;
 - Phase 4A AI environment portability foundation;
 - IMP-001 through IMP-023;
-- IMP-030 through IMP-037;
-- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package export/import, verified backup, restore, continuity acceptance, the model-independent safety boundary, canonical conversation and event state, portability adapter and result records, generic import staging, generic export, reviewed publication, source preservation, idempotency, loss visibility, and Phase 4A acceptance evidence.
+- IMP-030 through IMP-038;
+- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package v2 export with v1 read compatibility, verified backup, restore, continuity acceptance, the model-independent safety boundary, canonical conversation and event state, portability adapter and result records, generic import staging, generic export, reviewed publication, source preservation, idempotency, loss visibility, and Phase 4A acceptance evidence.
 
 Current implementation point:
 
 - Phase 4A passed its generic portability gate on 2026-06-25;
 - accepted real-machine evidence is bound to commit `839a4ca7a37753fadf81c3e8e79f140e6d66bc03` on the primary Intel Mac with networking disabled;
 - Phase 4B project continuity is now the active foundation phase;
-- the next implementation issue receives IMP-038 when its first bounded Phase 4B slice is scheduled;
+- IMP-038 establishes Doll State Package format v2 for new exports while preserving supported format v1 inspection, verification, planning, and import;
+- the next bounded Phase 4B implementation issue receives IMP-039;
 - local model execution begins only after Phase 4B passes.
 
 Implementation identifier policy:
@@ -356,18 +357,23 @@ Goal: preserve the work itself before a model is connected to it.
 
 This phase is model-independent and follows `03b-project-continuity-and-resumption.md` and `08b-project-continuity-acceptance.md`.
 
-Required implementation slices, with identifiers assigned only when scheduled:
+Status: in progress through IMP-038.
 
-1. Doll State Package format v2 foundation and supported v1 read compatibility;
-2. versioned authoritative record registry for package validation;
-3. ProjectRecord v2 while preserving readable ProjectRecord v1;
-4. WorkItemRecord lifecycle, dependencies, blockers, acceptance criteria, and verification state;
-5. ProcedureRecord lifecycle, versioning, non-authority rule, validation, and rollback description;
-6. ProjectCheckpointRecord basis revisions, deterministic fingerprint, confirmation, and stale detection;
-7. deterministic `doll project status` view;
-8. deterministic project-scoped Resume Bundle with manifest, checksums, machine-readable records, and generated HANDOFF.md;
-9. package, backup, restore, fresh-process, hostile-import, and secret-safe output coverage;
-10. PROJ-001 through PROJ-012 acceptance evidence.
+Completed implementation slices:
+
+- IMP-038 — Doll State Package format v2 foundation and supported format v1 read compatibility.
+
+Remaining implementation slices, with identifiers assigned only when scheduled:
+
+1. versioned authoritative record registry for package validation;
+2. ProjectRecord v2 while preserving readable ProjectRecord v1;
+3. WorkItemRecord lifecycle, dependencies, blockers, acceptance criteria, and verification state;
+4. ProcedureRecord lifecycle, versioning, non-authority rule, validation, and rollback description;
+5. ProjectCheckpointRecord basis revisions, deterministic fingerprint, confirmation, and stale detection;
+6. deterministic `doll project status` view;
+7. deterministic project-scoped Resume Bundle with manifest, checksums, machine-readable records, and generated HANDOFF.md;
+8. package, backup, restore, fresh-process, hostile-import, and secret-safe output coverage;
+9. PROJ-001 through PROJ-012 acceptance evidence.
 
 Implementation rule:
 

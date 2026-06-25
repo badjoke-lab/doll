@@ -1,7 +1,0 @@
-STATE PACKAGE PATCH
-error: corrupt patch at scripts/imp-038-state-package.patch:48
-state_package_status=128
-
-ROADMAP STATUS PATCH
-error: corrupt patch at scripts/imp-038-roadmap-status.patch:22
-roadmap_status=128
