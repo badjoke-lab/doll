@@ -1,0 +1,51 @@
+name: Apply IMP-038 source patches
+
+on:
+  push:
+    branches:
+      - imp-038-state-package-v2
+    paths:
+      - ".github/workflows/imp-038-apply.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out implementation branch
+        uses: actions/checkout@v4
+        with:
+          ref: imp-038-state-package-v2
+          fetch-depth: 0
+
+      - name: Apply bounded source patches
+        shell: bash
+        run: |
+          git apply --check scripts/imp-038-state-package.patch
+          git apply --check scripts/imp-038-roadmap-status.patch
+          git apply scripts/imp-038-state-package.patch
+          git apply scripts/imp-038-roadmap-status.patch
+          rm scripts/imp-038-state-package.patch
+          rm scripts/imp-038-roadmap-status.patch
+          rm .github/workflows/imp-038-apply.yml
+
+      - name: Regenerate combined specification
+        run: python scripts/build_final_spec.py
+
+      - name: Run static smoke checks
+        shell: bash
+        run: |
+          python -m compileall -q src tests
+          node scripts/check-public-site-status.mjs
+          git diff --check
+
+      - name: Commit implementation
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "IMP-038: add state package v2 foundation"
+          git push origin HEAD:imp-038-state-package-v2
