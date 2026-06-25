@@ -23,21 +23,21 @@ function expect(condition, message) {
   }
 }
 
-const statusPath = "website/project-status.json";
-const status = JSON.parse(read(statusPath));
+const status = JSON.parse(read("website/project-status.json"));
 
 expect(status.schema_version === 2, "project-status.json must use schema_version 2");
 expect(Boolean(status.maturity) && typeof status.maturity === "string", "project-status.json requires a maturity string");
 expect(
-  Array.isArray(status.completed_phases) && status.completed_phases.includes("3"),
-  "project-status.json must record completed phases through Phase 3",
+  Array.isArray(status.completed_phases) && status.completed_phases.includes("4A"),
+  "project-status.json must record completed phases through Phase 4A",
 );
 expect(
-  status.phase?.id === "4A" &&
-    status.phase?.name === "AI environment portability foundation" &&
-    status.phase?.state === "in progress" &&
-    status.phase?.started_by_implementation === 30,
-  "project-status.json must mark Phase 4A in progress from IMP-030",
+  status.phase?.id === "4B" &&
+    status.phase?.name === "Project continuity foundation" &&
+    status.phase?.state === "ready" &&
+    status.phase?.started_by_implementation === null &&
+    status.phase?.next_implementation === 38,
+  "project-status.json must mark Phase 4B ready with IMP-038 next",
 );
 expect(
   status.model_runtime &&
@@ -72,6 +72,7 @@ for (const required of [
   'id="development-log"',
   'data-roadmap-phase="3"',
   'data-roadmap-phase="4A"',
+  'data-roadmap-phase="4B"',
   "data-roadmap-state",
   'src="./status.js"',
 ]) {
@@ -106,8 +107,12 @@ expect(
   "roadmap must retire IMP-024 through IMP-029",
 );
 expect(
-  roadmap.includes("IMP-032 is the next planned implementation identifier"),
-  "roadmap must identify IMP-032 as next",
+  roadmap.includes("Phase 4A gate status: passed on 2026-06-25."),
+  "roadmap must record the accepted Phase 4A gate",
+);
+expect(
+  roadmap.includes("the next implementation issue after IMP-037 is IMP-038"),
+  "roadmap must identify IMP-038 as next",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),
@@ -123,7 +128,6 @@ expect(
   middleware.includes('rel="icon" type="image/png"'),
   "middleware does not advertise a PNG favicon",
 );
-
 expect(
   Array.isArray(manifest.icons) && manifest.icons.length > 0,
   "site.webmanifest requires at least one icon",
@@ -148,59 +152,59 @@ for (const machineFile of [llms, ai]) {
 
 const closedPulls = [
   {
+    number: 121,
+    title: "Complete Phase 4A portability gate",
+    html_url: "https://example.invalid/pr/121",
+    updated_at: "2026-06-25T15:00:00Z",
+    merged_at: "2026-06-25T15:00:00Z",
+  },
+  {
+    number: 120,
+    title: "IMP-037: add Phase 4A portability acceptance evidence",
+    html_url: "https://example.invalid/pr/120",
+    updated_at: "2026-06-25T14:00:00Z",
+    merged_at: "2026-06-25T14:00:00Z",
+  },
+  {
+    number: 118,
+    title: "IMP-036: add reviewed generic import publication",
+    html_url: "https://example.invalid/pr/118",
+    updated_at: "2026-06-24T15:00:00Z",
+    merged_at: "2026-06-24T15:00:00Z",
+  },
+  {
+    number: 116,
+    title: "IMP-035: add deterministic generic export",
+    html_url: "https://example.invalid/pr/116",
+    updated_at: "2026-06-24T14:00:00Z",
+    merged_at: "2026-06-24T14:00:00Z",
+  },
+  {
     number: 72,
     title: "WEB-007: Publish an article",
     html_url: "https://example.invalid/pr/72",
     updated_at: "2026-06-24T00:00:00Z",
     merged_at: "2026-06-24T00:00:00Z",
   },
-  {
-    number: 85,
-    title: "IMP-031: persist canonical conversation state",
-    html_url: "https://example.invalid/pr/85",
-    updated_at: "2026-06-23T11:33:03Z",
-    merged_at: "2026-06-23T11:33:03Z",
-  },
-  {
-    number: 83,
-    title: "IMP-030: add canonical conversation schema contracts",
-    html_url: "https://example.invalid/pr/83",
-    updated_at: "2026-06-23T10:52:48Z",
-    merged_at: "2026-06-23T10:52:48Z",
-  },
-  {
-    number: 81,
-    title: "Complete IMP-023 and Phase 3 safety gate",
-    html_url: "https://example.invalid/pr/81",
-    updated_at: "2026-06-22T15:45:49Z",
-    merged_at: "2026-06-22T15:45:49Z",
-  },
-  {
-    number: 80,
-    title: "IMP-023: add Phase 3 acceptance evidence",
-    html_url: "https://example.invalid/pr/80",
-    updated_at: "2026-06-22T14:55:12Z",
-    merged_at: "2026-06-22T14:55:12Z",
-  },
 ];
 
 const idleActivity = buildProjectActivity({ closedPulls });
 expect(idleActivity.schema_version === 2, "activity schema must be version 2");
-expect(idleActivity.latest_merged_implementation === 31, "latest merged implementation must be IMP-031");
+expect(idleActivity.latest_merged_implementation === 37, "latest merged implementation must be IMP-037");
 expect(idleActivity.current === null, "idle fixture must have no current implementation");
-expect(idleActivity.last_completed?.implementation === 31, "last completed must be IMP-031");
+expect(idleActivity.last_completed?.implementation === 37, "last completed must be IMP-037");
 expect(
-  idleActivity.next?.kind === "planned" && idleActivity.next?.implementation === 32,
-  "idle fixture must plan IMP-032",
+  idleActivity.next?.kind === "planned" && idleActivity.next?.implementation === 38,
+  "idle fixture must plan IMP-038",
 );
 expect(
   JSON.stringify(idleActivity.recent.map((entry) => entry.title)) ===
     JSON.stringify([
-      "IMP-031: persist canonical conversation state",
-      "IMP-030: add canonical conversation schema contracts",
-      "Complete IMP-023 and Phase 3 safety gate",
+      "Complete Phase 4A portability gate",
+      "IMP-037: add Phase 4A portability acceptance evidence",
+      "IMP-036: add reviewed generic import publication",
     ]),
-  "recent development must show IMP-031, IMP-030, and Phase 3 gate completion",
+  "recent development must show Phase 4A completion, IMP-037, and IMP-036",
 );
 expect(
   JSON.stringify(idleActivity.numbering_policy.retired_implementations) ===
@@ -212,10 +216,10 @@ const activeActivity = buildProjectActivity({
   closedPulls,
   openPulls: [
     {
-      number: 90,
-      title: "IMP-032: add adapter contracts",
-      html_url: "https://example.invalid/pr/90",
-      updated_at: "2026-06-24T01:00:00Z",
+      number: 122,
+      title: "IMP-038: add package v2 foundation",
+      html_url: "https://example.invalid/pr/122",
+      updated_at: "2026-06-26T01:00:00Z",
     },
   ],
   openIssues: [
@@ -223,20 +227,20 @@ const activeActivity = buildProjectActivity({
       number: 24,
       title: "IMP-024: stale retired reservation",
       html_url: "https://example.invalid/issue/24",
-      updated_at: "2026-06-24T02:00:00Z",
-      created_at: "2026-06-24T02:00:00Z",
+      updated_at: "2026-06-26T02:00:00Z",
+      created_at: "2026-06-26T02:00:00Z",
     },
     {
-      number: 91,
-      title: "IMP-033: next portability slice",
-      html_url: "https://example.invalid/issue/91",
-      updated_at: "2026-06-24T03:00:00Z",
-      created_at: "2026-06-24T03:00:00Z",
+      number: 123,
+      title: "IMP-039: next project-continuity slice",
+      html_url: "https://example.invalid/issue/123",
+      updated_at: "2026-06-26T03:00:00Z",
+      created_at: "2026-06-26T03:00:00Z",
     },
   ],
 });
-expect(activeActivity.current?.implementation === 32, "active fixture current must be IMP-032");
-expect(activeActivity.next?.implementation === 33, "active fixture next must be IMP-033");
+expect(activeActivity.current?.implementation === 38, "active fixture current must be IMP-038");
+expect(activeActivity.next?.implementation === 39, "active fixture next must be IMP-039");
 
 if (!process.exitCode) {
   console.log("public-site-status check passed");
