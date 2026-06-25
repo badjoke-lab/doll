@@ -1,0 +1,4 @@
+src/doll/work_item.py:353: error: Non-overlapping equality check (left operand type: "Literal['proposed', 'ready', 'in_progress', 'blocked', 'cancelled']", right operand type: "Literal['completed']")  [comparison-overlap]
+tests/test_work_item.py:156: error: Redundant cast to "Literal['proposed', 'ready', 'in_progress', 'blocked', 'completed', 'cancelled']"  [redundant-cast]
+Found 2 errors in 2 files (checked 155 source files)
+exit_code=1
