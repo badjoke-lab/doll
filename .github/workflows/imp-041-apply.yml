@@ -27,16 +27,21 @@ jobs:
           python scripts/imp_041_update_package.py
           python scripts/imp_041_update_status.py
           python scripts/build_final_spec.py
-      - name: Format and verify
+      - name: Ruff
         run: |
           uv run ruff check . --fix --ignore E501
           uv run ruff format .
           uv run ruff check . --ignore E501
-          uv run mypy src tests
+      - name: Strict typing
+        run: uv run mypy src tests
+      - name: Specification and status
+        run: |
           uv run python scripts/build_final_spec.py --check
           node scripts/check-public-site-status.mjs
-          uv run pytest -q --no-cov tests/test_work_item.py tests/test_state_package_registry.py tests/test_state_package_registry_compatibility.py tests/test_project_record_v2.py
-          git diff --check
+      - name: Focused tests
+        run: uv run pytest -q --no-cov tests/test_work_item.py tests/test_state_package_registry.py tests/test_state_package_registry_compatibility.py tests/test_project_record_v2.py
+      - name: Diff integrity
+        run: git diff --check
       - name: Commit implementation
         run: |
           rm scripts/imp_041_update_core.py
