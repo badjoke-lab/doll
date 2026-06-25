@@ -162,8 +162,7 @@ def inspect_export(root: Path) -> dict[str, bool]:
         "records.jsonl",
         "transcript.md",
     } and all(
-        item.get("size_bytes") == len(files[name])
-        and item.get("sha256") == _digest(files[name])
+        item.get("size_bytes") == len(files[name]) and item.get("sha256") == _digest(files[name])
         for name, item in declared.items()
     )
 
