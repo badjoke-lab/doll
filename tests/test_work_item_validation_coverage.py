@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
 from uuid import uuid4
 
@@ -34,16 +35,20 @@ def _workspace(tmp_path: Path) -> workspace.InitializedWorkspace:
 
 
 def _project(repository: StateRepository) -> str:
-    return ProjectService(repository).create_v2(
-        name="Validation project",
-        description="Work-item validation coverage.",
-        objective="Exercise semantic rejection branches.",
-        in_scope=("Validation",),
-        out_of_scope=("Execution",),
-        success_criteria=("Invalid values fail closed",),
-        project_status="active",
-        started_at="2026-06-25T00:00:00Z",
-    ).project_id
+    return (
+        ProjectService(repository)
+        .create_v2(
+            name="Validation project",
+            description="Work-item validation coverage.",
+            objective="Exercise semantic rejection branches.",
+            in_scope=("Validation",),
+            out_of_scope=("Execution",),
+            success_criteria=("Invalid values fail closed",),
+            project_status="active",
+            started_at="2026-06-25T00:00:00Z",
+        )
+        .project_id
+    )
 
 
 def _values(
@@ -187,7 +192,7 @@ def test_persisted_semantic_rejections() -> None:
     self_id = str(uuid4())
     other_id = str(uuid4())
 
-    invalid_calls = (
+    invalid_calls: tuple[Callable[[], None], ...] = (
         lambda: _persisted(self_id=self_id, status="completed"),
         lambda: _persisted(
             self_id=self_id,
@@ -239,7 +244,12 @@ def test_additional_helper_and_record_lookup_defenses(tmp_path: Path) -> None:
             _require_record(repository, wrong.id)
 
     with pytest.raises(WorkItemValidationError):
-        _criteria(tuple(AcceptanceCriterion(str(index), "d", None, True) for index in range(MAX_LIST_ITEMS + 1)))
+        _criteria(
+            tuple(
+                AcceptanceCriterion(str(index), "d", None, True)
+                for index in range(MAX_LIST_ITEMS + 1)
+            )
+        )
     criterion = AcceptanceCriterion("evidence-kind", "Description", "record", False)
     assert _criteria((criterion,)) == (criterion,)
     with pytest.raises(WorkItemValidationError):

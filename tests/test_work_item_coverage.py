@@ -9,7 +9,6 @@ import pytest
 
 from doll import state, workspace
 from doll.project_state import ProjectService
-from doll.state import RecordProvenance, RecordStatus
 from doll.state_repository import StateRepository
 from doll.work_item import (
     MAX_LIST_LIMIT,
@@ -166,13 +165,19 @@ def test_transition_and_verification_guard_branches(tmp_path: Path) -> None:
         )
         assert ready.blocked_by_ids == ()
 
-        for actor in ("model", "runtime", "capability", "system"):
+        actors: tuple[WorkItemActor, ...] = (
+            "model",
+            "runtime",
+            "capability",
+            "system",
+        )
+        for actor in actors:
             with pytest.raises(WorkItemValidationError):
                 service.set_verification(
                     ready.work_item_id,
                     expected_revision=ready.revision,
                     verification_state="pending",
-                    actor_type=cast(WorkItemActor, actor),
+                    actor_type=actor,
                 )
         with pytest.raises(WorkItemValidationError):
             service.set_verification(
@@ -230,10 +235,14 @@ def test_invalid_parent_and_typed_links(tmp_path: Path) -> None:
         project_id = _project(repository)
         service = WorkItemService(repository)
         wrong = repository.create_record(record_type="other", metadata={})
-        secret_source = repository.create_record(
+        inactive_source = repository.create_record(
             record_type="other_source",
-            sensitivity="secret",
             metadata={},
+        )
+        repository.update_record(
+            inactive_source.id,
+            expected_revision=inactive_source.revision,
+            status="archived",
         )
 
         for invalid_project in (str(uuid4()), wrong.id):
@@ -260,7 +269,7 @@ def test_invalid_parent_and_typed_links(tmp_path: Path) -> None:
                 description="Wrong artifact type.",
                 artifact_ids=(wrong.id,),
             )
-        for invalid_source in (str(uuid4()), secret_source.id):
+        for invalid_source in (str(uuid4()), inactive_source.id):
             with pytest.raises(WorkItemValidationError):
                 service.create(
                     project_id=project_id,
@@ -357,10 +366,10 @@ def test_malformed_envelopes_and_metadata_fail_closed(tmp_path: Path) -> None:
         invalid_envelopes = (
             replace(record, record_type="other"),
             replace(record, schema_version=2),
-            replace(record, status=cast(RecordStatus, "deleted")),
+            replace(record, status="deleted"),
             replace(record, revision=0),
             replace(record, title="Different"),
-            replace(record, provenance=cast(RecordProvenance, "model-proposed")),
+            replace(record, provenance="model-proposed"),
         )
         for invalid in invalid_envelopes:
             with pytest.raises(WorkItemCorruptError):
@@ -375,7 +384,7 @@ def test_malformed_envelopes_and_metadata_fail_closed(tmp_path: Path) -> None:
             ("source_ids", [record.id]),
         )
         for key, value in mutations:
-            metadata = dict(record.metadata)
+            metadata: dict[str, object] = dict(record.metadata)
             metadata[key] = value
             with pytest.raises(WorkItemCorruptError):
                 _work_item_from_record(replace(record, metadata=metadata))
@@ -420,9 +429,9 @@ def test_validation_helper_defenses() -> None:
         [{"criterion_id": "id", "description": "d", "required_evidence_kind": 1, "blocking": True}],
         [{"criterion_id": "id", "description": "d", "required_evidence_kind": None, "blocking": 1}],
     )
-    for value in invalid_criteria:
+    for invalid_criterion in invalid_criteria:
         with pytest.raises(WorkItemValidationError):
-            _metadata_criteria({"criteria": value}, "criteria")
+            _metadata_criteria({"criteria": invalid_criterion}, "criteria")
 
     identifier = str(uuid4())
     with pytest.raises(WorkItemValidationError):
