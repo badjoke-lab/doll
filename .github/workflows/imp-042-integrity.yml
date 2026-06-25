@@ -1,0 +1,42 @@
+name: Apply IMP-042 integrity fixes
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/imp-042-integrity.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-042-procedure-record
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - name: Apply integrity fixes
+        run: python scripts/imp_042_strengthen_integrity.py
+      - name: Verify
+        run: |
+          uv run ruff check . --fix --ignore E501
+          uv run ruff format .
+          uv run ruff check . --ignore E501
+          uv run mypy src tests
+          uv run pytest -q --no-cov tests/test_procedure.py tests/test_procedure_origin.py tests/test_procedure_coverage.py tests/test_state_package_v2.py tests/test_state_package_registry.py
+          git diff --check
+      - name: Commit fixes
+        run: |
+          rm scripts/imp_042_strengthen_integrity.py
+          rm .github/workflows/imp-042-integrity.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Strengthen IMP-042 procedure integrity"
+          git push origin HEAD:imp-042-procedure-record
