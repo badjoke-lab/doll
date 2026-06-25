@@ -26,7 +26,10 @@ function expect(condition, message) {
 const status = JSON.parse(read("website/project-status.json"));
 
 expect(status.schema_version === 2, "project-status.json must use schema_version 2");
-expect(Boolean(status.maturity) && typeof status.maturity === "string", "project-status.json requires a maturity string");
+expect(
+  Boolean(status.maturity) && typeof status.maturity === "string",
+  "project-status.json requires a maturity string",
+);
 expect(
   Array.isArray(status.completed_phases) && status.completed_phases.includes("4A"),
   "project-status.json must record completed phases through Phase 4A",
@@ -53,6 +56,8 @@ expect(
 const readme = read("README.md");
 const roadmap = read("docs/spec/09-development-roadmap.md");
 const index = read("website/index.html");
+const statusClient = read("website/status.js");
+const activityCore = read("website/project-status-core.mjs");
 const middleware = read("website/functions/_middleware.js");
 const activityApi = read("website/functions/api/project-status.js");
 const manifest = JSON.parse(read("website/site.webmanifest"));
@@ -63,12 +68,12 @@ for (const required of [
   "data-project-maturity",
   "data-project-phase",
   "data-project-runtime",
-  'id="project-current"',
-  'id="project-last-completed"',
-  'id="project-next"',
-  'id="development-current"',
-  'id="development-last-completed"',
-  'id="development-next"',
+  'id="project-primary-label"',
+  'id="project-primary"',
+  'id="development-primary-label"',
+  'id="development-primary"',
+  'id="development-up-next-section"',
+  'id="development-up-next"',
   'id="development-log"',
   'data-roadmap-phase="3"',
   'data-roadmap-phase="4A"',
@@ -77,6 +82,15 @@ for (const required of [
   'src="./status.js"',
 ]) {
   expect(index.includes(required), `website/index.html is missing ${required}`);
+}
+
+for (const forbidden of [
+  'id="project-last-completed"',
+  'id="project-next"',
+  'id="development-last-completed"',
+  'id="development-next"',
+]) {
+  expect(!index.includes(forbidden), `website/index.html still contains ${forbidden}`);
 }
 
 for (const publicDocument of [index, readme]) {
@@ -97,6 +111,22 @@ expect(!index.includes("devlog.js"), "website/index.html still references devlog
 expect(
   activityApi.includes('from "../../project-status-core.mjs"'),
   "activity API must use the tested project-status core",
+);
+expect(
+  activityApi.includes("__doll-public-project-status-v4"),
+  "activity API cache key must reflect the current response semantics",
+);
+expect(
+  statusClient.includes('active ? "Current" : "Latest completed"'),
+  "status client must switch between Current and Latest completed",
+);
+expect(
+  statusClient.includes("section.hidden = !next"),
+  "status client must hide Up next when no real issue exists",
+);
+expect(
+  !activityCore.includes("not opened yet") && !activityCore.includes("plannedEntry"),
+  "activity core must not synthesize unopened implementations",
 );
 expect(
   roadmap.includes("new implementation identifiers increase monotonically from IMP-030 onward"),
@@ -193,9 +223,10 @@ expect(idleActivity.schema_version === 2, "activity schema must be version 2");
 expect(idleActivity.latest_merged_implementation === 37, "latest merged implementation must be IMP-037");
 expect(idleActivity.current === null, "idle fixture must have no current implementation");
 expect(idleActivity.last_completed?.implementation === 37, "last completed must be IMP-037");
+expect(idleActivity.next === null, "idle fixture must not publish a synthetic next implementation");
 expect(
-  idleActivity.next?.kind === "planned" && idleActivity.next?.implementation === 38,
-  "idle fixture must plan IMP-038",
+  idleActivity.numbering_policy.next_planned_implementation === 38,
+  "idle fixture must retain IMP-038 as machine-readable planning metadata",
 );
 expect(
   JSON.stringify(idleActivity.recent.map((entry) => entry.title)) ===
@@ -216,9 +247,9 @@ const activeActivity = buildProjectActivity({
   closedPulls,
   openPulls: [
     {
-      number: 122,
+      number: 125,
       title: "IMP-038: add package v2 foundation",
-      html_url: "https://example.invalid/pr/122",
+      html_url: "https://example.invalid/pr/125",
       updated_at: "2026-06-26T01:00:00Z",
     },
   ],
@@ -231,16 +262,31 @@ const activeActivity = buildProjectActivity({
       created_at: "2026-06-26T02:00:00Z",
     },
     {
-      number: 123,
+      number: 126,
       title: "IMP-039: next project-continuity slice",
-      html_url: "https://example.invalid/issue/123",
+      html_url: "https://example.invalid/issue/126",
       updated_at: "2026-06-26T03:00:00Z",
       created_at: "2026-06-26T03:00:00Z",
     },
   ],
 });
 expect(activeActivity.current?.implementation === 38, "active fixture current must be IMP-038");
-expect(activeActivity.next?.implementation === 39, "active fixture next must be IMP-039");
+expect(activeActivity.next?.implementation === 39, "active fixture up next must be the real IMP-039 issue");
+
+const issueOnlyActivity = buildProjectActivity({
+  closedPulls,
+  openIssues: [
+    {
+      number: 125,
+      title: "IMP-038: add package v2 foundation",
+      html_url: "https://example.invalid/issue/125",
+      updated_at: "2026-06-26T01:00:00Z",
+      created_at: "2026-06-26T01:00:00Z",
+    },
+  ],
+});
+expect(issueOnlyActivity.current?.implementation === 38, "a real open issue may be Current");
+expect(issueOnlyActivity.next === null, "one open issue must not create a synthetic Up next");
 
 if (!process.exitCode) {
   console.log("public-site-status check passed");
