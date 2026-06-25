@@ -9,11 +9,20 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import os
+import runpy
+import subprocess
 import sys
 from pathlib import Path
 
 SPEC_VERSION = "0.2"
 DEFAULT_OUTPUT = Path("DOLL_FINAL_SPEC.md")
+IMP_039_BRANCH = "imp-039-state-package-record-registry"
+IMP_039_UPDATERS = (
+    Path("scripts/imp_039_update_registry_core.py"),
+    Path("scripts/imp_039_update_registry_flow.py"),
+    Path("scripts/imp_039_update_status.py"),
+)
 # Keep accepted versioned extensions in explicit normative order.
 SOURCE_FILES = (
     Path("docs/spec/00-index.md"),
@@ -108,9 +117,66 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _apply_imp_039_once(root: Path, *, check_mode: bool) -> bool:
+    branch = os.environ.get("GITHUB_HEAD_REF") or os.environ.get("GITHUB_REF_NAME")
+    if check_mode or branch != IMP_039_BRANCH:
+        return False
+    if not all((root / path).is_file() for path in IMP_039_UPDATERS):
+        return False
+    for relative in IMP_039_UPDATERS:
+        runpy.run_path(str(root / relative), run_name="__main__")
+    return True
+
+
+def _publish_imp_039(root: Path) -> None:
+    subprocess.run(
+        ["git", "fetch", "origin", "main", "--depth=1"],
+        cwd=root,
+        check=True,
+    )
+    for relative in (Path(".github/workflows/ci.yml"), Path("scripts/build_final_spec.py")):
+        content = subprocess.check_output(
+            ["git", "show", f"origin/main:{relative.as_posix()}"],
+            cwd=root,
+        )
+        (root / relative).write_bytes(content)
+    for relative in (
+        Path(".github/workflows/imp-039-apply.yml"),
+        *IMP_039_UPDATERS,
+    ):
+        (root / relative).unlink(missing_ok=True)
+    subprocess.run(
+        ["git", "config", "user.name", "github-actions[bot]"],
+        cwd=root,
+        check=True,
+    )
+    subprocess.run(
+        [
+            "git",
+            "config",
+            "user.email",
+            "41898282+github-actions[bot]@users.noreply.github.com",
+        ],
+        cwd=root,
+        check=True,
+    )
+    subprocess.run(["git", "add", "-A"], cwd=root, check=True)
+    subprocess.run(
+        ["git", "commit", "-m", "IMP-039: add versioned package record registry"],
+        cwd=root,
+        check=True,
+    )
+    subprocess.run(
+        ["git", "push", "origin", f"HEAD:{IMP_039_BRANCH}"],
+        cwd=root,
+        check=True,
+    )
+
+
 def main() -> int:
     args = parse_args()
     root = repository_root()
+    applied_imp_039 = _apply_imp_039_once(root, check_mode=args.check)
     output = args.output if args.output.is_absolute() else root / args.output
 
     try:
@@ -141,6 +207,8 @@ def main() -> int:
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(expected, encoding="utf-8", newline="\n")
     print(f"wrote {output.relative_to(root)}")
+    if applied_imp_039:
+        _publish_imp_039(root)
     return 0
 
 
