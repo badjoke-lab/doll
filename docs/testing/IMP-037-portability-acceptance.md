@@ -2,35 +2,49 @@
 
 ## Status
 
-Automated evidence implemented. The primary Intel Mac offline gate remains pending, so Phase 4A is not complete.
+Accepted. The primary Intel Mac offline gate passed on exact merged `main` commit `839a4ca7a37753fadf81c3e8e79f140e6d66bc03` on 2026-06-25.
 
-## Scope
+Accepted evidence:
 
-This acceptance slice covers PORT-004 through PORT-012 using the merged IMP-030 through IMP-036 contracts and implementations.
+- `docs/testing/results/IMP-037-primary-intel-mac-2026-06-25.json`
 
-It verifies:
+Phase 4A is complete for the generic, model-independent portability foundation covered by PORT-004 through PORT-012. This does not establish the later local-migration or stable anti-lock-in claims.
 
-- generic JSON import staging and reviewed publication;
-- deterministic canonical conversation and event persistence;
-- deterministic generic JSON, JSONL, Markdown, manifest, and checksum export;
-- source environment, adapter, object, batch, and content-hash provenance;
-- unchanged repeated-import idempotency;
-- explicit quarantine, mapping, material-loss, and source-preservation evidence;
+## Verified boundary
+
+The accepted run verified:
+
+- generic import staging and reviewed publication;
+- canonical conversation and event persistence;
+- deterministic JSON, JSONL, Markdown, manifest, and checksum export;
+- source provenance and identity separation;
+- unchanged re-import idempotency;
+- explicit material loss and quarantine;
 - imported-content authority restrictions;
-- hostile parser and publication failure handling;
-- doll-independent export inspection in a separate process;
-- exact commit binding and bounded result output.
+- restart and separate-process inspection;
+- no model, runtime, preferred UI, running service, network request, cloud account, or credential.
 
-## Files
+## Accepted environment
 
-- `docs/testing/phase-4a-portability-matrix.json`
-- `scripts/run_imp_037_portability_acceptance.py`
-- `scripts/imp_037_fresh_probe.py`
-- `scripts/imp_037_export_inspector.py`
-- `tests/test_portability_acceptance.py`
-- `tests/test_portability_acceptance_static.py`
+- commit: `839a4ca7a37753fadf81c3e8e79f140e6d66bc03`;
+- operating system: `Darwin`;
+- architecture: `x86_64`;
+- Python: `3.12.13`;
+- network mode: `offline-confirmed`;
+- evidence level: `real-machine`.
 
-## CI command
+Result:
+
+```text
+result = pass
+primary_intel_mac_gate = pass
+phase4a_gate_complete = true
+stable_anti_lock_in_claim = false
+```
+
+The stored result contains no absolute paths, usernames, hostnames, credentials, secret values, private fixture content, or personal conversation data.
+
+## CI validation
 
 ```bash
 python scripts/run_imp_037_portability_acceptance.py \
@@ -38,48 +52,11 @@ python scripts/run_imp_037_portability_acceptance.py \
   --evidence-level ci
 ```
 
-Expected foundation result before primary-machine evidence:
-
-```text
-result = pass
-primary_intel_mac_gate = pending
-phase4a_gate_complete = false
-stable_anti_lock_in_claim = false
-```
-
-## Fresh-process boundary
-
-The runner starts `imp_037_fresh_probe.py` in a separate Python process with a disposable synthetic workspace. The probe imports, publishes, reopens, and exports canonical state. It then starts `imp_037_export_inspector.py` in another process after removing `PYTHONPATH`.
-
-The inspector uses only the Python standard library. It does not import doll or a third-party package. It verifies the exact file set, SHA-256 declarations, manifest, JSON/JSONL consistency, non-authoritative Markdown notice, authority notice, record counts, and preserved source identity.
-
-No model, runtime, preferred UI, running doll service, network request, cloud account, or credential is used.
-
-## Primary Intel Mac command
-
-Run only from the exact merged `main` commit on the project owner's primary Intel Mac after networking has been disabled:
-
-```bash
-python scripts/run_imp_037_portability_acceptance.py \
-  --commit-sha "$(git rev-parse HEAD)" \
-  --evidence-level real-machine \
-  --offline-confirmed
-```
-
-The output is a single bounded JSON object. Review it before storing it. Do not commit terminal history, absolute paths, usernames, hostnames, source archives, fixture text, or other machine-specific details.
-
-A separate completion PR must:
-
-1. store the accepted JSON result under `docs/testing/results/`;
-2. change the matrix real-machine gate from `pending` to `pass`;
-3. bind the result to the exact merged commit, platform, architecture, completion time, and offline mode;
-4. set `phase4a_gate_complete` to `true`;
-5. update the roadmap and generated specification;
-6. rerun CI and confirm the accepted stored evidence is preserved.
+CI validates the stored real-machine result against the matrix commit, platform, architecture, completion time, offline mode, and passing checks.
 
 ## Deliberate limitations
 
-- PORT-001 through PORT-003 and PORT-013 through PORT-016 are not completed here.
-- The generic export covers canonical conversations and conversation events only.
+- PORT-001 through PORT-003 and PORT-013 through PORT-016 remain incomplete.
+- Generic export currently covers canonical conversations and conversation events only.
 - No provider-specific, local-application, runtime, model, cloud, or private-history adapter is exercised.
 - This does not establish a local migration claim or stable anti-lock-in claim.
