@@ -1,0 +1,35 @@
+name: Diagnose IMP-039 mypy
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/imp-039-mypy-diagnose.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-039-state-package-record-registry
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - name: Capture mypy output
+        run: |
+          set +e
+          uv run mypy src tests > docs/implementation/imp-039-mypy-diagnostic.txt 2>&1
+          echo "exit_code=$?" >> docs/implementation/imp-039-mypy-diagnostic.txt
+          exit 0
+      - name: Publish diagnostic
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/implementation/imp-039-mypy-diagnostic.txt
+          git commit -m "TEMP: record IMP-039 mypy diagnostic"
+          git push origin HEAD:imp-039-state-package-record-registry
