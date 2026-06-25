@@ -1701,7 +1701,7 @@ def _readme_bytes() -> bytes:
         "This archive contains data only. Do not execute package content.\n"
         "Verify checksums.json before import.\n"
         "Secret records are omitted from unencrypted packages.\n"
-    ).encode("utf-8")
+    ).encode()
 
 
 def _rollback_export_publication(output: Path) -> None:

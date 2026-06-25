@@ -105,9 +105,7 @@ def test_new_exports_use_v2_and_remain_deterministic(tmp_path: Path) -> None:
     assert first_inspection.package_format_version == 2
     assert second_inspection == first_inspection
     assert first.read_bytes() == second.read_bytes()
-    assert b"Format version: 2" in _read_members(first)[
-        f"{package.PACKAGE_ROOT}/README.txt"
-    ]
+    assert b"Format version: 2" in _read_members(first)[f"{package.PACKAGE_ROOT}/README.txt"]
 
 
 def test_supported_v1_fixture_inspects_plans_and_imports(tmp_path: Path) -> None:
