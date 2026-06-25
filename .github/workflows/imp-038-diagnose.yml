@@ -1,0 +1,44 @@
+name: Diagnose IMP-038 patches
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/imp-038-diagnose.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Capture patch diagnostics
+        shell: bash
+        run: |
+          set +e
+          {
+            echo "STATE PACKAGE PATCH"
+            git apply --check --verbose scripts/imp-038-state-package.patch
+            echo "state_package_status=$?"
+            echo
+            echo "ROADMAP STATUS PATCH"
+            git apply --check --verbose scripts/imp-038-roadmap-status.patch
+            echo "roadmap_status=$?"
+          } > scripts/imp-038-apply-diagnostics.txt 2>&1
+          exit 0
+
+      - name: Publish diagnostics
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/imp-038-apply-diagnostics.txt
+          git commit -m "TEMP: record IMP-038 patch diagnostics"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
