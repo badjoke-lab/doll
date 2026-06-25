@@ -1,0 +1,50 @@
+name: Apply IMP-041 implementation
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/imp-041-apply.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-041-work-item-record
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - name: Apply implementation
+        run: |
+          python scripts/imp_041_update_core.py
+          python scripts/imp_041_update_package.py
+          python scripts/imp_041_update_status.py
+          python scripts/build_final_spec.py
+      - name: Format and verify
+        run: |
+          uv run ruff check . --fix --ignore E501
+          uv run ruff format .
+          uv run ruff check . --ignore E501
+          uv run mypy src tests
+          uv run python scripts/build_final_spec.py --check
+          node scripts/check-public-site-status.mjs
+          uv run pytest -q --no-cov tests/test_work_item.py tests/test_state_package_registry.py tests/test_state_package_registry_compatibility.py tests/test_project_record_v2.py
+          git diff --check
+      - name: Commit implementation
+        run: |
+          rm scripts/imp_041_update_core.py
+          rm scripts/imp_041_update_package.py
+          rm scripts/imp_041_update_status.py
+          rm .github/workflows/imp-041-apply.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "IMP-041: add WorkItemRecord v1"
+          git push origin HEAD:imp-041-work-item-record
