@@ -3,18 +3,15 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import PurePosixPath
 from types import MappingProxyType
-from typing import Mapping
-
 
 _RECORD_TYPE = re.compile(r"^[a-z][a-z0-9_]*$")
 _VALIDATOR_ID = re.compile(r"^[a-z][a-z0-9_]*$")
 
-PACKAGE_SYSTEM_CATEGORIES = frozenset(
-    {"audit_events", "migration_history", "authoritative_files"}
-)
+PACKAGE_SYSTEM_CATEGORIES = frozenset({"audit_events", "migration_history", "authoritative_files"})
 
 
 class StatePackageRegistryError(ValueError):
@@ -75,9 +72,7 @@ class AuthoritativeRecordRegistry:
 
     @property
     def by_record_type(self) -> Mapping[str, AuthoritativeRecordCategory]:
-        return MappingProxyType(
-            {category.record_type: category for category in self.categories}
-        )
+        return MappingProxyType({category.record_type: category for category in self.categories})
 
     @property
     def record_types(self) -> frozenset[str]:
@@ -86,34 +81,24 @@ class AuthoritativeRecordRegistry:
     @property
     def required_member_paths(self) -> frozenset[str]:
         return frozenset(
-            category.member_path
-            for category in self.categories
-            if category.required_member
+            category.member_path for category in self.categories if category.required_member
         )
 
     @property
     def optional_member_paths(self) -> frozenset[str]:
         return frozenset(
-            category.member_path
-            for category in self.categories
-            if not category.required_member
+            category.member_path for category in self.categories if not category.required_member
         )
 
 
 _CURRENT_RECORD_CATEGORIES = (
-    AuthoritativeRecordCategory(
-        "preference", "records/preferences.jsonl", True, "preference"
-    ),
+    AuthoritativeRecordCategory("preference", "records/preferences.jsonl", True, "preference"),
     AuthoritativeRecordCategory("policy", "records/policies.jsonl", True, "policy"),
-    AuthoritativeRecordCategory(
-        "permission", "records/permissions.jsonl", True, "permission"
-    ),
+    AuthoritativeRecordCategory("permission", "records/permissions.jsonl", True, "permission"),
     AuthoritativeRecordCategory("memory", "records/memories.jsonl", True, "memory"),
     AuthoritativeRecordCategory("claim", "records/claims.jsonl", False, "claim"),
     AuthoritativeRecordCategory("evidence", "records/evidence.jsonl", False, "evidence"),
-    AuthoritativeRecordCategory(
-        "inference", "records/inferences.jsonl", False, "inference"
-    ),
+    AuthoritativeRecordCategory("inference", "records/inferences.jsonl", False, "inference"),
     AuthoritativeRecordCategory(
         "trust_assessment",
         "records/trust-assessments.jsonl",

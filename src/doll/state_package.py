@@ -464,9 +464,7 @@ def _build_export_members(
         "README.txt": _readme_bytes(),
     }
     for category in registry.categories:
-        members[category.member_path] = _jsonl_bytes(
-            records_by_type[category.record_type]
-        )
+        members[category.member_path] = _jsonl_bytes(records_by_type[category.record_type])
     members.update(artifact_files)
 
     payload_size = sum(len(value) for value in members.values())
@@ -482,9 +480,7 @@ def _build_export_members(
         "source_workspace_schema_version": repository.workspace.record.schema_version,
         "source_state_schema_version": repository.status().schema_version,
         "state_revision": repository.status().state_revision,
-        "included_categories": sorted(
-            [*record_counts, *PACKAGE_SYSTEM_CATEGORIES]
-        ),
+        "included_categories": sorted([*record_counts, *PACKAGE_SYSTEM_CATEGORIES]),
         "excluded_categories": [
             "caches",
             "reproducible_indexes",
@@ -689,14 +685,10 @@ def _validate_member_inventory_paths(
 ) -> None:
     selected = registry or _package_record_registry(PACKAGE_FORMAT_VERSION)
     fixed = {f"{PACKAGE_ROOT}/{path}" for path in _FIXED_MEMBER_PATHS}
-    fixed.update(
-        f"{PACKAGE_ROOT}/{path}" for path in selected.required_member_paths
-    )
+    fixed.update(f"{PACKAGE_ROOT}/{path}" for path in selected.required_member_paths)
     if not fixed.issubset(paths):
         raise StatePackageIntegrityError("required package member is missing")
-    optional = {
-        f"{PACKAGE_ROOT}/{path}" for path in selected.optional_member_paths
-    }
+    optional = {f"{PACKAGE_ROOT}/{path}" for path in selected.optional_member_paths}
     artifact_prefix = f"{PACKAGE_ROOT}/files/authoritative/"
     for path in paths - fixed - optional:
         if not path.startswith(artifact_prefix) or path == artifact_prefix:
@@ -721,9 +713,7 @@ def _required_unique_string_list(
     key: str,
 ) -> tuple[str, ...]:
     value = mapping.get(key)
-    if not isinstance(value, list) or any(
-        not isinstance(item, str) or not item for item in value
-    ):
+    if not isinstance(value, list) or any(not isinstance(item, str) or not item for item in value):
         raise StatePackageValidationError(f"{key} must be a string list")
     result = tuple(value)
     if len(result) != len(set(result)):
@@ -743,9 +733,7 @@ def _validate_manifest_categories(
         )
     excluded = _required_unique_string_list(manifest, "excluded_categories")
     if set(included).intersection(excluded):
-        raise StatePackageValidationError(
-            "manifest included and excluded categories overlap"
-        )
+        raise StatePackageValidationError("manifest included and excluded categories overlap")
 
 
 def _validate_package_payloads(
@@ -759,10 +747,7 @@ def _validate_package_payloads(
     manifest = cast(dict[str, object], manifest_value)
     package_format_version = _validate_package_format_version(manifest)
     selected_registry = _package_record_registry(package_format_version)
-    if (
-        registry is not None
-        and registry.package_format_version != package_format_version
-    ):
+    if registry is not None and registry.package_format_version != package_format_version:
         raise StatePackageIntegrityError("package registry version does not match manifest")
     registry = selected_registry
     _validate_registry_validators(registry)

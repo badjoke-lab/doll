@@ -84,9 +84,7 @@ def test_supported_registries_are_explicit_and_immutable() -> None:
 
 
 def test_registry_definition_rejects_duplicates_and_unsafe_paths() -> None:
-    first = AuthoritativeRecordCategory(
-        "first", "records/first.jsonl", True, "first"
-    )
+    first = AuthoritativeRecordCategory("first", "records/first.jsonl", True, "first")
     with pytest.raises(StatePackageRegistryError):
         AuthoritativeRecordRegistry(2, (first, first))
     with pytest.raises(StatePackageRegistryError):
@@ -94,15 +92,11 @@ def test_registry_definition_rejects_duplicates_and_unsafe_paths() -> None:
             2,
             (
                 first,
-                AuthoritativeRecordCategory(
-                    "second", "records/first.jsonl", False, "second"
-                ),
+                AuthoritativeRecordCategory("second", "records/first.jsonl", False, "second"),
             ),
         )
     with pytest.raises(StatePackageRegistryError):
-        AuthoritativeRecordCategory(
-            "unsafe", "records/../unsafe.jsonl", True, "unsafe"
-        )
+        AuthoritativeRecordCategory("unsafe", "records/../unsafe.jsonl", True, "unsafe")
 
 
 def test_v2_export_inventory_and_manifest_come_from_registry(tmp_path: Path) -> None:
