@@ -50,16 +50,20 @@ def _workspace(tmp_path: Path) -> workspace.InitializedWorkspace:
 
 
 def _project(repository: StateRepository, name: str = "Project") -> str:
-    return ProjectService(repository).create_v2(
-        name=name,
-        description="Work-item coverage project.",
-        objective="Exercise defensive WorkItemRecord branches.",
-        in_scope=("Work items",),
-        out_of_scope=("Execution",),
-        success_criteria=("Invalid state fails closed",),
-        project_status="active",
-        started_at="2026-06-25T00:00:00Z",
-    ).project_id
+    return (
+        ProjectService(repository)
+        .create_v2(
+            name=name,
+            description="Work-item coverage project.",
+            objective="Exercise defensive WorkItemRecord branches.",
+            in_scope=("Work items",),
+            out_of_scope=("Execution",),
+            success_criteria=("Invalid state fails closed",),
+            project_status="active",
+            started_at="2026-06-25T00:00:00Z",
+        )
+        .project_id
+    )
 
 
 def _criterion(identifier: str = "criterion") -> AcceptanceCriterion:
