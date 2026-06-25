@@ -90,6 +90,36 @@ PACKAGE_RECORD_REGISTRIES: Mapping[int, AuthoritativeRecordRegistry] = MappingPr
         '                    to_status=cast("str", target),\n',
         "                    to_status=target,\n",
     )
+    replace_once(
+        tests,
+        '        created_at="2026-06-26T04:00:00Z",\n',
+        '        created_at="2026-06-25T20:00:00Z",\n',
+    )
+
+    registry_tests = ROOT / "tests/test_state_package_registry.py"
+    replace_once(
+        registry_tests,
+        '''    assert version_one.record_types == version_two.record_types
+    assert version_one.required_member_paths == version_two.required_member_paths
+    assert version_one.optional_member_paths == version_two.optional_member_paths
+''',
+        '''    assert version_two.record_types - version_one.record_types == {"work_item"}
+    assert version_one.required_member_paths == version_two.required_member_paths
+    assert version_two.optional_member_paths - version_one.optional_member_paths == {
+        "records/work-items.jsonl"
+    }
+''',
+    )
+    replace_once(
+        registry_tests,
+        '            categories.append("work_item")\n',
+        '            categories.append("procedure")\n',
+    )
+    replace_once(
+        registry_tests,
+        '    members[f"{package.PACKAGE_ROOT}/records/work-items.jsonl"] = b""\n',
+        '    members[f"{package.PACKAGE_ROOT}/records/procedures.jsonl"] = b""\n',
+    )
 
 
 if __name__ == "__main__":
