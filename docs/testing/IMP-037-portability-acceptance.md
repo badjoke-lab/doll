@@ -8,6 +8,8 @@ Accepted evidence:
 
 - `docs/testing/results/IMP-037-primary-intel-mac-2026-06-25.json`
 
+The stored JSON is preserved verbatim from the accepted run. Its `limitations` array still contains the pre-storage pending statement emitted by the runner; the updated matrix is the authoritative post-acceptance gate state.
+
 Phase 4A is complete for the generic, model-independent portability foundation covered by PORT-004 through PORT-012. This does not establish the later local-migration or stable anti-lock-in claims.
 
 ## Verified boundary
