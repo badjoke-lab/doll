@@ -28,6 +28,8 @@ ProjectRecord v1 remains readable, exportable, package-transferable, and updatea
 
 Upgrading v1 to v2 is a trusted mutation that requires all accepted v2 charter values to be supplied. Doll does not construct an objective, scope, success criterion, or policy link from the v1 description, a model summary, imported text, or conversation history.
 
+Schema version 2 is accepted only when its complete charter metadata is valid. Relabeling a v1 payload as v2 without the v2 fields is treated as corruption, while unsupported future schema versions remain rejected at the envelope boundary.
+
 ## Preserved guarantees
 
 - user authority for project mutation;
@@ -48,8 +50,10 @@ The IMP-040 tests prove:
 - a complete ProjectRecord v2 survives restart and Doll State Package v2 transfer;
 - deterministic v2 export contains the accepted charter fields;
 - a v1 record can be explicitly upgraded to v2 without inferring content from its description;
+- the v1 update path cannot erase or downgrade an accepted v2 charter;
 - missing, archived, and wrong-type governing policy links are rejected;
 - a package with a tampered missing governing policy link fails before target mutation;
+- incomplete v2 metadata and unsupported future schema versions fail closed;
 - existing v1 project and decision behavior remains covered by the full test suite.
 
 ## Deferred work
