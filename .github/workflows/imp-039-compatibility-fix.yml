@@ -1,0 +1,41 @@
+name: Fix IMP-039 compatibility
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/imp-039-compatibility-fix.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-039-state-package-record-registry
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - name: Apply compatibility fixes
+        run: |
+          python scripts/imp_039_fix_compatibility.py
+          uv run ruff check . --fix
+          uv run ruff format .
+          uv run ruff check .
+          uv run mypy src tests
+          uv run pytest -q tests/test_backup.py::test_old_state_package_without_backup_manifest_member_remains_valid tests/test_state_package_coverage.py::test_json_and_metadata_helpers tests/test_state_package_registry.py
+          git diff --check
+      - name: Commit fixes
+        run: |
+          rm scripts/imp_039_fix_compatibility.py
+          rm .github/workflows/imp-039-compatibility-fix.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Fix IMP-039 optional category compatibility"
+          git push origin HEAD:imp-039-state-package-record-registry
