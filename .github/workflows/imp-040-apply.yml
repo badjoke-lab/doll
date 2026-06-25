@@ -40,7 +40,7 @@ jobs:
           uv run python scripts/build_final_spec.py --check
           node scripts/check-public-site-status.mjs
       - name: Project and package tests
-        run: uv run pytest -q tests/test_project_state.py tests/test_project_record_v2.py tests/test_state_package.py tests/test_state_package_v2.py tests/test_state_package_registry.py tests/test_state_package_registry_compatibility.py
+        run: uv run pytest -q --no-cov tests/test_project_state.py tests/test_project_record_v2.py tests/test_state_package.py tests/test_state_package_v2.py tests/test_state_package_registry.py tests/test_state_package_registry_compatibility.py
       - name: Diff integrity
         run: git diff --check
       - name: Commit implementation
@@ -49,7 +49,9 @@ jobs:
           rm scripts/imp_040_update_project_state.py
           rm scripts/imp_040_update_package_status.py
           rm docs/implementation/imp-040-ruff-diagnostic.txt
+          rm docs/implementation/imp-040-pytest-diagnostic.txt
           rm .github/workflows/imp-040-ruff-diagnose.yml
+          rm .github/workflows/imp-040-pytest-diagnose.yml
           rm .github/workflows/imp-040-apply.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
