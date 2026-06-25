@@ -57,9 +57,7 @@ def test_imp_037_ci_evidence_passes_with_machine_gate_pending() -> None:
     assert evidence["source_format"] == "json"
     assert evidence["source_adapter_id"] == "generic-import"
     assert evidence["target_format"] == "doll-generic-export"
-    assert evidence["duplicate_counts"] == {
-        "unchanged_reimport_canonical_duplicates": 0
-    }
+    assert evidence["duplicate_counts"] == {"unchanged_reimport_canonical_duplicates": 0}
     assert evidence["quarantine_counts"] == {"loss_fixture": 1}
     assert evidence["loss_counts_by_severity"]["material"] >= 1
 
