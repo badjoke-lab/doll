@@ -25,6 +25,13 @@ Version 2 is intentionally a foundation format in this slice. It retains the cur
 
 Version 1 support is read compatibility only. New exports are always version 2. Inspection and import evidence preserve the original version number and never relabel a version 1 package as version 2.
 
+| Operation | Format v1 | Format v2 |
+| --- | --- | --- |
+| New export | No | Yes |
+| Inspect and verify | Yes | Yes |
+| Import planning | Yes | Yes |
+| Empty-target import | Yes | Yes |
+
 ## Preserved guarantees
 
 - read-only export;
