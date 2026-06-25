@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 import hashlib
-import io
 import json
 import zipfile
 from pathlib import Path
-from typing import cast
 
 import pytest
 
@@ -15,6 +13,7 @@ from doll.backup import create_state_backup, verify_backup
 from doll.project_state import DecisionService, ProjectService
 from doll.state import StaleRevisionError
 from doll.state_package_registry import get_authoritative_record_registry
+from doll.state_repository import StateRepository
 from doll.trust import ClaimEvidenceTrustService, TruthSource
 from doll.work_item import (
     AcceptanceCriterion,
@@ -25,24 +24,30 @@ from doll.work_item import (
 )
 
 
-def _initialized_workspace(tmp_path: Path, name: str = "workspace") -> workspace.InitializedWorkspace:
+def _initialized_workspace(
+    tmp_path: Path, name: str = "workspace"
+) -> workspace.InitializedWorkspace:
     initialized = workspace.initialize_workspace(tmp_path / name)
     with state.initialize_state_repository(initialized.root):
         pass
     return initialized
 
 
-def _project(repository: state.StateRepository, name: str = "Project") -> str:
-    return ProjectService(repository).create_v2(
-        name=name,
-        description="Synthetic WorkItemRecord test project.",
-        objective="Prove durable bounded work continuity.",
-        in_scope=("WorkItemRecord",),
-        out_of_scope=("Automatic execution",),
-        success_criteria=("Accepted work remains inspectable",),
-        project_status="active",
-        started_at="2026-06-26T00:00:00Z",
-    ).project_id
+def _project(repository: StateRepository, name: str = "Project") -> str:
+    return (
+        ProjectService(repository)
+        .create_v2(
+            name=name,
+            description="Synthetic WorkItemRecord test project.",
+            objective="Prove durable bounded work continuity.",
+            in_scope=("WorkItemRecord",),
+            out_of_scope=("Automatic execution",),
+            success_criteria=("Accepted work remains inspectable",),
+            project_status="active",
+            started_at="2026-06-26T00:00:00Z",
+        )
+        .project_id
+    )
 
 
 def _criterion() -> AcceptanceCriterion:
@@ -146,7 +151,7 @@ def test_untrusted_proposal_cannot_promote_complete_or_cancel(tmp_path: Path) ->
                 service.transition(
                     proposal.work_item_id,
                     expected_revision=proposal.revision,
-                    to_status=cast("str", target),
+                    to_status=target,
                     actor_type="model",
                 )
 
@@ -353,7 +358,7 @@ def test_work_item_package_transfer_and_state_backup(tmp_path: Path) -> None:
     create_state_backup(
         initialized.root,
         backup_path,
-        created_at="2026-06-26T04:00:00Z",
+        created_at="2026-06-25T20:00:00Z",
     )
     verify_backup(backup_path)
     with zipfile.ZipFile(backup_path, "r") as archive:

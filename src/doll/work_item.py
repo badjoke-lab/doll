@@ -57,9 +57,7 @@ _WORK_ITEM_KINDS = frozenset({"task", "milestone", "investigation", "maintenance
 _WORK_ITEM_STATUSES = frozenset(
     {"proposed", "ready", "in_progress", "blocked", "completed", "cancelled"}
 )
-_VERIFICATION_STATES = frozenset(
-    {"not_verified", "pending", "passed", "failed", "not_applicable"}
-)
+_VERIFICATION_STATES = frozenset({"not_verified", "pending", "passed", "failed", "not_applicable"})
 _ALLOWED_TRANSITIONS: dict[str, frozenset[str]] = {
     "proposed": frozenset({"ready", "cancelled"}),
     "ready": frozenset({"in_progress", "blocked", "cancelled"}),
@@ -251,7 +249,11 @@ class WorkItemService:
         include_archived: bool = False,
         limit: int = 100,
     ) -> tuple[WorkItemInfo, ...]:
-        if not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= MAX_LIST_LIMIT:
+        if (
+            not isinstance(limit, int)
+            or isinstance(limit, bool)
+            or not 1 <= limit <= MAX_LIST_LIMIT
+        ):
             raise WorkItemValidationError("work-item list limit is invalid")
         safe_project_id = _optional_uuid("project ID", project_id)
         rows = self.repository.connection.execute(
@@ -348,7 +350,7 @@ class WorkItemService:
         if safe_status == "completed":
             started_at = started_at or timestamp
             completed_at = timestamp
-        elif safe_status != "completed":
+        else:
             completed_at = None
         if safe_status == "blocked":
             blockers = current.blocked_by_ids if blocked_by_ids is None else tuple(blocked_by_ids)
@@ -580,7 +582,9 @@ def _work_item_from_record(
             raise WorkItemValidationError("work-item revision must be positive")
         project_id = _uuid("work-item project ID", _required_string(record.metadata, "project_id"))
         kind = _kind(_required_string(record.metadata, "kind"))
-        title = _text("work-item title", _required_string(record.metadata, "title"), MAX_TITLE_LENGTH)
+        title = _text(
+            "work-item title", _required_string(record.metadata, "title"), MAX_TITLE_LENGTH
+        )
         if record.title != title:
             raise WorkItemValidationError("work-item title is inconsistent")
         description = _text(
@@ -589,6 +593,11 @@ def _work_item_from_record(
             MAX_DESCRIPTION_LENGTH,
         )
         work_status = _work_status(_required_string(record.metadata, "status"))
+        if work_status != "proposed" and record.provenance not in {
+            "user-created",
+            "user-confirmed",
+        }:
+            raise WorkItemValidationError("accepted work requires trusted provenance")
         priority = _priority(record.metadata.get("priority"))
         started_at = _optional_utc("work-item started-at", record.metadata.get("started_at"))
         completed_at = _optional_utc("work-item completed-at", record.metadata.get("completed_at"))

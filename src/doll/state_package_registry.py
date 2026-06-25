@@ -122,10 +122,20 @@ _CURRENT_RECORD_CATEGORIES = (
     ),
 )
 
+_V2_RECORD_CATEGORIES = (
+    *_CURRENT_RECORD_CATEGORIES,
+    AuthoritativeRecordCategory(
+        "work_item",
+        "records/work-items.jsonl",
+        False,
+        "work_item",
+    ),
+)
+
 PACKAGE_RECORD_REGISTRIES: Mapping[int, AuthoritativeRecordRegistry] = MappingProxyType(
     {
         1: AuthoritativeRecordRegistry(1, _CURRENT_RECORD_CATEGORIES),
-        2: AuthoritativeRecordRegistry(2, _CURRENT_RECORD_CATEGORIES),
+        2: AuthoritativeRecordRegistry(2, _V2_RECORD_CATEGORIES),
     }
 )
 SUPPORTED_PACKAGE_FORMAT_VERSIONS = frozenset(PACKAGE_RECORD_REGISTRIES)
