@@ -90,3 +90,14 @@ diff --git a/scripts/check-public-site-status.mjs b/scripts/check-public-site-st
 +    status.phase?.next_implementation === 39,
 +  "project-status.json must mark Phase 4B in progress from IMP-038 with IMP-039 next",
  );
+@@ -143,10 +143,10 @@ expect(
+   "roadmap must record the accepted Phase 4A gate",
+ );
+ expect(
+-  roadmap.includes("the next implementation issue after IMP-037 is IMP-038"),
+-  "roadmap must identify IMP-038 as next",
++  roadmap.includes("the next bounded Phase 4B implementation issue receives IMP-039"),
++  "roadmap must identify IMP-039 as next after IMP-038",
+ );
+ expect(
+   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),
