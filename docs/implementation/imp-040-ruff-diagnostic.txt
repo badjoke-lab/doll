@@ -1,0 +1,167 @@
+E501 Line too long (124 > 100)
+  --> scripts/imp_040_update_package_status.py:48:101
+   |
+46 |     replace_once(
+47 |         roadmap,
+48 |         "state-package v2 export with v1 read compatibility and a versioned authoritative record registry, verified backup",
+   |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^
+49 |         "state-package v2 export with v1 read compatibility, a versioned authoritative record registry, and ProjectRecord v2 with v1 r…
+50 |     )
+   |
+
+E501 Line too long (170 > 100)
+  --> scripts/imp_040_update_package_status.py:49:101
+   |
+47 | …
+48 | …sioned authoritative record registry, verified backup",
+49 | …ned authoritative record registry, and ProjectRecord v2 with v1 read compatibility, verified backup",
+   |                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+50 | …
+51 | …
+   |
+
+E501 Line too long (111 > 100)
+  --> scripts/imp_040_update_package_status.py:54:101
+   |
+52 |         roadmap,
+53 |         "- the next bounded Phase 4B implementation issue receives IMP-040;",
+54 |         "- IMP-040 adds ProjectRecord v2 charters and preserves neutral ProjectRecord v1 read compatibility;\n"
+   |                                                                                                     ^^^^^^^^^^^
+55 |         "- the next bounded Phase 4B implementation issue receives IMP-041;",
+56 |     )
+   |
+
+E501 Line too long (109 > 100)
+  --> scripts/imp_040_update_package_status.py:71:101
+   |
+69 |         roadmap,
+70 |         "1. ProjectRecord v2 while preserving readable ProjectRecord v1;\n"
+71 |         "2. WorkItemRecord lifecycle, dependencies, blockers, acceptance criteria, and verification state;\n"
+   |                                                                                                     ^^^^^^^^^
+72 |         "3. ProcedureRecord lifecycle, versioning, non-authority rule, validation, and rollback description;\n"
+73 |         "4. ProjectCheckpointRecord basis revisions, deterministic fingerprint, confirmation, and stale detection;\n"
+   |
+
+E501 Line too long (111 > 100)
+  --> scripts/imp_040_update_package_status.py:72:101
+   |
+70 |         "1. ProjectRecord v2 while preserving readable ProjectRecord v1;\n"
+71 |         "2. WorkItemRecord lifecycle, dependencies, blockers, acceptance criteria, and verification state;\n"
+72 |         "3. ProcedureRecord lifecycle, versioning, non-authority rule, validation, and rollback description;\n"
+   |                                                                                                     ^^^^^^^^^^^
+73 |         "4. ProjectCheckpointRecord basis revisions, deterministic fingerprint, confirmation, and stale detection;\n"
+74 |         "5. deterministic `doll project status` view;\n"
+   |
+
+E501 Line too long (117 > 100)
+  --> scripts/imp_040_update_package_status.py:73:101
+   |
+71 |         "2. WorkItemRecord lifecycle, dependencies, blockers, acceptance criteria, and verification state;\n"
+72 |         "3. ProcedureRecord lifecycle, versioning, non-authority rule, validation, and rollback description;\n"
+73 |         "4. ProjectCheckpointRecord basis revisions, deterministic fingerprint, confirmation, and stale detection;\n"
+   |                                                                                                     ^^^^^^^^^^^^^^^^^
+74 |         "5. deterministic `doll project status` view;\n"
+75 |         "6. deterministic project-scoped Resume Bundle with manifest, checksums, machine-readable records, and generated HANDOFF.md;\n"
+   |
+
+E501 Line too long (135 > 100)
+  --> scripts/imp_040_update_package_status.py:75:101
+   |
+73 |         "4. ProjectCheckpointRecord basis revisions, deterministic fingerprint, confirmation, and stale detection;\n"
+74 |         "5. deterministic `doll project status` view;\n"
+75 |         "6. deterministic project-scoped Resume Bundle with manifest, checksums, machine-readable records, and generated HANDOFF.md;\n"
+   |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+76 |         "7. package, backup, restore, fresh-process, hostile-import, and secret-safe output coverage;\n"
+77 |         "8. PROJ-001 through PROJ-012 acceptance evidence.",
+   |
+
+E501 Line too long (104 > 100)
+  --> scripts/imp_040_update_package_status.py:76:101
+   |
+74 |         "5. deterministic `doll project status` view;\n"
+75 |         "6. deterministic project-scoped Resume Bundle with manifest, checksums, machine-readable records, and generated HANDOFF.md;\n"
+76 |         "7. package, backup, restore, fresh-process, hostile-import, and secret-safe output coverage;\n"
+   |                                                                                                     ^^^^
+77 |         "8. PROJ-001 through PROJ-012 acceptance evidence.",
+78 |         "1. WorkItemRecord lifecycle, dependencies, blockers, acceptance criteria, and verification state;\n"
+   |
+
+E501 Line too long (109 > 100)
+  --> scripts/imp_040_update_package_status.py:78:101
+   |
+76 |         "7. package, backup, restore, fresh-process, hostile-import, and secret-safe output coverage;\n"
+77 |         "8. PROJ-001 through PROJ-012 acceptance evidence.",
+78 |         "1. WorkItemRecord lifecycle, dependencies, blockers, acceptance criteria, and verification state;\n"
+   |                                                                                                     ^^^^^^^^^
+79 |         "2. ProcedureRecord lifecycle, versioning, non-authority rule, validation, and rollback description;\n"
+80 |         "3. ProjectCheckpointRecord basis revisions, deterministic fingerprint, confirmation, and stale detection;\n"
+   |
+
+E501 Line too long (111 > 100)
+  --> scripts/imp_040_update_package_status.py:79:101
+   |
+77 |         "8. PROJ-001 through PROJ-012 acceptance evidence.",
+78 |         "1. WorkItemRecord lifecycle, dependencies, blockers, acceptance criteria, and verification state;\n"
+79 |         "2. ProcedureRecord lifecycle, versioning, non-authority rule, validation, and rollback description;\n"
+   |                                                                                                     ^^^^^^^^^^^
+80 |         "3. ProjectCheckpointRecord basis revisions, deterministic fingerprint, confirmation, and stale detection;\n"
+81 |         "4. deterministic `doll project status` view;\n"
+   |
+
+E501 Line too long (117 > 100)
+  --> scripts/imp_040_update_package_status.py:80:101
+   |
+78 |         "1. WorkItemRecord lifecycle, dependencies, blockers, acceptance criteria, and verification state;\n"
+79 |         "2. ProcedureRecord lifecycle, versioning, non-authority rule, validation, and rollback description;\n"
+80 |         "3. ProjectCheckpointRecord basis revisions, deterministic fingerprint, confirmation, and stale detection;\n"
+   |                                                                                                     ^^^^^^^^^^^^^^^^^
+81 |         "4. deterministic `doll project status` view;\n"
+82 |         "5. deterministic project-scoped Resume Bundle with manifest, checksums, machine-readable records, and generated HANDOFF.md;\n"
+   |
+
+E501 Line too long (135 > 100)
+  --> scripts/imp_040_update_package_status.py:82:101
+   |
+80 |         "3. ProjectCheckpointRecord basis revisions, deterministic fingerprint, confirmation, and stale detection;\n"
+81 |         "4. deterministic `doll project status` view;\n"
+82 |         "5. deterministic project-scoped Resume Bundle with manifest, checksums, machine-readable records, and generated HANDOFF.md;\n"
+   |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+83 |         "6. package, backup, restore, fresh-process, hostile-import, and secret-safe output coverage;\n"
+84 |         "7. PROJ-001 through PROJ-012 acceptance evidence.",
+   |
+
+E501 Line too long (104 > 100)
+  --> scripts/imp_040_update_package_status.py:83:101
+   |
+81 |         "4. deterministic `doll project status` view;\n"
+82 |         "5. deterministic project-scoped Resume Bundle with manifest, checksums, machine-readable records, and generated HANDOFF.md;\n"
+83 |         "6. package, backup, restore, fresh-process, hostile-import, and secret-safe output coverage;\n"
+   |                                                                                                     ^^^^
+84 |         "7. PROJ-001 through PROJ-012 acceptance evidence.",
+85 |     )
+   |
+
+E501 Line too long (106 > 100)
+   --> scripts/imp_040_update_project_state.py:422:101
+    |
+420 |     )
+421 |
+422 |     project_parse_old = """        decision_ids = _metadata_reference_ids(record.metadata, "decision_ids")
+    |                                                                                                     ^^^^^^
+423 |         memory_ids = _metadata_reference_ids(record.metadata, "memory_ids")
+424 |         artifact_ids = _metadata_reference_ids(record.metadata, "artifact_ids")
+    |
+
+E501 Line too long (106 > 100)
+   --> scripts/imp_040_update_project_state.py:433:101
+    |
+431 |             )
+432 | """
+433 |     project_parse_new = """        decision_ids = _metadata_reference_ids(record.metadata, "decision_ids")
+    |                                                                                                     ^^^^^^
+434 |         memory_ids = _metadata_reference_ids(record.metadata, "memory_ids")
+435 |         artifact_ids = _metadata_reference_ids(record.metadata, "artifact_ids")
+    |
+
+Found 15 errors.
+exit_code=1
