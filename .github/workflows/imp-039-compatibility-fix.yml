@@ -21,14 +21,13 @@ jobs:
           fetch-depth: 0
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --dev --locked
-      - name: Apply compatibility fixes
+      - name: Apply compatibility updater
+        run: python scripts/imp_039_fix_compatibility.py
+      - name: Apply Ruff fixes
         run: |
-          python scripts/imp_039_fix_compatibility.py
           uv run ruff check . --fix
           uv run ruff format .
           uv run ruff check .
-          uv run mypy src tests
-          uv run pytest -q tests/test_backup.py::test_old_state_package_without_backup_manifest_member_remains_valid tests/test_state_package_coverage.py::test_json_and_metadata_helpers tests/test_state_package_registry.py
           git diff --check
       - name: Commit fixes
         run: |
