@@ -1210,6 +1210,11 @@ def _validate_procedure_package_graph(
                 predecessor is None
                 or predecessor.project_id != procedure.project_id
                 or predecessor.version >= procedure.version
+                or predecessor.procedure_status not in {"approved", "superseded"}
+                or (
+                    predecessor.procedure_status == "superseded"
+                    and predecessor.superseded_by_id != procedure.procedure_id
+                )
             ):
                 raise StatePackageValidationError("procedure predecessor relation is invalid")
         if procedure.superseded_by_id is not None:

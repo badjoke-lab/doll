@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import replace
 from pathlib import Path
 from typing import cast
@@ -15,7 +16,6 @@ from doll.procedure import (
     ProcedureActor,
     ProcedureCorruptError,
     ProcedureService,
-    ProcedureStatus,
     ProcedureValidationError,
     _audit_actor,
     _canonical_json,
@@ -40,7 +40,6 @@ from doll.procedure import (
     _version,
 )
 from doll.project_state import ProjectService
-from doll.state import RecordProvenance, RecordStatus
 from doll.state_repository import StateRepository
 
 
@@ -52,16 +51,20 @@ def _workspace(tmp_path: Path) -> workspace.InitializedWorkspace:
 
 
 def _project(repository: StateRepository, name: str = "Project") -> str:
-    return ProjectService(repository).create_v2(
-        name=name,
-        description="Procedure coverage project.",
-        objective="Exercise ProcedureRecord defensive branches.",
-        in_scope=("Procedure validation",),
-        out_of_scope=("Procedure execution",),
-        success_criteria=("Invalid state fails closed",),
-        project_status="active",
-        started_at="2026-06-25T00:00:00Z",
-    ).project_id
+    return (
+        ProjectService(repository)
+        .create_v2(
+            name=name,
+            description="Procedure coverage project.",
+            objective="Exercise ProcedureRecord defensive branches.",
+            in_scope=("Procedure validation",),
+            out_of_scope=("Procedure execution",),
+            success_criteria=("Invalid state fails closed",),
+            project_status="active",
+            started_at="2026-06-25T00:00:00Z",
+        )
+        .project_id
+    )
 
 
 def _approved(
@@ -369,7 +372,7 @@ def test_malformed_envelopes_and_metadata_fail_closed(tmp_path: Path) -> None:
         invalid_envelopes = (
             replace(record, record_type="other"),
             replace(record, schema_version=2),
-            replace(record, status=cast(RecordStatus, "deleted")),
+            replace(record, status="deleted"),
             replace(record, revision=0),
             replace(record, title="different"),
         )
@@ -403,7 +406,7 @@ def test_malformed_envelopes_and_metadata_fail_closed(tmp_path: Path) -> None:
                 replace(
                     record,
                     metadata=accepted,
-                    provenance=cast(RecordProvenance, "model-proposed"),
+                    provenance="model-proposed",
                 )
             )
 
@@ -471,7 +474,7 @@ def test_validation_helper_defenses() -> None:
 def test_persisted_semantic_guards() -> None:
     procedure_id = str(uuid4())
     replacement_id = str(uuid4())
-    invalid_calls = (
+    invalid_calls: tuple[Callable[[], None], ...] = (
         lambda: _validate_persisted_semantics(
             procedure_id,
             "draft",
@@ -520,6 +523,19 @@ def test_persisted_semantic_guards() -> None:
             (),
             None,
             (str(uuid4()),),
+            None,
+            None,
+            "2026-06-25T01:00:00Z",
+        ),
+        lambda: _validate_persisted_semantics(
+            procedure_id,
+            "approved",
+            ("Step",),
+            ("Validate",),
+            ("Rollback",),
+            (),
+            "2026-06-25T00:00:00Z",
+            (),
             None,
             None,
             "2026-06-25T01:00:00Z",

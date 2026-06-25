@@ -351,6 +351,10 @@ class ProcedureService:
         safe_verified_at = _optional_utc("procedure verified-at", verified_at)
         if safe_verified_at is None:
             raise ProcedureValidationError("procedure verified-at is required")
+        if current.approved_at is None or _parse_utc(safe_verified_at) < _parse_utc(
+            current.approved_at
+        ):
+            raise ProcedureValidationError("procedure verification precedes approval")
         safe_evidence = _reference_ids("verification evidence IDs", evidence_ids)
         _validate_evidence_links(self.repository, safe_evidence)
         metadata = dict(current_record.metadata)
@@ -692,6 +696,12 @@ def _validate_persisted_semantics(
         raise ProcedureValidationError("replacement link requires superseded status")
     if last_verified_at is None and evidence_ids:
         raise ProcedureValidationError("verification evidence requires verified-at")
+    if (
+        last_verified_at is not None
+        and approved_at is not None
+        and _parse_utc(last_verified_at) < _parse_utc(approved_at)
+    ):
+        raise ProcedureValidationError("procedure verification precedes approval")
 
 
 def _require_approvable(metadata: dict[str, object]) -> None:
@@ -753,10 +763,18 @@ def _validate_procedure_links(
             raise ProcedureValidationError(f"procedure {relation} link is invalid") from exc
         if linked.project_id != project_id:
             raise ProcedureValidationError(f"procedure {relation} crosses project scope")
-        if relation == "predecessor" and linked.version >= version:
-            raise ProcedureValidationError("procedure predecessor version must be lower")
-        if relation == "replacement" and linked.version <= version:
-            raise ProcedureValidationError("procedure replacement version must be higher")
+        if relation == "predecessor":
+            if linked.version >= version:
+                raise ProcedureValidationError("procedure predecessor version must be lower")
+            if linked.procedure_status not in {"approved", "superseded"}:
+                raise ProcedureValidationError("procedure predecessor is not accepted")
+            if linked.procedure_status == "superseded" and linked.superseded_by_id != self_id:
+                raise ProcedureValidationError("procedure predecessor has another replacement")
+        if relation == "replacement":
+            if linked.version <= version:
+                raise ProcedureValidationError("procedure replacement version must be higher")
+            if linked.supersedes_id != self_id:
+                raise ProcedureValidationError("procedure replacement is not reciprocal")
 
 
 def _create_procedure(
@@ -1075,6 +1093,10 @@ def _optional_utc(name: str, value: object) -> str | None:
     if parsed.tzinfo is None or parsed.utcoffset() != UTC.utcoffset(parsed):
         raise ProcedureValidationError(f"{name} must be UTC")
     return value
+
+
+def _parse_utc(value: str) -> datetime:
+    return datetime.fromisoformat(value[:-1] + "+00:00")
 
 
 def _operation_id(value: str | None) -> str:
