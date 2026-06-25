@@ -24,7 +24,7 @@
 - `docs/spec/08-acceptance-and-continuity-tests.md` — SHA-256 `1ae9b70cf28257b35a30238bdc46c2caea93dbd17fdf8b516ff708c9e208a698`
 - `docs/spec/08a-ai-environment-portability-acceptance.md` — SHA-256 `3a1876d8b506204254ccd54eb58cfabcf2ddc92e3edd446d90650b9ae22ff305`
 - `docs/spec/08b-project-continuity-acceptance.md` — SHA-256 `b58623f21bdd183a21e1904ebcec954ffb2b6976254b72ac52f13deae83306cc`
-- `docs/spec/09-development-roadmap.md` — SHA-256 `b84d283b3b6ed60af510903fe44fc2a3763c47beb78731f76f8f59cf5daa5b78`
+- `docs/spec/09-development-roadmap.md` — SHA-256 `550b2788bf54f0f49a276a25531b367fadaf85a39a1436962ae58aadfcf3d761`
 
 ---
 
@@ -8562,8 +8562,8 @@ Completed:
 - Phase 3 model-independent safety boundary;
 - Phase 4A AI environment portability foundation;
 - IMP-001 through IMP-023;
-- IMP-030 through IMP-038;
-- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package v2 export with v1 read compatibility, verified backup, restore, continuity acceptance, the model-independent safety boundary, canonical conversation and event state, portability adapter and result records, generic import staging, generic export, reviewed publication, source preservation, idempotency, loss visibility, and Phase 4A acceptance evidence.
+- IMP-030 through IMP-039;
+- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package v2 export with v1 read compatibility and a versioned authoritative record registry, verified backup, restore, continuity acceptance, the model-independent safety boundary, canonical conversation and event state, portability adapter and result records, generic import staging, generic export, reviewed publication, source preservation, idempotency, loss visibility, and Phase 4A acceptance evidence.
 
 Current implementation point:
 
@@ -8571,7 +8571,8 @@ Current implementation point:
 - accepted real-machine evidence is bound to commit `839a4ca7a37753fadf81c3e8e79f140e6d66bc03` on the primary Intel Mac with networking disabled;
 - Phase 4B project continuity is now the active foundation phase;
 - IMP-038 establishes Doll State Package format v2 for new exports while preserving supported format v1 inspection, verification, planning, and import;
-- the next bounded Phase 4B implementation issue receives IMP-039;
+- IMP-039 adds the versioned authoritative record registry used by package export, manifest validation, typed-validator selection, and source-version inventory checks;
+- the next bounded Phase 4B implementation issue receives IMP-040;
 - local model execution begins only after Phase 4B passes.
 
 Implementation identifier policy:
@@ -8840,23 +8841,23 @@ Goal: preserve the work itself before a model is connected to it.
 
 This phase is model-independent and follows `03b-project-continuity-and-resumption.md` and `08b-project-continuity-acceptance.md`.
 
-Status: in progress through IMP-038.
+Status: in progress through IMP-039.
 
 Completed implementation slices:
 
 - IMP-038 — Doll State Package format v2 foundation and supported format v1 read compatibility.
+- IMP-039 — versioned authoritative record registry for package validation.
 
 Remaining implementation slices, with identifiers assigned only when scheduled:
 
-1. versioned authoritative record registry for package validation;
-2. ProjectRecord v2 while preserving readable ProjectRecord v1;
-3. WorkItemRecord lifecycle, dependencies, blockers, acceptance criteria, and verification state;
-4. ProcedureRecord lifecycle, versioning, non-authority rule, validation, and rollback description;
-5. ProjectCheckpointRecord basis revisions, deterministic fingerprint, confirmation, and stale detection;
-6. deterministic `doll project status` view;
-7. deterministic project-scoped Resume Bundle with manifest, checksums, machine-readable records, and generated HANDOFF.md;
-8. package, backup, restore, fresh-process, hostile-import, and secret-safe output coverage;
-9. PROJ-001 through PROJ-012 acceptance evidence.
+1. ProjectRecord v2 while preserving readable ProjectRecord v1;
+2. WorkItemRecord lifecycle, dependencies, blockers, acceptance criteria, and verification state;
+3. ProcedureRecord lifecycle, versioning, non-authority rule, validation, and rollback description;
+4. ProjectCheckpointRecord basis revisions, deterministic fingerprint, confirmation, and stale detection;
+5. deterministic `doll project status` view;
+6. deterministic project-scoped Resume Bundle with manifest, checksums, machine-readable records, and generated HANDOFF.md;
+7. package, backup, restore, fresh-process, hostile-import, and secret-safe output coverage;
+8. PROJ-001 through PROJ-012 acceptance evidence.
 
 Implementation rule:
 

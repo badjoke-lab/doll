@@ -39,8 +39,8 @@ expect(
     status.phase?.name === "Project continuity foundation" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 38 &&
-    status.phase?.next_implementation === 39,
-  "project-status.json must mark Phase 4B in progress from IMP-038 with IMP-039 next",
+    status.phase?.next_implementation === 40,
+  "project-status.json must mark Phase 4B in progress from IMP-038 with IMP-040 next",
 );
 expect(
   status.model_runtime &&
@@ -141,8 +141,8 @@ expect(
   "roadmap must record the accepted Phase 4A gate",
 );
 expect(
-  roadmap.includes("the next bounded Phase 4B implementation issue receives IMP-039"),
-  "roadmap must identify IMP-039 as next after IMP-038",
+  roadmap.includes("the next bounded Phase 4B implementation issue receives IMP-040"),
+  "roadmap must identify IMP-040 as next after IMP-039",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),
