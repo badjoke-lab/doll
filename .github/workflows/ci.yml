@@ -8,17 +8,14 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   quality:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out implementation branch
+      - name: Check out repository
         uses: actions/checkout@v4
-        with:
-          ref: imp-046-project-continuity-coverage
-          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -30,27 +27,11 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Apply IMP-046 finalization
-        run: |
-          python scripts/finalize_imp046.py
-          rm .github/workflows/imp046-build.yml
-          rm .github/workflows/imp046-snapshot.yml
-          rm .github/workflows/imp046-snapshot-pr.yml
-          rm scripts/finalize_imp046.py
-
       - name: Verify dependency lock
         run: uv lock --check
 
       - name: Install project
         run: uv sync --dev --locked
-
-      - name: Format changed tests
-        run: uv run ruff format tests/project_continuity_support.py tests/test_project_continuity_transfer.py
 
       - name: Lint
         run: uv run ruff check .
@@ -63,27 +44,6 @@ jobs:
 
       - name: Check generated specification
         run: uv run python scripts/build_final_spec.py --check
-
-      - name: Check public project status
-        run: node scripts/check-public-site-status.mjs
-
-      - name: Run Linux test suite
-        run: uv run python scripts/run_ci_tests.py
-
-      - name: Check CLI help
-        run: uv run doll --help
-
-      - name: Check module CLI help
-        run: uv run python -m doll --help
-
-      - name: Commit verified finalization
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git show origin/main:.github/workflows/ci.yml > .github/workflows/ci.yml
-          git add -A
-          git commit -m "IMP-046: add project-continuity transfer and recovery coverage"
-          git push origin HEAD:imp-046-project-continuity-coverage
 
   test:
     name: Test (${{ matrix.os }})

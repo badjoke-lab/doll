@@ -79,8 +79,8 @@ Completed:
 - Phase 3 model-independent safety boundary;
 - Phase 4A AI environment portability foundation;
 - IMP-001 through IMP-023;
-- IMP-030 through IMP-045;
-- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package v2 export with v1 read compatibility, a versioned authoritative record registry, ProjectRecord v2 with v1 read compatibility, WorkItemRecord v1 lifecycle and dependency integrity, and ProcedureRecord v1 lifecycle and non-authority guarantees, ProjectCheckpointRecord v1 confirmation and freshness, deterministic derived project status, and deterministic project-scoped Resume Bundle export, verified backup, restore, continuity acceptance, the model-independent safety boundary, canonical conversation and event state, portability adapter and result records, generic import staging, generic export, reviewed publication, source preservation, idempotency, loss visibility, and Phase 4A acceptance evidence.
+- IMP-030 through IMP-046;
+- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package v2 export with v1 read compatibility, a versioned authoritative record registry, ProjectRecord v2 with v1 read compatibility, WorkItemRecord v1 lifecycle and dependency integrity, and ProcedureRecord v1 lifecycle and non-authority guarantees, ProjectCheckpointRecord v1 confirmation and freshness, deterministic derived project status, deterministic project-scoped Resume Bundle export, and project-continuity transfer and recovery coverage, verified backup, restore, continuity acceptance, the model-independent safety boundary, canonical conversation and event state, portability adapter and result records, generic import staging, generic export, reviewed publication, source preservation, idempotency, loss visibility, and Phase 4A acceptance evidence.
 
 Current implementation point:
 
@@ -95,7 +95,8 @@ Current implementation point:
 - IMP-043 adds ProjectCheckpointRecord v1 basis revisions, deterministic fingerprinting, trusted confirmation, and stale detection;
 - IMP-044 adds deterministic read-only derived project status and fresh-process CLI inspection;
 - IMP-045 adds deterministic project-scoped Resume Bundle export, generated HANDOFF.md, and checksum verification;
-- the next bounded Phase 4B implementation issue receives IMP-046;
+- IMP-046 adds integrated package, backup, restore, fresh-process, imported-content, compatibility, and secret-safe output coverage for project continuity;
+- the next bounded Phase 4B implementation issue receives IMP-047;
 - local model execution begins only after Phase 4B passes.
 
 Implementation identifier policy:
@@ -364,7 +365,7 @@ Goal: preserve the work itself before a model is connected to it.
 
 This phase is model-independent and follows `03b-project-continuity-and-resumption.md` and `08b-project-continuity-acceptance.md`.
 
-Status: in progress through IMP-045.
+Status: in progress through IMP-046.
 
 Completed implementation slices:
 
@@ -376,11 +377,11 @@ Completed implementation slices:
 - IMP-043 — ProjectCheckpointRecord v1 confirmation and freshness.
 - IMP-044 — deterministic read-only derived project status.
 - IMP-045 — deterministic project-scoped Resume Bundle.
+- IMP-046 — project-continuity transfer and recovery coverage.
 
 Remaining implementation slices, with identifiers assigned only when scheduled:
 
-1. package, backup, restore, fresh-process, hostile-import, and secret-safe output coverage;
-2. PROJ-001 through PROJ-012 acceptance evidence.
+1. PROJ-001 through PROJ-012 acceptance evidence.
 
 Implementation rule:
 
