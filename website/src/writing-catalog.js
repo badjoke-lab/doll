@@ -8,7 +8,12 @@ export const OFFICIAL_NOTES = Object.freeze([
     summary: "A source-based look at how pre-release review, export controls, and government-selected early access are changing the continuity risks of relying on cloud AI.",
     published: "2026-06-26",
     related: Object.freeze(["ai-permission-divide", "ai-will-remain"]),
-    externalVersions: Object.freeze([]),
+    externalVersions: Object.freeze([
+      Object.freeze({
+        publisher: "DEV Community",
+        url: "https://dev.to/sohachi/is-access-to-frontier-ai-becoming-permissioned-e84",
+      }),
+    ]),
   }),
   Object.freeze({
     id: "ai-permission-divide",
