@@ -1,5 +1,168 @@
 {
   "schema_version": 1,
   "phase": "4B",
-  "phase4b_gate_complete": false
+  "acceptance_test_id": "IMP-047-PROJECT-CONTINUITY-ACCEPTANCE",
+  "phase4b_gate_complete": false,
+  "accepted_real_machine_result": null,
+  "project_tests": [
+    {
+      "id": "PROJ-001",
+      "status": "pass",
+      "evidence_levels": [
+        "integration",
+        "package_transfer",
+        "backup_restore",
+        "fresh_process",
+        "primary_real_machine_pending"
+      ],
+      "pytest_files": [
+        "tests/test_project_state.py",
+        "tests/test_project_continuity_transfer.py",
+        "tests/test_project_continuity_acceptance.py"
+      ]
+    },
+    {
+      "id": "PROJ-002",
+      "status": "pass",
+      "evidence_levels": ["unit", "integration"],
+      "pytest_files": ["tests/test_work_item.py"]
+    },
+    {
+      "id": "PROJ-003",
+      "status": "pass",
+      "evidence_levels": [
+        "unit",
+        "integration",
+        "ci_macos",
+        "ci_windows",
+        "ci_ubuntu"
+      ],
+      "pytest_files": [
+        "tests/test_work_item.py",
+        "tests/test_project_continuity_transfer.py"
+      ]
+    },
+    {
+      "id": "PROJ-004",
+      "status": "pass",
+      "evidence_levels": ["integration", "hostile_content"],
+      "pytest_files": [
+        "tests/test_procedure.py",
+        "tests/test_project_continuity_transfer.py"
+      ]
+    },
+    {
+      "id": "PROJ-005",
+      "status": "pass",
+      "evidence_levels": ["unit", "integration"],
+      "pytest_files": [
+        "tests/test_checkpoint.py",
+        "tests/test_project_continuity_transfer.py"
+      ]
+    },
+    {
+      "id": "PROJ-006",
+      "status": "pass",
+      "evidence_levels": [
+        "integration",
+        "package_transfer",
+        "backup_restore"
+      ],
+      "pytest_files": [
+        "tests/test_work_item.py",
+        "tests/test_project_continuity_transfer.py"
+      ]
+    },
+    {
+      "id": "PROJ-007",
+      "status": "pass",
+      "evidence_levels": [
+        "integration",
+        "ci_macos",
+        "ci_windows",
+        "ci_ubuntu"
+      ],
+      "pytest_files": [
+        "tests/test_project_status.py",
+        "tests/test_project_continuity_acceptance.py"
+      ]
+    },
+    {
+      "id": "PROJ-008",
+      "status": "pass",
+      "evidence_levels": [
+        "integration",
+        "fresh_process",
+        "independent_inspection"
+      ],
+      "pytest_files": [
+        "tests/test_resume_bundle.py",
+        "tests/test_resume_bundle_hardening.py",
+        "tests/test_project_continuity_acceptance.py"
+      ]
+    },
+    {
+      "id": "PROJ-009",
+      "status": "pass",
+      "evidence_levels": [
+        "fresh_process",
+        "ci",
+        "primary_real_machine_pending"
+      ],
+      "pytest_files": [
+        "tests/test_project_status.py",
+        "tests/test_project_continuity_transfer.py",
+        "tests/test_project_continuity_acceptance.py"
+      ]
+    },
+    {
+      "id": "PROJ-010",
+      "status": "pass",
+      "evidence_levels": [
+        "integration",
+        "ci_macos",
+        "ci_windows",
+        "ci_ubuntu"
+      ],
+      "pytest_files": ["tests/test_project_continuity_transfer.py"]
+    },
+    {
+      "id": "PROJ-011",
+      "status": "pass",
+      "evidence_levels": ["integration", "hostile_content"],
+      "pytest_files": ["tests/test_project_continuity_transfer.py"]
+    },
+    {
+      "id": "PROJ-012",
+      "status": "pass",
+      "evidence_levels": [
+        "integration",
+        "ci_macos",
+        "ci_windows",
+        "ci_ubuntu",
+        "failure_cleanup"
+      ],
+      "pytest_files": [
+        "tests/test_resume_bundle_hardening.py",
+        "tests/test_resume_bundle_coverage.py",
+        "tests/test_project_continuity_transfer.py",
+        "tests/test_project_continuity_acceptance.py"
+      ]
+    }
+  ],
+  "real_machine_gate": {
+    "required": true,
+    "status": "pending",
+    "platform": "Darwin",
+    "architectures": ["x86_64", "amd64"],
+    "network_mode": "offline-confirmed",
+    "commit_sha": null,
+    "completed_at": null
+  },
+  "limitations": [
+    "The primary Intel Mac offline run is pending, so Phase 4B is not complete.",
+    "This gate proves model-independent project continuity and resumption inspection, not autonomous project management.",
+    "No local model runtime, provider, cloud account, external issue tracker, or multi-user collaboration path is exercised.",
+    "Generated project status, Resume Bundle, and HANDOFF.md remain non-authoritative derived views."
+  ]
 }
