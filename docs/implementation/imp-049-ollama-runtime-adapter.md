@@ -13,7 +13,7 @@ Implemented, hardened, and validated against the IMP-048 runtime contract. This 
 - `POST /api/generate` with `stream: false` for generation;
 - `POST /api/generate` with `stream: true` for NDJSON streaming.
 
-No model-management or hosted-service endpoint is exposed.
+No model-management or hosted-service endpoint is exposed. Method and path combinations are validated as an exact allowlist.
 
 ## Local-only boundary
 
@@ -45,13 +45,20 @@ IMP-049 adds no database migration, package member, backup member, portability r
 
 ## Failure and resource behavior
 
-The adapter returns bounded failures for unavailable runtime, unconfirmed local-only mode, missing model, malformed data, duplicate JSON keys, invalid constants, model mismatch, request and response limits, stream limits, cancellation, deadline expiry, and transport failure.
+The adapter returns bounded failures for unavailable runtime, unconfirmed local-only mode, missing model, malformed data, duplicate JSON keys, invalid constants, model mismatch, request and response limits, stream limits, cancellation, deadline expiry, and transport failure. HTTP 404 during generation or streaming is normalized as `model_not_found`.
 
 Provider response bodies and transport exception details are not propagated through normalized results. Failed operations do not mutate authoritative state.
 
 ## Tests
 
-Tests use an injected fake transport and perform no network request or process launch. They cover health, inventory normalization, opaque IDs, cloud-model exclusion, generation, ordered streaming, malformed responses, cancellation, timeout, resource limits, loopback restrictions, use through `LocalRuntimeBoundary`, and absence of authority-bearing dependencies.
+Tests use an injected fake transport and perform no network request or process launch. They cover health, inventory normalization, opaque IDs, cloud-model exclusion, generation, ordered streaming, malformed responses, cancellation, timeout, resource limits, method and path restrictions, loopback restrictions, use through `LocalRuntimeBoundary`, and absence of authority-bearing dependencies.
+
+Final cross-platform evidence at PR head `6302defe4d876ea84a8787253025de91d53f67aa`:
+
+- Linux: 1028 passed, 95.33% coverage;
+- macOS: 1028 passed, 95.33% coverage;
+- Windows: 1027 passed, 1 skipped, 95.30% coverage;
+- dependency lock, lint, formatting, strict typing, generated specification, implementation numbering, and public status checks passed.
 
 ## Real-machine evidence gap
 
