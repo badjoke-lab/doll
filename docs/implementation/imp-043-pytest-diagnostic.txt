@@ -1,0 +1,473 @@
+...........F...FF.                                                       [100%]
+=================================== FAILURES ===================================
+_________________ test_project_work_item_and_basis_link_guards _________________
+
+repository = StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_project_work_item_a...d_bas0/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f16522d6e30>, read_only=False)
+project_id = 'a599fdc7-5ed8-4dd5-875d-97dc9d22b66b'
+
+    def _validate_project_link(repository: StateRepository, project_id: str) -> None:
+        try:
+            record = repository.get_record(project_id)
+            if record.record_type != "project" or record.status != "active":
+>               raise WorkItemValidationError("work-item project link is invalid")
+E               doll.work_item.WorkItemValidationError: work-item project link is invalid
+
+project_id = 'a599fdc7-5ed8-4dd5-875d-97dc9d22b66b'
+record     = RecordEnvelope(id='a599fdc7-5ed8-4dd5-875d-97dc9d22b66b', record_type='project', schema_version=2, created_at='2026-06...mmand'], 'started_at': '2026-06-25T00:00:00Z', 'status': 'active', 'success_criteria': ['Invalid state fails closed']})
+repository = StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_project_work_item_a...d_bas0/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f16522d6e30>, read_only=False)
+
+src/doll/work_item.py:710: WorkItemValidationError
+
+The above exception was the direct cause of the following exception:
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-0/test_project_work_item_and_bas0')
+
+    def test_project_work_item_and_basis_link_guards(tmp_path: Path) -> None:
+        initialized = _workspace(tmp_path)
+        with state.open_state_repository(initialized.root) as repository:
+            first_project = _project(repository, "First")
+            second_project = _project(repository, "Second")
+            wrong = repository.create_record(record_type="other", metadata={})
+    
+            with pytest.raises(CheckpointValidationError):
+                _validate_project_link(repository, str(uuid4()))
+            with pytest.raises(CheckpointValidationError):
+                _validate_project_link(repository, wrong.id)
+            second_record = repository.get_record(second_project)
+            repository.update_record(
+                second_project,
+                expected_revision=second_record.revision,
+                status="archived",
+            )
+            with pytest.raises(CheckpointValidationError):
+                _validate_project_link(repository, second_project)
+    
+            work = WorkItemService(repository)
+            ready = work.create(
+                project_id=first_project,
+                kind="task",
+                title="Ready work",
+                description="Ready-state fixture.",
+            )
+>           cross = work.create(
+                project_id=second_project,
+                kind="task",
+                title="Cross-project work",
+                description="Cross-project fixture.",
+            )
+
+first_project = 'ac96d167-ab9e-4d8b-808a-965f1e290365'
+initialized = InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_project_work_item_and_bas0/workspace'), recor...d='0.0.1', product_version_last_opened='0.0.1', profile_preference='lite', state_revision=0, instance_label='primary'))
+ready      = WorkItemInfo(work_item_id='8b8bed05-0fb2-480f-a0b6-9b56529d54cc', project_id='ac96d167-ab9e-4d8b-808a-965f1e290365', k...r-created', sensitivity='personal', created_at='2026-06-26T03:26:52.543689Z', updated_at='2026-06-26T03:26:52.543689Z')
+repository = StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_project_work_item_a...d_bas0/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f16522d6e30>, read_only=False)
+second_project = 'a599fdc7-5ed8-4dd5-875d-97dc9d22b66b'
+second_record = RecordEnvelope(id='a599fdc7-5ed8-4dd5-875d-97dc9d22b66b', record_type='project', schema_version=2, created_at='2026-06...mmand'], 'started_at': '2026-06-25T00:00:00Z', 'status': 'active', 'success_criteria': ['Invalid state fails closed']})
+tmp_path   = PosixPath('/tmp/pytest-of-runner/pytest-0/test_project_work_item_and_bas0')
+work       = WorkItemService(repository=StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest..._bas0/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f16522d6e30>, read_only=False))
+wrong      = RecordEnvelope(id='d4135ffe-015d-4b6d-a5d7-e296cb4a08ff', record_type='other', schema_version=1, created_at='2026-06-2...6:52.539727Z', revision=1, status='active', provenance='user-created', sensitivity='personal', title=None, metadata={})
+
+tests/test_checkpoint_coverage.py:322: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/doll/work_item.py:207: in create
+    metadata = _validated_work_item_values(
+        acceptance_criteria = ()
+        actor_type = 'user'
+        artifact_ids = ()
+        depends_on_ids = ()
+        description = 'Cross-project fixture.'
+        kind       = 'task'
+        operation_id = None
+        priority   = 50
+        project_id = 'a599fdc7-5ed8-4dd5-875d-97dc9d22b66b'
+        record_id  = '74a60a98-fab6-40e6-b5de-5df47ada2a25'
+        self       = WorkItemService(repository=StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest..._bas0/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f16522d6e30>, read_only=False))
+        sensitivity = 'personal'
+        source_decision_ids = ()
+        source_ids = ()
+        title      = 'Cross-project work'
+src/doll/work_item.py:537: in _validated_work_item_values
+    _validate_project_link(repository, safe_project_id)
+        acceptance_criteria = ()
+        artifact_ids = ()
+        blocked_by_ids = ()
+        completed_at = None
+        depends_on_ids = ()
+        description = 'Cross-project fixture.'
+        kind       = 'task'
+        priority   = 50
+        project_id = 'a599fdc7-5ed8-4dd5-875d-97dc9d22b66b'
+        repository = StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_project_work_item_a...d_bas0/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f16522d6e30>, read_only=False)
+        safe_artifacts = ()
+        safe_blockers = ()
+        safe_completed_at = None
+        safe_criteria = ()
+        safe_decisions = ()
+        safe_dependencies = ()
+        safe_description = 'Cross-project fixture.'
+        safe_evidence = ()
+        safe_kind  = 'task'
+        safe_priority = 50
+        safe_project_id = 'a599fdc7-5ed8-4dd5-875d-97dc9d22b66b'
+        safe_self_id = '74a60a98-fab6-40e6-b5de-5df47ada2a25'
+        safe_sources = ()
+        safe_started_at = None
+        safe_status = 'ready'
+        safe_title = 'Cross-project work'
+        safe_verification = 'not_verified'
+        self_id    = '74a60a98-fab6-40e6-b5de-5df47ada2a25'
+        source_decision_ids = ()
+        source_ids = ()
+        started_at = None
+        title      = 'Cross-project work'
+        verification_evidence_ids = ()
+        verification_state = 'not_verified'
+        work_status = 'ready'
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+repository = StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_project_work_item_a...d_bas0/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f16522d6e30>, read_only=False)
+project_id = 'a599fdc7-5ed8-4dd5-875d-97dc9d22b66b'
+
+    def _validate_project_link(repository: StateRepository, project_id: str) -> None:
+        try:
+            record = repository.get_record(project_id)
+            if record.record_type != "project" or record.status != "active":
+                raise WorkItemValidationError("work-item project link is invalid")
+            _project_from_record(record, repository)
+        except (KeyError, ProjectDecisionCorruptError, WorkItemValidationError) as exc:
+>           raise WorkItemValidationError("work item requires a valid active project") from exc
+E           doll.work_item.WorkItemValidationError: work item requires a valid active project
+
+project_id = 'a599fdc7-5ed8-4dd5-875d-97dc9d22b66b'
+record     = RecordEnvelope(id='a599fdc7-5ed8-4dd5-875d-97dc9d22b66b', record_type='project', schema_version=2, created_at='2026-06...mmand'], 'started_at': '2026-06-25T00:00:00Z', 'status': 'active', 'success_criteria': ['Invalid state fails closed']})
+repository = StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_project_work_item_a...d_bas0/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f16522d6e30>, read_only=False)
+
+src/doll/work_item.py:713: WorkItemValidationError
+_____________________ test_create_failure_paths_roll_back ______________________
+
+_repository = StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_create_failure_path...untime/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f16522d75b0>, read_only=False)
+
+    def _raise_database_error(_repository: StateRepository) -> int:
+>       raise sqlite3.DatabaseError("synthetic checkpoint database failure")
+E       sqlite3.DatabaseError: synthetic checkpoint database failure
+
+_repository = StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_create_failure_path...untime/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f16522d75b0>, read_only=False)
+
+tests/test_checkpoint_coverage.py:93: DatabaseError
+
+The above exception was the direct cause of the following exception:
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-0/test_create_failure_paths_roll0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f16522ef830>
+
+    def test_create_failure_paths_roll_back(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        initialized = _workspace(tmp_path)
+        with state.open_state_repository(initialized.root) as repository:
+            project_id = _project(repository)
+            service = ProjectCheckpointService(repository)
+            monkeypatch.setattr(
+                StateRepository,
+                "_commit_state_revision",
+                _raise_database_error,
+            )
+            with pytest.raises(StateCorruptError):
+                _proposal(service, project_id)
+            assert (
+                repository.connection.execute(
+                    "SELECT COUNT(*) FROM records WHERE record_type = 'project_checkpoint'"
+                ).fetchone()[0]
+                == 0
+            )
+    
+        initialized = _workspace(tmp_path / "runtime")
+        with state.open_state_repository(initialized.root) as repository:
+>           project_id = _project(repository)
+                         ^^^^^^^^^^^^^^^^^^^^
+
+initialized = InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_create_failure_paths_roll0/runtime/workspace'...d='0.0.1', product_version_last_opened='0.0.1', profile_preference='lite', state_revision=0, instance_label='primary'))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f16522ef830>
+project_id = '0a6b3314-611a-4600-b4d1-1f9845c6ce55'
+repository = StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_create_failure_path...untime/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f16522d75b0>, read_only=False)
+service    = ProjectCheckpointService(repository=StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runn...roll0/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f16522d6980>, read_only=False))
+tmp_path   = PosixPath('/tmp/pytest-of-runner/pytest-0/test_create_failure_paths_roll0')
+
+tests/test_checkpoint_coverage.py:577: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_checkpoint_coverage.py:61: in _project
+    .create_v2(
+        name       = 'Project'
+        repository = StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_create_failure_path...untime/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f16522d75b0>, read_only=False)
+src/doll/project_state.py:213: in create_v2
+    project_id = _create_record(
+        actor_type = 'user'
+        artifact_ids = ()
+        decision_ids = ()
+        description = 'Checkpoint defensive coverage project.'
+        ended_at   = None
+        governing_policy_ids = ()
+        in_scope   = ('Checkpoint validation',)
+        memory_ids = ()
+        metadata   = {'artifact_ids': [], 'decision_ids': [], 'description': 'Checkpoint defensive coverage project.', 'ended_at': None, ...}
+        name       = 'Project'
+        objective  = 'Exercise ProjectCheckpointRecord failure boundaries.'
+        operation_id = None
+        out_of_scope = ('Derived status command',)
+        project_status = 'active'
+        self       = ProjectService(repository=StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-...ntime/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f16522d75b0>, read_only=False))
+        sensitivity = 'personal'
+        started_at = '2026-06-25T00:00:00Z'
+        success_criteria = ('Invalid state fails closed',)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+repository = StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_create_failure_path...untime/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f16522d75b0>, read_only=False)
+
+    def _create_record(
+        repository: StateRepository,
+        *,
+        record_type: Literal["project", "decision"],
+        title: str,
+        metadata: dict[str, object],
+        provenance: RecordProvenance,
+        sensitivity: RecordSensitivity,
+        operation_id: str | None,
+        action: str,
+        schema_version: int = 1,
+    ) -> str:
+        if repository.read_only:
+            raise ReadOnlyStateError("state repository is open in read-only mode")
+        _validate_record_fields(
+            record_type=record_type,
+            schema_version=schema_version,
+            status="active",
+            provenance=provenance,
+            sensitivity=sensitivity,
+        )
+        safe_operation_id = _validate_operation_id(operation_id)
+        record_id = str(uuid4())
+        now = _utc_now()
+        connection = repository.connection
+    
+        try:
+            connection.execute("BEGIN IMMEDIATE")
+            connection.execute(
+                """
+                INSERT INTO records (
+                    id, record_type, schema_version, created_at, updated_at,
+                    revision, status, provenance, sensitivity, title, metadata_json
+                ) VALUES (?, ?, ?, ?, ?, 1, 'active', ?, ?, ?, ?)
+                """,
+                (
+                    record_id,
+                    record_type,
+                    schema_version,
+                    now,
+                    now,
+                    provenance,
+                    sensitivity,
+                    title,
+                    _serialize_record_metadata(metadata),
+                ),
+            )
+            _insert_audit(
+                repository,
+                operation_id=safe_operation_id,
+                action=action,
+                record_type=record_type,
+                target_id=record_id,
+                metadata=metadata,
+                sensitivity=sensitivity,
+            )
+            state_revision = repository._commit_state_revision()
+            connection.execute("COMMIT")
+        except sqlite3.DatabaseError as exc:
+            if connection.in_transaction:
+                connection.execute("ROLLBACK")
+>           raise StateCorruptError(f"{record_type} record could not be created") from exc
+E           doll.state.StateCorruptError: project record could not be created
+
+action     = 'project.create_v2'
+connection = <sqlite3.Connection object at 0x7f16522d75b0>
+metadata   = {'artifact_ids': [], 'decision_ids': [], 'description': 'Checkpoint defensive coverage project.', 'ended_at': None, ...}
+now        = '2026-06-26T03:26:52.666065Z'
+operation_id = None
+provenance = 'user-created'
+record_id  = '67c13cd4-e57f-4fee-94c8-be48e57db016'
+record_type = 'project'
+repository = StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_create_failure_path...untime/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f16522d75b0>, read_only=False)
+safe_operation_id = '340cab6f-1feb-46cb-974f-e53bba3cc249'
+schema_version = 2
+sensitivity = 'personal'
+title      = 'Project'
+
+src/doll/project_state.py:829: StateCorruptError
+_____________________ test_update_failure_paths_roll_back ______________________
+
+_repository = StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_update_failure_path...untime/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f16522d7e20>, read_only=False)
+
+    def _raise_database_error(_repository: StateRepository) -> int:
+>       raise sqlite3.DatabaseError("synthetic checkpoint database failure")
+E       sqlite3.DatabaseError: synthetic checkpoint database failure
+
+_repository = StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_update_failure_path...untime/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f16522d7e20>, read_only=False)
+
+tests/test_checkpoint_coverage.py:93: DatabaseError
+
+The above exception was the direct cause of the following exception:
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-0/test_update_failure_paths_roll0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f16522ecf80>
+
+    def test_update_failure_paths_roll_back(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        initialized = _workspace(tmp_path)
+        with state.open_state_repository(initialized.root) as repository:
+            project_id = _project(repository)
+            service = ProjectCheckpointService(repository)
+            proposed = _proposal(service, project_id)
+            monkeypatch.setattr(
+                StateRepository,
+                "_commit_state_revision",
+                _raise_database_error,
+            )
+            with pytest.raises(StateCorruptError):
+                service.confirm(
+                    proposed.checkpoint_id,
+                    expected_revision=proposed.revision,
+                )
+            unchanged = service.get(proposed.checkpoint_id)
+            assert unchanged.confirmation_state == "proposed"
+            assert unchanged.revision == proposed.revision
+    
+        initialized = _workspace(tmp_path / "runtime")
+        with state.open_state_repository(initialized.root) as repository:
+>           project_id = _project(repository)
+                         ^^^^^^^^^^^^^^^^^^^^
+
+initialized = InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_update_failure_paths_roll0/runtime/workspace'...d='0.0.1', product_version_last_opened='0.0.1', profile_preference='lite', state_revision=0, instance_label='primary'))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f16522ecf80>
+project_id = '92df94f2-c251-47ed-a4fb-b9c27e0bdf5f'
+proposed   = ProjectCheckpointInfo(checkpoint_id='e7345b2f-1507-4dce-8521-78f4bdce12d5', project_id='92df94f2-c251-47ed-a4fb-b9c27e...r-created', sensitivity='personal', created_at='2026-06-26T03:26:52.710496Z', updated_at='2026-06-26T03:26:52.710496Z')
+repository = StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_update_failure_path...untime/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f16522d7e20>, read_only=False)
+service    = ProjectCheckpointService(repository=StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runn...roll0/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f16522d7d30>, read_only=False))
+tmp_path   = PosixPath('/tmp/pytest-of-runner/pytest-0/test_update_failure_paths_roll0')
+unchanged  = ProjectCheckpointInfo(checkpoint_id='e7345b2f-1507-4dce-8521-78f4bdce12d5', project_id='92df94f2-c251-47ed-a4fb-b9c27e...r-created', sensitivity='personal', created_at='2026-06-26T03:26:52.710496Z', updated_at='2026-06-26T03:26:52.710496Z')
+
+tests/test_checkpoint_coverage.py:619: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_checkpoint_coverage.py:61: in _project
+    .create_v2(
+        name       = 'Project'
+        repository = StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_update_failure_path...untime/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f16522d7e20>, read_only=False)
+src/doll/project_state.py:213: in create_v2
+    project_id = _create_record(
+        actor_type = 'user'
+        artifact_ids = ()
+        decision_ids = ()
+        description = 'Checkpoint defensive coverage project.'
+        ended_at   = None
+        governing_policy_ids = ()
+        in_scope   = ('Checkpoint validation',)
+        memory_ids = ()
+        metadata   = {'artifact_ids': [], 'decision_ids': [], 'description': 'Checkpoint defensive coverage project.', 'ended_at': None, ...}
+        name       = 'Project'
+        objective  = 'Exercise ProjectCheckpointRecord failure boundaries.'
+        operation_id = None
+        out_of_scope = ('Derived status command',)
+        project_status = 'active'
+        self       = ProjectService(repository=StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-...ntime/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f16522d7e20>, read_only=False))
+        sensitivity = 'personal'
+        started_at = '2026-06-25T00:00:00Z'
+        success_criteria = ('Invalid state fails closed',)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+repository = StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_update_failure_path...untime/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f16522d7e20>, read_only=False)
+
+    def _create_record(
+        repository: StateRepository,
+        *,
+        record_type: Literal["project", "decision"],
+        title: str,
+        metadata: dict[str, object],
+        provenance: RecordProvenance,
+        sensitivity: RecordSensitivity,
+        operation_id: str | None,
+        action: str,
+        schema_version: int = 1,
+    ) -> str:
+        if repository.read_only:
+            raise ReadOnlyStateError("state repository is open in read-only mode")
+        _validate_record_fields(
+            record_type=record_type,
+            schema_version=schema_version,
+            status="active",
+            provenance=provenance,
+            sensitivity=sensitivity,
+        )
+        safe_operation_id = _validate_operation_id(operation_id)
+        record_id = str(uuid4())
+        now = _utc_now()
+        connection = repository.connection
+    
+        try:
+            connection.execute("BEGIN IMMEDIATE")
+            connection.execute(
+                """
+                INSERT INTO records (
+                    id, record_type, schema_version, created_at, updated_at,
+                    revision, status, provenance, sensitivity, title, metadata_json
+                ) VALUES (?, ?, ?, ?, ?, 1, 'active', ?, ?, ?, ?)
+                """,
+                (
+                    record_id,
+                    record_type,
+                    schema_version,
+                    now,
+                    now,
+                    provenance,
+                    sensitivity,
+                    title,
+                    _serialize_record_metadata(metadata),
+                ),
+            )
+            _insert_audit(
+                repository,
+                operation_id=safe_operation_id,
+                action=action,
+                record_type=record_type,
+                target_id=record_id,
+                metadata=metadata,
+                sensitivity=sensitivity,
+            )
+            state_revision = repository._commit_state_revision()
+            connection.execute("COMMIT")
+        except sqlite3.DatabaseError as exc:
+            if connection.in_transaction:
+                connection.execute("ROLLBACK")
+>           raise StateCorruptError(f"{record_type} record could not be created") from exc
+E           doll.state.StateCorruptError: project record could not be created
+
+action     = 'project.create_v2'
+connection = <sqlite3.Connection object at 0x7f16522d7e20>
+metadata   = {'artifact_ids': [], 'decision_ids': [], 'description': 'Checkpoint defensive coverage project.', 'ended_at': None, ...}
+now        = '2026-06-26T03:26:52.722478Z'
+operation_id = None
+provenance = 'user-created'
+record_id  = '2ca04f67-878a-4697-9440-58de250df8f1'
+record_type = 'project'
+repository = StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_update_failure_path...untime/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f16522d7e20>, read_only=False)
+safe_operation_id = '66793d5f-1d30-467c-a678-2c0772750325'
+schema_version = 2
+sensitivity = 'personal'
+title      = 'Project'
+
+src/doll/project_state.py:829: StateCorruptError
+=========================== short test summary info ============================
+FAILED tests/test_checkpoint_coverage.py::test_project_work_item_and_basis_link_guards - doll.work_item.WorkItemValidationError: work item requires a valid active project
+FAILED tests/test_checkpoint_coverage.py::test_create_failure_paths_roll_back - doll.state.StateCorruptError: project record could not be created
+FAILED tests/test_checkpoint_coverage.py::test_update_failure_paths_roll_back - doll.state.StateCorruptError: project record could not be created
+3 failed, 15 passed in 1.27s
+exit_code=1
