@@ -2,20 +2,20 @@ name: CI
 
 on:
   pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  harden:
-    if: github.actor != 'github-actions[bot]'
+  quality:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out implementation branch
+      - name: Check out repository
         uses: actions/checkout@v4
-        with:
-          ref: imp-049-ollama-adapter
-          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -27,80 +27,64 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Apply boundary hardening
-        shell: bash
-        run: |
-          python - <<'PY'
-          from pathlib import Path
+      - name: Verify dependency lock
+        run: uv lock --check
 
-          module_path = Path("src/doll/ollama_adapter.py")
-          lines = module_path.read_text(encoding="utf-8").splitlines()
-          start = lines.index('    if method not in {"GET", "POST"}:')
-          end = lines.index('    if isinstance(body, bytes) and len(body) > MAX_OLLAMA_JSON_BYTES:', start)
-          lines[start:end] = [
-              '    expected_method = {',
-              '        "/api/version": "GET",',
-              '        "/api/tags": "GET",',
-              '        "/api/generate": "POST",',
-              '    }.get(path)',
-              '    if expected_method is None:',
-              '        raise RuntimeContractError("unsupported Ollama API path")',
-              '    if method != expected_method:',
-              '        raise RuntimeContractError("unsupported Ollama HTTP method for path")',
-              '    if expected_method == "GET" and body is not None:',
-              '        raise RuntimeContractError("Ollama GET request cannot have a body")',
-              '    if expected_method == "POST" and (not isinstance(body, bytes) or not body):',
-              '        raise RuntimeContractError("Ollama POST request requires a body")',
-          ]
-          mapping = lines.index('def _map_transport_failure(exc: OllamaTransportFailure) -> RuntimeFailureCode:')
-          if lines[mapping + 1].strip().startswith('if exc.status_code'):
-              raise SystemExit("transport status mapping already applied")
-          lines[mapping + 1:mapping + 1] = [
-              '    if exc.status_code == 404:',
-              '        return "model_not_found"',
-          ]
-          module_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+      - name: Install project
+        run: uv sync --dev --locked
 
-          test_path = Path("tests/test_ollama_adapter.py")
-          tests = test_path.read_text(encoding="utf-8").splitlines()
-          function = tests.index('def test_loopback_transport_validates_paths_sizes_failures_and_closure(')
-          delete_case = tests.index('        {"method": "DELETE"},', function)
-          pull_case = tests.index('        {"path": "/api/pull"},', delete_case)
-          tests[pull_case + 1:pull_case + 1] = [
-              '        {"method": "POST", "path": "/api/version", "body": b"{}"},',
-              '        {"method": "GET", "path": "/api/generate", "body": None},',
-          ]
-          post_case = tests.index('        {"method": "POST", "body": None},', pull_case)
-          tests[post_case] = '        {"method": "POST", "path": "/api/generate", "body": None},'
+      - name: Lint
+        run: uv run ruff check .
 
-          stream_test = tests.index('def test_stream_detects_extra_data_and_maps_transport_failures() -> None:')
-          next_test = tests.index('def test_stream_observes_cooperative_cancellation_between_lines() -> None:', stream_test)
-          invalid_case = tests.index(
-              '        (OllamaTransportFailure("invalid_response"), "invalid_response"),',
-              stream_test,
-              next_test,
-          )
-          tests[invalid_case + 1:invalid_case + 1] = [
-              '        (OllamaTransportFailure("failure", status_code=404), "model_not_found"),'
-          ]
-          test_path.write_text("\n".join(tests) + "\n", encoding="utf-8")
-          PY
+      - name: Check formatting
+        run: uv run ruff format --check .
 
-      - name: Validate hardening
-        shell: bash
-        run: |
-          uv sync --dev --locked
-          uv run ruff format src/doll/ollama_adapter.py tests/test_ollama_adapter.py
-          uv run ruff check src/doll/ollama_adapter.py tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py
-          uv run mypy src/doll/ollama_adapter.py tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py
-          uv run pytest -q --no-cov tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py
+      - name: Type check
+        run: uv run mypy src tests
 
-      - name: Commit hardened implementation
-        shell: bash
-        run: |
-          git checkout origin/main -- .github/workflows/ci.yml
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add -A
-          git commit -m "fix: enforce Ollama method and status boundaries"
-          git push origin HEAD:imp-049-ollama-adapter
+      - name: Check generated specification
+        run: uv run python scripts/build_final_spec.py --check
+
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install project
+        run: uv sync --dev --locked
+
+      - name: Run tests
+        run: uv run python scripts/run_ci_tests.py
+
+      - name: Upload pytest output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-output-${{ runner.os }}
+          path: pytest-output.txt
+          if-no-files-found: error
+
+      - name: Check CLI help
+        run: uv run doll --help
+
+      - name: Check module CLI help
+        run: uv run python -m doll --help

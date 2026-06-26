@@ -652,6 +652,8 @@ def _reject_json_constant(value: str) -> object:
 
 
 def _map_transport_failure(exc: OllamaTransportFailure) -> RuntimeFailureCode:
+    if exc.status_code == 404:
+        return "model_not_found"
     if exc.code == "cancelled":
         return "cancelled"
     if exc.code == "timeout":
@@ -669,13 +671,18 @@ def _validate_http_request(
     body: bytes | None,
     maximum_bytes: int,
 ) -> None:
-    if method not in {"GET", "POST"}:
-        raise RuntimeContractError("unsupported Ollama HTTP method")
-    if path not in {"/api/version", "/api/tags", "/api/generate"}:
+    expected_method = {
+        "/api/version": "GET",
+        "/api/tags": "GET",
+        "/api/generate": "POST",
+    }.get(path)
+    if expected_method is None:
         raise RuntimeContractError("unsupported Ollama API path")
-    if method == "GET" and body is not None:
+    if method != expected_method:
+        raise RuntimeContractError("unsupported Ollama HTTP method for path")
+    if expected_method == "GET" and body is not None:
         raise RuntimeContractError("Ollama GET request cannot have a body")
-    if method == "POST" and (not isinstance(body, bytes) or not body):
+    if expected_method == "POST" and (not isinstance(body, bytes) or not body):
         raise RuntimeContractError("Ollama POST request requires a body")
     if isinstance(body, bytes) and len(body) > MAX_OLLAMA_JSON_BYTES:
         raise RuntimeContractError("Ollama request body is too large")

@@ -633,6 +633,7 @@ def test_stream_detects_extra_data_and_maps_transport_failures() -> None:
         (OllamaTransportFailure("timeout"), "timeout"),
         (OllamaTransportFailure("resource_limit"), "resource_limit"),
         (OllamaTransportFailure("invalid_response"), "invalid_response"),
+        (OllamaTransportFailure("failure", status_code=404), "model_not_found"),
         (OllamaTransportFailure("failure"), "adapter_failure"),
     ):
         adapter, fake = confirmed_adapter()
@@ -803,8 +804,10 @@ def test_loopback_transport_validates_paths_sizes_failures_and_closure(
     invalid_calls: tuple[dict[str, object], ...] = (
         {"method": "DELETE"},
         {"path": "/api/pull"},
+        {"method": "POST", "path": "/api/version", "body": b"{}"},
+        {"method": "GET", "path": "/api/generate", "body": None},
         {"method": "GET", "body": b"{}"},
-        {"method": "POST", "body": None},
+        {"method": "POST", "path": "/api/generate", "body": None},
         {"maximum_bytes": 0},
         {"maximum_bytes": True},
         {"maximum_bytes": MAX_OLLAMA_JSON_BYTES + 1},
