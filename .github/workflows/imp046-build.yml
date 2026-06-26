@@ -1,0 +1,90 @@
+name: IMP-046 Build
+
+on:
+  push:
+    branches:
+      - imp-046-project-continuity-coverage
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-046-project-continuity-coverage
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Detect completed branch
+        id: state
+        shell: bash
+        run: |
+          if [ -f tests/test_project_continuity_transfer.py ]; then
+            echo "complete=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "complete=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Apply branch changes
+        if: steps.state.outputs.complete == 'false'
+        run: python scripts/finalize_imp046.py
+
+      - name: Verify dependency lock
+        if: steps.state.outputs.complete == 'false'
+        run: uv lock --check
+
+      - name: Install project
+        if: steps.state.outputs.complete == 'false'
+        run: uv sync --dev --locked
+
+      - name: Format tests
+        if: steps.state.outputs.complete == 'false'
+        run: uv run ruff format tests/project_continuity_support.py tests/test_project_continuity_transfer.py
+
+      - name: Lint
+        if: steps.state.outputs.complete == 'false'
+        run: uv run ruff check .
+
+      - name: Check formatting
+        if: steps.state.outputs.complete == 'false'
+        run: uv run ruff format --check .
+
+      - name: Type check
+        if: steps.state.outputs.complete == 'false'
+        run: uv run mypy src tests
+
+      - name: Check generated specification
+        if: steps.state.outputs.complete == 'false'
+        run: uv run python scripts/build_final_spec.py --check
+
+      - name: Check public project status
+        if: steps.state.outputs.complete == 'false'
+        run: node scripts/check-public-site-status.mjs
+
+      - name: Run Linux test suite
+        if: steps.state.outputs.complete == 'false'
+        run: uv run python scripts/run_ci_tests.py
+
+      - name: Commit branch changes
+        if: steps.state.outputs.complete == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "IMP-046: add project-continuity transfer and recovery coverage"
+          git push origin HEAD:imp-046-project-continuity-coverage
