@@ -1,38 +1,14 @@
 name: Diagnose IMP-043 Ruff
 
 on:
-  pull_request:
-    branches: [main]
-    paths: [.github/workflows/imp-043-ruff-diagnose.yml]
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  diagnose:
+  disabled:
+    if: false
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: imp-043-project-checkpoint
-      - uses: astral-sh/setup-uv@v6
-      - run: uv sync --dev --locked
-      - run: |
-          python scripts/imp_043_update_registry.py
-          python scripts/imp_043_update_fixtures.py
-          python scripts/imp_043_update_checkpoint_tests.py
-          python scripts/imp_043_update_package_core.py
-          python scripts/imp_043_update_package_graph.py
-          python scripts/imp_043_update_status.py
-          python scripts/build_final_spec.py
-      - run: |
-          set +e
-          uv run ruff check . --fix --ignore E501 > docs/implementation/imp-043-ruff-diagnostic.txt 2>&1
-          echo "exit_code=$?" >> docs/implementation/imp-043-ruff-diagnostic.txt
-          exit 0
-      - run: |
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add docs/implementation/imp-043-ruff-diagnostic.txt
-          git commit -m "TEMP: record IMP-043 Ruff diagnostic"
-          git push origin HEAD:imp-043-project-checkpoint
+      - run: echo "IMP-043 Ruff diagnosis is complete."
