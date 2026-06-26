@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/home/runner/work/doll/doll/scripts/imp047_complete_gate.py", line 407, in <module>
+    main()
+  File "/home/runner/work/doll/doll/scripts/imp047_complete_gate.py", line 403, in main
+    update_checker()
+  File "/home/runner/work/doll/doll/scripts/imp047_complete_gate.py", line 364, in update_checker
+    text = replace_once(
+           ^^^^^^^^^^^^^
+  File "/home/runner/work/doll/doll/scripts/imp047_complete_gate.py", line 14, in replace_once
+    raise RuntimeError(f"missing replacement for {label}")
+RuntimeError: missing replacement for Phase 5 roadmap marker
+
+exit_code=1
