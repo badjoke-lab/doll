@@ -87,8 +87,11 @@ jobs:
       - name: Install project
         run: uv sync --dev --locked
 
-      - name: Format implementation
-        run: uv run ruff format src/doll/ollama_adapter.py tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py
+      - name: Normalize implementation
+        shell: bash
+        run: |
+          uv run ruff check --fix src/doll/ollama_adapter.py tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py
+          uv run ruff format src/doll/ollama_adapter.py tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py
 
       - name: Lint implementation
         run: uv run ruff check src/doll/ollama_adapter.py tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py
