@@ -2,7 +2,7 @@
 
 ## Status
 
-Implemented and validated against the IMP-048 runtime contract. This slice adds a concrete adapter but does not claim that Ollama or a model is installed or usable on the project owner's machine.
+Implemented, hardened, and validated against the IMP-048 runtime contract. This slice adds a concrete adapter but does not claim that Ollama or a model is installed or usable on the project owner's machine.
 
 ## API surface
 
