@@ -1,0 +1,86 @@
+name: IMP-045 Finalize
+
+on:
+  push:
+    branches:
+      - imp-045-resume-bundle
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out implementation branch
+        uses: actions/checkout@v4
+        with:
+          ref: imp-045-resume-bundle
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Apply reviewed IMP-045 finalization
+        run: python scripts/finalize_imp045.py
+
+      - name: Verify dependency lock
+        run: uv lock --check
+
+      - name: Install project
+        run: uv sync --dev --locked
+
+      - name: Format changed Python files
+        run: >-
+          uv run ruff format
+          src/doll/project_cli.py
+          src/doll/resume_bundle.py
+          tests/test_resume_bundle.py
+          tests/test_resume_bundle_hardening.py
+          scripts/finalize_imp045.py
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Check formatting
+        run: uv run ruff format --check .
+
+      - name: Type check
+        run: uv run mypy src tests
+
+      - name: Check generated specification
+        run: uv run python scripts/build_final_spec.py --check
+
+      - name: Check public project status
+        run: node scripts/check-public-site-status.mjs
+
+      - name: Run Linux test suite
+        run: uv run python scripts/run_ci_tests.py
+
+      - name: Check CLI help
+        run: uv run doll --help
+
+      - name: Check module CLI help
+        run: uv run python -m doll --help
+
+      - name: Commit finalized branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/imp045-finalize.yml scripts/finalize_imp045.py
+          git add -A
+          git commit -m "IMP-045: finalize Resume Bundle implementation"
+          git push origin HEAD:imp-045-resume-bundle
