@@ -1,15 +1,2 @@
-F841 Local variable `confirmed` is assigned to but never used
-   --> tests/test_checkpoint.py:388:9
-    |
-386 |         service = ProjectCheckpointService(repository)
-387 |         proposed = _propose(repository, project_id, items)
-388 |         confirmed = service.confirm(
-    |         ^^^^^^^^^
-389 |             proposed.checkpoint_id,
-390 |             expected_revision=proposed.revision,
-    |
-help: Remove assignment to unused variable `confirmed`
-
-Found 2 errors (1 fixed, 1 remaining).
-No fixes available (1 hidden fix can be enabled with the `--unsafe-fixes` option).
-exit_code=1
+Found 1 error (1 fixed, 0 remaining).
+exit_code=0
