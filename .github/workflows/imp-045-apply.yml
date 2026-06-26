@@ -18,8 +18,10 @@ jobs:
           fetch-depth: 0
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --dev --locked
-      - name: Apply CLI
-        run: python scripts/imp_045_update_cli.py
+      - name: Apply updates
+        run: |
+          python scripts/imp_045_update_cli.py
+          python scripts/imp_045_fix_typing.py
       - name: Ruff
         run: |
           uv run ruff check . --fix --ignore E501
@@ -32,6 +34,9 @@ jobs:
       - name: Commit
         run: |
           rm -f scripts/imp_045_update_cli.py
+          rm -f scripts/imp_045_fix_typing.py
+          rm -f docs/implementation/imp-045-mypy-diagnostic.txt
+          rm -f .github/workflows/imp-045-mypy-diagnose.yml
           rm -f .github/workflows/imp-045-apply.yml
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
