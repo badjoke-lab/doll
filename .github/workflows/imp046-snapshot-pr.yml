@@ -1,0 +1,23 @@
+name: IMP-046 PR Snapshot
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: imp046-pr-source
+          path: |
+            src
+            tests
+            docs
+            scripts
+            pyproject.toml
+            uv.lock
