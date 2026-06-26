@@ -1,0 +1,29 @@
+name: Format IMP-044 coverage tests
+on:
+  pull_request:
+    branches: [main]
+    paths: [.github/workflows/imp-044-coverage-format.yml]
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-044-derived-project-status
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - run: |
+          uv run ruff check . --fix
+          uv run ruff format .
+          uv run ruff check .
+          uv run mypy src tests
+          uv run pytest -q --no-cov tests/test_project_status.py tests/test_project_status_coverage.py
+      - run: |
+          rm .github/workflows/imp-044-coverage-format.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "Strengthen IMP-044 defensive coverage"
+          git push origin HEAD:imp-044-derived-project-status
