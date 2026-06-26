@@ -47,6 +47,20 @@ def main() -> None:
         archived_block + malformed_block,
     )
 
+    secret_block = '''        secret = repository.create_record(
+            record_type="basis",
+            sensitivity="secret",
+            metadata={},
+        )
+'''
+    hostile_secret_block = '''        secret = repository.create_record(record_type="basis", metadata={})
+        repository.connection.execute(
+            "UPDATE records SET sensitivity = 'secret' WHERE id = ?",
+            (secret.id,),
+        )
+'''
+    text = replace_once(text, secret_block, hostile_secret_block)
+
     runtime_anchor = '    initialized = _workspace(tmp_path / "runtime")\n'
     if text.count(runtime_anchor) != 2:
         raise RuntimeError("runtime fixture anchors changed")
