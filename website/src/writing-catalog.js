@@ -1,5 +1,16 @@
 export const OFFICIAL_NOTES = Object.freeze([
   Object.freeze({
+    id: "permissioned-ai-access",
+    kind: "official",
+    title: "Is Access to Frontier AI Becoming Permissioned?",
+    path: "/notes/permissioned-ai-access/",
+    description: "What the reported GPT-5.6 rollout and Anthropic's suspension of Fable 5 and Mythos 5 suggest about the future of cloud AI access.",
+    summary: "A source-based look at how pre-release review, export controls, and government-selected early access are changing the continuity risks of relying on cloud AI.",
+    published: "2026-06-26",
+    related: Object.freeze(["ai-permission-divide", "ai-will-remain"]),
+    externalVersions: Object.freeze([]),
+  }),
+  Object.freeze({
     id: "ai-permission-divide",
     kind: "official",
     title: "The AI Divide Will Be About Permission, Not Access",
@@ -7,7 +18,7 @@ export const OFFICIAL_NOTES = Object.freeze([
     description: "What corporate restrictions on AI agents may tell us about a future in which access is widespread but meaningful capability is tiered by permission.",
     summary: "How ordinary restrictions on powerful AI agents may point toward a wider division based on which capabilities people and institutions are permitted to use.",
     published: "2026-06-21",
-    related: Object.freeze(["ai-will-remain"]),
+    related: Object.freeze(["permissioned-ai-access", "ai-will-remain"]),
     externalVersions: Object.freeze([]),
   }),
   Object.freeze({
@@ -19,7 +30,7 @@ export const OFFICIAL_NOTES = Object.freeze([
     summary: "A translated conversation with GPT-5.5 Thinking about whether the conditions that made doll seem necessary are already beginning to emerge.",
     published: "2026-06-19",
     updated: "2026-06-20",
-    related: Object.freeze(["ai-permission-divide", "why-im-building-doll"]),
+    related: Object.freeze(["permissioned-ai-access", "ai-permission-divide", "why-im-building-doll"]),
     externalVersions: Object.freeze([]),
   }),
 ]);
