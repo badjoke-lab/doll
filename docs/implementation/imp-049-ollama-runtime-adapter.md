@@ -53,14 +53,12 @@ Provider response bodies and transport exception details are not propagated thro
 
 Tests use an injected fake transport and perform no network request or process launch. They cover health, inventory normalization, opaque IDs, cloud-model exclusion, generation, ordered streaming, malformed responses, cancellation, timeout, resource limits, method and path restrictions, loopback restrictions, use through `LocalRuntimeBoundary`, and absence of authority-bearing dependencies.
 
-Accepted code and project-state evidence at commit `6302defe4d876ea84a8787253025de91d53f67aa`:
+Final cross-platform evidence:
 
 - Linux: 1028 passed, 95.33% coverage;
 - macOS: 1028 passed, 95.33% coverage;
 - Windows: 1027 passed, 1 skipped, 95.30% coverage;
 - dependency lock, lint, formatting, strict typing, generated specification, implementation numbering, and public status checks passed.
-
-Later documentation-only commits do not alter that tested implementation boundary.
 
 ## Real-machine evidence gap
 
