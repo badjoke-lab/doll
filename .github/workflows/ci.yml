@@ -1,23 +1,21 @@
 name: CI
 
 on:
+  pull_request:
   push:
     branches:
-      - imp-048-runtime-adapter-contract
+      - main
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  materialize-docs:
-    if: github.actor != 'github-actions[bot]'
+  quality:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out implementation branch
+      - name: Check out repository
         uses: actions/checkout@v4
-        with:
-          ref: imp-048-runtime-adapter-contract
-          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -29,56 +27,64 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Decode documentation payloads
-        shell: bash
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import base64
-          import gzip
-          import hashlib
+      - name: Verify dependency lock
+        run: uv lock --check
 
-          pairs = [
-              (
-                  Path('scripts/imp048_docs_payload/roadmap.gz.b64'),
-                  Path('docs/spec/09-development-roadmap.md'),
-                  '58bf2d4a9fc3f31e85beb613d29e8b88f6e2c52e07df136f78b1f5247d94d899',
-              ),
-              (
-                  Path('scripts/imp048_docs_payload/checker.gz.b64'),
-                  Path('scripts/check-public-site-status.mjs'),
-                  '96d37b4488f320054bd2f4271a4e3add3be70d1fb8c24eeb83654a16d6e37794',
-              ),
-          ]
-          for source, destination, expected in pairs:
-              compressed = base64.b64decode(source.read_text(encoding='ascii'), validate=True)
-              content = gzip.decompress(compressed)
-              actual = hashlib.sha256(content).hexdigest()
-              if actual != expected:
-                  raise SystemExit(f'payload checksum mismatch for {destination}: {actual}')
-              destination.write_bytes(content)
-          PY
+      - name: Install project
+        run: uv sync --dev --locked
 
-      - name: Validate finalized implementation
-        shell: bash
-        run: |
-          uv sync --dev --locked
-          uv run python scripts/build_final_spec.py
-          uv run ruff check .
-          uv run ruff format --check .
-          uv run mypy src tests
-          uv run python scripts/build_final_spec.py --check
-          node scripts/check-public-site-status.mjs
-          uv run pytest -q --no-cov tests/test_runtime_adapter.py tests/test_runtime_adapter_static.py
-          git diff --check
+      - name: Lint
+        run: uv run ruff check .
 
-      - name: Commit finalized implementation
-        shell: bash
-        run: |
-          rm -rf scripts/imp048_docs_payload
-          git checkout origin/main -- .github/workflows/ci.yml
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add -A
-          git commit -m "docs: record IMP-048 Phase 5 contract state"
-          git push origin HEAD:imp-048-runtime-adapter-contract
+      - name: Check formatting
+        run: uv run ruff format --check .
+
+      - name: Type check
+        run: uv run mypy src tests
+
+      - name: Check generated specification
+        run: uv run python scripts/build_final_spec.py --check
+
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install project
+        run: uv sync --dev --locked
+
+      - name: Run tests
+        run: uv run python scripts/run_ci_tests.py
+
+      - name: Upload pytest output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-output-${{ runner.os }}
+          path: pytest-output.txt
+          if-no-files-found: error
+
+      - name: Check CLI help
+        run: uv run doll --help
+
+      - name: Check module CLI help
+        run: uv run python -m doll --help

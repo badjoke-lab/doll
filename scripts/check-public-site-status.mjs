@@ -37,10 +37,10 @@ expect(
 expect(
   status.phase?.id === "5" &&
     status.phase?.name === "Local runtime and model integration" &&
-    status.phase?.state === "ready" &&
-    status.phase?.started_by_implementation === null &&
-    status.phase?.next_implementation === 48,
-  "project-status.json must mark Phase 5 ready with IMP-048 next",
+    status.phase?.state === "in_progress" &&
+    status.phase?.started_by_implementation === 48 &&
+    status.phase?.next_implementation === 49,
+  "project-status.json must mark Phase 5 in progress from IMP-048 with IMP-049 next",
 );
 expect(
   status.model_runtime &&
@@ -146,8 +146,12 @@ expect(
   "roadmap must record the accepted Phase 4B gate",
 );
 expect(
-  roadmap.includes("the first bounded Phase 5 implementation issue receives IMP-048 when opened"),
-  "roadmap must identify IMP-048 as the next implementation identifier",
+  roadmap.includes("IMP-048 establishes the runtime-independent local adapter contract"),
+  "roadmap must record the IMP-048 runtime adapter contract",
+);
+expect(
+  roadmap.includes("the first real local runtime adapter receives IMP-049 when opened"),
+  "roadmap must identify IMP-049 as the next implementation identifier",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),
