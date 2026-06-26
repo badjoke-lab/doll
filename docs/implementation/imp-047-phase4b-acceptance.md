@@ -4,6 +4,8 @@
 
 Automated evidence implemented. The primary Intel Mac offline gate remains pending, so Phase 4B is not complete.
 
+This acceptance PR may merge while that gate is pending, but issue #145 must remain open until the separate real-machine completion PR passes.
+
 ## Scope
 
 This acceptance slice covers PROJ-001 through PROJ-012 using the merged IMP-038 through IMP-046 contracts and implementations.
