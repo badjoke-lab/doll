@@ -7,7 +7,7 @@ permissions:
   contents: write
 
 jobs:
-  materialize:
+  diagnose:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
@@ -24,8 +24,6 @@ jobs:
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
-        with:
-          enable-cache: true
 
       - name: Decode staged implementation
         shell: bash
@@ -84,31 +82,24 @@ jobs:
           Path("tests/test_ollama_adapter.py").write_bytes(test_content)
           PY
 
-      - name: Install project
-        run: uv sync --dev --locked
-
-      - name: Normalize implementation
+      - name: Capture lint diagnostic
         shell: bash
         run: |
-          uv run ruff check --fix src/doll/ollama_adapter.py tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py
-          uv run ruff format src/doll/ollama_adapter.py tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py
+          uv sync --dev --locked
+          set +e
+          {
+            uv run ruff --version
+            uv run ruff check --fix src/doll/ollama_adapter.py tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py
+          } > imp049-lint-diagnostic.txt 2>&1
+          code=$?
+          printf '\nexit_code=%s\n' "$code" >> imp049-lint-diagnostic.txt
+          cat imp049-lint-diagnostic.txt
 
-      - name: Lint implementation
-        run: uv run ruff check src/doll/ollama_adapter.py tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py
-
-      - name: Type check implementation
-        run: uv run mypy src/doll/ollama_adapter.py tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py
-
-      - name: Run focused tests
-        run: uv run pytest -q --no-cov tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py
-
-      - name: Commit materialized implementation
+      - name: Commit diagnostic
         shell: bash
         run: |
-          rm -rf scripts/imp049_payload
-          git checkout origin/main -- .github/workflows/ci.yml
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add -A
-          git commit -m "IMP-049: add first local Ollama runtime adapter"
+          git add imp049-lint-diagnostic.txt
+          git commit -m "chore: capture IMP-049 lint diagnostic"
           git push origin HEAD:imp-049-ollama-adapter
