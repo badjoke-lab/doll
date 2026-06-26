@@ -141,8 +141,12 @@ expect(
   "roadmap must record the accepted Phase 4A gate",
 );
 expect(
-  roadmap.includes("the next bounded Phase 4B implementation issue receives IMP-047"),
-  "roadmap must identify IMP-047 as next after IMP-046",
+  roadmap.includes("the primary Intel Mac offline gate remains pending"),
+  "roadmap must keep the IMP-047 primary-machine gate pending",
+);
+expect(
+  roadmap.includes("no Phase 5 implementation identifier is assigned until Phase 4B passes"),
+  "roadmap must keep Phase 5 blocked until Phase 4B passes",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),
