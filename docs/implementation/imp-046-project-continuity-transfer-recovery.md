@@ -2,7 +2,7 @@
 
 ## Status
 
-Implemented for review.
+Implemented for review. Final merge remains gated by cross-platform CI.
 
 ## Purpose
 
