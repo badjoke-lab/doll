@@ -34,76 +34,56 @@ jobs:
           from pathlib import Path
 
           module_path = Path("src/doll/ollama_adapter.py")
-          module = module_path.read_text(encoding="utf-8")
-          old = '''    if method not in {"GET", "POST"}:
-              raise RuntimeContractError("unsupported Ollama HTTP method")
-          if path not in {"/api/version", "/api/tags", "/api/generate"}:
-              raise RuntimeContractError("unsupported Ollama API path")
-          if method == "GET" and body is not None:
-              raise RuntimeContractError("Ollama GET request cannot have a body")
-          if method == "POST" and (not isinstance(body, bytes) or not body):
-              raise RuntimeContractError("Ollama POST request requires a body")
-          '''
-          new = '''    expected_method = {
-              "/api/version": "GET",
-              "/api/tags": "GET",
-              "/api/generate": "POST",
-          }.get(path)
-          if expected_method is None:
-              raise RuntimeContractError("unsupported Ollama API path")
-          if method != expected_method:
-              raise RuntimeContractError("unsupported Ollama HTTP method for path")
-          if expected_method == "GET" and body is not None:
-              raise RuntimeContractError("Ollama GET request cannot have a body")
-          if expected_method == "POST" and (not isinstance(body, bytes) or not body):
-              raise RuntimeContractError("Ollama POST request requires a body")
-          '''
-          if old not in module:
-              raise SystemExit("HTTP validation patch target missing")
-          module = module.replace(old, new, 1)
-          old = '''def _map_transport_failure(exc: OllamaTransportFailure) -> RuntimeFailureCode:
-              if exc.code == "cancelled":
-          '''
-          new = '''def _map_transport_failure(exc: OllamaTransportFailure) -> RuntimeFailureCode:
-              if exc.status_code == 404:
-                  return "model_not_found"
-              if exc.code == "cancelled":
-          '''
-          if old not in module:
-              raise SystemExit("transport mapping patch target missing")
-          module_path.write_text(module.replace(old, new, 1), encoding="utf-8")
+          lines = module_path.read_text(encoding="utf-8").splitlines()
+          start = lines.index('    if method not in {"GET", "POST"}:')
+          end = lines.index('    if isinstance(body, bytes) and len(body) > MAX_OLLAMA_JSON_BYTES:', start)
+          lines[start:end] = [
+              '    expected_method = {',
+              '        "/api/version": "GET",',
+              '        "/api/tags": "GET",',
+              '        "/api/generate": "POST",',
+              '    }.get(path)',
+              '    if expected_method is None:',
+              '        raise RuntimeContractError("unsupported Ollama API path")',
+              '    if method != expected_method:',
+              '        raise RuntimeContractError("unsupported Ollama HTTP method for path")',
+              '    if expected_method == "GET" and body is not None:',
+              '        raise RuntimeContractError("Ollama GET request cannot have a body")',
+              '    if expected_method == "POST" and (not isinstance(body, bytes) or not body):',
+              '        raise RuntimeContractError("Ollama POST request requires a body")',
+          ]
+          mapping = lines.index('def _map_transport_failure(exc: OllamaTransportFailure) -> RuntimeFailureCode:')
+          if lines[mapping + 1].strip().startswith('if exc.status_code'):
+              raise SystemExit("transport status mapping already applied")
+          lines[mapping + 1:mapping + 1] = [
+              '    if exc.status_code == 404:',
+              '        return "model_not_found"',
+          ]
+          module_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
           test_path = Path("tests/test_ollama_adapter.py")
-          test = test_path.read_text(encoding="utf-8")
-          old = '''        {"method": "DELETE"},
-                  {"path": "/api/pull"},
-                  {"method": "GET", "body": b"{}"},
-                  {"method": "POST", "body": None},
-          '''
-          new = '''        {"method": "DELETE"},
-                  {"path": "/api/pull"},
-                  {"method": "POST", "path": "/api/version", "body": b"{}"},
-                  {"method": "GET", "path": "/api/generate", "body": None},
-                  {"method": "GET", "body": b"{}"},
-                  {"method": "POST", "path": "/api/generate", "body": None},
-          '''
-          if old not in test:
-              raise SystemExit("HTTP validation test target missing")
-          test = test.replace(old, new, 1)
-          start = test.index("def test_stream_detects_extra_data_and_maps_transport_failures() -> None:")
-          end = test.index("\n\ndef test_stream_observes_cooperative_cancellation_between_lines", start)
-          block = test[start:end]
-          old = '''        (OllamaTransportFailure("invalid_response"), "invalid_response"),
-                  (OllamaTransportFailure("failure"), "adapter_failure"),
-          '''
-          new = '''        (OllamaTransportFailure("invalid_response"), "invalid_response"),
-                  (OllamaTransportFailure("failure", status_code=404), "model_not_found"),
-                  (OllamaTransportFailure("failure"), "adapter_failure"),
-          '''
-          if old not in block:
-              raise SystemExit("stream mapping test target missing")
-          block = block.replace(old, new, 1)
-          test_path.write_text(test[:start] + block + test[end:], encoding="utf-8")
+          tests = test_path.read_text(encoding="utf-8").splitlines()
+          function = tests.index('def test_loopback_transport_validates_paths_sizes_failures_and_closure(')
+          delete_case = tests.index('        {"method": "DELETE"},', function)
+          pull_case = tests.index('        {"path": "/api/pull"},', delete_case)
+          tests[pull_case + 1:pull_case + 1] = [
+              '        {"method": "POST", "path": "/api/version", "body": b"{}"},',
+              '        {"method": "GET", "path": "/api/generate", "body": None},',
+          ]
+          post_case = tests.index('        {"method": "POST", "body": None},', pull_case)
+          tests[post_case] = '        {"method": "POST", "path": "/api/generate", "body": None},'
+
+          stream_test = tests.index('def test_stream_detects_extra_data_and_maps_transport_failures() -> None:')
+          next_test = tests.index('def test_stream_observes_cooperative_cancellation_between_lines() -> None:', stream_test)
+          invalid_case = tests.index(
+              '        (OllamaTransportFailure("invalid_response"), "invalid_response"),',
+              stream_test,
+              next_test,
+          )
+          tests[invalid_case + 1:invalid_case + 1] = [
+              '        (OllamaTransportFailure("failure", status_code=404), "model_not_found"),'
+          ]
+          test_path.write_text("\n".join(tests) + "\n", encoding="utf-8")
           PY
 
       - name: Validate hardening
