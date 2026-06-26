@@ -50,7 +50,7 @@ primary_intel_mac_gate = pending
 phase4b_gate_complete = false
 ```
 
-Final branch validation at commit `a39d2c776066b690e9ac4979874b25a1e32583a4`:
+Final branch validation at commit `0d2ff1202d22437df4b1c1fc24c006368c48f007`:
 
 - Linux: 994 passed, 95.18% coverage;
 - macOS: 994 passed, 95.19% coverage;
