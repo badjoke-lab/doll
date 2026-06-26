@@ -7,7 +7,7 @@ permissions:
   contents: write
 
 jobs:
-  diagnose:
+  materialize:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
@@ -24,6 +24,8 @@ jobs:
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
 
       - name: Decode staged implementation
         shell: bash
@@ -79,27 +81,44 @@ jobs:
           actual_test = hashlib.sha256(test_content).hexdigest()
           if actual_test != expected_test:
               raise SystemExit(f"payload checksum mismatch for tests/test_ollama_adapter.py: {actual_test}")
-          Path("tests/test_ollama_adapter.py").write_bytes(test_content)
+          test_path = Path("tests/test_ollama_adapter.py")
+          test_path.write_bytes(test_content)
+          text = test_path.read_text(encoding="utf-8")
+          old_import = "from typing import Any, cast"
+          new_import = "from typing import Any, ClassVar, cast"
+          old_attribute = "    instances: list[FakeConnection] = []"
+          new_attribute = "    instances: ClassVar[list[FakeConnection]] = []"
+          if old_import not in text or old_attribute not in text:
+              raise SystemExit("expected ClassVar patch target is missing")
+          text = text.replace(old_import, new_import, 1).replace(old_attribute, new_attribute, 1)
+          test_path.write_text(text, encoding="utf-8")
           PY
 
-      - name: Capture lint diagnostic
-        shell: bash
-        run: |
-          uv sync --dev --locked
-          set +e
-          {
-            uv run ruff --version
-            uv run ruff check --fix src/doll/ollama_adapter.py tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py
-          } > imp049-lint-diagnostic.txt 2>&1
-          code=$?
-          printf '\nexit_code=%s\n' "$code" >> imp049-lint-diagnostic.txt
-          cat imp049-lint-diagnostic.txt
+      - name: Install project
+        run: uv sync --dev --locked
 
-      - name: Commit diagnostic
+      - name: Normalize implementation
         shell: bash
         run: |
+          uv run ruff check --fix src/doll/ollama_adapter.py tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py
+          uv run ruff format src/doll/ollama_adapter.py tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py
+
+      - name: Validate implementation
+        shell: bash
+        run: |
+          uv run ruff check src/doll/ollama_adapter.py tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py
+          uv run ruff format --check src/doll/ollama_adapter.py tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py
+          uv run mypy src/doll/ollama_adapter.py tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py
+          uv run pytest -q --no-cov tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py
+
+      - name: Commit materialized implementation
+        shell: bash
+        run: |
+          rm -rf scripts/imp049_payload
+          rm -f imp049-lint-diagnostic.txt
+          git checkout origin/main -- .github/workflows/ci.yml
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add imp049-lint-diagnostic.txt
-          git commit -m "chore: capture IMP-049 lint diagnostic"
+          git add -A
+          git commit -m "IMP-049: add first local Ollama runtime adapter"
           git push origin HEAD:imp-049-ollama-adapter
