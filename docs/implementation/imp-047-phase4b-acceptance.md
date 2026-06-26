@@ -50,6 +50,13 @@ primary_intel_mac_gate = pending
 phase4b_gate_complete = false
 ```
 
+Final branch validation at commit `a39d2c776066b690e9ac4979874b25a1e32583a4`:
+
+- Linux: 994 passed, 95.18% coverage;
+- macOS: 994 passed, 95.19% coverage;
+- Windows: 993 passed, 1 skipped, 95.15% coverage;
+- lint, formatting, strict typing, generated specification, implementation numbering, and public-status checks passed.
+
 ## Fresh-process and independent-inspection boundary
 
 The runner starts `imp_047_fresh_probe.py` in a separate Python process with a disposable synthetic workspace. The probe exercises deterministic status and Resume Bundle output, package-v2 transfer, state-backup restoration, checkpoint freshness, secret omission, and fresh CLI processes with model adapters disabled and unusable proxy endpoints.
