@@ -6,21 +6,19 @@
     "1",
     "2",
     "3",
-    "4A"
+    "4A",
+    "4B"
   ],
   "phase": {
-    "id": "4B",
-    "name": "Project continuity foundation",
-    "state": "in_progress",
-    "started_by_implementation": 38,
-    "next_implementation": 47,
-    "automated_acceptance": "implemented",
-    "primary_intel_mac_offline_gate": "pending",
-    "gate_complete": false
+    "id": "5",
+    "name": "Local runtime and model integration",
+    "state": "ready",
+    "started_by_implementation": null,
+    "next_implementation": 48
   },
   "model_runtime": {
     "connected": false,
-    "message": "Automated Phase 4B acceptance is implemented, but the primary Intel Mac offline gate remains pending. Local runtime work remains blocked until Phase 4B passes."
+    "message": "Phase 4B is complete. No model runtime is connected yet; bounded Phase 5 local-runtime work is ready to begin."
   },
   "last_reviewed": "2026-06-26"
 }

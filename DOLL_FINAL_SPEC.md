@@ -24,7 +24,7 @@
 - `docs/spec/08-acceptance-and-continuity-tests.md` — SHA-256 `1ae9b70cf28257b35a30238bdc46c2caea93dbd17fdf8b516ff708c9e208a698`
 - `docs/spec/08a-ai-environment-portability-acceptance.md` — SHA-256 `3a1876d8b506204254ccd54eb58cfabcf2ddc92e3edd446d90650b9ae22ff305`
 - `docs/spec/08b-project-continuity-acceptance.md` — SHA-256 `b58623f21bdd183a21e1904ebcec954ffb2b6976254b72ac52f13deae83306cc`
-- `docs/spec/09-development-roadmap.md` — SHA-256 `c6eef6081addb777a1dfea074ee0c5fabdcdabb5355d8641e8c8983795c7fc7e`
+- `docs/spec/09-development-roadmap.md` — SHA-256 `30b388b1c7e3fb3c2bb23cb2c67510d8440f7070e934f2cc1dbb9ad496dc6780`
 
 ---
 
@@ -8561,28 +8561,21 @@ Completed:
 - Phase 2 continuity, state-package transfer, backup, restore, and model-independent acceptance;
 - Phase 3 model-independent safety boundary;
 - Phase 4A AI environment portability foundation;
+- Phase 4B project continuity foundation;
 - IMP-001 through IMP-023;
 - IMP-030 through IMP-047;
-- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package v2 export with v1 read compatibility, a versioned authoritative record registry, ProjectRecord v2 with v1 read compatibility, WorkItemRecord v1 lifecycle and dependency integrity, and ProcedureRecord v1 lifecycle and non-authority guarantees, ProjectCheckpointRecord v1 confirmation and freshness, deterministic derived project status, deterministic project-scoped Resume Bundle export, project-continuity transfer and recovery coverage, and automated Phase 4B acceptance evidence, verified backup, restore, continuity acceptance, the model-independent safety boundary, canonical conversation and event state, portability adapter and result records, generic import staging, generic export, reviewed publication, source preservation, idempotency, loss visibility, and Phase 4A acceptance evidence.
+- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package v2 export with v1 read compatibility, a versioned authoritative record registry, ProjectRecord v2 with v1 read compatibility, WorkItemRecord v1 lifecycle and dependency integrity, and ProcedureRecord v1 lifecycle and non-authority guarantees, ProjectCheckpointRecord v1 confirmation and freshness, deterministic derived project status, deterministic project-scoped Resume Bundle export, project-continuity transfer and recovery coverage, and completed Phase 4B acceptance evidence, verified backup, restore, continuity acceptance, the model-independent safety boundary, canonical conversation and event state, portability adapter and result records, generic import staging, generic export, reviewed publication, source preservation, idempotency, loss visibility, and Phase 4A acceptance evidence.
 
 Current implementation point:
 
 - Phase 4A passed its generic portability gate on 2026-06-25;
 - accepted real-machine evidence is bound to commit `839a4ca7a37753fadf81c3e8e79f140e6d66bc03` on the primary Intel Mac with networking disabled;
-- Phase 4B project continuity is now the active foundation phase;
-- IMP-038 establishes Doll State Package format v2 for new exports while preserving supported format v1 inspection, verification, planning, and import;
-- IMP-039 adds the versioned authoritative record registry used by package export, manifest validation, typed-validator selection, and source-version inventory checks;
-- IMP-040 adds ProjectRecord v2 charters and preserves neutral ProjectRecord v1 read compatibility;
-- IMP-041 adds WorkItemRecord v1 lifecycle, dependency, blocker, acceptance-criterion, and verification-state integrity;
-- IMP-042 adds ProcedureRecord v1 lifecycle, versioning, validation, rollback description, and non-authority guarantees;
-- IMP-043 adds ProjectCheckpointRecord v1 basis revisions, deterministic fingerprinting, trusted confirmation, and stale detection;
-- IMP-044 adds deterministic read-only derived project status and fresh-process CLI inspection;
-- IMP-045 adds deterministic project-scoped Resume Bundle export, generated HANDOFF.md, and checksum verification;
-- IMP-046 adds integrated package, backup, restore, fresh-process, imported-content, compatibility, and secret-safe output coverage for project continuity;
-- IMP-047 adds automated PROJ-001 through PROJ-012 acceptance evidence, an independent Resume Bundle inspector, and an exact-commit primary Intel Mac offline runner;
-- the primary Intel Mac offline gate remains pending;
-- no Phase 5 implementation identifier is assigned until Phase 4B passes;
-- local model execution begins only after Phase 4B passes.
+- Phase 4B passed its project-continuity gate on 2026-06-26;
+- accepted Phase 4B real-machine evidence is bound to commit `ddb58d041e505556910930724d0cf2fd03afe7d3` on the primary Intel Mac with networking disabled;
+- IMP-038 through IMP-047 establish package-v2 continuity, authoritative project records, deterministic status and Resume Bundles, transfer and recovery coverage, and accepted PROJ-001 through PROJ-012 evidence;
+- Phase 5 local runtime and model integration is now the next foundation phase;
+- the first bounded Phase 5 implementation issue receives IMP-048 when opened;
+- model execution must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts.
 
 Implementation identifier policy:
 
@@ -8850,7 +8843,7 @@ Goal: preserve the work itself before a model is connected to it.
 
 This phase is model-independent and follows `03b-project-continuity-and-resumption.md` and `08b-project-continuity-acceptance.md`.
 
-Status: automated acceptance evidence implemented through IMP-047; primary Intel Mac gate pending.
+Status: complete through IMP-047.
 
 Completed implementation slices:
 
@@ -8865,9 +8858,16 @@ Completed implementation slices:
 - IMP-046 — project-continuity transfer and recovery coverage.
 - IMP-047 — automated PROJ-001 through PROJ-012 acceptance evidence, independent Resume Bundle inspection, and an exact-commit primary Intel Mac offline runner.
 
-Remaining gate step:
+Accepted Phase 4B evidence:
 
-1. Run the exact merged `main` commit on the primary Intel Mac with networking disabled, store the accepted result in a separate completion PR, and only then mark Phase 4B complete.
+- merged implementation commit: `ddb58d041e505556910930724d0cf2fd03afe7d3`;
+- Ubuntu, macOS, and Windows CI passed before the accepted real-machine run;
+- the primary Intel Mac run passed on Darwin `x86_64`, Python 3.12.13, with networking disabled;
+- all declared PROJ-001 through PROJ-012 checks passed;
+- the accepted report returned `phase4b_gate_complete = true`;
+- the stored result contains no private path, username, hostname, credential, secret value, fixture content, or personal project data.
+
+Phase 4B gate status: passed on 2026-06-26.
 
 Implementation rule:
 
@@ -9070,12 +9070,12 @@ An implementation PR is done when:
 
 ## 18. Immediate work
 
-The required order after the Phase 4A gate is:
+The required order after the Phase 4B gate is:
 
-1. merge the pending IMP-047 automated Phase 4B acceptance evidence without claiming the phase complete;
-2. run the exact merged `main` commit on the primary Intel Mac with networking disabled;
-3. store the accepted real-machine result in a separate completion PR and mark Phase 4B complete;
-4. schedule local runtime and model integration slices with the next monotonic identifiers only after the Phase 4B gate passes;
+1. schedule the bounded Phase 5 runtime-adapter contract as IMP-048;
+2. implement normalized runtime health, inventory, generation, streaming, cancellation, offline, and capability contracts without granting model authority;
+3. implement the first local runtime adapter, initially targeting Ollama, with no silent model download or cloud fallback;
+4. prove network-disabled startup, local conversation, project-state inspection, model replacement, fallback, and rollback without state loss;
 5. prove a real local AI migration path before provider-specific cloud portability becomes a primary claim.
 
 ## 19. Roadmap change control
