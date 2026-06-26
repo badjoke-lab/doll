@@ -1,4 +1,4 @@
-name: Finalize IMP-043 coverage tests
+name: Commit IMP-043 coverage tests
 
 on:
   pull_request:
