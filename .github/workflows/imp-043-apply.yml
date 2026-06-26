@@ -30,18 +30,23 @@ jobs:
         run: python scripts/imp_043_update_package_graph.py
       - name: Status
         run: python scripts/imp_043_update_status.py
-      - name: Specification
+      - name: Specification build
         run: python scripts/build_final_spec.py
-      - name: Verify
+      - name: Ruff
         run: |
           uv run ruff check . --fix --ignore E501
           uv run ruff format .
           uv run ruff check . --ignore E501
-          uv run mypy src tests
+      - name: Strict typing
+        run: uv run mypy src tests
+      - name: Specification and status
+        run: |
           uv run python scripts/build_final_spec.py --check
           node scripts/check-public-site-status.mjs
-          uv run pytest -q --no-cov tests/test_checkpoint.py tests/test_state_package_registry.py tests/test_state_package_v2.py tests/test_work_item.py tests/test_procedure.py
-          git diff --check
+      - name: Focused tests
+        run: uv run pytest -q --no-cov tests/test_checkpoint.py tests/test_state_package_registry.py tests/test_state_package_v2.py tests/test_work_item.py tests/test_procedure.py
+      - name: Diff integrity
+        run: git diff --check
       - name: Commit
         run: |
           rm scripts/imp_043_apply.py
