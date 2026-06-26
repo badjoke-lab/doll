@@ -39,8 +39,8 @@ expect(
     status.phase?.name === "Local runtime and model integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 48 &&
-    status.phase?.next_implementation === 49,
-  "project-status.json must mark Phase 5 in progress from IMP-048 with IMP-049 next",
+    status.phase?.next_implementation === 50,
+  "project-status.json must mark Phase 5 in progress from IMP-048 with IMP-050 next",
 );
 expect(
   status.model_runtime &&
@@ -150,8 +150,12 @@ expect(
   "roadmap must record the IMP-048 runtime adapter contract",
 );
 expect(
-  roadmap.includes("the first real local runtime adapter receives IMP-049 when opened"),
-  "roadmap must identify IMP-049 as the next implementation identifier",
+  roadmap.includes("IMP-049 implements the first concrete Ollama adapter"),
+  "roadmap must record the IMP-049 Ollama adapter",
+);
+expect(
+  roadmap.includes("the model-manifest and explicit-binding foundation receives IMP-050 when opened"),
+  "roadmap must identify IMP-050 as the next implementation identifier",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),

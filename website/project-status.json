@@ -14,11 +14,11 @@
     "name": "Local runtime and model integration",
     "state": "in_progress",
     "started_by_implementation": 48,
-    "next_implementation": 49
+    "next_implementation": 50
   },
   "model_runtime": {
     "connected": false,
-    "message": "IMP-048 establishes the runtime-independent local adapter contract. No real runtime or model is connected; the first concrete local runtime adapter remains the next bounded slice."
+    "message": "IMP-049 implements a loopback-only Ollama adapter in code. No runtime or model has accepted real-machine evidence; model manifests and explicit bindings remain the next bounded slice."
   },
   "last_reviewed": "2026-06-26"
 }
