@@ -2,8 +2,8 @@
   "schema_version": 1,
   "phase": "4B",
   "acceptance_test_id": "IMP-047-PROJECT-CONTINUITY-ACCEPTANCE",
-  "phase4b_gate_complete": false,
-  "accepted_real_machine_result": null,
+  "phase4b_gate_complete": true,
+  "accepted_real_machine_result": "docs/testing/results/IMP-047-primary-intel-mac-2026-06-26.json",
   "project_tests": [
     {
       "id": "PROJ-001",
@@ -13,7 +13,7 @@
         "package_transfer",
         "backup_restore",
         "fresh_process",
-        "primary_real_machine_pending"
+        "primary_real_machine"
       ],
       "pytest_files": [
         "tests/test_project_state.py",
@@ -24,8 +24,13 @@
     {
       "id": "PROJ-002",
       "status": "pass",
-      "evidence_levels": ["unit", "integration"],
-      "pytest_files": ["tests/test_work_item.py"]
+      "evidence_levels": [
+        "unit",
+        "integration"
+      ],
+      "pytest_files": [
+        "tests/test_work_item.py"
+      ]
     },
     {
       "id": "PROJ-003",
@@ -45,7 +50,10 @@
     {
       "id": "PROJ-004",
       "status": "pass",
-      "evidence_levels": ["integration", "hostile_content"],
+      "evidence_levels": [
+        "integration",
+        "hostile_content"
+      ],
       "pytest_files": [
         "tests/test_procedure.py",
         "tests/test_project_continuity_transfer.py"
@@ -54,7 +62,10 @@
     {
       "id": "PROJ-005",
       "status": "pass",
-      "evidence_levels": ["unit", "integration"],
+      "evidence_levels": [
+        "unit",
+        "integration"
+      ],
       "pytest_files": [
         "tests/test_checkpoint.py",
         "tests/test_project_continuity_transfer.py"
@@ -107,7 +118,7 @@
       "evidence_levels": [
         "fresh_process",
         "ci",
-        "primary_real_machine_pending"
+        "primary_real_machine"
       ],
       "pytest_files": [
         "tests/test_project_status.py",
@@ -124,13 +135,20 @@
         "ci_windows",
         "ci_ubuntu"
       ],
-      "pytest_files": ["tests/test_project_continuity_transfer.py"]
+      "pytest_files": [
+        "tests/test_project_continuity_transfer.py"
+      ]
     },
     {
       "id": "PROJ-011",
       "status": "pass",
-      "evidence_levels": ["integration", "hostile_content"],
-      "pytest_files": ["tests/test_project_continuity_transfer.py"]
+      "evidence_levels": [
+        "integration",
+        "hostile_content"
+      ],
+      "pytest_files": [
+        "tests/test_project_continuity_transfer.py"
+      ]
     },
     {
       "id": "PROJ-012",
@@ -152,15 +170,18 @@
   ],
   "real_machine_gate": {
     "required": true,
-    "status": "pending",
+    "status": "pass",
     "platform": "Darwin",
-    "architectures": ["x86_64", "amd64"],
+    "architectures": [
+      "x86_64",
+      "amd64"
+    ],
     "network_mode": "offline-confirmed",
-    "commit_sha": null,
-    "completed_at": null
+    "commit_sha": "ddb58d041e505556910930724d0cf2fd03afe7d3",
+    "completed_at": "2026-06-26T12:37:23.396078Z"
   },
   "limitations": [
-    "The primary Intel Mac offline run is pending, so Phase 4B is not complete.",
+    "Phase 4B is complete for the model-independent project-continuity foundation.",
     "This gate proves model-independent project continuity and resumption inspection, not autonomous project management.",
     "No local model runtime, provider, cloud account, external issue tracker, or multi-user collaboration path is exercised.",
     "Generated project status, Resume Bundle, and HANDOFF.md remain non-authoritative derived views."

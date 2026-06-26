@@ -31,16 +31,16 @@ expect(
   "project-status.json requires a maturity string",
 );
 expect(
-  Array.isArray(status.completed_phases) && status.completed_phases.includes("4A"),
-  "project-status.json must record completed phases through Phase 4A",
+  Array.isArray(status.completed_phases) && status.completed_phases.includes("4B"),
+  "project-status.json must record completed phases through Phase 4B",
 );
 expect(
-  status.phase?.id === "4B" &&
-    status.phase?.name === "Project continuity foundation" &&
-    status.phase?.state === "in_progress" &&
-    status.phase?.started_by_implementation === 38 &&
-    status.phase?.next_implementation === 47,
-  "project-status.json must mark Phase 4B in progress from IMP-038 with IMP-047 next",
+  status.phase?.id === "5" &&
+    status.phase?.name === "Local runtime and model integration" &&
+    status.phase?.state === "ready" &&
+    status.phase?.started_by_implementation === null &&
+    status.phase?.next_implementation === 48,
+  "project-status.json must mark Phase 5 ready with IMP-048 next",
 );
 expect(
   status.model_runtime &&
@@ -78,6 +78,7 @@ for (const required of [
   'data-roadmap-phase="3"',
   'data-roadmap-phase="4A"',
   'data-roadmap-phase="4B"',
+  'data-roadmap-phase="5"',
   "data-roadmap-state",
   'src="./status.js"',
 ]) {
@@ -141,12 +142,12 @@ expect(
   "roadmap must record the accepted Phase 4A gate",
 );
 expect(
-  roadmap.includes("the primary Intel Mac offline gate remains pending"),
-  "roadmap must keep the IMP-047 primary-machine gate pending",
+  roadmap.includes("Phase 4B gate status: passed on 2026-06-26."),
+  "roadmap must record the accepted Phase 4B gate",
 );
 expect(
-  roadmap.includes("no Phase 5 implementation identifier is assigned until Phase 4B passes"),
-  "roadmap must keep Phase 5 blocked until Phase 4B passes",
+  roadmap.includes("the first bounded Phase 5 implementation issue receives IMP-048 when opened"),
+  "roadmap must identify IMP-048 as the next implementation identifier",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),
