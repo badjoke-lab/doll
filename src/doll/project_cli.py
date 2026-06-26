@@ -14,6 +14,7 @@ from doll.project_state import (
     ProjectService,
     ProjectStatus,
 )
+from doll.project_status import ProjectStatusError, ProjectStatusService
 from doll.state import RecordSensitivity, StateError, open_state_repository
 from doll.workspace import WorkspaceError
 
@@ -157,6 +158,29 @@ def project_list(
             f"status={item.project_status} lifecycle={item.lifecycle_status} "
             f"revision={item.revision}"
         )
+
+
+@project_app.command("status")
+def project_status_command(
+    project_id: Annotated[str, typer.Argument()],
+    workspace: Annotated[Path | None, typer.Option("--workspace")] = None,
+    json_output: Annotated[
+        bool,
+        typer.Option("--json", help="Emit deterministic machine-readable JSON."),
+    ] = False,
+) -> None:
+    """Derive deterministic live project status through a read-only connection."""
+
+    try:
+        with open_state_repository(workspace, read_only=True) as repository:
+            service = ProjectStatusService(repository)
+            output = (
+                service.export_json(project_id) if json_output else service.render_text(project_id)
+            )
+    except (WorkspaceError, StateError, ProjectDecisionError, ProjectStatusError, KeyError) as exc:
+        _fail("project status failed", exc)
+
+    typer.echo(output, nl=False)
 
 
 @project_app.command("archive")
