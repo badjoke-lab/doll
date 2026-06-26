@@ -54,6 +54,8 @@ The implementation performs no network request, process launch, socket connectio
 
 Adapter declarations must explicitly state that they are local-only, have cloud fallback disabled, and do not silently download models. IMP-048 tests use synthetic in-memory adapters only and require no running service, preferred UI, model, provider, or network route.
 
+No separate real-machine acceptance run is required for this contract-only slice. Real hardware and offline-runtime evidence begins with the first concrete local runtime adapter.
+
 ## Failure and resource boundary
 
 The boundary returns deterministic outcomes for:
