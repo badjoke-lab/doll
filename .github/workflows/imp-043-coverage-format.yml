@@ -18,20 +18,19 @@ jobs:
           fetch-depth: 0
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --dev --locked
-      - name: Fix fixtures
-        run: python scripts/imp_043_fix_coverage_tests.py
+      - name: Remove applied updater
+        run: rm -f scripts/imp_043_fix_coverage_tests.py
       - name: Ruff
         run: |
-          uv run ruff check . --fix --ignore E501
+          uv run ruff check . --fix
           uv run ruff format .
-          uv run ruff check . --ignore E501
+          uv run ruff check .
       - name: Strict typing
         run: uv run mypy src tests
       - name: Focused tests
         run: uv run pytest -q --no-cov tests/test_checkpoint.py tests/test_checkpoint_coverage.py
       - name: Commit coverage tests
         run: |
-          rm -f scripts/imp_043_fix_coverage_tests.py
           rm -f .github/workflows/imp-043-coverage-format.yml
           rm -f .github/workflows/imp-043-coverage-diagnose.yml
           rm -f .github/workflows/imp-043-pytest-diagnose.yml
