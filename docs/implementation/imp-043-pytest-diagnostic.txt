@@ -2,42 +2,53 @@
 =================================== FAILURES ===================================
 _________________ test_project_work_item_and_basis_link_guards _________________
 
-record = RecordEnvelope(id='05ecbed2-5ea7-425c-802b-1c81cfac9a7f', record_type='work_item', schema_version=1, created_at='2026-...9:13.598388Z', revision=1, status='active', provenance='user-created', sensitivity='personal', title=None, metadata={})
-repository = None
-
-    def _work_item_from_record(
-        record: RecordEnvelope,
-        repository: StateRepository | None = None,
-    ) -> WorkItemInfo:
+    def _validate_secret_boundary(
+        *,
+        record_type: str,
+        sensitivity: str,
+        metadata: dict[str, object],
+    ) -> None:
         try:
-            if record.record_type != "work_item" or record.schema_version != WORK_ITEM_SCHEMA_VERSION:
-                raise WorkItemValidationError("work-item envelope is unsupported")
-            if record.status not in {"active", "archived"}:
-                raise WorkItemValidationError("work-item envelope status is unsupported")
-            if record.revision < 1:
-                raise WorkItemValidationError("work-item revision must be positive")
->           project_id = _uuid("work-item project ID", _required_string(record.metadata, "project_id"))
-                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>           validate_ordinary_state_record(
+                record_type=record_type,
+                sensitivity=sensitivity,
+                metadata=metadata,
+            )
 
-record     = RecordEnvelope(id='05ecbed2-5ea7-425c-802b-1c81cfac9a7f', record_type='work_item', schema_version=1, created_at='2026-...9:13.598388Z', revision=1, status='active', provenance='user-created', sensitivity='personal', title=None, metadata={})
-repository = None
+metadata   = {}
+record_type = 'basis'
+sensitivity = 'secret'
 
-src/doll/work_item.py:583: 
+src/doll/state_repository.py:474: 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-mapping = {}, key = 'project_id'
+    def validate_ordinary_state_record(
+        *,
+        record_type: str,
+        sensitivity: str,
+        metadata: dict[str, object],
+    ) -> None:
+        """Enforce the ordinary-state side of the secret classification policy."""
+    
+        if record_type == "secret_reference":
+            if sensitivity not in {"sensitive", "secret"}:
+                raise SecretClassificationError(
+                    "SecretReference records require sensitive or secret sensitivity"
+                )
+            validate_secret_reference_metadata(metadata)
+            return
+        if sensitivity == "secret":
+>           raise SecretClassificationError(
+                "secret sensitivity does not permit secret values in ordinary Doll State; "
+                "store only a validated SecretReference record"
+            )
+E           doll.secret_policy.SecretClassificationError: secret sensitivity does not permit secret values in ordinary Doll State; store only a validated SecretReference record
 
-    def _required_string(mapping: dict[str, object], key: str) -> str:
-        value = mapping.get(key)
-        if not isinstance(value, str) or not value:
->           raise WorkItemValidationError(f"{key} is missing or invalid")
-E           doll.work_item.WorkItemValidationError: project_id is missing or invalid
+metadata   = {}
+record_type = 'basis'
+sensitivity = 'secret'
 
-key        = 'project_id'
-mapping    = {}
-value      = None
-
-src/doll/work_item.py:1139: WorkItemValidationError
+src/doll/secret_policy.py:320: SecretClassificationError
 
 The above exception was the direct cause of the following exception:
 
@@ -129,162 +140,78 @@ tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-0/test_project_work_item_and_
                 _active_work_item(repository, str(uuid4()))
             with pytest.raises(CheckpointValidationError):
                 _active_work_item(repository, wrong.id)
+            archived = work.archive(ready.work_item_id, expected_revision=ready.revision)
+            with pytest.raises(CheckpointValidationError):
+                _active_work_item(repository, archived.work_item_id)
             malformed = repository.create_record(record_type="work_item", metadata={})
             with pytest.raises(CheckpointValidationError):
                 _active_work_item(repository, malformed.id)
->           archived = work.archive(ready.work_item_id, expected_revision=ready.revision)
-                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    
+            inactive = repository.create_record(record_type="basis", metadata={})
+            repository.update_record(
+                inactive.id,
+                expected_revision=inactive.revision,
+                status="archived",
+            )
+>           secret = repository.create_record(
+                record_type="basis",
+                sensitivity="secret",
+                metadata={},
+            )
 
-completed_task = WorkItemInfo(work_item_id='54c00b24-2740-47ed-8c99-7fcdba5d331d', project_id='d67dae9e-36e6-4260-a02d-a90805ec2f02', k...confirmed', sensitivity='personal', created_at='2026-06-26T03:29:13.589544Z', updated_at='2026-06-26T03:29:13.595665Z')
-cross      = WorkItemInfo(work_item_id='901c0b14-5ad5-45fe-ad7e-858cbcc7e80d', project_id='25f0bee8-6f4c-411f-b2f6-fd9d7516a580', k...confirmed', sensitivity='personal', created_at='2026-06-26T03:29:13.580949Z', updated_at='2026-06-26T03:29:13.583501Z')
-first_project = 'd67dae9e-36e6-4260-a02d-a90805ec2f02'
+archived   = WorkItemInfo(work_item_id='b108771f-9bf8-4fcc-b94d-7a0fb7655731', project_id='b7916495-f76b-422a-b96a-e903b6e93471', k...confirmed', sensitivity='personal', created_at='2026-06-26T03:33:15.076357Z', updated_at='2026-06-26T03:33:15.095020Z')
+completed_task = WorkItemInfo(work_item_id='2128e2d7-64c1-422a-8037-d92928180adb', project_id='b7916495-f76b-422a-b96a-e903b6e93471', k...confirmed', sensitivity='personal', created_at='2026-06-26T03:33:15.085686Z', updated_at='2026-06-26T03:33:15.091656Z')
+cross      = WorkItemInfo(work_item_id='3d5f2dc4-ab67-474b-be3e-164fff4997be', project_id='bbb92ea5-6868-4e5b-8923-194931779bf6', k...confirmed', sensitivity='personal', created_at='2026-06-26T03:33:15.078755Z', updated_at='2026-06-26T03:33:15.081433Z')
+first_project = 'b7916495-f76b-422a-b96a-e903b6e93471'
+inactive   = RecordEnvelope(id='457e1962-5a15-412a-a413-188348224eaa', record_type='basis', schema_version=1, created_at='2026-06-2...3:15.099020Z', revision=1, status='active', provenance='user-created', sensitivity='personal', title=None, metadata={})
 initialized = InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_project_work_item_and_bas0/workspace'), recor...d='0.0.1', product_version_last_opened='0.0.1', profile_preference='lite', state_revision=0, instance_label='primary'))
-malformed  = RecordEnvelope(id='05ecbed2-5ea7-425c-802b-1c81cfac9a7f', record_type='work_item', schema_version=1, created_at='2026-...9:13.598388Z', revision=1, status='active', provenance='user-created', sensitivity='personal', title=None, metadata={})
-ready      = WorkItemInfo(work_item_id='d00216fb-5e75-45b0-9c09-04ad0c9cb7b4', project_id='d67dae9e-36e6-4260-a02d-a90805ec2f02', k...r-created', sensitivity='personal', created_at='2026-06-26T03:29:13.578595Z', updated_at='2026-06-26T03:29:13.578595Z')
-repository = StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_project_work_item_a...d_bas0/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7fe4e5de3010>, read_only=False)
-second_project = '25f0bee8-6f4c-411f-b2f6-fd9d7516a580'
-second_record = RecordEnvelope(id='25f0bee8-6f4c-411f-b2f6-fd9d7516a580', record_type='project', schema_version=2, created_at='2026-06...mmand'], 'started_at': '2026-06-25T00:00:00Z', 'status': 'active', 'success_criteria': ['Invalid state fails closed']})
+malformed  = RecordEnvelope(id='988eb883-8edf-45b2-b428-4c9770e57e6f', record_type='work_item', schema_version=1, created_at='2026-...3:15.097314Z', revision=1, status='active', provenance='user-created', sensitivity='personal', title=None, metadata={})
+ready      = WorkItemInfo(work_item_id='b108771f-9bf8-4fcc-b94d-7a0fb7655731', project_id='b7916495-f76b-422a-b96a-e903b6e93471', k...r-created', sensitivity='personal', created_at='2026-06-26T03:33:15.076357Z', updated_at='2026-06-26T03:33:15.076357Z')
+repository = StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_project_work_item_a...d_bas0/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f7f359d7010>, read_only=False)
+second_project = 'bbb92ea5-6868-4e5b-8923-194931779bf6'
+second_record = RecordEnvelope(id='bbb92ea5-6868-4e5b-8923-194931779bf6', record_type='project', schema_version=2, created_at='2026-06...mmand'], 'started_at': '2026-06-25T00:00:00Z', 'status': 'active', 'success_criteria': ['Invalid state fails closed']})
 tmp_path   = PosixPath('/tmp/pytest-of-runner/pytest-0/test_project_work_item_and_bas0')
-work       = WorkItemService(repository=StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest..._bas0/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7fe4e5de3010>, read_only=False))
-wrong      = RecordEnvelope(id='7e24f866-70f0-44f2-874a-d9d69c410c8d', record_type='other', schema_version=1, created_at='2026-06-2...9:13.576601Z', revision=1, status='active', provenance='user-created', sensitivity='personal', title=None, metadata={})
+work       = WorkItemService(repository=StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest..._bas0/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f7f359d7010>, read_only=False))
+wrong      = RecordEnvelope(id='123897e9-f1c9-47fd-bf06-d8b8ebf1b7cf', record_type='other', schema_version=1, created_at='2026-06-2...3:15.074086Z', revision=1, status='active', provenance='user-created', sensitivity='personal', title=None, metadata={})
 
-tests/test_checkpoint_coverage.py:384: 
+tests/test_checkpoint_coverage.py:394: 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-src/doll/work_item.py:451: in archive
-    current = _work_item_from_record(current_record, self.repository)
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        actor_type = 'user'
-        current_record = RecordEnvelope(id='d00216fb-5e75-45b0-9c09-04ad0c9cb7b4', record_type='work_item', schema_version=1, created_at='2026-...None, 'status': 'ready', 'title': 'Ready work', 'verification_evidence_ids': [], 'verification_state': 'not_verified'})
-        expected_revision = 1
-        operation_id = None
-        self       = WorkItemService(repository=StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest..._bas0/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7fe4e5de3010>, read_only=False))
-        work_item_id = 'd00216fb-5e75-45b0-9c09-04ad0c9cb7b4'
-src/doll/work_item.py:630: in _work_item_from_record
-    _validate_work_item_relations(
-        artifact_ids = ()
-        blocked_by_ids = ()
-        completed_at = None
-        criteria   = ()
-        depends_on_ids = ()
-        description = 'Ready-state fixture.'
-        kind       = 'task'
-        priority   = 50
-        project_id = 'd67dae9e-36e6-4260-a02d-a90805ec2f02'
-        record     = RecordEnvelope(id='d00216fb-5e75-45b0-9c09-04ad0c9cb7b4', record_type='work_item', schema_version=1, created_at='2026-...None, 'status': 'ready', 'title': 'Ready work', 'verification_evidence_ids': [], 'verification_state': 'not_verified'})
-        repository = StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_project_work_item_a...d_bas0/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7fe4e5de3010>, read_only=False)
-        source_decision_ids = ()
-        source_ids = ()
-        started_at = None
-        title      = 'Ready work'
-        verification_evidence_ids = ()
-        verification_state = 'not_verified'
-        work_status = 'ready'
-src/doll/work_item.py:739: in _validate_work_item_relations
-    _validate_dependency_graph(
-        blocked_by_ids = ()
-        depends_on_ids = ()
-        linked     = {}
-        project_id = 'd67dae9e-36e6-4260-a02d-a90805ec2f02'
-        repository = StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_project_work_item_a...d_bas0/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7fe4e5de3010>, read_only=False)
-        self_id    = 'd00216fb-5e75-45b0-9c09-04ad0c9cb7b4'
-src/doll/work_item.py:762: in _validate_dependency_graph
-    item = _work_item_from_record(repository.get_record(record_id))
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        candidate_dependencies = ()
-        candidate_id = 'd00216fb-5e75-45b0-9c09-04ad0c9cb7b4'
-        graph      = {'54c00b24-2740-47ed-8c99-7fcdba5d331d': (), 'd00216fb-5e75-45b0-9c09-04ad0c9cb7b4': ()}
-        item       = WorkItemInfo(work_item_id='54c00b24-2740-47ed-8c99-7fcdba5d331d', project_id='d67dae9e-36e6-4260-a02d-a90805ec2f02', k...confirmed', sensitivity='personal', created_at='2026-06-26T03:29:13.589544Z', updated_at='2026-06-26T03:29:13.595665Z')
-        project_id = 'd67dae9e-36e6-4260-a02d-a90805ec2f02'
-        record_id  = '05ecbed2-5ea7-425c-802b-1c81cfac9a7f'
-        repository = StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_project_work_item_a...d_bas0/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7fe4e5de3010>, read_only=False)
-        row        = <sqlite3.Row object at 0x7fe4e5e8c640>
-        rows       = [<sqlite3.Row object at 0x7fe4e5e264a0>, <sqlite3.Row object at 0x7fe4e5e8d180>, <sqlite3.Row object at 0x7fe4e5e8d360>, <sqlite3.Row object at 0x7fe4e5e8c640>]
+src/doll/state_repository.py:156: in create_record
+    _validate_secret_boundary(
+        metadata   = {}
+        metadata_value = {}
+        provenance = 'user-created'
+        record_id  = None
+        record_type = 'basis'
+        schema_version = 1
+        self       = StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_project_work_item_a...d_bas0/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f7f359d7010>, read_only=False)
+        sensitivity = 'secret'
+        status     = 'active'
+        title      = None
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-record = RecordEnvelope(id='05ecbed2-5ea7-425c-802b-1c81cfac9a7f', record_type='work_item', schema_version=1, created_at='2026-...9:13.598388Z', revision=1, status='active', provenance='user-created', sensitivity='personal', title=None, metadata={})
-repository = None
-
-    def _work_item_from_record(
-        record: RecordEnvelope,
-        repository: StateRepository | None = None,
-    ) -> WorkItemInfo:
+    def _validate_secret_boundary(
+        *,
+        record_type: str,
+        sensitivity: str,
+        metadata: dict[str, object],
+    ) -> None:
         try:
-            if record.record_type != "work_item" or record.schema_version != WORK_ITEM_SCHEMA_VERSION:
-                raise WorkItemValidationError("work-item envelope is unsupported")
-            if record.status not in {"active", "archived"}:
-                raise WorkItemValidationError("work-item envelope status is unsupported")
-            if record.revision < 1:
-                raise WorkItemValidationError("work-item revision must be positive")
-            project_id = _uuid("work-item project ID", _required_string(record.metadata, "project_id"))
-            kind = _kind(_required_string(record.metadata, "kind"))
-            title = _text(
-                "work-item title", _required_string(record.metadata, "title"), MAX_TITLE_LENGTH
+            validate_ordinary_state_record(
+                record_type=record_type,
+                sensitivity=sensitivity,
+                metadata=metadata,
             )
-            if record.title != title:
-                raise WorkItemValidationError("work-item title is inconsistent")
-            description = _text(
-                "work-item description",
-                _required_string(record.metadata, "description"),
-                MAX_DESCRIPTION_LENGTH,
-            )
-            work_status = _work_status(_required_string(record.metadata, "status"))
-            if work_status != "proposed" and record.provenance not in {
-                "user-created",
-                "user-confirmed",
-            }:
-                raise WorkItemValidationError("accepted work requires trusted provenance")
-            priority = _priority(record.metadata.get("priority"))
-            started_at = _optional_utc("work-item started-at", record.metadata.get("started_at"))
-            completed_at = _optional_utc("work-item completed-at", record.metadata.get("completed_at"))
-            depends_on_ids = _metadata_ids(record.metadata, "depends_on_ids")
-            blocked_by_ids = _metadata_ids(record.metadata, "blocked_by_ids")
-            criteria = _metadata_criteria(record.metadata, "acceptance_criteria")
-            verification_state = _verification_state(
-                _required_string(record.metadata, "verification_state")
-            )
-            verification_evidence_ids = _metadata_ids(
-                record.metadata,
-                "verification_evidence_ids",
-            )
-            source_decision_ids = _metadata_ids(record.metadata, "source_decision_ids")
-            artifact_ids = _metadata_ids(record.metadata, "artifact_ids")
-            source_ids = _metadata_ids(record.metadata, "source_ids")
-            _validate_persisted_semantics(
-                record.id,
-                work_status,
-                started_at,
-                completed_at,
-                depends_on_ids,
-                blocked_by_ids,
-                verification_state,
-                verification_evidence_ids,
-                source_ids,
-            )
-            if repository is not None:
-                _validate_project_link(repository, project_id)
-                _validate_work_item_relations(
-                    repository,
-                    self_id=record.id,
-                    project_id=project_id,
-                    depends_on_ids=depends_on_ids,
-                    blocked_by_ids=blocked_by_ids,
-                )
-                _validate_typed_links(
-                    repository,
-                    decision_ids=source_decision_ids,
-                    evidence_ids=verification_evidence_ids,
-                    artifact_ids=artifact_ids,
-                    source_ids=source_ids,
-                )
-        except (KeyError, TypeError, ValueError, WorkItemValidationError) as exc:
->           raise WorkItemCorruptError("work-item record is malformed") from exc
-E           doll.work_item.WorkItemCorruptError: work-item record is malformed
+        except SecretPolicyError as exc:
+>           raise RecordValidationError(str(exc)) from exc
+E           doll.state.RecordValidationError: secret sensitivity does not permit secret values in ordinary Doll State; store only a validated SecretReference record
 
-record     = RecordEnvelope(id='05ecbed2-5ea7-425c-802b-1c81cfac9a7f', record_type='work_item', schema_version=1, created_at='2026-...9:13.598388Z', revision=1, status='active', provenance='user-created', sensitivity='personal', title=None, metadata={})
-repository = None
+metadata   = {}
+record_type = 'basis'
+sensitivity = 'secret'
 
-src/doll/work_item.py:645: WorkItemCorruptError
+src/doll/state_repository.py:480: RecordValidationError
 =========================== short test summary info ============================
-FAILED tests/test_checkpoint_coverage.py::test_project_work_item_and_basis_link_guards - doll.work_item.WorkItemCorruptError: work-item record is malformed
-1 failed, 17 passed in 1.30s
+FAILED tests/test_checkpoint_coverage.py::test_project_work_item_and_basis_link_guards - doll.state.RecordValidationError: secret sensitivity does not permit secret values in ordinary Doll State; store only a validated SecretReference record
+1 failed, 17 passed in 1.25s
 exit_code=1
