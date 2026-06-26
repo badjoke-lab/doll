@@ -1,0 +1,15 @@
+ruff 0.15.17
+RUF012 Mutable default value for class attribute
+   --> tests/test_ollama_adapter.py:718:39
+    |
+717 | class FakeConnection:
+718 |     instances: list[FakeConnection] = []
+    |                                       ^^
+719 |     response: object = FakeHttpResponse(200, b"{}")
+720 |     request_error: BaseException | None = None
+    |
+help: Consider initializing in `__init__` or annotating with `typing.ClassVar`
+
+Found 5 errors (4 fixed, 1 remaining).
+
+exit_code=1
