@@ -108,9 +108,7 @@ def test_list_lifecycle_actor_and_export_guards(tmp_path: Path) -> None:
         archived = service.archive(first.checkpoint_id, expected_revision=first.revision)
 
         assert service.list(project_id=first_project) == ()
-        assert service.list(project_id=first_project, include_archived=True) == (
-            archived,
-        )
+        assert service.list(project_id=first_project, include_archived=True) == (archived,)
         assert service.list(project_id=second_project, limit=1) == (second,)
         for invalid_limit in (0, MAX_LIST_LIMIT + 1, True):
             with pytest.raises(CheckpointValidationError):
@@ -305,15 +303,6 @@ def test_project_work_item_and_basis_link_guards(tmp_path: Path) -> None:
             _validate_project_link(repository, str(uuid4()))
         with pytest.raises(CheckpointValidationError):
             _validate_project_link(repository, wrong.id)
-        second_record = repository.get_record(second_project)
-        repository.update_record(
-            second_project,
-            expected_revision=second_record.revision,
-            status="archived",
-        )
-        with pytest.raises(CheckpointValidationError):
-            _validate_project_link(repository, second_project)
-
         work = WorkItemService(repository)
         ready = work.create(
             project_id=first_project,
@@ -332,6 +321,15 @@ def test_project_work_item_and_basis_link_guards(tmp_path: Path) -> None:
             expected_revision=cross.revision,
             to_status="in_progress",
         )
+        second_record = repository.get_record(second_project)
+        repository.update_record(
+            second_project,
+            expected_revision=second_record.revision,
+            status="archived",
+        )
+        with pytest.raises(CheckpointValidationError):
+            _validate_project_link(repository, second_project)
+
         completed_task = work.create(
             project_id=first_project,
             kind="task",
@@ -380,12 +378,12 @@ def test_project_work_item_and_basis_link_guards(tmp_path: Path) -> None:
             _active_work_item(repository, str(uuid4()))
         with pytest.raises(CheckpointValidationError):
             _active_work_item(repository, wrong.id)
-        malformed = repository.create_record(record_type="work_item", metadata={})
-        with pytest.raises(CheckpointValidationError):
-            _active_work_item(repository, malformed.id)
         archived = work.archive(ready.work_item_id, expected_revision=ready.revision)
         with pytest.raises(CheckpointValidationError):
             _active_work_item(repository, archived.work_item_id)
+        malformed = repository.create_record(record_type="work_item", metadata={})
+        with pytest.raises(CheckpointValidationError):
+            _active_work_item(repository, malformed.id)
 
         inactive = repository.create_record(record_type="basis", metadata={})
         repository.update_record(
@@ -393,10 +391,10 @@ def test_project_work_item_and_basis_link_guards(tmp_path: Path) -> None:
             expected_revision=inactive.revision,
             status="archived",
         )
-        secret = repository.create_record(
-            record_type="basis",
-            sensitivity="secret",
-            metadata={},
+        secret = repository.create_record(record_type="basis", metadata={})
+        repository.connection.execute(
+            "UPDATE records SET sensitivity = 'secret' WHERE id = ?",
+            (secret.id,),
         )
         with pytest.raises(CheckpointValidationError):
             _validate_generic_basis_links(repository, (str(uuid4()),), ())
@@ -455,9 +453,7 @@ def test_malformed_checkpoint_envelopes_and_metadata(tmp_path: Path) -> None:
             with pytest.raises(CheckpointCorruptError):
                 _checkpoint_from_record(replace(confirmed_record, metadata=metadata))
         with pytest.raises(CheckpointCorruptError):
-            _checkpoint_from_record(
-                replace(confirmed_record, provenance="model-proposed")
-            )
+            _checkpoint_from_record(replace(confirmed_record, provenance="model-proposed"))
 
 
 def test_validation_helpers() -> None:
@@ -481,13 +477,9 @@ def test_validation_helpers() -> None:
     with pytest.raises(CheckpointValidationError):
         _metadata_basis_revisions({"basis_record_revisions": []})
     with pytest.raises(CheckpointValidationError):
-        _metadata_basis_revisions(
-            cast(dict[str, object], {"basis_record_revisions": {1: 1}})
-        )
+        _metadata_basis_revisions(cast(dict[str, object], {"basis_record_revisions": {1: 1}}))
     with pytest.raises(CheckpointValidationError):
-        _metadata_basis_revisions(
-            {"basis_record_revisions": {str(uuid4()): "1"}}
-        )
+        _metadata_basis_revisions({"basis_record_revisions": {str(uuid4()): "1"}})
     with pytest.raises(CheckpointValidationError):
         _fingerprint(None)
     with pytest.raises(CheckpointValidationError):
@@ -580,6 +572,7 @@ def test_create_failure_paths_roll_back(
             == 0
         )
 
+    monkeypatch.undo()
     initialized = _workspace(tmp_path / "runtime")
     with state.open_state_repository(initialized.root) as repository:
         project_id = _project(repository)
@@ -622,6 +615,7 @@ def test_update_failure_paths_roll_back(
         assert unchanged.confirmation_state == "proposed"
         assert unchanged.revision == proposed.revision
 
+    monkeypatch.undo()
     initialized = _workspace(tmp_path / "runtime")
     with state.open_state_repository(initialized.root) as repository:
         project_id = _project(repository)
