@@ -31,6 +31,22 @@ def main() -> None:
         )
 '''
     text = replace_once(text, cross_block, cross_block + archive_block)
+
+    malformed_block = '''        malformed = repository.create_record(record_type="work_item", metadata={})
+        with pytest.raises(CheckpointValidationError):
+            _active_work_item(repository, malformed.id)
+'''
+    text = replace_once(text, malformed_block, "")
+    archived_block = '''        archived = work.archive(ready.work_item_id, expected_revision=ready.revision)
+        with pytest.raises(CheckpointValidationError):
+            _active_work_item(repository, archived.work_item_id)
+'''
+    text = replace_once(
+        text,
+        archived_block,
+        archived_block + malformed_block,
+    )
+
     runtime_anchor = '    initialized = _workspace(tmp_path / "runtime")\n'
     if text.count(runtime_anchor) != 2:
         raise RuntimeError("runtime fixture anchors changed")
