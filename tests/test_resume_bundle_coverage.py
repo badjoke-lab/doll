@@ -179,15 +179,11 @@ def test_reference_helpers_cover_missing_wrong_secret_and_valid_records(
         "secret": _record("secret", sensitivity="secret"),
         "valid": _record("valid"),
         "source": _record("source", record_type="memory"),
-        "secret-source": _record(
-            "secret-source", record_type="memory", sensitivity="secret"
-        ),
+        "secret-source": _record("secret-source", record_type="memory", sensitivity="secret"),
     }
     repository = cast(StateRepository, _FakeRepository(records))
     service = ResumeBundleService(repository)
-    monkeypatch.setattr(
-        "doll.resume_bundle._artifact_from_record", lambda record: _artifact()
-    )
+    monkeypatch.setattr("doll.resume_bundle._artifact_from_record", lambda record: _artifact())
 
     artifact_refs, artifact_omissions = service._artifact_references(
         {"missing", "wrong", "secret", "valid"}
@@ -283,9 +279,7 @@ def test_shareable_member_validation_rejects_binary_and_scan_failures(
     with pytest.raises(ResumeBundleValidationError):
         _validate_shareable_members({"binary": b"\xff"})
     with pytest.raises(ResumeBundleValidationError):
-        _validate_shareable_members(
-            {"secret": b'api_key="sk-1234567890abcdefghijklmnop"'}
-        )
+        _validate_shareable_members({"secret": b'api_key="sk-1234567890abcdefghijklmnop"'})
 
     def truncated_scan(text: str, *, max_scan_chars: int) -> SecretScanResult:
         del text, max_scan_chars
@@ -308,9 +302,7 @@ def test_member_and_archive_limits_fail_closed(monkeypatch: pytest.MonkeyPatch) 
     with pytest.raises(ResumeBundleValidationError):
         _validate_member_limits({"large": b"abc"}, ResumeBundleValidationError)
     with pytest.raises(ResumeBundleValidationError):
-        _validate_member_limits(
-            {"one": b"ab", "two": b"ab"}, ResumeBundleValidationError
-        )
+        _validate_member_limits({"one": b"ab", "two": b"ab"}, ResumeBundleValidationError)
 
     unsafe = zipfile.ZipInfo("../unsafe")
     with pytest.raises(ResumeBundleIntegrityError):
@@ -343,9 +335,7 @@ def test_verifier_rejects_unreadable_duplicate_and_wrong_inventory(
     with zipfile.ZipFile(duplicate, "w") as archive:
         for name, content in members.items():
             archive.writestr(name, content)
-        archive.writestr(
-            f"{BUNDLE_ROOT}/manifest.json", members[f"{BUNDLE_ROOT}/manifest.json"]
-        )
+        archive.writestr(f"{BUNDLE_ROOT}/manifest.json", members[f"{BUNDLE_ROOT}/manifest.json"])
     with pytest.raises(ResumeBundleIntegrityError):
         verify_resume_bundle(duplicate)
 
