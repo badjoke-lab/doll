@@ -7,6 +7,7 @@ import json
 import os
 import tempfile
 import zipfile
+from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 from pathlib import Path, PurePosixPath
 from typing import cast
@@ -15,7 +16,11 @@ from doll.artifact import _artifact_from_record
 from doll.paths import canonicalize_path, find_doll_repository_ancestor
 from doll.procedure import ProcedureService
 from doll.project_state import DecisionService, ProjectService
-from doll.project_status import ProjectStatusInfo, ProjectStatusService
+from doll.project_status import (
+    ProjectStatusInfo,
+    ProjectStatusService,
+    StatusWorkItem,
+)
 from doll.settings import PolicyService
 from doll.state import RecordEnvelope, StateError
 from doll.state_package import _write_deterministic_zip
@@ -70,9 +75,7 @@ class ResumeBundleService:
         if output.exists():
             raise ResumeBundleExportError("Resume Bundle output already exists")
         if find_doll_repository_ancestor(output.parent) is not None:
-            raise ResumeBundleValidationError(
-                "Resume Bundle output must be outside the workspace"
-            )
+            raise ResumeBundleValidationError("Resume Bundle output must be outside the workspace")
         output.parent.mkdir(parents=True, exist_ok=True)
         members = self._members(project_id)
         descriptor, temporary_name = tempfile.mkstemp(
@@ -114,27 +117,23 @@ class ResumeBundleService:
         procedure_records = tuple(
             procedures.get(item.procedure_id) for item in status.approved_procedures
         )
-        policy_records = tuple(
-            policies.get(item.policy_id) for item in status.governing_policies
-        )
+        policy_records = tuple(policies.get(item.policy_id) for item in status.governing_policies)
 
         artifact_ids = set(project.artifact_ids)
         source_ids = set(project.memory_ids)
-        for item in (*active, *ready, *blocked):
-            artifact_ids.update(item.artifact_ids)
-            source_ids.update(item.source_ids)
-        for item in decision_records:
-            artifact_ids.update(item.artifact_ids)
-            source_ids.update(item.memory_ids)
-        for item in procedure_records:
-            source_ids.update(item.source_ids)
+        for work_item in (*active, *ready, *blocked):
+            artifact_ids.update(work_item.artifact_ids)
+            source_ids.update(work_item.source_ids)
+        for decision in decision_records:
+            artifact_ids.update(decision.artifact_ids)
+            source_ids.update(decision.memory_ids)
+        for procedure in procedure_records:
+            source_ids.update(procedure.source_ids)
 
         artifact_references, artifact_omissions = self._artifact_references(artifact_ids)
         source_references, source_omissions = self._source_references(source_ids)
         checkpoint_payload = (
-            asdict(status.latest_checkpoint)
-            if status.latest_checkpoint is not None
-            else None
+            asdict(status.latest_checkpoint) if status.latest_checkpoint is not None else None
         )
         included_counts = {
             "project": 1,
@@ -150,7 +149,10 @@ class ResumeBundleService:
             "source_references": len(source_references),
         }
         omitted_counts = {
-            **{key: status.omitted_record_counts[key] for key in sorted(status.omitted_record_counts)},
+            **{
+                key: status.omitted_record_counts[key]
+                for key in sorted(status.omitted_record_counts)
+            },
             "artifact_references": artifact_omissions,
             "source_references": source_omissions,
         }
@@ -182,9 +184,7 @@ class ResumeBundleService:
                 else None
             ),
             "checkpoint_freshness": (
-                status.latest_checkpoint.freshness
-                if status.latest_checkpoint is not None
-                else None
+                status.latest_checkpoint.freshness if status.latest_checkpoint is not None else None
             ),
             "checksum_algorithm": CHECKSUM_ALGORITHM,
         }
@@ -192,12 +192,8 @@ class ResumeBundleService:
             f"{BUNDLE_ROOT}/manifest.json": _json_bytes(manifest),
             f"{BUNDLE_ROOT}/project.json": _json_bytes(asdict(project)),
             f"{BUNDLE_ROOT}/checkpoint.json": _json_bytes(checkpoint_payload),
-            f"{BUNDLE_ROOT}/active-work-items.jsonl": _jsonl_bytes(
-                asdict(item) for item in active
-            ),
-            f"{BUNDLE_ROOT}/next-work-items.jsonl": _jsonl_bytes(
-                asdict(item) for item in ready
-            ),
+            f"{BUNDLE_ROOT}/active-work-items.jsonl": _jsonl_bytes(asdict(item) for item in active),
+            f"{BUNDLE_ROOT}/next-work-items.jsonl": _jsonl_bytes(asdict(item) for item in ready),
             f"{BUNDLE_ROOT}/blocked-work-items.jsonl": _jsonl_bytes(
                 asdict(item) for item in blocked
             ),
@@ -213,9 +209,7 @@ class ResumeBundleService:
             f"{BUNDLE_ROOT}/validation-requirements.json": _json_bytes(
                 [asdict(item) for item in status.pending_required_validation]
             ),
-            f"{BUNDLE_ROOT}/artifact-references.jsonl": _jsonl_bytes(
-                artifact_references
-            ),
+            f"{BUNDLE_ROOT}/artifact-references.jsonl": _jsonl_bytes(artifact_references),
             f"{BUNDLE_ROOT}/source-references.jsonl": _jsonl_bytes(source_references),
             f"{BUNDLE_ROOT}/HANDOFF.md": _handoff(status).encode("utf-8"),
         }
@@ -397,23 +391,20 @@ def _handoff(status: ProjectStatusInfo) -> str:
         "## Blockers",
         *_handoff_work(status.blocked_work),
         "## Important decisions",
-        *(
-            [f"- {item.decision}" for item in status.governing_decisions]
-            or ["- none"]
-        ),
+        *([f"- {item.decision}" for item in status.governing_decisions] or ["- none"]),
         "## Applicable procedures",
         *(
             [f"- {item.title} (version {item.version})" for item in status.approved_procedures]
             or ["- none"]
         ),
         "## Governing policies and prohibitions",
-        *(
-            [f"- {item.key}: {item.rule}" for item in status.governing_policies]
-            or ["- none"]
-        ),
+        *([f"- {item.key}: {item.rule}" for item in status.governing_policies] or ["- none"]),
         "## Pending validation",
         *(
-            [f"- {item.title}: {', '.join(item.blocking_criterion_ids)}" for item in status.pending_required_validation]
+            [
+                f"- {item.title}: {', '.join(item.blocking_criterion_ids)}"
+                for item in status.pending_required_validation
+            ]
             or ["- none"]
         ),
         "## Checkpoint freshness",
@@ -431,13 +422,10 @@ def _handoff(status: ProjectStatusInfo) -> str:
     return "\n\n".join(lines)
 
 
-def _handoff_work(items: tuple[object, ...]) -> list[str]:
+def _handoff_work(items: tuple[StatusWorkItem, ...]) -> list[str]:
     if not items:
         return ["- none"]
-    return [
-        f"- {cast(object, item).__getattribute__('title')}"
-        for item in items
-    ]
+    return [f"- {item.title}" for item in items]
 
 
 def _record_summary(record: RecordEnvelope) -> dict[str, object]:
@@ -472,8 +460,8 @@ def _json_bytes(value: object) -> bytes:
     return (_canonical_json(value) + "\n").encode("utf-8")
 
 
-def _jsonl_bytes(values: object) -> bytes:
-    return b"".join(_json_bytes(value) for value in cast(object, values))
+def _jsonl_bytes(values: Iterable[object]) -> bytes:
+    return b"".join(_json_bytes(value) for value in values)
 
 
 def _canonical_json(value: object) -> str:

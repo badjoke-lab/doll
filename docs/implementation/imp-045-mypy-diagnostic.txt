@@ -1,8 +1,0 @@
-src/doll/resume_bundle.py:122: error: Incompatible types in assignment (expression has type "DecisionInfo", variable has type "WorkItemInfo")  [assignment]
-src/doll/resume_bundle.py:124: error: "WorkItemInfo" has no attribute "memory_ids"  [attr-defined]
-src/doll/resume_bundle.py:125: error: Incompatible types in assignment (expression has type "ProcedureInfo", variable has type "WorkItemInfo")  [assignment]
-src/doll/resume_bundle.py:423: error: Redundant cast to "object"  [redundant-cast]
-src/doll/resume_bundle.py:459: error: Redundant cast to "object"  [redundant-cast]
-src/doll/resume_bundle.py:459: error: "object" has no attribute "__iter__"; maybe "__dir__" or "__str__"? (not iterable)  [attr-defined]
-Found 6 errors in 1 file (checked 174 source files)
-exit_code=1

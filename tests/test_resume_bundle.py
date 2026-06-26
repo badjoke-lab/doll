@@ -204,9 +204,7 @@ def test_resume_bundle_is_deterministic_scoped_and_integrity_checkable(
         names = set(archive.namelist())
         manifest = json.loads(archive.read(f"{BUNDLE_ROOT}/manifest.json"))
         handoff = archive.read(f"{BUNDLE_ROOT}/HANDOFF.md").decode("utf-8")
-        artifact_refs = archive.read(
-            f"{BUNDLE_ROOT}/artifact-references.jsonl"
-        ).decode("utf-8")
+        artifact_refs = archive.read(f"{BUNDLE_ROOT}/artifact-references.jsonl").decode("utf-8")
         entire_bundle = b"".join(archive.read(name) for name in archive.namelist())
 
     assert names == {

@@ -15,6 +15,7 @@ from doll.project_state import (
     ProjectStatus,
 )
 from doll.project_status import ProjectStatusError, ProjectStatusService
+from doll.resume_bundle import ResumeBundleError, ResumeBundleService
 from doll.state import RecordSensitivity, StateError, open_state_repository
 from doll.workspace import WorkspaceError
 
@@ -26,6 +27,11 @@ decision_app = typer.Typer(
     help="Manage explicit user-confirmed decision records.",
     no_args_is_help=True,
 )
+resume_app = typer.Typer(
+    help="Export deterministic project Resume Bundles.",
+    no_args_is_help=True,
+)
+project_app.add_typer(resume_app, name="resume")
 
 
 def _fail(prefix: str, exc: BaseException) -> NoReturn:
@@ -181,6 +187,26 @@ def project_status_command(
         _fail("project status failed", exc)
 
     typer.echo(output, nl=False)
+
+
+@resume_app.command("export")
+def project_resume_export(
+    project_id: Annotated[str, typer.Argument()],
+    output: Annotated[Path, typer.Option("--output")],
+    workspace: Annotated[Path | None, typer.Option("--workspace")] = None,
+) -> None:
+    """Export a deterministic project-scoped Resume Bundle."""
+
+    try:
+        with open_state_repository(workspace, read_only=True) as repository:
+            inspection = ResumeBundleService(repository).export(project_id, output)
+    except (WorkspaceError, StateError, ProjectDecisionError, ResumeBundleError, KeyError) as exc:
+        _fail("project resume export failed", exc)
+
+    typer.echo(
+        f"Resume Bundle exported: {output} project={inspection.project_id} "
+        f"state_revision={inspection.state_revision} members={inspection.member_count}"
+    )
 
 
 @project_app.command("archive")
