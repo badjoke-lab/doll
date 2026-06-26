@@ -21,7 +21,7 @@ from doll.project_state import (
     ProjectService,
 )
 from doll.settings import PolicyInfo, PolicyService, SettingsCorruptError
-from doll.state import RecordSensitivity, StateError
+from doll.state import StateError
 from doll.state_repository import StateRepository
 from doll.work_item import WorkItemCorruptError, WorkItemInfo, WorkItemService
 
@@ -175,29 +175,17 @@ class ProjectStatusService:
             ) from exc
 
         active = tuple(
-            _status_work_item(item)
-            for item in work_items
-            if item.work_status == "in_progress"
+            _status_work_item(item) for item in work_items if item.work_status == "in_progress"
         )
-        ready = tuple(
-            _status_work_item(item)
-            for item in work_items
-            if item.work_status == "ready"
-        )
+        ready = tuple(_status_work_item(item) for item in work_items if item.work_status == "ready")
         blocked = tuple(
-            _status_work_item(item)
-            for item in work_items
-            if item.work_status == "blocked"
+            _status_work_item(item) for item in work_items if item.work_status == "blocked"
         )
         pending_validation = tuple(
-            _pending_validation(item)
-            for item in work_items
-            if _requires_validation(item)
+            _pending_validation(item) for item in work_items if _requires_validation(item)
         )
         checkpoint_view = (
-            _status_checkpoint(latest_checkpoint)
-            if latest_checkpoint is not None
-            else None
+            _status_checkpoint(latest_checkpoint) if latest_checkpoint is not None else None
         )
         return ProjectStatusInfo(
             status_schema=PROJECT_STATUS_SCHEMA,
@@ -208,14 +196,10 @@ class ProjectStatusService:
             project_status=project.project_status,
             project_revision=project.revision,
             current_phase=(
-                latest_checkpoint.current_phase
-                if latest_checkpoint is not None
-                else None
+                latest_checkpoint.current_phase if latest_checkpoint is not None else None
             ),
             current_goal=(
-                latest_checkpoint.current_goal
-                if latest_checkpoint is not None
-                else None
+                latest_checkpoint.current_goal if latest_checkpoint is not None else None
             ),
             active_work=active,
             next_ready_work=ready,
@@ -280,17 +264,14 @@ class ProjectStatusService:
             lines.append("  none")
         else:
             for policy in status.governing_policies:
-                lines.append(
-                    f"  - {policy.policy_id} {policy.key} enabled={policy.enabled}"
-                )
+                lines.append(f"  - {policy.policy_id} {policy.key} enabled={policy.enabled}")
         lines.append("Approved procedures:")
         if not status.approved_procedures:
             lines.append("  none")
         else:
             for procedure in status.approved_procedures:
                 lines.append(
-                    f"  - {procedure.procedure_id} {procedure.title} "
-                    f"version={procedure.version}"
+                    f"  - {procedure.procedure_id} {procedure.title} version={procedure.version}"
                 )
         lines.append(
             "Omitted secret records: "
@@ -459,9 +440,7 @@ def _pending_validation(item: WorkItemInfo) -> PendingValidation:
         work_status=item.work_status,
         verification_state=item.verification_state,
         blocking_criterion_ids=tuple(
-            criterion.criterion_id
-            for criterion in item.acceptance_criteria
-            if criterion.blocking
+            criterion.criterion_id for criterion in item.acceptance_criteria if criterion.blocking
         ),
         verification_evidence_ids=item.verification_evidence_ids,
     )
@@ -516,8 +495,7 @@ def _status_procedure(item: ProcedureInfo) -> StatusProcedure:
 def _status_payload(status: ProjectStatusInfo) -> dict[str, object]:
     payload = asdict(status)
     payload["omitted_record_counts"] = {
-        key: status.omitted_record_counts[key]
-        for key in sorted(status.omitted_record_counts)
+        key: status.omitted_record_counts[key] for key in sorted(status.omitted_record_counts)
     }
     return cast(dict[str, object], payload)
 
@@ -532,9 +510,7 @@ def _canonical_json(value: object) -> str:
             separators=(",", ":"),
         )
     except (TypeError, ValueError) as exc:
-        raise ProjectStatusValidationError(
-            "project status is not strict JSON"
-        ) from exc
+        raise ProjectStatusValidationError("project status is not strict JSON") from exc
 
 
 def _render_work_section(
@@ -548,7 +524,6 @@ def _render_work_section(
     for item in items:
         blockers = ",".join(item.blocked_by_ids) or "-"
         lines.append(
-            f"  - {item.work_item_id} {item.title} "
-            f"priority={item.priority} blockers={blockers}"
+            f"  - {item.work_item_id} {item.title} priority={item.priority} blockers={blockers}"
         )
     return lines

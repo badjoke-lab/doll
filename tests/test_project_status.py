@@ -204,9 +204,7 @@ def _fixture(repository: StateRepository) -> tuple[str, dict[str, str]]:
 
 def _state_snapshot(repository: StateRepository) -> tuple[int, tuple[tuple[str, int], ...], int]:
     status = repository.status()
-    rows = repository.connection.execute(
-        "SELECT id, revision FROM records ORDER BY id"
-    ).fetchall()
+    rows = repository.connection.execute("SELECT id, revision FROM records ORDER BY id").fetchall()
     revisions = tuple((cast(str, row[0]), cast(int, row[1])) for row in rows)
     audit_count = cast(
         int,
@@ -235,12 +233,15 @@ def test_project_status_is_deterministic_complete_and_project_scoped(
     assert status.current_phase == "Phase 4B"
     assert status.current_goal == "Complete deterministic project status."
     assert tuple(item.work_item_id for item in status.active_work) == (ids["active"],)
-    assert tuple(item.work_item_id for item in status.next_ready_work) == (ids["ready"],)
+    assert tuple(item.work_item_id for item in status.next_ready_work) == (
+        ids["blocker"],
+        ids["ready"],
+    )
     assert tuple(item.work_item_id for item in status.blocked_work) == (ids["blocked"],)
     assert status.blocked_work[0].blocked_by_ids == (ids["blocker"],)
-    assert tuple(
-        item.work_item_id for item in status.pending_required_validation
-    ) == (ids["milestone"],)
+    assert tuple(item.work_item_id for item in status.pending_required_validation) == (
+        ids["milestone"],
+    )
     assert status.latest_checkpoint is not None
     assert status.latest_checkpoint.checkpoint_id == ids["checkpoint"]
     assert status.latest_checkpoint.freshness == "current"
@@ -249,9 +250,7 @@ def test_project_status_is_deterministic_complete_and_project_scoped(
         ids["scoped_decision"],
     }
     assert tuple(item.policy_id for item in status.governing_policies) == (ids["policy"],)
-    assert tuple(item.procedure_id for item in status.approved_procedures) == (
-        ids["procedure"],
-    )
+    assert tuple(item.procedure_id for item in status.approved_procedures) == (ids["procedure"],)
     assert status.omitted_record_counts["work_items"] == 1
     assert "TOP SECRET STATUS TEXT" not in first
     assert "UNRELATED WORK ITEM" not in first
