@@ -26,19 +26,25 @@ def _workspace(tmp_path: Path) -> workspace.InitializedWorkspace:
 
 
 def _project(repository: StateRepository) -> str:
-    return ProjectService(repository).create_v2(
-        name="Empty status project",
-        description="Project-status defensive coverage fixture.",
-        objective="Exercise empty and malformed derived status branches.",
-        in_scope=("Derived status",),
-        out_of_scope=("Resume Bundle",),
-        success_criteria=("Defensive branches fail closed",),
-        project_status="active",
-        started_at="2026-06-25T00:00:00Z",
-    ).project_id
+    return (
+        ProjectService(repository)
+        .create_v2(
+            name="Empty status project",
+            description="Project-status defensive coverage fixture.",
+            objective="Exercise empty and malformed derived status branches.",
+            in_scope=("Derived status",),
+            out_of_scope=("Resume Bundle",),
+            success_criteria=("Defensive branches fail closed",),
+            project_status="active",
+            started_at="2026-06-25T00:00:00Z",
+        )
+        .project_id
+    )
 
 
-def test_empty_project_status_text_uses_explicit_none_sections(tmp_path: Path) -> None:
+def test_empty_project_status_text_uses_explicit_none_sections(
+    tmp_path: Path,
+) -> None:
     initialized = _workspace(tmp_path)
     with state.open_state_repository(initialized.root) as repository:
         project_id = _project(repository)
@@ -52,7 +58,9 @@ def test_empty_project_status_text_uses_explicit_none_sections(tmp_path: Path) -
     assert text.count("  none") >= 7
 
 
-def test_validation_requirement_short_circuits_nonblocking_states(tmp_path: Path) -> None:
+def test_validation_requirement_short_circuits_nonblocking_states(
+    tmp_path: Path,
+) -> None:
     initialized = _workspace(tmp_path)
     with state.open_state_repository(initialized.root) as repository:
         project_id = _project(repository)
