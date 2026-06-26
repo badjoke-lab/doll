@@ -32,11 +32,12 @@ jobs:
         run: python scripts/imp_043_update_status.py
       - name: Specification build
         run: python scripts/build_final_spec.py
-      - name: Ruff
-        run: |
-          uv run ruff check . --fix --ignore E501
-          uv run ruff format .
-          uv run ruff check . --ignore E501
+      - name: Ruff fix
+        run: uv run ruff check . --fix --ignore E501
+      - name: Ruff format
+        run: uv run ruff format .
+      - name: Ruff verify
+        run: uv run ruff check . --ignore E501
       - name: Strict typing
         run: uv run mypy src tests
       - name: Specification and status
