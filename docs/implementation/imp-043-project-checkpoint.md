@@ -75,9 +75,11 @@ The IMP-043 tests prove:
 - a checkpoint is current immediately after confirmation;
 - unrelated preference mutation leaves it current;
 - changing or removing a relevant basis record makes it stale;
+- same-revision typed-role tampering also makes it stale;
 - stale checkpoint data and its original fingerprint remain inspectable;
 - superseded checkpoints remain inspectable with superseded freshness;
-- invalid work-item roles, cross-project links, duplicate roles, and stale revisions fail closed;
+- invalid work-item roles, cross-project links, duplicate roles, malformed envelopes, non-portable basis links, and stale revisions fail closed;
+- read-only mutation and transactional create or update failures leave no partial checkpoint state;
 - valid checkpoints survive restart, Doll State Package v2 transfer, and verified state-backup creation;
 - fingerprint tampering fails before target mutation;
 - package format v1 remains free of ProjectCheckpointRecord members.
