@@ -1,14 +1,34 @@
 name: Diagnose IMP-043 focused tests
 
 on:
-  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths: [.github/workflows/imp-043-pytest-diagnose.yml]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  disabled:
-    if: false
+  diagnose:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "IMP-043 focused-test diagnosis is complete."
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-043-project-checkpoint
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - run: |
+          python scripts/imp_043_fix_coverage_tests.py
+          uv run ruff check . --fix --ignore E501
+          uv run ruff format .
+      - run: |
+          set +e
+          uv run pytest -q --no-cov tests/test_checkpoint.py tests/test_checkpoint_coverage.py > docs/implementation/imp-043-pytest-diagnostic.txt 2>&1
+          echo "exit_code=$?" >> docs/implementation/imp-043-pytest-diagnostic.txt
+          exit 0
+      - run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add docs/implementation/imp-043-pytest-diagnostic.txt
+          git commit -m "TEMP: refresh IMP-043 test diagnostic"
+          git push origin HEAD:imp-043-project-checkpoint
