@@ -1,0 +1,40 @@
+name: Apply IMP-045 implementation
+
+on:
+  pull_request:
+    branches: [main]
+    paths: [.github/workflows/imp-045-apply.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-045-resume-bundle
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - name: Apply CLI
+        run: python scripts/imp_045_update_cli.py
+      - name: Ruff
+        run: |
+          uv run ruff check . --fix --ignore E501
+          uv run ruff format .
+          uv run ruff check . --ignore E501
+      - name: Strict typing
+        run: uv run mypy src tests
+      - name: Focused tests
+        run: uv run pytest -q --no-cov tests/test_resume_bundle.py tests/test_project_status.py tests/test_project_cli.py
+      - name: Commit
+        run: |
+          rm -f scripts/imp_045_update_cli.py
+          rm -f .github/workflows/imp-045-apply.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "IMP-045: add deterministic Resume Bundle"
+          git push origin HEAD:imp-045-resume-bundle
