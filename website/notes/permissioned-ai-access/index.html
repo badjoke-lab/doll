@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Is Access to Frontier AI Becoming Permissioned? — doll</title>
+  <meta name="description" content="What the reported GPT-5.6 rollout and Anthropic's suspension of Fable 5 and Mythos 5 suggest about the future of cloud AI access.">
+  <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+  <p><a href="../../">Back to doll</a></p>
+
+  <main>
+    <article>
+      <h1>Is Access to Frontier AI Becoming Permissioned?</h1>
+
+      <h2>What the Reported GPT-5.6 Rollout and Anthropic's Fable 5 Suspension Suggest About Cloud AI</h2>
+
+      <p>
+        On June 25, several news organizations reported that OpenAI was preparing a staged preview
+        of a model referred to as GPT-5.6.
+      </p>
+
+      <p>
+        According to those reports, the model would initially be offered to roughly two dozen partners
+        before any broader rollout. Reuters reported that the US government had asked OpenAI to stagger
+        the release over security concerns, while The Information, as cited by Reuters, said the government
+        would approve access customer by customer during the preview period.
+        <a href="https://www.reuters.com/business/trump-administration-asks-openai-stagger-release-new-model-information-reports-2026-06-25/">Reuters reported the arrangement here.</a>
+      </p>
+
+      <p>
+        The distinction between reporting and official confirmation matters. At the time of publication,
+        OpenAI had not publicly announced GPT-5.6 or confirmed the rollout described in those reports.
+        The reporting does not establish that the model has been permanently withheld, that a broader release
+        has been cancelled, or that the United States has created a general licensing requirement for frontier models.
+      </p>
+
+      <p>
+        If this were an isolated story, it could be dismissed as a temporary adjustment to one product launch.
+        It is not isolated.
+      </p>
+
+      <p>
+        Less than two weeks earlier, Anthropic had officially disclosed that a US government directive
+        concerning foreign-national access had led the company to disable Claude Fable 5 and Claude Mythos 5
+        for every customer.
+      </p>
+
+      <p>
+        The two cases are legally different. Together, however, they raise the same practical question:
+        who decides who may use the most capable AI systems, and what remains available to users when that decision changes?
+      </p>
+
+      <h2>Claude Showed That a Working Model Can Still Disappear</h2>
+
+      <p>
+        On June 12, Anthropic published a statement saying that the US government had issued an export-control
+        directive requiring the company to suspend access to Fable 5 and Mythos 5 by foreign nationals,
+        whether they were inside or outside the United States. Anthropic said the restriction also applied
+        to its own foreign-national employees.
+        <a href="https://www.anthropic.com/news/fable-mythos-access">Anthropic's official statement is available here.</a>
+      </p>
+
+      <p>
+        The directive did not itself order Anthropic to shut the models off for everyone. Anthropic said it disabled
+        both models for all customers because it could not immediately enforce the nationality-based restriction
+        with sufficient confidence. Its other models remained available.
+      </p>
+
+      <p>
+        That distinction is important. The government required a narrower restriction; the company's compliance
+        response produced a broader shutdown.
+      </p>
+
+      <p>
+        For users, though, the result was straightforward. The models existed. They worked. Customers had access.
+        Then a government decision, followed by the provider's implementation of that decision, made them unavailable.
+      </p>
+
+      <p>
+        No company had to fail. The internet did not have to disappear. AI services did not have to be banned as a category.
+        A narrower policy decision was enough to remove access to a particular model.
+      </p>
+
+      <p>
+        Anthropic also said the directive did not explain the national-security concern in detail. The company believed
+        the issue involved a method for bypassing Fable 5's safeguards, but argued that the demonstrated method exposed
+        only a small number of known, low-severity vulnerabilities that other models could also find.
+      </p>
+
+      <p>
+        The government and the company therefore appeared to disagree about the severity of the risk.
+        Users lost access before that disagreement was resolved.
+      </p>
+
+      <h2>The OpenAI Case Is Different, but It Points in the Same Direction</h2>
+
+      <p>
+        The reported GPT-5.6 rollout should not be described as another version of Anthropic's shutdown.
+      </p>
+
+      <p>
+        Anthropic confirmed a government directive and an actual service suspension. The OpenAI story remains a reported plan
+        for a staged preview. There is no public evidence that the US government has prohibited a later broad release of GPT-5.6.
+      </p>
+
+      <p>
+        Even so, the reported arrangement goes beyond an ordinary private beta. The early users would not be selected by OpenAI alone.
+        The government would reportedly be involved in deciding which customers received access during the preview.
+      </p>
+
+      <p>That creates a different relationship:</p>
+
+      <pre><code>AI provider
+    ↓
+government security review and early-access selection
+    ↓
+release timing, eligible customers, and available capability
+    ↓
+user</code></pre>
+
+      <p>
+        The provider still develops and operates the model. The government may not hold a formal veto.
+        But the first group allowed to use the strongest system is no longer necessarily chosen by the provider alone.
+      </p>
+
+      <h2>The United States Is Building a Wider Pre-Release Review System</h2>
+
+      <p>
+        OpenAI and Anthropic are not the only companies involved.
+      </p>
+
+      <p>
+        In 2024, the US AI Safety Institute signed testing and evaluation agreements with both companies.
+        US and UK institutes later published pre-deployment evaluations of models including OpenAI's o1
+        and Anthropic's upgraded Claude 3.5 Sonnet.
+        <a href="https://www.nist.gov/news-events/news/2024/08/us-ai-safety-institute-signs-agreements-regarding-ai-safety-research">NIST announced the agreements here.</a>
+      </p>
+
+      <p>
+        In May 2026, Reuters reported that Google DeepMind, Microsoft, and xAI had also agreed to provide unreleased models
+        to the US government for national-security testing. The administration has also pressed Meta to join a similar framework.
+        <a href="https://www.reuters.com/legal/litigation/microsoft-xai-google-will-share-ai-models-with-us-govt-security-reviews-2026-05-05/">Reuters described the expanded reviews here.</a>
+      </p>
+
+      <p>
+        The policy became more explicit on June 2, when the White House issued Executive Order 14409,
+        “Promoting Advanced Artificial Intelligence Innovation and Security.”
+      </p>
+
+      <p>
+        The order directs agencies to create a classified benchmarking process for advanced cyber capabilities.
+        It also calls for a voluntary framework under which developers can ask whether a model under development
+        qualifies as a covered frontier model, give the federal government access before release to other trusted partners,
+        and work with the government to identify those partners.
+        <a href="https://www.whitehouse.gov/presidential-actions/2026/06/promoting-advanced-artificial-intelligence-innovation-and-security/">The executive order is published here.</a>
+      </p>
+
+      <p>
+        The same order explicitly says that this framework must not be interpreted as creating mandatory government licensing,
+        preclearance, or permitting for new AI models.
+      </p>
+
+      <p>
+        That limitation matters. The United States has not simply enacted a general rule requiring government permission
+        before every frontier model can be released.
+      </p>
+
+      <p>
+        It leaves a practical question unanswered: if the government raises a national-security objection,
+        how realistic is it for a major AI provider to ignore the request and proceed as planned?
+      </p>
+
+      <p>
+        Voluntary testing, trusted-partner selection, export controls, and customer-by-customer approval are different legal mechanisms.
+        When they operate together, however, the result may begin to look permissioned from the user's side:
+        the model can exist without being available to you.
+      </p>
+
+      <h2>There Are Legitimate Reasons for Pre-Release Scrutiny</h2>
+
+      <p>
+        It would be too simple to treat every form of government involvement as censorship or arbitrary control.
+      </p>
+
+      <p>
+        Frontier models can now write and execute code, search for vulnerabilities, automate long tasks,
+        support scientific work, and assist with complex operational decisions. Governments are concerned about cyberattacks,
+        biological and chemical misuse, military and intelligence applications, and the transfer of strategic capabilities
+        to hostile actors.
+      </p>
+
+      <p>
+        Once a highly capable model or its weights have been released widely, that release may be impossible to reverse.
+        Serious pre-deployment evaluation can therefore be reasonable.
+      </p>
+
+      <p>
+        Safety evaluation and access governance are not the same thing, however.
+      </p>
+
+      <p>Several questions remain:</p>
+
+      <ul>
+        <li>Will the criteria for early access be public?</li>
+        <li>Will rejected organizations be told why they were rejected?</li>
+        <li>Will foreign users and smaller companies always receive access later?</li>
+        <li>Can access that has already been granted be withdrawn without warning?</li>
+        <li>Will the most capable versions increasingly be limited to governments and selected enterprises?</li>
+      </ul>
+
+      <p>
+        A security review may be justified while still creating a separate continuity risk for users.
+      </p>
+
+      <h2>Other Countries Intervene Through Different Mechanisms</h2>
+
+      <p>
+        These systems are not equivalent in legal basis, purpose, or scope. There is no single global model-approval regime.
+        But cloud AI access is increasingly shaped by public policy in both the country that develops a model
+        and the country in which a user tries to use it.
+      </p>
+
+      <h3>China: Public-Service Rules, Security Assessment, and Filing</h3>
+
+      <p>
+        China's interim rules for generative AI services impose obligations on providers serving the public,
+        including requirements concerning training data, personal information, generated content, and regulatory cooperation.
+        Related security-assessment and algorithm-filing systems create a formal layer of state oversight around public deployment.
+        The rules do not place every private research or internal-use model under one identical approval process.
+        <a href="https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm">The Cyberspace Administration of China published the interim measures here.</a>
+      </p>
+
+      <h3>European Union: Legal Duties for Providers</h3>
+
+      <p>
+        The EU AI Act imposes obligations on providers of general-purpose AI models, including technical documentation,
+        copyright policies, and information about training content. Providers of models with systemic risk face additional duties
+        involving evaluation, risk mitigation, incident reporting, and cybersecurity.
+      </p>
+
+      <p>
+        This is primarily a compliance regime for providers operating in the EU market. It is not generally a system
+        in which a government selects each early customer.
+        <a href="https://digital-strategy.ec.europa.eu/en/factpages/general-purpose-ai-obligations-under-ai-act">The European Commission summarizes those obligations here.</a>
+      </p>
+
+      <h3>United Kingdom: Cooperative Pre-Deployment Evaluation</h3>
+
+      <p>
+        The UK AI Security Institute conducts pre-deployment testing with frontier-model developers and has published
+        evaluations of OpenAI and Anthropic models. The current approach remains closer to research and technical evaluation
+        than to a general release-permission system.
+        <a href="https://www.aisi.gov.uk/blog/early-lessons-from-evaluating-frontier-ai-systems">The institute describes its early work here.</a>
+      </p>
+
+      <h3>Italy and South Korea: Data-Protection Intervention</h3>
+
+      <p>
+        An AI service can also become unavailable for reasons unrelated to frontier-model capability.
+        Italy's data-protection authority restricted the processing of Italian users' data by ChatGPT in 2023
+        and by DeepSeek in 2025. In South Korea, DeepSeek temporarily suspended new app availability in 2025
+        while addressing personal-data compliance issues.
+      </p>
+
+      <p>
+        The legal basis was privacy rather than national security, but the user's experience was still a loss of access.
+        <a href="https://www.garanteprivacy.it/home/docweb/-/docweb-display/docweb/10097450">Italy's DeepSeek decision is available here.</a>
+      </p>
+
+      <h3>Japan: Promotion and Risk Response, Not General Preclearance</h3>
+
+      <p>
+        Japan's AI legislation emphasizes the promotion of research, development, and use while creating national planning
+        and risk-response mechanisms. It does not currently establish a general system in which the government approves
+        each model release or each customer in advance.
+        <a href="https://www8.cao.go.jp/cstp/ai/ai_act/ai_act.html">The Cabinet Office publishes the law and related material here.</a>
+      </p>
+
+      <p>
+        These approaches should not be collapsed into a claim that every government is “banning AI.”
+        The narrower point is that cloud AI no longer exists solely inside a contract between a provider and a customer.
+      </p>
+
+      <h2>The Likely Future Is Fragmented Access, Not a Total Ban</h2>
+
+      <p>
+        The most plausible risk is not that all advanced AI disappears overnight. It is a fragmented access environment:
+      </p>
+
+      <ul>
+        <li>a new model is available first to government-approved or provider-selected partners;</li>
+        <li>different countries receive it at different times;</li>
+        <li>some capabilities require identity or organizational verification;</li>
+        <li>particular nationalities cannot use a specific version;</li>
+        <li>an API remains available while a consumer interface does not;</li>
+        <li>enterprise customers receive capabilities that individuals never receive;</li>
+        <li>a model is withdrawn after a security or legal decision;</li>
+        <li>older models are retired and cannot be reproduced later.</li>
+      </ul>
+
+      <p>
+        AI may remain abundant while the particular AI environment a person depends on becomes temporary.
+      </p>
+
+      <h2>The Loss Is Larger Than Model Performance</h2>
+
+      <p>
+        People do not always use a cloud model as a stateless calculator. They place long-running conversations,
+        project history, writing preferences, instructions, research context, files, workflows, and operating habits
+        inside AI services.
+      </p>
+
+      <p>
+        If access changes, the user may lose more than a particular level of intelligence.
+        They may lose the environment in which their work made sense.
+      </p>
+
+      <p>
+        “Just switch providers” is therefore incomplete advice. Switching is easy only when the model is the sole component
+        being replaced. It becomes much harder when memory, permissions, project state, data formats, tools, and history
+        are inseparable from the provider.
+      </p>
+
+      <h2>Some European Companies Already Treat Diversification as Continuity</h2>
+
+      <p>
+        Reuters reported on June 22 that companies including Siemens, Renault, Orange, and ChapsVision already use mixes
+        of US, Chinese, and European models to reduce dependence on any one provider.
+        <a href="https://www.reuters.com/legal/litigation/us-curbs-ai-spur-european-firms-spread-risk-2026-06-22/">Reuters reported on those strategies here.</a>
+      </p>
+
+      <p>
+        Several executives described sovereignty as a matter of choice and credible alternatives rather than complete isolation.
+        That is an important distinction. Independence does not have to mean refusing every external service.
+        It can mean retaining the ability to continue when one service is no longer available.
+      </p>
+
+      <h2>What doll Is Intended to Preserve</h2>
+
+      <p>
+        <strong>doll is currently under development. This section describes its design purpose,
+        not the capabilities of a finished product.</strong>
+      </p>
+
+      <p>
+        doll is not an attempt to build a local model equal to every future frontier model.
+        When a powerful cloud model is available, using it may be the best choice.
+      </p>
+
+      <p>
+        The project is intended to keep the durable parts of a personal AI environment under the user's control:
+      </p>
+
+      <ul>
+        <li>memory and confirmed long-term state;</li>
+        <li>preferences, policies, and permissions;</li>
+        <li>conversation and project history;</li>
+        <li>objectives, active work, blockers, procedures, checkpoints, and decisions;</li>
+        <li>documents, research records, evidence, and generated artifacts;</li>
+        <li>migration, backup, restoration, and recovery paths.</li>
+      </ul>
+
+      <p>
+        In the planned architecture, models are replaceable reasoning engines around that durable core.
+      </p>
+
+      <pre><code>                 cloud model A
+                      ↑
+local fallback  ←   doll   →  cloud model B
+                      ↓
+                 future model</code></pre>
+
+      <p>
+        A preferred cloud model should be usable as an optional performance extension.
+        If the provider changes its terms, withdraws the model, blocks an account, restricts a region,
+        or complies with a government directive, the user's state and work should remain available
+        to another approved model or to a reduced-capability local fallback.
+      </p>
+
+      <p>
+        Performance may fall. Continuity should not disappear with it.
+      </p>
+
+      <h2>Local AI Is Not Absolute Independence</h2>
+
+      <p>
+        Local operation does not solve every problem. Model weights can be withdrawn. Hardware and chips can be export-controlled.
+        A local application can disappear or store data in a proprietary format. One runtime, interface, model format,
+        or conversation store can become another lock-in point.
+      </p>
+
+      <p>
+        Nor does doll make a user exempt from law or government regulation.
+      </p>
+
+      <p>
+        The claim is narrower: keeping user state, work, and recovery paths outside any one provider leaves more options
+        when access conditions change.
+      </p>
+
+      <h2>Borrow Capability, Not Continuity</h2>
+
+      <p>
+        Government review of frontier models may prevent real harm. A completely unrestricted release policy is not automatically responsible.
+      </p>
+
+      <p>
+        But even justified restrictions have consequences for users. A model that worked yesterday can become unavailable
+        because of a provider decision, a government directive, a regional rule, a nationality restriction,
+        or a change in customer eligibility.
+      </p>
+
+      <p>
+        The reported GPT-5.6 preview does not prove that a permanent government licensing system has arrived.
+        Anthropic's suspension does show that state action can abruptly remove access to an already deployed model.
+        The June 2 executive order shows that pre-release government evaluation and trusted-partner selection
+        are becoming part of the formal policy structure around frontier AI.
+      </p>
+
+      <p>
+        Until now, most discussion has focused on which AI is smartest. We also need to ask:
+      </p>
+
+      <blockquote>
+        <p>Will I still be allowed to use it tomorrow, and what remains mine if I am not?</p>
+      </blockquote>
+
+      <p>
+        AI capability can be borrowed. Memory, data, project state, and the ability to continue do not all have to be.
+      </p>
+
+      <hr>
+
+      <h2>Sources</h2>
+
+      <ul>
+        <li><a href="https://www.reuters.com/business/trump-administration-asks-openai-stagger-release-new-model-information-reports-2026-06-25/">Reuters — report on the staged GPT-5.6 rollout</a></li>
+        <li><a href="https://www.ft.com/content/0580e5c9-75b8-4cc5-803d-fbb4e82bb3ad">Financial Times — report on early partners and government vetting</a></li>
+        <li><a href="https://www.axios.com/2026/06/25/trump-administration-openai-gpt-model-release">Axios — report on the limited preview</a></li>
+        <li><a href="https://www.anthropic.com/news/fable-mythos-access">Anthropic — statement on the directive affecting Fable 5 and Mythos 5</a></li>
+        <li><a href="https://www.anthropic.com/news/claude-fable-5-mythos-5">Anthropic — Fable 5 and Mythos 5 announcement</a></li>
+        <li><a href="https://www.whitehouse.gov/presidential-actions/2026/06/promoting-advanced-artificial-intelligence-innovation-and-security/">White House — Executive Order 14409</a></li>
+        <li><a href="https://www.nist.gov/news-events/news/2024/08/us-ai-safety-institute-signs-agreements-regarding-ai-safety-research">NIST — US AI Safety Institute agreements with OpenAI and Anthropic</a></li>
+        <li><a href="https://www.reuters.com/legal/litigation/microsoft-xai-google-will-share-ai-models-with-us-govt-security-reviews-2026-05-05/">Reuters — early government access to Google, Microsoft, and xAI models</a></li>
+        <li><a href="https://www.reuters.com/world/us/us-presses-meta-agree-ai-reviews-security-concerns-rise-nyt-reports-2026-06-23/">Reuters — US pressure on Meta to join model reviews</a></li>
+        <li><a href="https://www.reuters.com/legal/litigation/us-curbs-ai-spur-european-firms-spread-risk-2026-06-22/">Reuters — European companies spreading AI-provider risk</a></li>
+        <li><a href="https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm">Cyberspace Administration of China — interim generative AI measures</a></li>
+        <li><a href="https://digital-strategy.ec.europa.eu/en/factpages/general-purpose-ai-obligations-under-ai-act">European Commission — general-purpose AI obligations</a></li>
+        <li><a href="https://www.aisi.gov.uk/blog/early-lessons-from-evaluating-frontier-ai-systems">UK AI Security Institute — early lessons from frontier-model evaluation</a></li>
+        <li><a href="https://www.garanteprivacy.it/home/docweb/-/docweb-display/docweb/10097450">Italian Data Protection Authority — DeepSeek processing restriction</a></li>
+        <li><a href="https://www.pipc.go.kr/eng/user/ltn/new/noticeDetail.do?bbsId=BBSMSTR_000000000001&amp;nttId=2784">South Korea PIPC — DeepSeek service suspension</a></li>
+        <li><a href="https://www8.cao.go.jp/cstp/ai/ai_act/ai_act.html">Cabinet Office of Japan — AI legislation and related materials</a></li>
+      </ul>
+    </article>
+  </main>
+</body>
+</html>
