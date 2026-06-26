@@ -24,6 +24,7 @@ jobs:
           python scripts/imp_044_update_roadmap.py
           python scripts/imp_044_update_website_status.py
           python scripts/imp_044_update_checker.py
+          python scripts/imp_044_fix_test_expectation.py
           python scripts/build_final_spec.py
       - name: Ruff
         run: |
@@ -46,6 +47,9 @@ jobs:
           rm -f scripts/imp_044_update_roadmap.py
           rm -f scripts/imp_044_update_website_status.py
           rm -f scripts/imp_044_update_checker.py
+          rm -f scripts/imp_044_fix_test_expectation.py
+          rm -f docs/implementation/imp-044-pytest-diagnostic.txt
+          rm -f .github/workflows/imp-044-pytest-diagnose.yml
           rm -f .github/workflows/imp-044-apply.yml
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
