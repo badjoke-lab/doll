@@ -1,0 +1,31 @@
+name: Diagnose IMP-045 mypy
+on:
+  pull_request:
+    branches: [main]
+    paths: [.github/workflows/imp-045-mypy-diagnose.yml]
+permissions:
+  contents: write
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-045-resume-bundle
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - run: |
+          python scripts/imp_045_update_cli.py
+          uv run ruff check . --fix --ignore E501
+          uv run ruff format .
+      - run: |
+          set +e
+          uv run mypy src tests > docs/implementation/imp-045-mypy-diagnostic.txt 2>&1
+          echo "exit_code=$?" >> docs/implementation/imp-045-mypy-diagnostic.txt
+          exit 0
+      - run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add docs/implementation/imp-045-mypy-diagnostic.txt
+          git commit -m "TEMP: record IMP-045 mypy diagnostic"
+          git push origin HEAD:imp-045-resume-bundle
