@@ -18,14 +18,21 @@ jobs:
           fetch-depth: 0
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --dev --locked
-      - run: |
-          uv run ruff check . --fix
-          uv run ruff format .
-          uv run ruff check .
-          uv run mypy src tests
-          uv run pytest -q --no-cov tests/test_checkpoint.py tests/test_checkpoint_coverage.py
-      - run: |
-          rm .github/workflows/imp-043-coverage-format.yml
+      - name: Ruff fix
+        run: uv run ruff check . --fix
+      - name: Ruff format
+        run: uv run ruff format .
+      - name: Ruff verify
+        run: uv run ruff check .
+      - name: Strict typing
+        run: uv run mypy src tests
+      - name: Focused tests
+        run: uv run pytest -q --no-cov tests/test_checkpoint.py tests/test_checkpoint_coverage.py
+      - name: Commit formatting
+        run: |
+          rm -f .github/workflows/imp-043-coverage-format.yml
+          rm -f .github/workflows/imp-043-coverage-diagnose.yml
+          rm -f docs/implementation/imp-043-coverage-diagnostic.txt
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add -A
