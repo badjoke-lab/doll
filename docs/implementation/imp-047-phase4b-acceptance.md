@@ -33,7 +33,8 @@ The accepted run verified:
 - architecture: `x86_64`;
 - Python: `3.12.13`;
 - network mode: `offline-confirmed`;
-- evidence level: `real-machine`.
+- evidence level: `real-machine`;
+- completed at: `2026-06-26T12:37:23.396078Z`.
 
 Result:
 
