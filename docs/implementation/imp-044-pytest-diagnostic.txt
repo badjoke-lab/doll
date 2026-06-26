@@ -25,39 +25,39 @@ tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-0/test_project_status_is_dete
         assert status.current_goal == "Complete deterministic project status."
         assert tuple(item.work_item_id for item in status.active_work) == (ids["active"],)
 >       assert tuple(item.work_item_id for item in status.next_ready_work) == (ids["ready"],)
-E       AssertionError: assert ('b7378d28-4c...e01268c332db') == ('55d00fbc-86...01268c332db',)
+E       AssertionError: assert ('4743eca6-4f...d6b1d1c8fde2') == ('10c89b44-ee...6b1d1c8fde2',)
 E         
-E         At index 0 diff: 'b7378d28-4ce3-4602-80ca-2bf0084880a1' != '55d00fbc-865d-44b6-9dd1-e01268c332db'
-E         Left contains one more item: '55d00fbc-865d-44b6-9dd1-e01268c332db'
+E         At index 0 diff: '4743eca6-4f42-43ab-a23c-c5dc570b8a0c' != '10c89b44-ee44-4df4-88f6-d6b1d1c8fde2'
+E         Left contains one more item: '10c89b44-ee44-4df4-88f6-d6b1d1c8fde2'
 E         
 E         Full diff:
 E           (
-E         +     'b7378d28-4ce3-4602-80ca-2bf0084880a1',
-E               '55d00fbc-865d-44b6-9dd1-e01268c332db',
+E         +     '4743eca6-4f42-43ab-a23c-c5dc570b8a0c',
+E               '10c89b44-ee44-4df4-88f6-d6b1d1c8fde2',
 E           )
 
 first      = '{"active_work":[{"blocked_by_ids":[],"kind":"task","priority":10,"revision":2,"title":"Implement status service","ver...t","project_revision":1,"project_status":"active","source_state_revision":19,"status_schema":"doll.project-status.v1"}'
-ids        = {'active': 'c43e768e-11df-4ede-b04d-24408a84b54a', 'blocked': '96f590b5-cdca-42df-bf73-be47c5b33686', 'blocker': 'b7378d28-4ce3-4602-80ca-2bf0084880a1', 'checkpoint': '3cf22b7e-41f4-45a8-82e2-3ff5b6030a19', ...}
+ids        = {'active': '159ef684-fa3e-4af8-9219-784a23a148b0', 'blocked': 'd5c3e439-d9cb-47da-8e1f-b612f9ccacc7', 'blocker': '4743eca6-4f42-43ab-a23c-c5dc570b8a0c', 'checkpoint': '5a448819-1832-4d1a-b009-b2369406ab1a', ...}
 initialized = InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_project_status_is_determi0/workspace'), recor...d='0.0.1', product_version_last_opened='0.0.1', profile_preference='lite', state_revision=0, instance_label='primary'))
 payload    = {'active_work': [{'blocked_by_ids': [], 'kind': 'task', 'priority': 10, 'revision': 2, ...}], 'approved_procedures': [...], 'kind': 'task', 'priority': 30, 'revision': 2, ...}], 'current_goal': 'Complete deterministic project status.', ...}
-project_id = '4c7c05a5-330c-4c4a-ab81-d7adbd941f91'
-repository = StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_project_status_is_d...etermi0/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f070a9f9300>, read_only=True)
+project_id = 'aa232ec3-09e4-457b-9778-c597bfb155ca'
+repository = StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/pytest-0/test_project_status_is_d...etermi0/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f3fef0d1300>, read_only=True)
 second     = '{"active_work":[{"blocked_by_ids":[],"kind":"task","priority":10,"revision":2,"title":"Implement status service","ver...t","project_revision":1,"project_status":"active","source_state_revision":19,"status_schema":"doll.project-status.v1"}'
-service    = ProjectStatusService(repository=StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/p...termi0/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f070a9f9300>, read_only=True))
-status     = ProjectStatusInfo(status_schema='doll.project-status.v1', project_id='4c7c05a5-330c-4c4a-ab81-d7adbd941f91', project_n...d_counts={'work_items': 1, 'checkpoints': 0, 'decisions': 0, 'policies': 0, 'procedures': 0}, source_state_revision=19)
+service    = ProjectStatusService(repository=StateRepository(workspace=InitializedWorkspace(root=PosixPath('/tmp/pytest-of-runner/p...termi0/workspace/state/doll-state.sqlite3'), connection=<sqlite3.Connection object at 0x7f3fef0d1300>, read_only=True))
+status     = ProjectStatusInfo(status_schema='doll.project-status.v1', project_id='aa232ec3-09e4-457b-9778-c597bfb155ca', project_n...d_counts={'work_items': 1, 'checkpoints': 0, 'decisions': 0, 'policies': 0, 'procedures': 0}, source_state_revision=19)
 tmp_path   = PosixPath('/tmp/pytest-of-runner/pytest-0/test_project_status_is_determi0')
 
 tests/test_project_status.py:236: AssertionError
 =========================== short test summary info ============================
-FAILED tests/test_project_status.py::test_project_status_is_deterministic_complete_and_project_scoped - AssertionError: assert ('b7378d28-4c...e01268c332db') == ('55d00fbc-86...01268c332db',)
+FAILED tests/test_project_status.py::test_project_status_is_deterministic_complete_and_project_scoped - AssertionError: assert ('4743eca6-4f...d6b1d1c8fde2') == ('10c89b44-ee...6b1d1c8fde2',)
   
-  At index 0 diff: 'b7378d28-4ce3-4602-80ca-2bf0084880a1' != '55d00fbc-865d-44b6-9dd1-e01268c332db'
-  Left contains one more item: '55d00fbc-865d-44b6-9dd1-e01268c332db'
+  At index 0 diff: '4743eca6-4f42-43ab-a23c-c5dc570b8a0c' != '10c89b44-ee44-4df4-88f6-d6b1d1c8fde2'
+  Left contains one more item: '10c89b44-ee44-4df4-88f6-d6b1d1c8fde2'
   
   Full diff:
     (
-  +     'b7378d28-4ce3-4602-80ca-2bf0084880a1',
-        '55d00fbc-865d-44b6-9dd1-e01268c332db',
+  +     '4743eca6-4f42-43ab-a23c-c5dc570b8a0c',
+        '10c89b44-ee44-4df4-88f6-d6b1d1c8fde2',
     )
-1 failed, 32 passed in 3.40s
+1 failed, 32 passed in 3.03s
 exit_code=1
