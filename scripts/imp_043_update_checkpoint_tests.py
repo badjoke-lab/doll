@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-PATH = Path(__file__).resolve().parents[1] / "tests/test_checkpoint.py"
+ROOT = Path(__file__).resolve().parents[1]
+TEST_PATH = ROOT / "tests/test_checkpoint.py"
+SOURCE_PATH = ROOT / "src/doll/checkpoint.py"
 
 
 def rep(text: str, old: str, new: str) -> str:
@@ -12,7 +14,7 @@ def rep(text: str, old: str, new: str) -> str:
 
 
 def main() -> None:
-    text = PATH.read_text(encoding="utf-8")
+    text = TEST_PATH.read_text(encoding="utf-8")
     text = rep(
         text,
         "from pathlib import Path\n",
@@ -77,7 +79,14 @@ def replace_record_metadata(record: state.RecordEnvelope, metadata: dict[str, ob
         1,
     )
     text = text[:function_start] + function + text[function_end:]
-    PATH.write_text(text, encoding="utf-8")
+    TEST_PATH.write_text(text, encoding="utf-8")
+
+    source = SOURCE_PATH.read_text(encoding="utf-8")
+    old = "        fingerprint = cast(str | None, fingerprint_value)\n"
+    new = "        fingerprint = fingerprint_value\n"
+    if source.count(old) != 1:
+        raise RuntimeError("checkpoint fingerprint cast anchor changed")
+    SOURCE_PATH.write_text(source.replace(old, new), encoding="utf-8")
 
 
 if __name__ == "__main__":
