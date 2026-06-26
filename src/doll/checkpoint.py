@@ -340,9 +340,7 @@ def _validated_checkpoint_values(
     expected_basis_ids = automatic_basis | set(additional_basis_ids)
     if safe_state == "proposed":
         if revisions or basis_fingerprint is not None or safe_confirmed_by is not None:
-            raise CheckpointValidationError(
-                "proposed checkpoint contains confirmed basis metadata"
-            )
+            raise CheckpointValidationError("proposed checkpoint contains confirmed basis metadata")
     else:
         if safe_confirmed_by != "user":
             raise CheckpointValidationError("confirmed checkpoint requires user confirmation")
@@ -430,7 +428,7 @@ def _checkpoint_from_record(
         fingerprint_value = record.metadata.get("basis_fingerprint")
         if fingerprint_value is not None and not isinstance(fingerprint_value, str):
             raise CheckpointValidationError("checkpoint fingerprint is invalid")
-        fingerprint = cast(str | None, fingerprint_value)
+        fingerprint = fingerprint_value
         format_version = record.metadata.get("fingerprint_format_version")
         if format_version != FINGERPRINT_FORMAT_VERSION:
             raise CheckpointValidationError("checkpoint fingerprint format is unsupported")
@@ -556,8 +554,7 @@ def _basis_fingerprint(
         "required_validation_ids": list(checkpoint.required_validation_ids),
         "basis_record_ids": list(checkpoint.basis_record_ids),
         "basis_record_revisions": {
-            record_id: basis_revisions[record_id]
-            for record_id in sorted(basis_revisions)
+            record_id: basis_revisions[record_id] for record_id in sorted(basis_revisions)
         },
     }
     encoded = _canonical_json(payload).encode("utf-8")
@@ -613,17 +610,13 @@ def _validate_work_item_lists(
         for record_id in record_ids:
             item = _active_work_item(repository, record_id)
             if item.project_id != project_id:
-                raise CheckpointValidationError(
-                    "checkpoint work-item link crosses project scope"
-                )
+                raise CheckpointValidationError("checkpoint work-item link crosses project scope")
             if item.work_status not in statuses:
                 raise CheckpointValidationError(
                     "checkpoint work-item link has the wrong domain state"
                 )
             if expected_kind is not None and item.kind != expected_kind:
-                raise CheckpointValidationError(
-                    "completed milestone link is not a milestone"
-                )
+                raise CheckpointValidationError("completed milestone link is not a milestone")
 
 
 def _active_work_item(repository: StateRepository, record_id: str) -> WorkItemInfo:
@@ -870,11 +863,7 @@ def _basis_revisions(value: Mapping[str, int]) -> dict[str, int]:
     result: dict[str, int] = {}
     for raw_id, raw_revision in value.items():
         record_id = _uuid("checkpoint basis record ID", raw_id)
-        if (
-            not isinstance(raw_revision, int)
-            or isinstance(raw_revision, bool)
-            or raw_revision < 1
-        ):
+        if not isinstance(raw_revision, int) or isinstance(raw_revision, bool) or raw_revision < 1:
             raise CheckpointValidationError("checkpoint basis revision is invalid")
         if record_id in result:
             raise CheckpointValidationError("checkpoint basis contains duplicate IDs")
@@ -909,9 +898,7 @@ def _require_disjoint_work_lists(*groups: tuple[str, ...]) -> None:
     for group in groups:
         overlap = seen.intersection(group)
         if overlap:
-            raise CheckpointValidationError(
-                "checkpoint work-item roles must be disjoint"
-            )
+            raise CheckpointValidationError("checkpoint work-item roles must be disjoint")
         seen.update(group)
 
 

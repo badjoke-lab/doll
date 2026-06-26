@@ -3,9 +3,9 @@ from __future__ import annotations
 import hashlib
 import json
 import zipfile
+from dataclasses import replace
 from pathlib import Path
 from typing import cast
-from uuid import uuid4
 
 import pytest
 
@@ -15,6 +15,7 @@ from doll.backup import create_state_backup, verify_backup
 from doll.checkpoint import (
     CheckpointCorruptError,
     CheckpointValidationError,
+    ProjectCheckpointInfo,
     ProjectCheckpointService,
     _checkpoint_from_record,
 )
@@ -34,16 +35,20 @@ def _workspace(tmp_path: Path, name: str = "workspace") -> workspace.Initialized
 
 
 def _project(repository: StateRepository) -> str:
-    return ProjectService(repository).create_v2(
-        name="Checkpoint project",
-        description="Synthetic ProjectCheckpointRecord project.",
-        objective="Preserve an explicit confirmed project position.",
-        in_scope=("Checkpoint continuity",),
-        out_of_scope=("Derived project status",),
-        success_criteria=("Relevant changes make the checkpoint stale",),
-        project_status="active",
-        started_at="2026-06-25T00:00:00Z",
-    ).project_id
+    return (
+        ProjectService(repository)
+        .create_v2(
+            name="Checkpoint project",
+            description="Synthetic ProjectCheckpointRecord project.",
+            objective="Preserve an explicit confirmed project position.",
+            in_scope=("Checkpoint continuity",),
+            out_of_scope=("Derived project status",),
+            success_criteria=("Relevant changes make the checkpoint stale",),
+            project_status="active",
+            started_at="2026-06-25T00:00:00Z",
+        )
+        .project_id
+    )
 
 
 def _work_items(repository: StateRepository, project_id: str) -> dict[str, str]:
@@ -117,7 +122,7 @@ def _propose(
     items: dict[str, str],
     *,
     basis_record_ids: tuple[str, ...] = (),
-):
+) -> ProjectCheckpointInfo:
     return ProjectCheckpointService(repository).propose(
         project_id=project_id,
         as_of="2026-06-25T03:00:00Z",
@@ -360,10 +365,7 @@ def test_checkpoint_package_transfer_and_backup(tmp_path: Path) -> None:
         nested = archive.read("doll-backup/payload/state-package.zip")
     nested_path = tmp_path / "nested.zip"
     nested_path.write_bytes(nested)
-    assert (
-        package.verify_state_package(nested_path).record_counts["project_checkpoint"]
-        == 1
-    )
+    assert package.verify_state_package(nested_path).record_counts["project_checkpoint"] == 1
 
 
 def test_checkpoint_registry_is_package_v2_only() -> None:
@@ -384,7 +386,7 @@ def test_tampered_fingerprint_fails_before_target_mutation(tmp_path: Path) -> No
         items = _work_items(repository, project_id)
         service = ProjectCheckpointService(repository)
         proposed = _propose(repository, project_id, items)
-        confirmed = service.confirm(
+        service.confirm(
             proposed.checkpoint_id,
             expected_revision=proposed.revision,
         )
@@ -427,23 +429,7 @@ def test_malformed_confirmed_checkpoint_is_corrupt(tmp_path: Path) -> None:
         metadata["confirmation_state"] = "confirmed"
         metadata["confirmed_by"] = "user"
         metadata["basis_fingerprint"] = "sha256:" + "0" * 64
-        corrupt = replace_record_metadata(record, metadata)
+        corrupt = replace(record, metadata=metadata)
 
         with pytest.raises(CheckpointCorruptError):
             _checkpoint_from_record(corrupt)
-
-
-def replace_record_metadata(record: state.RecordEnvelope, metadata: dict[str, object]):
-    return state.RecordEnvelope(
-        id=record.id,
-        record_type=record.record_type,
-        schema_version=record.schema_version,
-        created_at=record.created_at,
-        updated_at=record.updated_at,
-        revision=record.revision,
-        status=record.status,
-        provenance=record.provenance,
-        sensitivity=record.sensitivity,
-        title=record.title,
-        metadata=metadata,
-    )

@@ -136,6 +136,12 @@ _V2_RECORD_CATEGORIES = (
         False,
         "procedure",
     ),
+    AuthoritativeRecordCategory(
+        "project_checkpoint",
+        "records/project-checkpoints.jsonl",
+        False,
+        "project_checkpoint",
+    ),
 )
 
 PACKAGE_RECORD_REGISTRIES: Mapping[int, AuthoritativeRecordRegistry] = MappingProxyType(

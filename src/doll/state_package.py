@@ -39,6 +39,11 @@ from doll.backup_manifest import (
     BackupManifestCorruptError,
     _backup_manifest_from_record,
 )
+from doll.checkpoint import (
+    CheckpointCorruptError,
+    ProjectCheckpointInfo,
+    _checkpoint_from_record,
+)
 from doll.instruction_origin import (
     InstructionOriginCorruptError,
     _instruction_origin_from_record,
@@ -167,6 +172,7 @@ _PACKAGE_RECORD_VALIDATORS: dict[str, Callable[[RecordEnvelope], object]] = {
     "backup_manifest": _backup_manifest_from_record,
     "work_item": _work_item_from_record,
     "procedure": _procedure_from_record,
+    "project_checkpoint": _checkpoint_from_record,
 }
 
 
@@ -1015,6 +1021,7 @@ def _envelope_from_payload(
     except (
         ArtifactCorruptError,
         BackupManifestCorruptError,
+        CheckpointCorruptError,
         InstructionOriginCorruptError,
         MemoryCorruptError,
         ProcedureCorruptError,
@@ -1145,6 +1152,7 @@ def _validate_cross_record_links(records: dict[str, RecordEnvelope]) -> None:
                     _require_link_type(records, optional_link_id, "procedure")
     _validate_work_item_package_graph(records)
     _validate_procedure_package_graph(records)
+    _validate_checkpoint_package_graph(records)
 
 
 def _validate_work_item_package_graph(records: dict[str, RecordEnvelope]) -> None:
@@ -1226,6 +1234,58 @@ def _validate_procedure_package_graph(
                 or replacement.supersedes_id != procedure.procedure_id
             ):
                 raise StatePackageValidationError("procedure replacement relation is invalid")
+
+
+def _validate_checkpoint_package_graph(
+    records: dict[str, RecordEnvelope],
+) -> None:
+    checkpoints = {
+        record.id: _checkpoint_from_record(record)
+        for record in records.values()
+        if record.record_type == "project_checkpoint"
+    }
+    for checkpoint in checkpoints.values():
+        basis_current = True
+        for record_id, expected_revision in checkpoint.basis_record_revisions:
+            linked = records.get(record_id)
+            if linked is None or linked.revision != expected_revision:
+                basis_current = False
+                break
+        if checkpoint.confirmation_state != "proposed" and not basis_current:
+            continue
+        _validate_current_checkpoint_package_links(records, checkpoint)
+
+
+def _validate_current_checkpoint_package_links(
+    records: dict[str, RecordEnvelope],
+    checkpoint: ProjectCheckpointInfo,
+) -> None:
+    project = records.get(checkpoint.project_id)
+    if project is None or project.record_type != "project" or project.status != "active":
+        raise StatePackageValidationError("checkpoint requires an active project")
+    expected_groups = (
+        (checkpoint.active_work_item_ids, {"in_progress"}, None),
+        (checkpoint.next_work_item_ids, {"ready"}, None),
+        (checkpoint.blocked_work_item_ids, {"blocked"}, None),
+        (checkpoint.completed_milestone_ids, {"completed"}, "milestone"),
+    )
+    for record_ids, statuses, expected_kind in expected_groups:
+        for record_id in record_ids:
+            record = records.get(record_id)
+            if record is None or record.record_type != "work_item" or record.status != "active":
+                raise StatePackageValidationError("checkpoint work-item link is invalid")
+            item = _work_item_from_record(record)
+            if item.project_id != checkpoint.project_id or item.work_status not in statuses:
+                raise StatePackageValidationError("checkpoint work-item role is invalid")
+            if expected_kind is not None and item.kind != expected_kind:
+                raise StatePackageValidationError("checkpoint milestone link is invalid")
+    for record_id in (
+        *checkpoint.required_validation_ids,
+        *checkpoint.basis_record_ids,
+    ):
+        record = records.get(record_id)
+        if record is None or record.status != "active":
+            raise StatePackageValidationError("checkpoint basis link is invalid")
 
 
 def _validate_active_setting_identities(records: list[RecordEnvelope]) -> None:
