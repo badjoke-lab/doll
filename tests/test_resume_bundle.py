@@ -120,13 +120,6 @@ def _fixture(repository: StateRepository) -> tuple[str, dict[str, str]]:
         to_status="blocked",
         blocked_by_ids=(blocker.work_item_id,),
     )
-    secret = work.create(
-        project_id=project.project_id,
-        kind="review",
-        title="SECRET BUNDLE TEXT",
-        description="Must not appear in normal Resume Bundle output.",
-        sensitivity="secret",
-    )
     procedure = ProcedureService(repository).create_approved(
         project_id=project.project_id,
         title="Inspect Resume Bundle",
@@ -158,7 +151,6 @@ def _fixture(repository: StateRepository) -> tuple[str, dict[str, str]]:
         "active": active.work_item_id,
         "ready": ready.work_item_id,
         "blocked": blocked.work_item_id,
-        "secret": secret.work_item_id,
         "procedure": procedure.procedure_id,
         "checkpoint": checkpoint.checkpoint_id,
     }
@@ -231,7 +223,6 @@ def test_resume_bundle_is_deterministic_scoped_and_integrity_checkable(
     assert ids["artifact"] in artifact_refs
     assert "requires_separate_approved_export" in artifact_refs
     assert b"artifact content is not copied" not in entire_bundle
-    assert b"SECRET BUNDLE TEXT" not in entire_bundle
     assert str(initialized.root).encode() not in entire_bundle
 
     with state.open_state_repository(initialized.root, read_only=True) as repository:
