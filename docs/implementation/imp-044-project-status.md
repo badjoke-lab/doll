@@ -14,9 +14,10 @@ Provide one model-independent, read-only view of current project state without c
 - the selected ProjectRecord must be active and non-secret for normal status output;
 - output includes project identity, objective availability, domain status, current phase and goal, active work, next ready work, blocked work and blockers, pending required validation, latest confirmed checkpoint and freshness, accepted governing decisions, governing policies, approved procedures, omitted secret-record counts, and source state revision;
 - active work means `in_progress` WorkItemRecords;
-- next work means accepted `ready` WorkItemRecords;
+- next work means accepted `ready` WorkItemRecords, including ready blocker records that are themselves valid next candidates;
 - blocked work means `blocked` WorkItemRecords and preserves current blocker IDs;
 - pending required validation means non-cancelled accepted work with at least one blocking acceptance criterion whose verification state is not `passed` or `not_applicable`;
+- work items are ordered by priority, case-folded title, and record ID;
 - the latest checkpoint is selected deterministically by accepted `as_of`, creation time, and record ID;
 - accepted decisions include explicitly linked project decisions and active accepted decisions whose `project_id` matches the selected project;
 - applicable procedures are active approved procedures in the selected project;
