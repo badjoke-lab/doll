@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 jobs:
-  diagnose:
+  finalize:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
@@ -18,18 +18,79 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: imp-047-phase4b-completion
-          fetch-depth: 1
-          show-progress: false
+          fetch-depth: 0
 
-      - name: Capture finalizer result
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Correct temporary finalizer marker
         shell: bash
         run: |
-          set +e
-          python scripts/imp047_complete_gate.py > imp047-finalizer-diagnostic.txt 2>&1
-          code=$?
-          printf '\nexit_code=%s\n' "$code" >> imp047-finalizer-diagnostic.txt
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("scripts/imp047_complete_gate.py")
+          text = path.read_text(encoding="utf-8")
+          text = text.replace(
+              '''        ''' + "'''    'data-roadmap-phase=\"4B\"',\n    \"data-roadmap-state\",'''",
+              '''        ''' + "'''  'data-roadmap-phase=\"4B\"',\n  \"data-roadmap-state\",'''",
+          )
+          text = text.replace(
+              '''        ''' + "'''    'data-roadmap-phase=\"4B\"',\n    'data-roadmap-phase=\"5\"',\n    \"data-roadmap-state\",'''",
+              '''        ''' + "'''  'data-roadmap-phase=\"4B\"',\n  'data-roadmap-phase=\"5\"',\n  \"data-roadmap-state\",'''",
+          )
+          path.write_text(text, encoding="utf-8")
+          PY
+
+      - name: Apply completion records
+        run: python scripts/imp047_complete_gate.py
+
+      - name: Install project
+        run: uv sync --dev --locked
+
+      - name: Generate combined specification
+        run: uv run python scripts/build_final_spec.py
+
+      - name: Restore permanent files
+        shell: bash
+        run: |
+          rm -f .github/workflows/imp047-complete.yml
+          rm -f scripts/imp047_complete_gate.py
+          rm -f imp047-finalizer-diagnostic.txt
+          git checkout origin/main -- .github/workflows/ci.yml
+
+      - name: Format changed tests
+        run: uv run ruff format tests/test_project_continuity_acceptance.py tests/test_project_continuity_acceptance_static.py
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Type check
+        run: uv run mypy src tests
+
+      - name: Check generated specification
+        run: uv run python scripts/build_final_spec.py --check
+
+      - name: Check public status
+        run: node scripts/check-public-site-status.mjs
+
+      - name: Run focused acceptance tests
+        run: uv run pytest -q tests/test_project_continuity_acceptance.py tests/test_project_continuity_acceptance_static.py
+
+      - name: Check diff
+        run: git diff --check
+
+      - name: Commit finalized completion branch
+        shell: bash
+        run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add imp047-finalizer-diagnostic.txt
-          git commit -m "chore: capture Phase 4B finalizer diagnostic"
+          git add -A
+          git commit -m "docs: complete Phase 4B project-continuity gate"
           git push origin HEAD:imp-047-phase4b-completion
