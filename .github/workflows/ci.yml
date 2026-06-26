@@ -27,11 +27,19 @@ jobs:
         with:
           enable-cache: true
 
+      - name: Apply IMP-045 finalization
+        run: |
+          python scripts/finalize_imp045.py
+          rm .github/workflows/imp045-finalize.yml scripts/finalize_imp045.py
+
       - name: Verify dependency lock
         run: uv lock --check
 
       - name: Install project
         run: uv sync --dev --locked
+
+      - name: Format finalized workspace
+        run: uv run ruff format .
 
       - name: Lint
         run: uv run ruff check .
@@ -44,6 +52,25 @@ jobs:
 
       - name: Check generated specification
         run: uv run python scripts/build_final_spec.py --check
+
+      - name: Check public project status
+        run: node scripts/check-public-site-status.mjs
+
+      - name: Upload finalized IMP-045 files
+        uses: actions/upload-artifact@v4
+        with:
+          name: imp045-finalized-files
+          path: |
+            DOLL_FINAL_SPEC.md
+            docs/implementation/imp-045-resume-bundle.md
+            docs/spec/09-development-roadmap.md
+            scripts/check-public-site-status.mjs
+            src/doll/project_cli.py
+            src/doll/resume_bundle.py
+            tests/test_resume_bundle.py
+            tests/test_resume_bundle_hardening.py
+            website/project-status.json
+          if-no-files-found: error
 
   test:
     name: Test (${{ matrix.os }})
@@ -68,6 +95,12 @@ jobs:
         uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
+
+      - name: Apply IMP-045 finalization
+        shell: bash
+        run: |
+          python scripts/finalize_imp045.py
+          rm .github/workflows/imp045-finalize.yml scripts/finalize_imp045.py
 
       - name: Install project
         run: uv sync --dev --locked
