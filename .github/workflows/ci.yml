@@ -2,20 +2,20 @@ name: CI
 
 on:
   pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  materialize:
-    if: github.actor != 'github-actions[bot]'
+  quality:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out implementation branch
+      - name: Check out repository
         uses: actions/checkout@v4
-        with:
-          ref: imp-049-ollama-adapter
-          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -27,98 +27,64 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Decode staged implementation
-        shell: bash
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import base64
-          import gzip
-          import hashlib
-
-          def write_base64(source: Path, destination: Path, expected: str) -> None:
-              compressed = base64.b64decode(source.read_text(encoding="ascii"), validate=True)
-              content = gzip.decompress(compressed)
-              actual = hashlib.sha256(content).hexdigest()
-              if actual != expected:
-                  raise SystemExit(f"payload checksum mismatch for {destination}: {actual}")
-              destination.parent.mkdir(parents=True, exist_ok=True)
-              destination.write_bytes(content)
-
-          write_base64(
-              Path("scripts/imp049_payload/ollama_adapter.gz.b64"),
-              Path("src/doll/ollama_adapter.py"),
-              "4ad107dbadcf89a3023e27c00f6c033dd204643c84140f4b55e2e98357d0a6bd",
-          )
-          write_base64(
-              Path("scripts/imp049_payload/test_ollama_adapter_static.gz.b64"),
-              Path("tests/test_ollama_adapter_static.py"),
-              "2e1844b6bcfd2029ae29245b38cb817459c05eb0ad60247a87b66dd6866a27fa",
-          )
-
-          nibble_paths = [
-              Path("scripts/imp049_payload/test_nibbles/part.00"),
-              Path("scripts/imp049_payload/test_nibbles/part.01"),
-              Path("scripts/imp049_payload/test_nibbles/part.02"),
-              Path("scripts/imp049_payload/test_nibbles/part.03"),
-              Path("scripts/imp049_payload/test_nibbles/part.04"),
-              Path("scripts/imp049_payload/test_nibbles/part.05a"),
-              Path("scripts/imp049_payload/test_nibbles/part.05b"),
-              Path("scripts/imp049_payload/test_nibbles/part.05c"),
-              Path("scripts/imp049_payload/test_nibbles/part.06a"),
-              Path("scripts/imp049_payload/test_nibbles/part.06b"),
-              Path("scripts/imp049_payload/test_nibbles/part.06c"),
-          ]
-          encoded = "".join(path.read_text(encoding="ascii").strip() for path in nibble_paths)
-          if len(encoded) % 2 or any(char < "A" or char > "P" for char in encoded):
-              raise SystemExit("invalid nibble-encoded test payload")
-          compressed = bytes(
-              ((ord(encoded[index]) - 65) << 4) | (ord(encoded[index + 1]) - 65)
-              for index in range(0, len(encoded), 2)
-          )
-          test_content = gzip.decompress(compressed)
-          expected_test = "474baeaf39dde1ea82b86b75f02866b57dd66616d74aad274be37d8c5b925eb4"
-          actual_test = hashlib.sha256(test_content).hexdigest()
-          if actual_test != expected_test:
-              raise SystemExit(f"payload checksum mismatch for tests/test_ollama_adapter.py: {actual_test}")
-          test_path = Path("tests/test_ollama_adapter.py")
-          test_path.write_bytes(test_content)
-          text = test_path.read_text(encoding="utf-8")
-          old_import = "from typing import Any, cast"
-          new_import = "from typing import Any, ClassVar, cast"
-          old_attribute = "    instances: list[FakeConnection] = []"
-          new_attribute = "    instances: ClassVar[list[FakeConnection]] = []"
-          if old_import not in text or old_attribute not in text:
-              raise SystemExit("expected ClassVar patch target is missing")
-          text = text.replace(old_import, new_import, 1).replace(old_attribute, new_attribute, 1)
-          test_path.write_text(text, encoding="utf-8")
-          PY
+      - name: Verify dependency lock
+        run: uv lock --check
 
       - name: Install project
         run: uv sync --dev --locked
 
-      - name: Normalize implementation
-        shell: bash
-        run: |
-          uv run ruff check --fix src/doll/ollama_adapter.py tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py
-          uv run ruff format src/doll/ollama_adapter.py tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py
+      - name: Lint
+        run: uv run ruff check .
 
-      - name: Validate implementation
-        shell: bash
-        run: |
-          uv run ruff check src/doll/ollama_adapter.py tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py
-          uv run ruff format --check src/doll/ollama_adapter.py tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py
-          uv run mypy src/doll/ollama_adapter.py tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py
-          uv run pytest -q --no-cov tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py
+      - name: Check formatting
+        run: uv run ruff format --check .
 
-      - name: Commit materialized implementation
-        shell: bash
-        run: |
-          rm -rf scripts/imp049_payload
-          rm -f imp049-lint-diagnostic.txt
-          git checkout origin/main -- .github/workflows/ci.yml
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add -A
-          git commit -m "IMP-049: add first local Ollama runtime adapter"
-          git push origin HEAD:imp-049-ollama-adapter
+      - name: Type check
+        run: uv run mypy src tests
+
+      - name: Check generated specification
+        run: uv run python scripts/build_final_spec.py --check
+
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install project
+        run: uv sync --dev --locked
+
+      - name: Run tests
+        run: uv run python scripts/run_ci_tests.py
+
+      - name: Upload pytest output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-output-${{ runner.os }}
+          path: pytest-output.txt
+          if-no-files-found: error
+
+      - name: Check CLI help
+        run: uv run doll --help
+
+      - name: Check module CLI help
+        run: uv run python -m doll --help
