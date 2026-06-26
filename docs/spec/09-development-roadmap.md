@@ -80,8 +80,8 @@ Completed:
 - Phase 4A AI environment portability foundation;
 - Phase 4B project continuity foundation;
 - IMP-001 through IMP-023;
-- IMP-030 through IMP-047;
-- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package v2 export with v1 read compatibility, a versioned authoritative record registry, ProjectRecord v2 with v1 read compatibility, WorkItemRecord v1 lifecycle and dependency integrity, and ProcedureRecord v1 lifecycle and non-authority guarantees, ProjectCheckpointRecord v1 confirmation and freshness, deterministic derived project status, deterministic project-scoped Resume Bundle export, project-continuity transfer and recovery coverage, and completed Phase 4B acceptance evidence, verified backup, restore, continuity acceptance, the model-independent safety boundary, canonical conversation and event state, portability adapter and result records, generic import staging, generic export, reviewed publication, source preservation, idempotency, loss visibility, and Phase 4A acceptance evidence.
+- IMP-030 through IMP-048;
+- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package v2 export with v1 read compatibility, a versioned authoritative record registry, ProjectRecord v2 with v1 read compatibility, WorkItemRecord v1 lifecycle and dependency integrity, and ProcedureRecord v1 lifecycle and non-authority guarantees, ProjectCheckpointRecord v1 confirmation and freshness, deterministic derived project status, deterministic project-scoped Resume Bundle export, project-continuity transfer and recovery coverage, completed Phase 4B acceptance evidence, and a runtime-independent local adapter contract, verified backup, restore, continuity acceptance, the model-independent safety boundary, canonical conversation and event state, portability adapter and result records, generic import staging, generic export, reviewed publication, source preservation, idempotency, loss visibility, and Phase 4A acceptance evidence.
 
 Current implementation point:
 
@@ -90,8 +90,10 @@ Current implementation point:
 - Phase 4B passed its project-continuity gate on 2026-06-26;
 - accepted Phase 4B real-machine evidence is bound to commit `ddb58d041e505556910930724d0cf2fd03afe7d3` on the primary Intel Mac with networking disabled;
 - IMP-038 through IMP-047 establish package-v2 continuity, authoritative project records, deterministic status and Resume Bundles, transfer and recovery coverage, and accepted PROJ-001 through PROJ-012 evidence;
-- Phase 5 local runtime and model integration is now the next foundation phase;
-- the first bounded Phase 5 implementation issue receives IMP-048 when opened;
+- Phase 5 local runtime and model integration is now the active foundation phase;
+- IMP-048 establishes the runtime-independent local adapter contract for health, inventory, generation, streaming, cancellation, closed failures, offline operation, and descriptive capabilities;
+- IMP-048 connects no real runtime or model and introduces no authoritative state or migration;
+- the first real local runtime adapter receives IMP-049 when opened;
 - model execution must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts.
 
 Implementation identifier policy:
@@ -406,11 +408,15 @@ Phase 4B gate:
 
 Goal: connect useful local inference without allowing the runtime or model to own state, secrets, permissions, trust decisions, portability, project progress, or side effects.
 
-The following work retains its required order but does not reserve implementation identifiers. Each slice receives the next monotonic IMP identifier only after the Phase 4A and Phase 4B gates pass and the slice is scheduled. The unused identifiers IMP-024 through IMP-029 are retired and must not be reused.
+Status: in progress through IMP-048.
 
-### Runtime adapter contract
+The remaining work retains its required order and receives monotonically increasing implementation identifiers only when scheduled. The unused identifiers IMP-024 through IMP-029 are retired and must not be reused.
 
-Implement normalized health, inventory, generation, streaming, cancellation, error, offline, and capability contracts with runtime-independent model identity and no direct authority over state, secrets, files, network, capabilities, or project completion.
+### IMP-048 — Runtime adapter contract
+
+Status: complete.
+
+Implemented normalized runtime declaration, health, inventory, generation, bounded streaming transcript, cancellation, timeout, closed failure, offline, and descriptive-capability contracts with runtime-independent identities and no direct authority over state, secrets, files, network, capabilities, or project completion. Synthetic adapters prove the contract without a model, runtime service, provider, cloud account, credential, preferred UI, network request, process launch, or persistent state change.
 
 ### First local runtime adapter
 
@@ -587,11 +593,11 @@ An implementation PR is done when:
 
 ## 18. Immediate work
 
-The required order after the Phase 4B gate is:
+The required order after IMP-048 is:
 
-1. schedule the bounded Phase 5 runtime-adapter contract as IMP-048;
-2. implement normalized runtime health, inventory, generation, streaming, cancellation, offline, and capability contracts without granting model authority;
-3. implement the first local runtime adapter, initially targeting Ollama, with no silent model download or cloud fallback;
+1. schedule the first real local runtime adapter, initially targeting Ollama, as IMP-049;
+2. implement local health, inventory mapping, generation, bounded streaming, timeout, and cancellation through the IMP-048 contract with no silent model download or cloud fallback;
+3. add model manifests and explicit model bindings without allowing runtime-private objects to become authoritative state;
 4. prove network-disabled startup, local conversation, project-state inspection, model replacement, fallback, and rollback without state loss;
 5. prove a real local AI migration path before provider-specific cloud portability becomes a primary claim.
 
