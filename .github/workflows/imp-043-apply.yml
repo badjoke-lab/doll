@@ -18,8 +18,22 @@ jobs:
           fetch-depth: 0
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --dev --locked
-      - run: python scripts/imp_043_apply.py
-      - run: |
+      - name: Registry
+        run: python scripts/imp_043_update_registry.py
+      - name: Fixtures
+        run: python scripts/imp_043_update_fixtures.py
+      - name: Checkpoint tests
+        run: python scripts/imp_043_update_checkpoint_tests.py
+      - name: Package core
+        run: python scripts/imp_043_update_package_core.py
+      - name: Package graph
+        run: python scripts/imp_043_update_package_graph.py
+      - name: Status
+        run: python scripts/imp_043_update_status.py
+      - name: Specification
+        run: python scripts/build_final_spec.py
+      - name: Verify
+        run: |
           uv run ruff check . --fix --ignore E501
           uv run ruff format .
           uv run ruff check . --ignore E501
@@ -28,7 +42,8 @@ jobs:
           node scripts/check-public-site-status.mjs
           uv run pytest -q --no-cov tests/test_checkpoint.py tests/test_state_package_registry.py tests/test_state_package_v2.py tests/test_work_item.py tests/test_procedure.py
           git diff --check
-      - run: |
+      - name: Commit
+        run: |
           rm scripts/imp_043_apply.py
           rm scripts/imp_043_update_registry.py
           rm scripts/imp_043_update_fixtures.py
