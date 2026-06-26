@@ -24,7 +24,7 @@
 - `docs/spec/08-acceptance-and-continuity-tests.md` — SHA-256 `1ae9b70cf28257b35a30238bdc46c2caea93dbd17fdf8b516ff708c9e208a698`
 - `docs/spec/08a-ai-environment-portability-acceptance.md` — SHA-256 `3a1876d8b506204254ccd54eb58cfabcf2ddc92e3edd446d90650b9ae22ff305`
 - `docs/spec/08b-project-continuity-acceptance.md` — SHA-256 `b58623f21bdd183a21e1904ebcec954ffb2b6976254b72ac52f13deae83306cc`
-- `docs/spec/09-development-roadmap.md` — SHA-256 `9e12c9be89e6c50bfed755762b4242277d1cfd73c4175cfee435fe13d6b5cd3b`
+- `docs/spec/09-development-roadmap.md` — SHA-256 `c6eef6081addb777a1dfea074ee0c5fabdcdabb5355d8641e8c8983795c7fc7e`
 
 ---
 
@@ -8562,8 +8562,8 @@ Completed:
 - Phase 3 model-independent safety boundary;
 - Phase 4A AI environment portability foundation;
 - IMP-001 through IMP-023;
-- IMP-030 through IMP-046;
-- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package v2 export with v1 read compatibility, a versioned authoritative record registry, ProjectRecord v2 with v1 read compatibility, WorkItemRecord v1 lifecycle and dependency integrity, and ProcedureRecord v1 lifecycle and non-authority guarantees, ProjectCheckpointRecord v1 confirmation and freshness, deterministic derived project status, deterministic project-scoped Resume Bundle export, and project-continuity transfer and recovery coverage, verified backup, restore, continuity acceptance, the model-independent safety boundary, canonical conversation and event state, portability adapter and result records, generic import staging, generic export, reviewed publication, source preservation, idempotency, loss visibility, and Phase 4A acceptance evidence.
+- IMP-030 through IMP-047;
+- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package v2 export with v1 read compatibility, a versioned authoritative record registry, ProjectRecord v2 with v1 read compatibility, WorkItemRecord v1 lifecycle and dependency integrity, and ProcedureRecord v1 lifecycle and non-authority guarantees, ProjectCheckpointRecord v1 confirmation and freshness, deterministic derived project status, deterministic project-scoped Resume Bundle export, project-continuity transfer and recovery coverage, and automated Phase 4B acceptance evidence, verified backup, restore, continuity acceptance, the model-independent safety boundary, canonical conversation and event state, portability adapter and result records, generic import staging, generic export, reviewed publication, source preservation, idempotency, loss visibility, and Phase 4A acceptance evidence.
 
 Current implementation point:
 
@@ -8579,7 +8579,9 @@ Current implementation point:
 - IMP-044 adds deterministic read-only derived project status and fresh-process CLI inspection;
 - IMP-045 adds deterministic project-scoped Resume Bundle export, generated HANDOFF.md, and checksum verification;
 - IMP-046 adds integrated package, backup, restore, fresh-process, imported-content, compatibility, and secret-safe output coverage for project continuity;
-- the next bounded Phase 4B implementation issue receives IMP-047;
+- IMP-047 adds automated PROJ-001 through PROJ-012 acceptance evidence, an independent Resume Bundle inspector, and an exact-commit primary Intel Mac offline runner;
+- the primary Intel Mac offline gate remains pending;
+- no Phase 5 implementation identifier is assigned until Phase 4B passes;
 - local model execution begins only after Phase 4B passes.
 
 Implementation identifier policy:
@@ -8848,7 +8850,7 @@ Goal: preserve the work itself before a model is connected to it.
 
 This phase is model-independent and follows `03b-project-continuity-and-resumption.md` and `08b-project-continuity-acceptance.md`.
 
-Status: in progress through IMP-046.
+Status: automated acceptance evidence implemented through IMP-047; primary Intel Mac gate pending.
 
 Completed implementation slices:
 
@@ -8861,10 +8863,11 @@ Completed implementation slices:
 - IMP-044 — deterministic read-only derived project status.
 - IMP-045 — deterministic project-scoped Resume Bundle.
 - IMP-046 — project-continuity transfer and recovery coverage.
+- IMP-047 — automated PROJ-001 through PROJ-012 acceptance evidence, independent Resume Bundle inspection, and an exact-commit primary Intel Mac offline runner.
 
-Remaining implementation slices, with identifiers assigned only when scheduled:
+Remaining gate step:
 
-1. PROJ-001 through PROJ-012 acceptance evidence.
+1. Run the exact merged `main` commit on the primary Intel Mac with networking disabled, store the accepted result in a separate completion PR, and only then mark Phase 4B complete.
 
 Implementation rule:
 
@@ -9069,10 +9072,10 @@ An implementation PR is done when:
 
 The required order after the Phase 4A gate is:
 
-1. schedule the first bounded Phase 4B package-v2 and project-continuity slice as IMP-038;
-2. continue Phase 4B with monotonically increasing identifiers;
-3. pass the Phase 4B project-continuity gate;
-4. schedule local runtime and model integration slices with the next monotonic identifiers;
+1. merge the pending IMP-047 automated Phase 4B acceptance evidence without claiming the phase complete;
+2. run the exact merged `main` commit on the primary Intel Mac with networking disabled;
+3. store the accepted real-machine result in a separate completion PR and mark Phase 4B complete;
+4. schedule local runtime and model integration slices with the next monotonic identifiers only after the Phase 4B gate passes;
 5. prove a real local AI migration path before provider-specific cloud portability becomes a primary claim.
 
 ## 19. Roadmap change control
