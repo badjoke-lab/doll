@@ -1,4 +1,4 @@
-name: Format IMP-043 coverage tests
+name: Finalize IMP-043 coverage tests
 
 on:
   pull_request:
