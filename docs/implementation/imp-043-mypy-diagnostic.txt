@@ -1,0 +1,3 @@
+src/doll/checkpoint.py:431: error: Redundant cast to "str | None"  [redundant-cast]
+Found 1 error in 1 file (checked 168 source files)
+exit_code=1
