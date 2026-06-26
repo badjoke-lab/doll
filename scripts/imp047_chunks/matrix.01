@@ -1,0 +1,44 @@
+      "evidence_levels": ["integration", "fresh_process", "independent_inspection"],
+      "pytest_files": ["tests/test_resume_bundle.py", "tests/test_resume_bundle_hardening.py", "tests/test_project_continuity_acceptance.py"]
+    },
+    {
+      "id": "PROJ-009",
+      "status": "pass",
+      "evidence_levels": ["fresh_process", "ci", "primary_real_machine_pending"],
+      "pytest_files": ["tests/test_project_status.py", "tests/test_project_continuity_transfer.py", "tests/test_project_continuity_acceptance.py"]
+    },
+    {
+      "id": "PROJ-010",
+      "status": "pass",
+      "evidence_levels": ["integration", "ci_macos", "ci_windows", "ci_ubuntu"],
+      "pytest_files": ["tests/test_project_continuity_transfer.py"]
+    },
+    {
+      "id": "PROJ-011",
+      "status": "pass",
+      "evidence_levels": ["integration", "hostile_content"],
+      "pytest_files": ["tests/test_project_continuity_transfer.py"]
+    },
+    {
+      "id": "PROJ-012",
+      "status": "pass",
+      "evidence_levels": ["integration", "ci_macos", "ci_windows", "ci_ubuntu", "failure_cleanup"],
+      "pytest_files": ["tests/test_resume_bundle_hardening.py", "tests/test_resume_bundle_coverage.py", "tests/test_project_continuity_transfer.py", "tests/test_project_continuity_acceptance.py"]
+    }
+  ],
+  "real_machine_gate": {
+    "required": true,
+    "status": "pending",
+    "platform": "Darwin",
+    "architectures": ["x86_64", "amd64"],
+    "network_mode": "offline-confirmed",
+    "commit_sha": null,
+    "completed_at": null
+  },
+  "limitations": [
+    "The primary Intel Mac offline run is pending, so Phase 4B is not complete.",
+    "This gate proves model-independent project continuity and resumption inspection, not autonomous project management.",
+    "No local model runtime, provider, cloud account, external issue tracker, or multi-user collaboration path is exercised.",
+    "Generated project status, Resume Bundle, and HANDOFF.md remain non-authoritative derived views."
+  ]
+}
