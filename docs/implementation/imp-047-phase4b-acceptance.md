@@ -50,12 +50,13 @@ primary_intel_mac_gate = pending
 phase4b_gate_complete = false
 ```
 
-Final branch validation at commit `0d2ff1202d22437df4b1c1fc24c006368c48f007`:
+The final acceptance content was fully revalidated after the recorded test-count commit. All required CI, specification, numbering, and public-status workflows passed on the final branch head.
+
+Recorded full-test results:
 
 - Linux: 994 passed, 95.18% coverage;
 - macOS: 994 passed, 95.19% coverage;
-- Windows: 993 passed, 1 skipped, 95.15% coverage;
-- lint, formatting, strict typing, generated specification, implementation numbering, and public-status checks passed.
+- Windows: 993 passed, 1 skipped, 95.15% coverage.
 
 ## Fresh-process and independent-inspection boundary
 
