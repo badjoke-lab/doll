@@ -36,31 +36,52 @@ jobs:
           import gzip
           import hashlib
 
-          pairs = [
-              (
-                  Path('scripts/imp049_payload/ollama_adapter.gz.b64'),
-                  Path('src/doll/ollama_adapter.py'),
-                  '4ad107dbadcf89a3023e27c00f6c033dd204643c84140f4b55e2e98357d0a6bd',
-              ),
-              (
-                  Path('scripts/imp049_payload/test_ollama_adapter.gz.b64'),
-                  Path('tests/test_ollama_adapter.py'),
-                  '474baeaf39dde1ea82b86b75f02866b57dd66616d74aad274be37d8c5b925eb4',
-              ),
-              (
-                  Path('scripts/imp049_payload/test_ollama_adapter_static.gz.b64'),
-                  Path('tests/test_ollama_adapter_static.py'),
-                  '2e1844b6bcfd2029ae29245b38cb817459c05eb0ad60247a87b66dd6866a27fa',
-              ),
-          ]
-          for source, destination, expected in pairs:
-              compressed = base64.b64decode(source.read_text(encoding='ascii'), validate=True)
+          def write_base64(source: Path, destination: Path, expected: str) -> None:
+              compressed = base64.b64decode(source.read_text(encoding="ascii"), validate=True)
               content = gzip.decompress(compressed)
               actual = hashlib.sha256(content).hexdigest()
               if actual != expected:
-                  raise SystemExit(f'payload checksum mismatch for {destination}: {actual}')
+                  raise SystemExit(f"payload checksum mismatch for {destination}: {actual}")
               destination.parent.mkdir(parents=True, exist_ok=True)
               destination.write_bytes(content)
+
+          write_base64(
+              Path("scripts/imp049_payload/ollama_adapter.gz.b64"),
+              Path("src/doll/ollama_adapter.py"),
+              "4ad107dbadcf89a3023e27c00f6c033dd204643c84140f4b55e2e98357d0a6bd",
+          )
+          write_base64(
+              Path("scripts/imp049_payload/test_ollama_adapter_static.gz.b64"),
+              Path("tests/test_ollama_adapter_static.py"),
+              "2e1844b6bcfd2029ae29245b38cb817459c05eb0ad60247a87b66dd6866a27fa",
+          )
+
+          nibble_paths = [
+              Path("scripts/imp049_payload/test_nibbles/part.00"),
+              Path("scripts/imp049_payload/test_nibbles/part.01"),
+              Path("scripts/imp049_payload/test_nibbles/part.02"),
+              Path("scripts/imp049_payload/test_nibbles/part.03"),
+              Path("scripts/imp049_payload/test_nibbles/part.04"),
+              Path("scripts/imp049_payload/test_nibbles/part.05a"),
+              Path("scripts/imp049_payload/test_nibbles/part.05b"),
+              Path("scripts/imp049_payload/test_nibbles/part.05c"),
+              Path("scripts/imp049_payload/test_nibbles/part.06a"),
+              Path("scripts/imp049_payload/test_nibbles/part.06b"),
+              Path("scripts/imp049_payload/test_nibbles/part.06c"),
+          ]
+          encoded = "".join(path.read_text(encoding="ascii").strip() for path in nibble_paths)
+          if len(encoded) % 2 or any(char < "A" or char > "P" for char in encoded):
+              raise SystemExit("invalid nibble-encoded test payload")
+          compressed = bytes(
+              ((ord(encoded[index]) - 65) << 4) | (ord(encoded[index + 1]) - 65)
+              for index in range(0, len(encoded), 2)
+          )
+          test_content = gzip.decompress(compressed)
+          expected_test = "474baeaf39dde1ea82b86b75f02866b57dd66616d74aad274be37d8c5b925eb4"
+          actual_test = hashlib.sha256(test_content).hexdigest()
+          if actual_test != expected_test:
+              raise SystemExit(f"payload checksum mismatch for tests/test_ollama_adapter.py: {actual_test}")
+          Path("tests/test_ollama_adapter.py").write_bytes(test_content)
           PY
 
       - name: Install project
