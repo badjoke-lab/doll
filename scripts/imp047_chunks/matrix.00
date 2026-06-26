@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "phase": "4B",
+  "acceptance_test_id": "IMP-047-PROJECT-CONTINUITY-ACCEPTANCE",
+  "phase4b_gate_complete": false,
+  "accepted_real_machine_result": null,
+  "project_tests": [
+    {
+      "id": "PROJ-001",
+      "status": "pass",
+      "evidence_levels": ["integration", "package_transfer", "backup_restore", "fresh_process", "primary_real_machine_pending"],
+      "pytest_files": ["tests/test_project_state.py", "tests/test_project_continuity_transfer.py", "tests/test_project_continuity_acceptance.py"]
+    },
+    {
+      "id": "PROJ-002",
+      "status": "pass",
+      "evidence_levels": ["unit", "integration"],
+      "pytest_files": ["tests/test_work_item.py"]
+    },
+    {
+      "id": "PROJ-003",
+      "status": "pass",
+      "evidence_levels": ["unit", "integration", "ci_macos", "ci_windows", "ci_ubuntu"],
+      "pytest_files": ["tests/test_work_item.py", "tests/test_project_continuity_transfer.py"]
+    },
+    {
+      "id": "PROJ-004",
+      "status": "pass",
+      "evidence_levels": ["integration", "hostile_content"],
+      "pytest_files": ["tests/test_procedure.py", "tests/test_project_continuity_transfer.py"]
+    },
+    {
+      "id": "PROJ-005",
+      "status": "pass",
+      "evidence_levels": ["unit", "integration"],
+      "pytest_files": ["tests/test_checkpoint.py", "tests/test_project_continuity_transfer.py"]
+    },
+    {
+      "id": "PROJ-006",
+      "status": "pass",
+      "evidence_levels": ["integration", "package_transfer", "backup_restore"],
+      "pytest_files": ["tests/test_work_item.py", "tests/test_project_continuity_transfer.py"]
+    },
+    {
+      "id": "PROJ-007",
+      "status": "pass",
+      "evidence_levels": ["integration", "ci_macos", "ci_windows", "ci_ubuntu"],
+      "pytest_files": ["tests/test_project_status.py", "tests/test_project_continuity_acceptance.py"]
+    },
+    {
+      "id": "PROJ-008",
+      "status": "pass",
