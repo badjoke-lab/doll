@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 jobs:
-  inspect-payload:
+  diagnose-payload:
     runs-on: ubuntu-latest
     steps:
       - name: Check out implementation branch
@@ -16,10 +16,44 @@ jobs:
           ref: imp-050-model-manifests-bindings
           fetch-depth: 0
 
-      - name: Inspect staged payload
+      - name: Diagnose staged payload
         shell: bash
         run: |
-          base64 --decode scripts/imp050_payload/00 > /tmp/imp050-payload.tar.gz
-          sha256sum /tmp/imp050-payload.tar.gz
-          gzip --test /tmp/imp050-payload.tar.gz
-          tar -tzf /tmp/imp050-payload.tar.gz
+          python - <<'PY' > imp050-payload-diagnostic.txt
+          from pathlib import Path
+          import base64
+          import gzip
+          import hashlib
+          import tarfile
+          import io
+
+          path = Path('scripts/imp050_payload/00')
+          text = path.read_text(encoding='ascii')
+          print(f'text_length={len(text)}')
+          print(f'prefix={text[:100]}')
+          print(f'suffix={text[-100:]}')
+          print(f'alphabet_ok={all(c.isalnum() or c in "+/=" for c in text)}')
+          print(f'mod4={len(text) % 4}')
+          for validate in (True, False):
+              try:
+                  raw = base64.b64decode(text + '=' * ((-len(text)) % 4), validate=validate)
+                  print(f'decode_{validate}=ok bytes={len(raw)} sha256={hashlib.sha256(raw).hexdigest()}')
+                  try:
+                      data = gzip.decompress(raw)
+                      print(f'gzip_{validate}=ok bytes={len(data)} sha256={hashlib.sha256(data).hexdigest()}')
+                      with tarfile.open(fileobj=io.BytesIO(raw), mode='r:gz') as tar:
+                          for name in tar.getnames():
+                              print(f'member={name}')
+                  except Exception as exc:
+                      print(f'gzip_{validate}=error type={type(exc).__name__}')
+              except Exception as exc:
+                  print(f'decode_{validate}=error type={type(exc).__name__}')
+          PY
+          cat imp050-payload-diagnostic.txt
+
+      - name: Upload diagnostic
+        uses: actions/upload-artifact@v4
+        with:
+          name: imp050-payload-diagnostic
+          path: imp050-payload-diagnostic.txt
+          if-no-files-found: error
