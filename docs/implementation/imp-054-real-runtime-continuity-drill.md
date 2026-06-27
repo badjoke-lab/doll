@@ -29,7 +29,7 @@ The drill creates a disposable synthetic Doll workspace and performs the followi
 11. execute one more canonical turn after rollback;
 12. export Doll State Package v2, import it, create a state backup, restore it, remove runtime adapter objects, and inspect the source, imported, and restored workspaces in fresh processes with model adapters disabled.
 
-The scenario also creates synthetic confirmed memory, project-continuity records, one source-environment record, one canonical conversation, and managed conversation artifacts. Their identifiers and revisions are checked before and after switching and rollback.
+The scenario also creates synthetic confirmed memory, project-continuity records, State Package v2 portability state, one canonical conversation, and managed conversation artifacts. Their identifiers and revisions are checked before and after switching and rollback.
 
 ## CI boundary
 
@@ -73,7 +73,7 @@ The drill exports State Package v2 and verifies that it contains the expected ru
 It also creates and restores a state backup. A separate process inspects the source, package-imported, and backup-restored workspaces with no runtime adapter constructed. That process verifies:
 
 - schema version 3;
-- preserved memory, project, and source-environment revisions;
+- preserved memory and project revisions;
 - current project checkpoint state;
 - twelve canonical conversation events representing four completed turns;
 - data-only runtime-output origins;
