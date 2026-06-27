@@ -11,7 +11,6 @@ from doll import state
 from doll.instruction_origin import InstructionOriginService
 from doll.memory import ConfirmedMemoryService
 from doll.model_manifest import ModelManifestService
-from doll.portability import PortabilityState
 from doll.project_state import ProjectService
 from doll.project_status import ProjectStatusService
 from doll.state_repository import StateRepository
@@ -64,8 +63,6 @@ def inspect(
         "memory_revision",
         "project_id",
         "project_revision",
-        "source_environment_id",
-        "source_environment_revision",
         "conversation_id",
         "expected_event_count",
         "scope_type",
@@ -82,10 +79,6 @@ def inspect(
     with state.open_state_repository(workspace_root, read_only=True) as repository:
         memory = ConfirmedMemoryService(repository).get(cast(str, descriptor["memory_id"]))
         project = ProjectService(repository).get(cast(str, descriptor["project_id"]))
-        environment = PortabilityState(repository).get_source_environment(
-            cast(str, descriptor["source_environment_id"])
-        )
-        source_environment_envelope = repository.get_record(environment.environment_id)
         conversation_id = cast(str, descriptor["conversation_id"])
         events = repository.list_conversation_events(conversation_id)
         manifests = ModelManifestService(repository)
@@ -112,15 +105,11 @@ def inspect(
             "model_bindings": _record_count(repository, "model_binding"),
             "memories": _record_count(repository, "memory"),
             "projects": _record_count(repository, "project"),
-            "source_environments": _record_count(repository, "source_environment"),
         }
         checks = {
             "schema_version_unchanged": repository_status.schema_version == 3,
             "memory_preserved": memory.revision == descriptor["memory_revision"],
             "project_preserved": project.revision == descriptor["project_revision"],
-            "source_environment_preserved": (
-                source_environment_envelope.revision == descriptor["source_environment_revision"]
-            ),
             "project_checkpoint_current": (
                 project_status.latest_checkpoint is not None
                 and project_status.latest_checkpoint.freshness == "current"
