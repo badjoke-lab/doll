@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - diagnostic/imp-051-payload
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -63,7 +66,8 @@ jobs:
                   members = archive.getmembers()
                   print("tar_member_count:", len(members))
                   for member in members:
-                      print(json.dumps({"name": member.name, "size": member.size, "type": member.type.decode("latin-1") if isinstance(member.type, bytes) else str(member.type)}, sort_keys=True))
+                      member_type = member.type.decode("latin-1") if isinstance(member.type, bytes) else str(member.type)
+                      print(json.dumps({"name": member.name, "size": member.size, "type": member_type}, sort_keys=True))
           elif zipfile.is_zipfile(io.BytesIO(decoded)):
               print("decoded_type: zip")
               with zipfile.ZipFile(io.BytesIO(decoded)) as archive:
