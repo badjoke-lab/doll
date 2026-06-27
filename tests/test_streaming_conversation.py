@@ -8,7 +8,8 @@ from uuid import uuid4
 
 import pytest
 
-from doll import state, streaming_conversation as streaming_module, workspace
+from doll import state, workspace
+from doll import streaming_conversation as streaming_module
 from doll.instruction_origin import InstructionOriginService
 from doll.local_conversation import (
     DuplicateConversationOperationError,
