@@ -1,0 +1,38 @@
+name: IMP-051 finalize documentation
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out implementation branch
+        uses: actions/checkout@v4
+        with:
+          ref: imp-051-canonical-local-conversation
+          fetch-depth: 0
+
+      - name: Finalize documentation and generated specification
+        shell: bash
+        run: |
+          python scripts/imp051_finalize_docs.py
+          python scripts/build_final_spec.py --check
+          python -m json.tool website/project-status.json >/dev/null
+
+      - name: Commit finalized documentation
+        shell: bash
+        run: |
+          rm scripts/imp051_finalize_docs.py
+          rm .github/workflows/imp051-finalize-docs.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "docs: finalize IMP-051 implementation record"
+          git push origin HEAD:imp-051-canonical-local-conversation
