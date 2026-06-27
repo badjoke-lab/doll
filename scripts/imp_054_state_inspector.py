@@ -14,6 +14,7 @@ from doll.model_manifest import ModelManifestService
 from doll.portability import PortabilityState
 from doll.project_state import ProjectService
 from doll.project_status import ProjectStatusService
+from doll.state_repository import StateRepository
 
 
 def _arguments() -> argparse.Namespace:
@@ -23,7 +24,7 @@ def _arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _record_count(repository: state.StateRepository, record_type: str) -> int:
+def _record_count(repository: StateRepository, record_type: str) -> int:
     row = repository.connection.execute(
         "SELECT COUNT(*) FROM records WHERE record_type = ? AND status = 'active'",
         (record_type,),
@@ -32,7 +33,7 @@ def _record_count(repository: state.StateRepository, record_type: str) -> int:
 
 
 def _artifact_has_switch_probe(
-    repository: state.StateRepository,
+    repository: StateRepository,
     workspace_root: Path,
     conversation_id: str,
 ) -> bool:
@@ -45,16 +46,18 @@ def _artifact_has_switch_probe(
         managed_path = record.metadata.get("managed_path")
         if not isinstance(managed_path, str):
             return True
-        path = workspace_root / "artifacts" / managed_path
         try:
-            if marker in path.read_bytes():
+            if marker in (workspace_root / "artifacts" / managed_path).read_bytes():
                 return True
         except OSError:
             return True
     return False
 
 
-def inspect(workspace_root: Path, descriptor_path: Path) -> tuple[dict[str, bool], dict[str, int]]:
+def inspect(
+    workspace_root: Path,
+    descriptor_path: Path,
+) -> tuple[dict[str, bool], dict[str, int]]:
     descriptor: dict[str, Any] = json.loads(descriptor_path.read_text(encoding="utf-8"))
     required = {
         "memory_id",
@@ -83,7 +86,8 @@ def inspect(workspace_root: Path, descriptor_path: Path) -> tuple[dict[str, bool
             cast(str, descriptor["source_environment_id"])
         )
         source_environment_envelope = repository.get_record(environment.environment_id)
-        events = repository.list_conversation_events(cast(str, descriptor["conversation_id"]))
+        conversation_id = cast(str, descriptor["conversation_id"])
+        events = repository.list_conversation_events(conversation_id)
         manifests = ModelManifestService(repository)
         active, runtime, active_model = manifests.resolve_active_binding(
             scope_type=cast(str, descriptor["scope_type"]),
@@ -128,11 +132,8 @@ def inspect(workspace_root: Path, descriptor_path: Path) -> tuple[dict[str, bool
             ),
             "canonical_event_count": len(events) == descriptor["expected_event_count"],
             "canonical_event_shape": all(
-                event.event_kind in {
-                    "user_message",
-                    "system_context_snapshot",
-                    "assistant_message",
-                }
+                event.event_kind
+                in {"user_message", "system_context_snapshot", "assistant_message"}
                 for event in events
             ),
             "all_turns_completed": (
@@ -169,7 +170,7 @@ def inspect(workspace_root: Path, descriptor_path: Path) -> tuple[dict[str, bool
             "switch_probe_not_persisted": not _artifact_has_switch_probe(
                 repository,
                 workspace_root,
-                cast(str, descriptor["conversation_id"]),
+                conversation_id,
             ),
             "record_counts_present": all(value >= 1 for value in counts.values()),
         }
