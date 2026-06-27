@@ -80,9 +80,11 @@ class LocalStreamingConversationService(LocalConversationService):
 
         manifests = ModelManifestService(self.repository)
         try:
-            binding, runtime_manifest, model_manifest = manifests.resolve_active_binding(
-                scope_type=scope_type,
-                scope_key=scope_key,
+            binding, runtime_manifest, model_manifest = (
+                manifests.resolve_active_binding(
+                    scope_type=scope_type,
+                    scope_key=scope_key,
+                )
             )
         except (KeyError, ModelManifestValidationError) as exc:
             raise LocalConversationValidationError(
@@ -129,15 +131,19 @@ class LocalStreamingConversationService(LocalConversationService):
                     max_output_chars=max_output_chars,
                     timeout_seconds=timeout_seconds,
                     cancellation=(
-                        cancellation if cancellation is not None else RuntimeCancellationToken()
+                        cancellation
+                        if cancellation is not None
+                        else RuntimeCancellationToken()
                     ),
                 ),
             )
-            normalized_result, assistant_text, display_events = _normalize_stream_result(
-                stream_result,
-                operation_id=safe_operation_id,
-                adapter_id=runtime_manifest.adapter_id,
-                model_id=model_id,
+            normalized_result, assistant_text, display_events = (
+                _normalize_stream_result(
+                    stream_result,
+                    operation_id=safe_operation_id,
+                    adapter_id=runtime_manifest.adapter_id,
+                    model_id=model_id,
+                )
             )
 
             exposed_text = stream_result.output_text
@@ -240,7 +246,12 @@ class LocalStreamingConversationService(LocalConversationService):
                 raise
             if isinstance(
                 exc,
-                (InstructionOriginError, PromptInjectionError, RuntimeContractError, KeyError),
+                (
+                    InstructionOriginError,
+                    PromptInjectionError,
+                    RuntimeContractError,
+                    KeyError,
+                ),
             ):
                 raise LocalConversationValidationError(
                     "local streaming conversation input or context was rejected"
