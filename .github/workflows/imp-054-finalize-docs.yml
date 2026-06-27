@@ -1,0 +1,103 @@
+name: Finalize IMP-054 documentation
+
+on:
+  push:
+    branches:
+      - imp-054-real-runtime-continuity-drill
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-054-real-runtime-continuity-drill
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Advance IMP-054 documentation and status
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+
+          import json
+          from pathlib import Path
+
+          def replace_once(path: str, old: str, new: str) -> None:
+              file = Path(path)
+              text = file.read_text(encoding="utf-8")
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"{path}: expected one match, found {count}: {old[:100]!r}")
+              file.write_text(text.replace(old, new), encoding="utf-8")
+
+          roadmap = "docs/spec/09-development-roadmap.md"
+          replace_once(roadmap, "- IMP-030 through IMP-053;", "- IMP-030 through IMP-054;")
+          replace_once(
+              roadmap,
+              "exact rollback, and bounded local streaming integration that keeps partial deltas transient while committing only terminally validated output through the canonical conversation path, verified backup",
+              "exact rollback, bounded local streaming integration that keeps partial deltas transient while committing only terminally validated output through the canonical conversation path, and an exact-commit local-runtime continuity harness covering synthetic Ollama health, inventory, conversation, streaming, explicit fallback, forced rollback, package transfer, backup restore, and fresh-process inspection while the primary Intel Mac gate remains pending, verified backup",
+          )
+          replace_once(
+              roadmap,
+              "- no real runtime or model is connected, no user-side offline work is required through IMP-053, and no real-machine local-inference evidence is claimed;\n- model execution must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts.",
+              "- IMP-054 adds an exact-commit Phase 5 acceptance runner, deterministic injected Ollama transport for CI, canonical non-streaming and streaming turns, explicit fallback switching, forced post-activation rollback, State Package v2 transfer, backup restore, fresh-process inspection without adapters, and bounded socket-destination and evidence controls;\n- IMP-054 automated evidence does not install or start Ollama, download models, use cloud services, or claim a real runtime;\n- the primary Intel Mac network-disabled gate remains pending, so no accepted real-runtime or local-inference release claim exists and completing IMP-054 now requires a user-side offline run from the exact merged commit;\n- model execution must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts.",
+          )
+          replace_once(
+              roadmap,
+              "Status: in progress through IMP-053.",
+              "Status: automated acceptance evidence implemented through IMP-054; primary Intel Mac gate pending.",
+          )
+          replace_once(
+              roadmap,
+              "### Offline mode and local AI continuity drill\n\nProve network-disabled startup, outbound-request guard, local conversation, project-state inspection, fallback, model replacement without state loss, and primary-machine evidence.",
+              "### IMP-054 — Network-disabled real-runtime continuity drill\n\nStatus: automated harness implemented; primary Intel Mac evidence pending.\n\nImplemented an exact-commit acceptance runner that exercises the accepted Ollama adapter with deterministic injected transport in CI. The drill covers loopback health and exact inventory, canonical non-streaming and bounded streaming conversation, explicit switching to a configured fallback, forced post-activation failure and exact rollback, preservation of memory, project, portability, conversation, runtime/model manifest, and binding state, State Package v2 transfer, state-backup restore, and fresh-process inspection with adapters disabled.\n\nReal-machine mode accepts only Darwin x86_64 or amd64, the fixed IPv4 loopback Ollama transport, an explicit local port, two distinct preinstalled model names, the exact checked-out commit, and explicit offline and local-only confirmations. A socket guard rejects every non-loopback destination, and evidence output excludes native model names, prompts, responses, paths, usernames, hostnames, credentials, and secrets.\n\nThe implementation does not install or start Ollama, download or delete models, use cloud providers, retrieve credentials, execute tools or capabilities, migrate schema, or change State Package v2. Phase 5 remains incomplete until a separate completion PR stores accepted primary Intel Mac evidence from the exact merged implementation commit.\n\n### Offline mode and local AI continuity drill\n\nRun the exact merged IMP-054 commit on the primary Intel Mac with networking disabled, review the bounded result, and store accepted evidence in a separate completion PR before making a local-inference release claim.",
+          )
+          replace_once(
+              roadmap,
+              "The required order after IMP-053 is:\n\n1. run the network-disabled real-runtime continuity drill before making a local-inference release claim;\n2. prove explicit fallback and model replacement on the primary machine without canonical conversation, project, memory, portability, backup, or recovery loss;\n3. prove a real local AI migration path before provider-specific cloud portability becomes a primary claim;\n4. keep cloud providers, credentials, and automatic cloud fallback outside the local continuity gate.",
+              "The required order after automated IMP-054 evidence is:\n\n1. merge the exact-commit continuity harness without claiming real-runtime completion;\n2. run the exact merged `main` commit on the primary Intel Mac with networking disabled, two preinstalled local models, and explicit local-only confirmation;\n3. store and validate the bounded accepted result in a separate completion PR, then close #169 and complete the Phase 5 local-runtime gate only if every check passed;\n4. prove a real local AI migration path before provider-specific cloud portability becomes a primary claim;\n5. keep cloud providers, credentials, and automatic cloud fallback outside the local continuity gate.",
+          )
+
+          replace_once(
+              "README.md",
+              "Phases 4A and 4B are complete. Phase 5 is in progress through IMP-053: the runtime-independent adapter contract, loopback-only Ollama adapter, authoritative runtime/model manifests with explicit bindings, canonical non-streaming local conversation execution, explicit scope-local model switching with offered fallback candidates and exact rollback, and bounded local streaming integration are implemented. Streaming output remains transient until a terminally valid, identity-matched, non-blank, secret-safe result is committed through the existing canonical conversation path; failure, cancellation, timeout, malformed output, and rejected output create no assistant artifact. CI uses synthetic adapters only; no real runtime or model is connected, no user-side offline work is required through IMP-053, and no local-inference release claim is made. The current position is published through the [live implementation activity endpoint](https://doll.badjoke-lab.com/api/project-status). The network-disabled real-runtime continuity drill remains the next bounded work. Unused legacy identifiers IMP-024 through IMP-029 are retired and are not reused.",
+              "Phases 4A and 4B are complete. Phase 5 has automated acceptance evidence through IMP-054: the runtime-independent adapter contract, loopback-only Ollama adapter, authoritative runtime/model manifests and explicit bindings, canonical non-streaming and bounded streaming conversation, explicit fallback switching, exact rollback, State Package v2 transfer, backup restore, and fresh-process inspection without runtime adapters are integrated in one exact-commit drill. CI uses deterministic injected Ollama transport and performs no socket request. No real runtime or model evidence is accepted yet, no model is installed or downloaded, and no local-inference release claim is made. Completing IMP-054 now requires running the exact merged commit on the primary Intel Mac with networking disabled, Ollama already running locally, and two preinstalled models, then storing the bounded accepted result in a separate PR. The current position is published through the [live implementation activity endpoint](https://doll.badjoke-lab.com/api/project-status). Unused legacy identifiers IMP-024 through IMP-029 are retired and are not reused.",
+          )
+
+          status_path = Path("website/project-status.json")
+          status = json.loads(status_path.read_text(encoding="utf-8"))
+          status["model_runtime"]["message"] = (
+              "IMP-054 adds an exact-commit local-runtime continuity harness covering synthetic "
+              "Ollama health, inventory, canonical non-streaming and streaming conversation, explicit "
+              "fallback, forced rollback, State Package v2, backup restore, and fresh-process "
+              "inspection. No real runtime or model evidence is accepted; the primary Intel Mac "
+              "network-disabled gate is pending."
+          )
+          status_path.write_text(
+              json.dumps(status, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+
+          checker = "scripts/check-public-site-status.mjs"
+          replace_once(
+              checker,
+              "  roadmap.includes(\"IMP-053 connects the bounded local stream transcript\"),\n  \"roadmap must record the IMP-053 bounded streaming boundary\",\n);\nexpect(\n  roadmap.includes(\"The required order after IMP-053 is:\"),\n  \"roadmap must advance immediate work beyond IMP-053\",",
+              "  roadmap.includes(\"IMP-053 connects the bounded local stream transcript\"),\n  \"roadmap must record the IMP-053 bounded streaming boundary\",\n);\nexpect(\n  roadmap.includes(\"IMP-054 adds an exact-commit Phase 5 acceptance runner\"),\n  \"roadmap must record the IMP-054 local-runtime continuity harness\",\n);\nexpect(\n  roadmap.includes(\"The required order after automated IMP-054 evidence is:\"),\n  \"roadmap must advance immediate work to the IMP-054 real-machine gate\",",
+          )
+          PY
+          python scripts/build_final_spec.py
+          node scripts/check-public-site-status.mjs
+          python scripts/build_final_spec.py --check
+      - name: Commit generated documentation
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add README.md DOLL_FINAL_SPEC.md docs/spec/09-development-roadmap.md website/project-status.json scripts/check-public-site-status.mjs
+          git diff --cached --check
+          git commit -m "IMP-054: advance roadmap and public status"
+          git push origin HEAD:imp-054-real-runtime-continuity-drill
