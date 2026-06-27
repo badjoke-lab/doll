@@ -40,18 +40,7 @@ jobs:
         run: uv run ruff format --check .
 
       - name: Type check
-        shell: bash
-        run: |
-          set -o pipefail
-          uv run mypy src tests 2>&1 | tee mypy-output.txt
-
-      - name: Upload mypy diagnostic
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: mypy-output
-          path: mypy-output.txt
-          if-no-files-found: ignore
+        run: uv run mypy src tests
 
       - name: Check generated specification
         run: uv run python scripts/build_final_spec.py --check
