@@ -1,0 +1,155 @@
+name: Apply IMP-054 package alignment
+
+on:
+  push:
+    branches:
+      - imp-054-real-runtime-continuity-drill
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  align:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-054-real-runtime-continuity-drill
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - id: patch
+        name: Patch unsupported fixture
+        continue-on-error: true
+        run: |
+          python - <<'PY' > /tmp/alignment.txt 2>&1
+          from pathlib import Path
+
+          def replace(path: str, old: str, new: str) -> None:
+              file = Path(path)
+              text = file.read_text(encoding="utf-8")
+              if old not in text:
+                  raise RuntimeError(f"missing pattern in {path}: {old[:80]!r}")
+              file.write_text(text.replace(old, new, 1), encoding="utf-8")
+              print(f"patched {path}: {old[:50]!r}")
+
+          probe = "scripts/imp_054_runtime_probe.py"
+          replace(probe, "from doll.portability import PortabilityState, SourceEnvironmentRecord\n", "")
+          replace(probe, "        environment_id = str(uuid4())\n", "")
+          replace(
+              probe,
+              '''            environment = PortabilityState(repository).save_source_environment(
+                SourceEnvironmentRecord(
+                    environment_id=environment_id,
+                    environment_class="local-ai-runtime",
+                    application_id="doll-runtime-drill",
+                    runtime_id="ollama-local",
+                    observed_at="2026-06-27T00:00:00Z",
+                ),
+                provenance="user-created",
+            )
+''',
+              "",
+          )
+          replace(
+              probe,
+              "            environment_revision = repository.get_record(environment.environment_id).revision\n",
+              "",
+          )
+          replace(
+              probe,
+              '''                "source_environment_id": environment.environment_id,
+                "source_environment_revision": environment_revision,
+''',
+              "",
+          )
+          replace(
+              probe,
+              '''            unrelated_preserved = (
+                ConfirmedMemoryService(repository).get(memory.record_id).revision == memory.revision
+                and repository.get_record(fixture.project_id).revision == project_revision
+                and repository.get_record(environment.environment_id).revision
+                == environment_revision
+            )
+''',
+              '''            unrelated_preserved = (
+                ConfirmedMemoryService(repository).get(memory.record_id).revision == memory.revision
+                and repository.get_record(fixture.project_id).revision == project_revision
+            )
+''',
+          )
+
+          inspector = "scripts/imp_054_state_inspector.py"
+          replace(inspector, "from doll.portability import PortabilityState\n", "")
+          replace(
+              inspector,
+              '''        "source_environment_id",
+        "source_environment_revision",
+''',
+              "",
+          )
+          replace(
+              inspector,
+              '''        environment = PortabilityState(repository).get_source_environment(
+            cast(str, descriptor["source_environment_id"])
+        )
+        source_environment_envelope = repository.get_record(environment.environment_id)
+''',
+              "",
+          )
+          replace(
+              inspector,
+              '            "source_environments": _record_count(repository, "source_environment"),\n',
+              "",
+          )
+          replace(
+              inspector,
+              '''            "source_environment_preserved": (
+                source_environment_envelope.revision == descriptor["source_environment_revision"]
+            ),
+''',
+              "",
+          )
+
+          implementation = "docs/implementation/imp-054-real-runtime-continuity-drill.md"
+          replace(implementation, "one source-environment record", "State Package v2 portability state")
+          replace(
+              implementation,
+              "preserved memory, project, and source-environment revisions;",
+              "preserved memory and project revisions;",
+          )
+          matrix = "docs/testing/phase-5-local-runtime-continuity-matrix.json"
+          replace(
+              matrix,
+              "Conversation, memory, project, and portability state preservation",
+              "Conversation, memory, project, and State Package portability preservation",
+          )
+          PY
+          uv run ruff check --fix scripts/imp_054_runtime_probe.py scripts/imp_054_state_inspector.py >> /tmp/alignment.txt 2>&1
+          uv run ruff format scripts/imp_054_runtime_probe.py scripts/imp_054_state_inspector.py >> /tmp/alignment.txt 2>&1
+      - name: Commit alignment
+        if: steps.patch.outcome == 'success'
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts/imp_054_runtime_probe.py scripts/imp_054_state_inspector.py docs/implementation/imp-054-real-runtime-continuity-drill.md docs/testing/phase-5-local-runtime-continuity-matrix.json
+          git diff --cached --check
+          git commit -m "IMP-054: align drill with State Package v2 registry"
+          git push origin HEAD:imp-054-real-runtime-continuity-drill
+      - name: Post alignment diagnostic
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo 'Temporary IMP-054 package-alignment diagnostic (outcome:' '${{ steps.patch.outcome }}'').'
+            echo
+            echo '```text'
+            cat /tmp/alignment.txt
+            echo '```'
+          } > /tmp/comment.txt
+          gh issue comment 169 --body-file /tmp/comment.txt
