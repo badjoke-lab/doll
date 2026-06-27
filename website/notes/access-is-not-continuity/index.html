@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Being Able to Use Powerful AI Is Not the Same as Being Able to Keep Using It — doll</title>
+  <meta name="description" content="Why temporary access to powerful cloud AI is not the same as continuity, and why doll keeps memory, identity, settings, data, and recovery paths on the user's side.">
+  <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+  <p><a href="../../">Back to doll</a></p>
+
+  <main>
+    <article>
+      <h1>Being Able to Use Powerful AI Is Not the Same as Being Able to Keep Using It</h1>
+
+      <h2>What the Restrictions on Claude and GPT-5.6 Reveal About Why doll Is Local-First</h2>
+
+      <p><time datetime="2026-06-27">June 27, 2026</time></p>
+
+      <p>A powerful AI model is announced.</p>
+
+      <p>You can use it today.</p>
+
+      <p>You pay for access, build workflows around it, and begin to depend on it for work, development, and thought.</p>
+
+      <p>None of that guarantees that you will still be able to use it tomorrow.</p>
+
+      <p>
+        In June 2026, a series of events involving Anthropic and OpenAI made that distinction unusually clear.
+      </p>
+
+      <p>
+        This is not only a story about US AI policy. It matters to anyone who has started to treat a cloud AI system
+        as part of their daily work, memory, or decision-making process.
+      </p>
+
+      <p>
+        It also goes directly to the reason doll is designed around one governing rule:
+        the system must remain useful locally before cloud access is added.
+      </p>
+
+      <h2>Even a Released Model Can Disappear Without Warning</h2>
+
+      <p>
+        On June 12, the US government directed Anthropic to suspend access to Claude Fable 5 and Claude Mythos 5
+        by foreign nationals. The restriction covered people outside the United States, foreign nationals inside the
+        United States, and Anthropic's own foreign-national employees.
+        <a href="https://www.anthropic.com/news/fable-mythos-access">Anthropic described the directive in an official statement.</a>
+      </p>
+
+      <p>
+        Anthropic said it could not immediately enforce the nationality-based restriction with sufficient confidence.
+        To comply, it disabled both models for every customer.
+      </p>
+
+      <p>The situation was later relaxed, but only in part.</p>
+
+      <p>
+        On June 26 in the United States, June 27 in Japan, Anthropic said it had been told that Mythos 5 could be
+        redeployed to a set of US organizations that operate and defend critical infrastructure.
+        <a href="https://x.com/AnthropicAI/status/2070665903440871779">Anthropic announced the limited redeployment here.</a>
+      </p>
+
+      <p>That was not a full return to normal access.</p>
+
+      <p>
+        Mythos 5 did not become available to everyone, and Fable 5 did not return to general use. Anthropic said it
+        was still working with the government to expand Mythos 5 access and restore Fable 5 more broadly.
+      </p>
+
+      <p>OpenAI faced a different form of intervention.</p>
+
+      <p>
+        On June 26, OpenAI announced the GPT-5.6 family. It did not make the models broadly available at launch.
+        At the US government's request, OpenAI began with a limited preview through Codex and the API for a small
+        group of trusted partners. OpenAI also said that information about participating organizations had been
+        shared with the government.
+        <a href="https://openai.com/index/previewing-gpt-5-6-sol/">OpenAI described the arrangement in its official announcement.</a>
+      </p>
+
+      <p>
+        OpenAI said it expected broader access within weeks, so GPT-5.6 was not banned and its public release was not
+        cancelled. Even so, a government-involved access stage had been inserted before broad availability.
+      </p>
+
+      <p>The mechanisms were different.</p>
+
+      <p>
+        Anthropic had already released its models and then disabled them in response to a government directive.
+        OpenAI changed the release path before broad public access in response to a government request.
+      </p>
+
+      <p>The practical lesson is the same:</p>
+
+      <blockquote>
+        <p>
+          A capable AI system can exist, work, and even have paying users without the developer retaining complete
+          control over who can use it, when they can use it, or under what conditions.
+        </p>
+      </blockquote>
+
+      <h2>Cloud AI Can Be Used, but It Cannot Be Owned by the User</h2>
+
+      <p>We can pay for cloud AI.</p>
+
+      <p>
+        We can connect its API to a product, redesign a workflow around it, and accumulate months of conversation
+        and context.
+      </p>
+
+      <p>That does not mean we own the model.</p>
+
+      <p>
+        What the user normally purchases is access under the current conditions. There is no guarantee that those
+        conditions will remain unchanged.
+      </p>
+
+      <p>Access may be affected by:</p>
+
+      <ul>
+        <li>the provider's business decisions;</li>
+        <li>changes to terms of service or safety policy;</li>
+        <li>new pricing or usage limits;</li>
+        <li>API or model retirement;</li>
+        <li>country or regional restrictions;</li>
+        <li>government or regulatory action;</li>
+        <li>account suspension;</li>
+        <li>acquisition, shutdown, or product discontinuation.</li>
+      </ul>
+
+      <p>
+        Government action was central in the Anthropic and OpenAI cases, but the underlying structure does not depend
+        on government involvement. When the cloud side changes, the user cannot reject the change and keep operating
+        the old service on the old terms.
+      </p>
+
+      <p>
+        <strong>
+          You can pay for the right to use a cloud AI today. You cannot buy a guarantee that the same AI will still
+          exist for you tomorrow.
+        </strong>
+      </p>
+
+      <h2>Losing One Model Is Not the Only Risk</h2>
+
+      <p>
+        It is easy to say that users can simply switch to another model when one becomes unavailable.
+      </p>
+
+      <p>
+        For simple question answering or one-off text generation, that may be enough. Long-term use creates a more
+        difficult problem.
+      </p>
+
+      <p>Over time, an AI environment accumulates:</p>
+
+      <ul>
+        <li>conversation history;</li>
+        <li>long-term memory;</li>
+        <li>user preferences;</li>
+        <li>personality and response settings;</li>
+        <li>working procedures;</li>
+        <li>prompts;</li>
+        <li>files and reference material;</li>
+        <li>connections to external services;</li>
+        <li>automated workflows;</li>
+        <li>habits built around the system.</li>
+      </ul>
+
+      <p>
+        To the user, the AI is not only the underlying model. It is the model together with the memory, settings,
+        data, tools, and working methods that have accumulated around it.
+      </p>
+
+      <p>
+        This is why model switching and environment continuity are not the same thing.
+      </p>
+
+      <p>
+        A new provider may be able to answer the same questions. If it cannot inherit the previous memory, settings,
+        work state, and tool configuration, the user's practical AI environment still has to be rebuilt from the beginning.
+      </p>
+
+      <p>The real risk is not merely losing access to one version of GPT or Claude.</p>
+
+      <p>
+        <strong>
+          It is losing the personal AI environment that was built on top of a model the user never controlled.
+        </strong>
+      </p>
+
+      <h2>doll Is Not Trying to Protect Maximum Performance</h2>
+
+      <p>doll is not an attempt to build a model that outperforms OpenAI or Anthropic.</p>
+
+      <p>It is not a project that rejects cloud AI.</p>
+
+      <p>
+        Today's leading cloud models are more capable than many local models. They are likely to continue leading in
+        complex reasoning, coding, long-context work, multimodal understanding, speed, and access to new capabilities.
+      </p>
+
+      <p>doll should use those models when they are available and appropriate.</p>
+
+      <p>If OpenAI is the best option for a task, doll should be able to connect to OpenAI.</p>
+
+      <p>If Anthropic is a better fit, doll should be able to use Anthropic.</p>
+
+      <p>If another service becomes more capable, the user should be able to select it.</p>
+
+      <p>What doll must not do is make any one model identical to the user's AI environment.</p>
+
+      <p>doll is intended to keep the following on the user's side:</p>
+
+      <ul>
+        <li>memory;</li>
+        <li>identity and personality settings;</li>
+        <li>configuration;</li>
+        <li>user data;</li>
+        <li>tool connections;</li>
+        <li>work history;</li>
+        <li>the ability to change models;</li>
+        <li>the continuity layer that holds the environment together.</li>
+      </ul>
+
+      <p>In doll, the model is not the whole AI.</p>
+
+      <p>
+        <strong>The model is one replaceable source of capability.</strong>
+      </p>
+
+      <p>If one model is withdrawn, the system should be able to connect to another.</p>
+
+      <p>If cloud access is lost, the system should be able to fall back to a local model.</p>
+
+      <p>Performance may decrease.</p>
+
+      <p>
+        The user's memory, identity, settings, and data should not disappear with it.
+      </p>
+
+      <p>doll is not designed to preserve the highest possible performance at all times.</p>
+
+      <p>
+        <strong>It is designed to preserve continuity.</strong>
+      </p>
+
+      <h2>Why Local Comes First</h2>
+
+      <p>doll's highest-level design rule is that the system must first work locally.</p>
+
+      <p>This is not because local models are always better than cloud models.</p>
+
+      <p>
+        It is because a cloud foundation makes the entire AI environment dependent on the continued availability of
+        that cloud service.
+      </p>
+
+      <p>doll therefore aims to keep at least the following under the user's control:</p>
+
+      <ul>
+        <li>long-term memory;</li>
+        <li>identity, personality, and settings;</li>
+        <li>core user data;</li>
+        <li>model and provider configuration;</li>
+        <li>basic conversation and operation;</li>
+        <li>information about tools and working procedures.</li>
+      </ul>
+
+      <p>Local and cloud models can then be attached to that durable layer.</p>
+
+      <pre><code>user-owned memory, identity, settings, and data
+                         ↓
+                       doll
+                         ↓
+              local model / cloud model</code></pre>
+
+      <p>When cloud access is available, doll can use the additional performance.</p>
+
+      <p>
+        When that access is lost, the user can switch to another provider or to a lower-capability local model.
+      </p>
+
+      <p>
+        The model below the continuity layer may change. The user's accumulated state above it should remain.
+      </p>
+
+      <p>That is the basic design idea behind doll.</p>
+
+      <h2>Local Operation Does Not Solve Everything</h2>
+
+      <p>Local-first design has real costs.</p>
+
+      <p>Local models are limited by the hardware available to the user.</p>
+
+      <p>
+        Without a powerful GPU or large amounts of memory, the range of practical models may be narrow. Local models
+        may be slower or substantially less capable than cloud services. Support for new features may also arrive later.
+      </p>
+
+      <p>
+        doll does not assume that local models can permanently match the frontier.
+      </p>
+
+      <p>
+        It also cannot make every government rule, provider decision, or service shutdown irrelevant.
+      </p>
+
+      <p>The goal is not to maintain identical performance without the cloud.</p>
+
+      <p>
+        <strong>The goal is to avoid a design in which nothing remains when the cloud disappears.</strong>
+      </p>
+
+      <p>Use the cloud for performance.</p>
+
+      <p>Do not make memory, identity, core data, and basic continuity depend entirely on it.</p>
+
+      <p>
+        This is not a choice between cloud and local AI. It is a division of responsibilities:
+        cloud for additional capability, local ownership for continuity.
+      </p>
+
+      <h2>What These Events Mean for doll</h2>
+
+      <p>
+        The Anthropic and OpenAI cases do not prove that doll is necessary for everyone.
+      </p>
+
+      <p>
+        Mythos 5 access may expand. Fable 5 may return. GPT-5.6 may become widely available on the schedule OpenAI described.
+      </p>
+
+      <p>
+        Whether those particular models return is not the only issue. The events established several practical facts.
+      </p>
+
+      <h3>A released model can still be suspended</h3>
+
+      <p>Therefore, doll must not treat one model as the system itself.</p>
+
+      <h3>An announced model may not become broadly available immediately</h3>
+
+      <p>Therefore, doll's basic operation must not depend on future cloud access arriving as expected.</p>
+
+      <h3>Access conditions can vary by country, nationality, or organization</h3>
+
+      <p>
+        Therefore, doll must not assume that anyone who can pay will always receive the same capability on the same terms.
+      </p>
+
+      <h3>A provider may not have sole control over release decisions</h3>
+
+      <p>Therefore, user memory and data should not exist only under the provider's control.</p>
+
+      <h3>Cloud models remain extremely valuable</h3>
+
+      <p>Therefore, doll should not reject them. It should use them as replaceable performance extensions.</p>
+
+      <p>
+        These events do not prove that every risk doll anticipates will occur.
+      </p>
+
+      <p>
+        They do show that the underlying concern is not a distant or purely theoretical possibility.
+      </p>
+
+      <h2>Own the Continuity, Not the Capability</h2>
+
+      <p>Claude Mythos 5 has returned for some US organizations.</p>
+
+      <p>GPT-5.6 may become broadly available within weeks.</p>
+
+      <p>The larger issue is not the date on which one model returns.</p>
+
+      <p>
+        A powerful cloud AI can have its release timing, eligible users, price, features, limits, and regional access
+        changed by companies and governments. The user does not control those decisions.
+      </p>
+
+      <p>doll is not a project for defeating cloud AI.</p>
+
+      <p>
+        It is an attempt to use the capability of cloud AI without allowing the loss of one provider to erase memory,
+        identity, settings, data, work state, and basic operation.
+      </p>
+
+      <p>The most capable model will continue to change.</p>
+
+      <p>The model that is best today may not be available tomorrow.</p>
+
+      <p>
+        What has accumulated between the user and the AI does not have to disappear each time the model changes.
+      </p>
+
+      <p>
+        <strong>
+          Being able to use powerful AI is not the same as being able to keep using it.
+        </strong>
+      </p>
+
+      <p>
+        <strong>
+          doll is intended to keep continuity on the user's side, even when capability has to come from somewhere else.
+        </strong>
+      </p>
+
+      <hr>
+
+      <h2>Sources</h2>
+
+      <ul>
+        <li><a href="https://www.anthropic.com/news/fable-mythos-access">Anthropic — statement on the directive affecting Fable 5 and Mythos 5</a></li>
+        <li><a href="https://x.com/AnthropicAI/status/2070665903440871779">Anthropic — official statement on the limited redeployment of Mythos 5</a></li>
+        <li><a href="https://openai.com/index/previewing-gpt-5-6-sol/">OpenAI — GPT-5.6 Sol announcement and limited-preview details</a></li>
+        <li><a href="https://www.whitehouse.gov/presidential-actions/2026/06/promoting-advanced-artificial-intelligence-innovation-and-security/">White House — Promoting Advanced Artificial Intelligence Innovation and Security</a></li>
+        <li><a href="https://www.reuters.com/technology/us-releases-anthropic-model-mythos-some-us-companies-semafor-reports-2026-06-26/">Reuters — limited return of Mythos 5 to trusted US organizations</a></li>
+        <li><a href="https://www.reuters.com/legal/litigation/openai-defers-public-rollout-gpt56-us-seeks-early-access-frontier-ai-models-2026-06-26/">Reuters — GPT-5.6 limited rollout and US government involvement</a></li>
+      </ul>
+    </article>
+  </main>
+</body>
+</html>

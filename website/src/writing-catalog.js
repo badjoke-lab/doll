@@ -1,5 +1,16 @@
 export const OFFICIAL_NOTES = Object.freeze([
   Object.freeze({
+    id: "access-is-not-continuity",
+    kind: "official",
+    title: "Being Able to Use Powerful AI Is Not the Same as Being Able to Keep Using It",
+    path: "/notes/access-is-not-continuity/",
+    description: "Why temporary access to powerful cloud AI is not the same as continuity, and why doll keeps memory, identity, settings, data, and recovery paths on the user's side.",
+    summary: "Why doll treats cloud models as replaceable performance extensions while keeping memory, identity, settings, data, and continuity under the user's control.",
+    published: "2026-06-27",
+    related: Object.freeze(["permissioned-ai-access", "ai-will-remain", "ai-permission-divide"]),
+    externalVersions: Object.freeze([]),
+  }),
+  Object.freeze({
     id: "permissioned-ai-access",
     kind: "official",
     title: "Is Access to Frontier AI Becoming Permissioned?",
@@ -7,7 +18,7 @@ export const OFFICIAL_NOTES = Object.freeze([
     description: "What the reported GPT-5.6 rollout and Anthropic's suspension of Fable 5 and Mythos 5 suggest about the future of cloud AI access.",
     summary: "A source-based look at how pre-release review, export controls, and government-selected early access are changing the continuity risks of relying on cloud AI.",
     published: "2026-06-26",
-    related: Object.freeze(["ai-permission-divide", "ai-will-remain"]),
+    related: Object.freeze(["access-is-not-continuity", "ai-permission-divide", "ai-will-remain"]),
     externalVersions: Object.freeze([
       Object.freeze({
         publisher: "DEV Community",
@@ -23,7 +34,7 @@ export const OFFICIAL_NOTES = Object.freeze([
     description: "What corporate restrictions on AI agents may tell us about a future in which access is widespread but meaningful capability is tiered by permission.",
     summary: "How ordinary restrictions on powerful AI agents may point toward a wider division based on which capabilities people and institutions are permitted to use.",
     published: "2026-06-21",
-    related: Object.freeze(["permissioned-ai-access", "ai-will-remain"]),
+    related: Object.freeze(["access-is-not-continuity", "permissioned-ai-access", "ai-will-remain"]),
     externalVersions: Object.freeze([]),
   }),
   Object.freeze({
@@ -35,7 +46,7 @@ export const OFFICIAL_NOTES = Object.freeze([
     summary: "A translated conversation with GPT-5.5 Thinking about whether the conditions that made doll seem necessary are already beginning to emerge.",
     published: "2026-06-19",
     updated: "2026-06-20",
-    related: Object.freeze(["permissioned-ai-access", "ai-permission-divide", "why-im-building-doll"]),
+    related: Object.freeze(["access-is-not-continuity", "permissioned-ai-access", "ai-permission-divide", "why-im-building-doll"]),
     externalVersions: Object.freeze([]),
   }),
 ]);
