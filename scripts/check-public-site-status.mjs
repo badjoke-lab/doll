@@ -39,8 +39,8 @@ expect(
     status.phase?.name === "Local runtime and model integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 48 &&
-    status.phase?.next_implementation === 51,
-  "project-status.json must mark Phase 5 in progress from IMP-048 with IMP-051 next",
+    status.phase?.next_implementation === 52,
+  "project-status.json must mark Phase 5 in progress from IMP-048 with IMP-052 next",
 );
 expect(
   status.model_runtime &&
@@ -158,8 +158,12 @@ expect(
   "roadmap must record the IMP-050 authoritative manifest foundation",
 );
 expect(
-  roadmap.includes("canonical local conversation receives IMP-051 when opened"),
-  "roadmap must identify IMP-051 as the next implementation identifier",
+  roadmap.includes("IMP-051 adds the first canonical non-streaming local conversation path"),
+  "roadmap must record the IMP-051 canonical local conversation path",
+);
+expect(
+  roadmap.includes("The required order after IMP-051 is:"),
+  "roadmap must advance immediate work beyond IMP-051",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),
