@@ -96,7 +96,12 @@ class FakeStreamingAdapter:
         if self.failure == "raise":
             raise RuntimeError("provider detail must not escape")
         if self.failure == "invalid_event":
-            yield RuntimeStreamEvent(request.operation_id, sequence + 1, "complete", finish_reason="stop")
+            yield RuntimeStreamEvent(
+                request.operation_id,
+                sequence + 1,
+                "complete",
+                finish_reason="stop",
+            )
             return
         yield RuntimeStreamEvent(request.operation_id, sequence, "complete", finish_reason="stop")
 
