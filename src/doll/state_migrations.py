@@ -15,9 +15,9 @@ from doll.state import (
     StateCorruptError,
     _utc_now,
 )
-from doll.state_db import MIGRATION_0001, MIGRATION_0002, _metadata_row
+from doll.state_db import MIGRATION_0001, MIGRATION_0002, MIGRATION_0003, _metadata_row
 
-MIGRATIONS: tuple[Migration, ...] = (MIGRATION_0001, MIGRATION_0002)
+MIGRATIONS: tuple[Migration, ...] = (MIGRATION_0001, MIGRATION_0002, MIGRATION_0003)
 
 
 def _record_failed_migration(

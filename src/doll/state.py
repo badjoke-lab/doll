@@ -11,7 +11,7 @@ from typing import Literal
 from uuid import UUID
 
 STATE_DATABASE_NAME = "doll-state.sqlite3"
-CURRENT_SCHEMA_VERSION = 2
+CURRENT_SCHEMA_VERSION = 3
 
 RecordStatus = Literal["active", "archived", "superseded", "deleted", "invalid"]
 RecordProvenance = Literal[

@@ -234,14 +234,27 @@ def write_package_members(path: Path, members: dict[str, bytes]) -> None:
 
 def convert_package_to_v1(v2_package: Path, v1_package: Path) -> None:
     members = package_members(v2_package)
-    members.pop(f"{package.PACKAGE_ROOT}/records/work-items.jsonl")
-    members.pop(f"{package.PACKAGE_ROOT}/records/procedures.jsonl")
-    members.pop(f"{package.PACKAGE_ROOT}/records/project-checkpoints.jsonl")
+    for member in (
+        "records/work-items.jsonl",
+        "records/procedures.jsonl",
+        "records/project-checkpoints.jsonl",
+        "records/runtime-manifests.jsonl",
+        "records/model-manifests.jsonl",
+        "records/model-bindings.jsonl",
+    ):
+        members.pop(f"{package.PACKAGE_ROOT}/{member}")
     manifest_name = f"{package.PACKAGE_ROOT}/manifest.json"
     manifest = cast(dict[str, object], json.loads(members[manifest_name]))
     manifest["package_format_version"] = 1
     included = cast(list[str], manifest["included_categories"])
-    for category in ("work_item", "procedure", "project_checkpoint"):
+    for category in (
+        "work_item",
+        "procedure",
+        "project_checkpoint",
+        "runtime_manifest",
+        "model_manifest",
+        "model_binding",
+    ):
         included.remove(category)
         cast(dict[str, int], manifest["record_counts"]).pop(category)
         cast(dict[str, int], manifest["omitted_secret_counts"]).pop(category)
