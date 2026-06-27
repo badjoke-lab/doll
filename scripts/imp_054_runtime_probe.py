@@ -672,9 +672,7 @@ def run(
             and rollback_probe_calls == 2
         ),
         "post_rollback_conversation_completed": fourth.outcome == "completed",
-        "all_canonical_turns_completed": all(
-            item.outcome == "completed" for item in turn_results
-        ),
+        "all_canonical_turns_completed": all(item.outcome == "completed" for item in turn_results),
         "canonical_event_count": len(events) == 12,
         "unrelated_state_revisions_preserved": unrelated_preserved,
         "state_package_v2_exported": package_inspection.package_format_version == 2,
