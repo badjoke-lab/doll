@@ -1,88 +1,108 @@
-name: Diagnose IMP-051 payload
+name: Restore IMP-051 source
 
 on:
   push:
     branches:
       - diagnostic/imp-051-payload
-  pull_request:
-    branches:
-      - main
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  diagnose:
+  restore:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out IMP-051 branch
+        uses: actions/checkout@v4
+        with:
+          ref: imp-051-canonical-local-conversation
+          fetch-depth: 0
 
-      - name: Decode staged payload
+      - name: Recover complete source and binding resolver
         shell: bash
         run: |
-          mkdir -p diagnostic
           python - <<'PY'
           from __future__ import annotations
 
-          import hashlib
-          import json
+          import io
+          import tarfile
           import zlib
           from pathlib import Path
 
           parts = sorted(Path("scripts/imp051_nibbles").glob("part.*"))
           encoded = "".join(part.read_text(encoding="utf-8").strip() for part in parts)
-          alphabet = set(encoded)
-          if not alphabet <= set("ABCDEFGHIJKLMNOP"):
-              raise SystemExit("unexpected nibble alphabet")
-          if len(encoded) % 2:
-              raise SystemExit("odd nibble count")
-
-          hex_text = "".join(format(ord(char) - ord("A"), "x") for char in encoded)
-          compressed = bytes.fromhex(hex_text)
-          Path("diagnostic/payload.gz").write_bytes(compressed)
-
-          decoder = zlib.decompressobj(16 + zlib.MAX_WBITS)
-          error_type = None
-          error_message = None
-          try:
-              partial = decoder.decompress(compressed)
-          except Exception as exc:
-              partial = b""
-              error_type = type(exc).__name__
-              error_message = str(exc)
-          Path("diagnostic/partial.decoded").write_bytes(partial)
-
-          summary = {
-              "parts": [part.name for part in parts],
-              "encoded_chars": len(encoded),
-              "compressed_bytes": len(compressed),
-              "compressed_sha256": hashlib.sha256(compressed).hexdigest(),
-              "compressed_header": compressed[:16].hex(),
-              "compressed_trailer": compressed[-16:].hex(),
-              "partial_decoded_bytes": len(partial),
-              "partial_decoded_sha256": hashlib.sha256(partial).hexdigest(),
-              "partial_decoded_header": partial[:32].hex(),
-              "gzip_eof": decoder.eof,
-              "gzip_unused_data_bytes": len(decoder.unused_data),
-              "gzip_unconsumed_tail_bytes": len(decoder.unconsumed_tail),
-              "error_type": error_type,
-              "error_message": error_message,
-          }
-          Path("diagnostic/summary.json").write_text(
-              json.dumps(summary, indent=2, sort_keys=True) + "\n",
-              encoding="utf-8",
+          if not encoded or set(encoded) - set("ABCDEFGHIJKLMNOP") or len(encoded) % 2:
+              raise SystemExit("staged IMP-051 nibble payload is invalid")
+          compressed = bytes.fromhex(
+              "".join(format(ord(character) - ord("A"), "x") for character in encoded)
           )
-          print(json.dumps(summary, sort_keys=True))
+          decoder = zlib.decompressobj(16 + zlib.MAX_WBITS)
+          partial = decoder.decompress(compressed)
+
+          recovered: list[str] = []
+          archive = tarfile.open(fileobj=io.BytesIO(partial), mode="r:")
+          while True:
+              try:
+                  member = archive.next()
+              except tarfile.ReadError:
+                  break
+              if member is None:
+                  break
+              if not member.isfile():
+                  continue
+              try:
+                  source = archive.extractfile(member)
+                  data = b"" if source is None else source.read()
+              except (EOFError, tarfile.ReadError):
+                  break
+              if len(data) != member.size:
+                  break
+              if member.name != "src/doll/local_conversation.py":
+                  continue
+              target = Path(member.name)
+              target.parent.mkdir(parents=True, exist_ok=True)
+              target.write_bytes(data)
+              recovered.append(member.name)
+
+          if recovered != ["src/doll/local_conversation.py"]:
+              raise SystemExit(f"unexpected recovered members: {recovered!r}")
+
+          model_path = Path("src/doll/model_manifest.py")
+          model_text = model_path.read_text(encoding="utf-8")
+          if "def resolve_active_binding(" not in model_text:
+              marker = "    def _activation_manifests(\n"
+              if marker not in model_text:
+                  raise SystemExit("model manifest insertion point is missing")
+              method = '''    def resolve_active_binding(
+        self,
+        *,
+        scope_type: str,
+        scope_key: str,
+    ) -> tuple[ModelBindingInfo, RuntimeManifestInfo, ModelManifestInfo]:
+        """Resolve and revalidate the one active binding for an explicit scope."""
+
+        safe_scope_type = _token("binding scope type", scope_type)
+        safe_scope_key = _scope_key(scope_key)
+        binding = self._active_for_scope(safe_scope_type, safe_scope_key)
+        if binding is None:
+            raise ModelManifestValidationError("scope has no active binding")
+        runtime, model = self._activation_manifests(binding)
+        return binding, runtime, model
+
+'''
+              model_text = model_text.replace(marker, method + marker, 1)
+              model_path.write_text(model_text, encoding="utf-8")
           PY
 
-      - name: Capture repository snapshot
+      - name: Commit recovered source
         shell: bash
-        run: git archive --format=tar.gz --output=diagnostic/repository.tar.gz HEAD
-
-      - name: Upload diagnostic payload
-        uses: actions/upload-artifact@v4
-        with:
-          name: imp051-payload-diagnostic
-          path: diagnostic/
-          if-no-files-found: error
-          retention-days: 1
+        run: |
+          git config user.name "badjoke-lab"
+          git config user.email "227710934+badjoke-lab@users.noreply.github.com"
+          git add src/doll/local_conversation.py src/doll/model_manifest.py
+          if git diff --cached --quiet; then
+            echo "Recovered source is already committed."
+            exit 0
+          fi
+          git commit -m "feat: restore IMP-051 local conversation source"
+          git push origin HEAD:imp-051-canonical-local-conversation
