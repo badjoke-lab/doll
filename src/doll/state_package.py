@@ -11,6 +11,7 @@ import sqlite3
 import stat
 import tempfile
 import zipfile
+import zlib
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -581,6 +582,7 @@ def _load_package(package_path: Path) -> _PackageData:
         ValueError,
         zipfile.BadZipFile,
         zipfile.LargeZipFile,
+        zlib.error,
     ) as exc:
         raise StatePackageValidationError("state package ZIP is unreadable") from exc
 
