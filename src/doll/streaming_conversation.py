@@ -30,7 +30,6 @@ from doll.model_manifest import ModelManifestService, ModelManifestValidationErr
 from doll.prompt_injection import PromptDefenseService, PromptInjectionError
 from doll.runtime_adapter import (
     MAX_RUNTIME_INPUT_CHARS,
-    LocalRuntimeBoundary,
     RuntimeCancellationToken,
     RuntimeContractError,
     RuntimeFailureCode,
