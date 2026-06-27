@@ -1,0 +1,66 @@
+name: Current IMP-054 probe diagnostic
+
+on:
+  push:
+    branches:
+      - imp-054-real-runtime-continuity-drill
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  diagnose:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - name: Run current synthetic probe
+        env:
+          PYTHONPATH: src:.
+        run: |
+          set +e
+          uv run python - <<'PY' > /tmp/probe.txt 2>&1
+          import tempfile
+          import traceback
+          from pathlib import Path
+          from scripts.imp_054_runtime_probe import (
+              FALLBACK_SYNTHETIC_MODEL,
+              PRIMARY_SYNTHETIC_MODEL,
+              run,
+          )
+
+          try:
+              with tempfile.TemporaryDirectory(prefix="doll-imp054-diagnostic-") as directory:
+                  checks, evidence = run(
+                      Path(directory),
+                      mode="ci",
+                      primary_name=PRIMARY_SYNTHETIC_MODEL,
+                      fallback_name=FALLBACK_SYNTHETIC_MODEL,
+                      ollama_port=11434,
+                  )
+              print(checks)
+              print(evidence)
+          except BaseException:
+              traceback.print_exc()
+              raise
+          PY
+          echo $? > /tmp/probe-status.txt
+      - name: Post bounded diagnostic
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          status=$(cat /tmp/probe-status.txt)
+          {
+            echo 'Temporary current IMP-054 synthetic probe diagnostic (exit status:' "$status"').'
+            echo
+            echo '```text'
+            cat /tmp/probe.txt
+            echo '```'
+          } > /tmp/comment.txt
+          gh issue comment 169 --body-file /tmp/comment.txt
