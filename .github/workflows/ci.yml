@@ -45,18 +45,6 @@ jobs:
       - name: Check generated specification
         run: uv run python scripts/build_final_spec.py --check
 
-      - name: Upload IMP-054 source snapshot
-        if: github.event_name == 'pull_request' && github.head_ref == 'imp-054-real-runtime-continuity-drill'
-        uses: actions/upload-artifact@v4
-        with:
-          name: imp-054-source-${{ github.event.pull_request.head.sha }}
-          path: |
-            .
-            !.git/**
-            !.venv/**
-          include-hidden-files: true
-          retention-days: 1
-
   test:
     name: Test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
