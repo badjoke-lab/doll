@@ -121,8 +121,8 @@ def _replace_event_payloads(
 
 
 def test_state_package_v2_round_trips_canonical_conversations(tmp_path: Path) -> None:
-    initialized, first, second, first_parent, first_child, second_parent = (
-        _conversation_workspace(tmp_path)
+    initialized, first, second, first_parent, first_child, second_parent = _conversation_workspace(
+        tmp_path
     )
     output = tmp_path / "conversations.zip"
     _export(initialized, output)
@@ -141,9 +141,7 @@ def test_state_package_v2_round_trips_canonical_conversations(tmp_path: Path) ->
             first_parent,
             first_child,
         )
-        assert repository.list_conversation_events(second.conversation_id) == (
-            second_parent,
-        )
+        assert repository.list_conversation_events(second.conversation_id) == (second_parent,)
 
 
 @pytest.mark.parametrize(
