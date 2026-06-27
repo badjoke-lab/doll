@@ -1,0 +1,24 @@
+name: IMP-050 snapshot
+
+on:
+  push:
+    branches:
+      - imp-050-model-manifests-bindings
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-050-model-manifests-bindings
+          fetch-depth: 0
+      - run: git archive --format=zip --output=imp050-current.zip HEAD
+      - uses: actions/upload-artifact@v4
+        with:
+          name: imp050-current
+          path: imp050-current.zip
+          if-no-files-found: error
