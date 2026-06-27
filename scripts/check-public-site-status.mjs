@@ -39,8 +39,8 @@ expect(
     status.phase?.name === "Local runtime and model integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 48 &&
-    status.phase?.next_implementation === 52,
-  "project-status.json must mark Phase 5 in progress from IMP-048 with IMP-052 next",
+    status.phase?.next_implementation === 53,
+  "project-status.json must mark Phase 5 in progress from IMP-048 with IMP-053 next",
 );
 expect(
   status.model_runtime &&
@@ -162,8 +162,12 @@ expect(
   "roadmap must record the IMP-051 canonical local conversation path",
 );
 expect(
-  roadmap.includes("The required order after IMP-051 is:"),
-  "roadmap must advance immediate work beyond IMP-051",
+  roadmap.includes("IMP-052 adds explicit scope-local switching to a chosen binding"),
+  "roadmap must record the IMP-052 explicit model-switch boundary",
+);
+expect(
+  roadmap.includes("The required order after IMP-052 is:"),
+  "roadmap must advance immediate work beyond IMP-052",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),

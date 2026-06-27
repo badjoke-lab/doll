@@ -80,8 +80,8 @@ Completed:
 - Phase 4A AI environment portability foundation;
 - Phase 4B project continuity foundation;
 - IMP-001 through IMP-023;
-- IMP-030 through IMP-051;
-- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package v2 export with v1 read compatibility, a versioned authoritative record registry, ProjectRecord v2 with v1 read compatibility, WorkItemRecord v1 lifecycle and dependency integrity, and ProcedureRecord v1 lifecycle and non-authority guarantees, ProjectCheckpointRecord v1 confirmation and freshness, deterministic derived project status, deterministic project-scoped Resume Bundle export, project-continuity transfer and recovery coverage, completed Phase 4B acceptance evidence, a runtime-independent local adapter contract, a loopback-only Ollama adapter, authoritative runtime/model manifests with explicit bindings, and one canonical non-streaming local conversation turn with managed artifacts, deterministic context packaging, closed failure events, and non-authoritative runtime output, verified backup, restore, continuity acceptance, the model-independent safety boundary, canonical conversation and event state, portability adapter and result records, generic import staging, generic export, reviewed publication, source preservation, idempotency, loss visibility, and Phase 4A acceptance evidence.
+- IMP-030 through IMP-052;
+- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package v2 export with v1 read compatibility, a versioned authoritative record registry, ProjectRecord v2 with v1 read compatibility, WorkItemRecord v1 lifecycle and dependency integrity, and ProcedureRecord v1 lifecycle and non-authority guarantees, ProjectCheckpointRecord v1 confirmation and freshness, deterministic derived project status, deterministic project-scoped Resume Bundle export, project-continuity transfer and recovery coverage, completed Phase 4B acceptance evidence, a runtime-independent local adapter contract, a loopback-only Ollama adapter, authoritative runtime/model manifests with explicit bindings, and one canonical non-streaming local conversation turn with managed artifacts, deterministic context packaging, closed failure events, and non-authoritative runtime output, plus explicit scope-local model switching, deterministic fallback offers, bounded synthetic smoke probes, previous-binding retention, and exact rollback, verified backup, restore, continuity acceptance, the model-independent safety boundary, canonical conversation and event state, portability adapter and result records, generic import staging, generic export, reviewed publication, source preservation, idempotency, loss visibility, and Phase 4A acceptance evidence.
 
 Current implementation point:
 
@@ -100,7 +100,9 @@ Current implementation point:
 - IMP-050 performs no runtime installation, model download, inference, automatic activation, automatic fallback execution, or capability grant;
 - IMP-051 adds the first canonical non-streaming local conversation path through one explicit active binding, exact manifest and adapter revalidation, deterministic prompt packaging, managed user/context/assistant artifacts, canonical user/context/assistant-or-error events, duplicate-operation rejection, and rollback on persistence failure;
 - IMP-051 uses synthetic adapters in CI, grants no model authority, invokes no capability or tool path, and adds no schema migration or State Package format change;
-- no real runtime or model is connected, and no real-machine local-inference evidence is claimed;
+- IMP-052 adds explicit scope-local switching to a chosen binding, deterministic fallback candidate ordering, bounded synthetic preflight and post-activation probes, preservation of the previous binding, and rollback to that exact binding after failed verification;
+- IMP-052 never selects a fallback automatically, persists no probe response, rewrites no unrelated canonical state, and adds no schema migration or State Package format change;
+- no real runtime or model is connected, no user-side offline work is required through IMP-052, and no real-machine local-inference evidence is claimed;
 - model execution must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts.
 
 Implementation identifier policy:
@@ -415,7 +417,7 @@ Phase 4B gate:
 
 Goal: connect useful local inference without allowing the runtime or model to own state, secrets, permissions, trust decisions, portability, project progress, or side effects.
 
-Status: in progress through IMP-051.
+Status: in progress through IMP-052.
 
 The remaining work retains its required order and receives monotonically increasing implementation identifiers only when scheduled. The unused identifiers IMP-024 through IMP-029 are retired and must not be reused.
 
@@ -447,9 +449,15 @@ The turn persists managed user, context-snapshot, and assistant artifacts plus c
 
 The existing schema version 3 and State Package v2 remain sufficient. Tests use injected synthetic adapters only and perform no network request, process launch, model download, runtime installation, cloud access, credential retrieval, tool execution, or authoritative project mutation.
 
-### Model switch and local fallback
+### IMP-052 — Explicit model switching and fallback rollback
 
-Implement explicit activation, previous binding retention, fallback selection or offer, smoke-test rollback, no unrelated state rewrite, and no cloud request.
+Status: complete in code; real-runtime evidence is deferred to the integrated drill.
+
+Implemented `ModelSwitchService` for explicit switching to one chosen binding in an exact scope. It lists valid switch targets and explicitly configured fallback candidates, revalidates exact binding and manifest revisions plus the registered local adapter declaration, and runs deterministic bounded preflight and post-activation probes only through `LocalRuntimeBoundary.generate`.
+
+A failed preflight records bounded failure state and leaves the current active binding unchanged. A successful preflight activates the selected target through the existing transaction, preserves the exact previous binding, and verifies the new active binding. Failed post-activation verification rolls back to that exact previous binding and marks the rejected target failed. Fallbacks are ordered deterministically by user-configured priority and binding ID but are never selected automatically.
+
+Probe input contains no canonical conversation, memory, project, credential, or private-path content. Probe output remains transient and is not persisted as conversation, instruction-origin, memory, project, capability, or other authoritative state. Public results and switch audit metadata expose bounded identifiers, hashes, outcomes, and failure codes only. Schema version 3 and State Package v2 remain unchanged. CI uses injected synthetic adapters and requires no user-side local or offline work.
 
 ### Offline mode and local AI continuity drill
 
@@ -597,13 +605,13 @@ An implementation PR is done when:
 
 ## 18. Immediate work
 
-The required order after IMP-051 is:
+The required order after IMP-052 is:
 
-1. implement explicit user-controlled model switching and local fallback execution, then prove smoke-test rollback without unrelated state rewrite or cloud access;
-2. add streaming integration only after the canonical non-streaming event and artifact path remains the authoritative committed result;
-3. run the network-disabled real-runtime drill before making a local-inference release claim;
-4. prove model replacement without canonical conversation, project, memory, portability, backup, or recovery loss;
-5. prove a real local AI migration path before provider-specific cloud portability becomes a primary claim.
+1. add streaming integration while keeping the canonical committed conversation-event and managed-artifact path authoritative;
+2. run the network-disabled real-runtime continuity drill before making a local-inference release claim;
+3. prove explicit fallback and model replacement on the primary machine without canonical conversation, project, memory, portability, backup, or recovery loss;
+4. prove a real local AI migration path before provider-specific cloud portability becomes a primary claim;
+5. keep cloud providers, credentials, and automatic cloud fallback outside the local continuity gate.
 
 ## 19. Roadmap change control
 
