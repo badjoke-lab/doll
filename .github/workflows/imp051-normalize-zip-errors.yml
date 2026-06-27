@@ -17,6 +17,11 @@ jobs:
         with:
           ref: imp-051-canonical-local-conversation
           fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
       - name: Apply ZIP read normalization
         shell: bash
         run: |
@@ -24,8 +29,10 @@ jobs:
           from pathlib import Path
           path = Path('src/doll/state_package.py')
           text = path.read_text(encoding='utf-8')
-          text = text.replace('import zipfile\n', 'import zipfile\nimport zlib\n', 1)
-          text = text.replace('        zipfile.LargeZipFile,\n    ) as exc:\n', '        zipfile.LargeZipFile,\n        zlib.error,\n    ) as exc:\n', 1)
+          if 'import zlib\n' not in text:
+              text = text.replace('import zipfile\n', 'import zipfile\nimport zlib\n', 1)
+          if '        zlib.error,\n' not in text:
+              text = text.replace('        zipfile.LargeZipFile,\n    ) as exc:\n', '        zipfile.LargeZipFile,\n        zlib.error,\n    ) as exc:\n', 1)
           path.write_text(text, encoding='utf-8')
           PY
           uv run python -m pytest -q --no-cov tests/test_project_continuity_transfer.py::test_secret_workspace_backup_and_corrupt_package_leave_no_partial_target
