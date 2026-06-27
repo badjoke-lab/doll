@@ -1,9 +1,7 @@
 name: IMP-050 snapshot
 
 on:
-  push:
-    branches:
-      - imp-050-model-manifests-bindings
+  pull_request:
 
 permissions:
   contents: read
