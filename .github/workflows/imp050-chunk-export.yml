@@ -1,0 +1,21 @@
+name: IMP-050 chunk export
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-050-model-manifests-bindings
+      - uses: actions/upload-artifact@v4
+        with:
+          name: imp050-suspect-chunks
+          path: |
+            scripts/imp050_nibbles/part.03
+            scripts/imp050_nibbles/part.03a0a.rot
