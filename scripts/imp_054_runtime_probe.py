@@ -600,6 +600,7 @@ def run(
             )
 
             descriptor = {
+                "inspection_mode": "full",
                 "memory_id": memory.record_id,
                 "memory_revision": memory.revision,
                 "project_id": fixture.project_id,
