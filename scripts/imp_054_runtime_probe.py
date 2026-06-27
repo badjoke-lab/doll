@@ -40,7 +40,6 @@ from doll.ollama_adapter import (
     OllamaRuntimeAdapter,
     OllamaTransport,
 )
-from doll.portability import PortabilityState, SourceEnvironmentRecord
 from doll.runtime_adapter import (
     LocalRuntimeBoundary,
     RuntimeAdapterContext,
@@ -537,23 +536,12 @@ def run(
         primary, fallback = _select_models(boundary, primary_name, fallback_name)
 
         conversation_id = str(uuid4())
-        environment_id = str(uuid4())
         with state.open_state_repository(source.root) as repository:
             fixture = create_project_continuity_fixture(repository, include_secret=False)
             memory = ConfirmedMemoryService(repository).create(
                 subject="Local runtime continuity",
                 content="Canonical memory remains independent of the selected local model.",
                 operation_id="imp054.memory.create",
-            )
-            environment = PortabilityState(repository).save_source_environment(
-                SourceEnvironmentRecord(
-                    environment_id=environment_id,
-                    environment_class="local-ai-runtime",
-                    application_id="doll-runtime-drill",
-                    runtime_id="ollama-local",
-                    observed_at="2026-06-27T00:00:00Z",
-                ),
-                provenance="user-created",
             )
             repository.save_conversation(
                 ConversationRecord(
@@ -562,7 +550,6 @@ def run(
                 )
             )
             project_revision = repository.get_record(fixture.project_id).revision
-            environment_revision = repository.get_record(environment.environment_id).revision
             identifiers = _create_manifests(repository, boundary, primary, fallback)
 
             non_streaming = LocalConversationService(repository, boundary)
@@ -617,8 +604,6 @@ def run(
                 "memory_revision": memory.revision,
                 "project_id": fixture.project_id,
                 "project_revision": project_revision,
-                "source_environment_id": environment.environment_id,
-                "source_environment_revision": environment_revision,
                 "conversation_id": conversation_id,
                 "expected_event_count": 12,
                 "scope_type": "conversation",
@@ -633,8 +618,6 @@ def run(
             unrelated_preserved = (
                 ConfirmedMemoryService(repository).get(memory.record_id).revision == memory.revision
                 and repository.get_record(fixture.project_id).revision == project_revision
-                and repository.get_record(environment.environment_id).revision
-                == environment_revision
             )
             events = repository.list_conversation_events(conversation_id)
 
@@ -689,7 +672,9 @@ def run(
             and rollback_probe_calls == 2
         ),
         "post_rollback_conversation_completed": fourth.outcome == "completed",
-        "all_canonical_turns_completed": all(item.outcome == "completed" for item in turn_results),
+        "all_canonical_turns_completed": all(
+            item.outcome == "completed" for item in turn_results
+        ),
         "canonical_event_count": len(events) == 12,
         "unrelated_state_revisions_preserved": unrelated_preserved,
         "state_package_v2_exported": package_inspection.package_format_version == 2,
