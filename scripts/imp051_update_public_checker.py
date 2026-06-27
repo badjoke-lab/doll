@@ -8,26 +8,20 @@ replacements = (
         "status.phase?.next_implementation === 52",
     ),
     (
-        '"project-status.json must mark Phase 5 in progress from IMP-048 with IMP-051 next"',
-        '"project-status.json must mark Phase 5 in progress from IMP-048 with IMP-052 next"',
+        "project-status.json must mark Phase 5 in progress from IMP-048 with IMP-051 next",
+        "project-status.json must mark Phase 5 in progress from IMP-048 with IMP-052 next",
     ),
     (
-        '''expect(
-  roadmap.includes("canonical local conversation receives IMP-051 when opened"),
-  "roadmap must identify IMP-051 as the next implementation identifier",
-);''',
-        '''expect(
-  roadmap.includes("IMP-051 adds the first canonical non-streaming local conversation path"),
-  "roadmap must record the IMP-051 canonical local conversation path",
-);
-expect(
-  roadmap.includes("The required order after IMP-051 is:"),
-  "roadmap must identify the post-IMP-051 implementation order",
-);''',
+        "canonical local conversation receives IMP-051 when opened",
+        "IMP-051 adds the first canonical non-streaming local conversation path",
+    ),
+    (
+        "roadmap must identify IMP-051 as the next implementation identifier",
+        "roadmap must record the IMP-051 canonical local conversation path",
     ),
 )
 for old, new in replacements:
     if old not in text:
-        raise SystemExit(f"missing checker replacement target: {old[:60]}")
+        raise SystemExit(f"missing checker replacement target: {old}")
     text = text.replace(old, new, 1)
 path.write_text(text, encoding="utf-8")
