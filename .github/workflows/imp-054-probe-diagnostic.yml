@@ -20,9 +20,8 @@ jobs:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --dev --locked
-      - name: Post synthetic probe traceback
+      - name: Run synthetic probe diagnostic
         env:
-          GH_TOKEN: ${{ github.token }}
           PYTHONPATH: src:.
         run: |
           set +e
@@ -51,15 +50,7 @@ jobs:
               traceback.print_exc()
               raise
           PY
-          status=$?
-          {
-            echo 'Temporary IMP-054 synthetic probe diagnostic (exit status:' "$status"').' 
-            echo
-            echo '```text'
-            cat /tmp/probe.txt
-            echo '```'
-          } > /tmp/comment.txt
-          gh issue comment 169 --body-file /tmp/comment.txt
+          echo $? > /tmp/probe-status.txt
       - name: Upload checked-out branch for local validation
         uses: actions/upload-artifact@v4
         with:
@@ -70,3 +61,20 @@ jobs:
             !.venv/**
           include-hidden-files: true
           retention-days: 1
+      - name: Post diagnostic location
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          status=$(cat /tmp/probe-status.txt)
+          {
+            echo 'Temporary IMP-054 diagnostic source capture.'
+            echo
+            echo "- workflow run id: ${GITHUB_RUN_ID}"
+            echo "- commit: ${GITHUB_SHA}"
+            echo "- probe exit status: ${status}"
+            echo
+            echo '```text'
+            cat /tmp/probe.txt
+            echo '```'
+          } > /tmp/comment.txt
+          gh pr comment 170 --body-file /tmp/comment.txt
