@@ -18,7 +18,7 @@
   },
   "model_runtime": {
     "connected": false,
-    "message": "IMP-050 adds authoritative runtime and model manifests with explicit bindings. No runtime or model is connected; canonical local conversation is the next bounded slice."
+    "message": "IMP-050 adds authoritative runtime and model manifests with explicit bindings. No runtime or model is connected; canonical local conversation remains the next bounded slice."
   },
   "last_reviewed": "2026-06-26"
 }
