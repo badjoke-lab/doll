@@ -49,7 +49,17 @@ Public result objects, audit metadata, errors, and context snapshots expose stab
 
 ## Validation evidence
 
+Accepted code and project-state evidence at commit `9c027b858ec980cc4cf6c21d7cd24b3e97934b91`:
+
+- Linux: 1067 passed, 95.13% coverage;
+- macOS: 1067 passed, 95.14% coverage;
+- Windows: 1066 passed, 1 skipped, 95.11% coverage;
+- dependency lock, lint, formatting, strict typing, generated specification, implementation numbering, public project-status validation, CLI help, and module CLI help passed;
+- unresolved review threads: none.
+
 CI uses injected fake adapters and deterministic fixtures. It performs no real network request, runtime process launch, model download, runtime installation, cloud request, or credential retrieval. Coverage includes successful persistence, deterministic prompt rendering, exact binding and adapter matching, non-authoritative context, secret handling, prompt-injection findings, completed and closed runtime outcomes, graph relationships, managed artifacts, duplicate operation rejection, parent validation, rollback, read-only state, and static dependency guards.
+
+The validation-count update is documentation-only and does not alter the tested implementation boundary.
 
 ## Deliberate limitations and next boundary
 
