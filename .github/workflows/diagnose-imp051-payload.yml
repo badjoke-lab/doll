@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - diagnostic/imp-051-payload
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
