@@ -2,7 +2,7 @@
 
 ## Status
 
-Automated acceptance harness implemented. The primary Intel Mac real-machine gate remains pending, so Phase 5 is not complete and no local-inference release claim is made.
+Automated acceptance harness and canonical-conversation State Package v2 support are implemented. The primary Intel Mac real-machine gate remains pending, so Phase 5 is not complete and no local-inference release claim is made.
 
 This implementation may merge while the gate is pending. Issue #169 remains open until a separate completion PR stores and validates the accepted result from the exact merged `main` commit.
 
@@ -68,7 +68,9 @@ The forced rollback failure is injected outside the model after one genuine targ
 
 ## Transfer and recovery
 
-The drill exports State Package v2 and verifies that it contains the expected runtime manifest, two model manifests, and two model bindings. It imports that package into an empty target.
+State Package v2 now registers the already-existing canonical `conversation` and `conversation_event` record types as optional package categories. Package verification validates that every event belongs to a packaged conversation, every parent exists in the same conversation, and the parent graph is acyclic. Package v1 is unchanged, and earlier v2 packages that omit both optional members remain readable.
+
+The drill exports State Package v2 and verifies that it contains the expected canonical conversation and events, runtime manifest, two model manifests, and two model bindings. It imports that package into an empty target.
 
 It also creates and restores a state backup. A separate process inspects the source, package-imported, and backup-restored workspaces with no runtime adapter constructed. That process verifies:
 
@@ -145,7 +147,7 @@ A separate completion PR must:
 
 ## State and compatibility effects
 
-IMP-054 introduces no authoritative record type and no migration. Schema version 3 and State Package v2 remain unchanged.
+IMP-054 introduces no new authoritative Doll State record type and no migration. It registers two already-existing canonical record types as optional State Package v2 members. Schema version 3 and State Package format version 2 remain unchanged.
 
 No user-owned state is rewritten merely because a different model is selected. Expected conversation and audit additions are append-oriented. Memory, project, portability, package, backup, and recovery state remain model-independent.
 
@@ -155,8 +157,13 @@ No user-owned state is rewritten merely because a different model is selected. E
 - `scripts/imp_054_runtime_probe.py`
 - `scripts/imp_054_state_inspector.py`
 - `scripts/run_imp_054_runtime_continuity.py`
+- `src/doll/state_package.py`
+- `src/doll/state_package_registry.py`
 - `tests/test_runtime_continuity_acceptance.py`
 - `tests/test_runtime_continuity_acceptance_static.py`
+- `tests/test_state_package_conversation.py`
+- `tests/test_state_package_registry.py`
+- `tests/test_state_package_v2.py`
 
 ## Issue
 
