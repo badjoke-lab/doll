@@ -14,11 +14,11 @@
     "name": "Local runtime and model integration",
     "state": "in_progress",
     "started_by_implementation": 48,
-    "next_implementation": 52
+    "next_implementation": 53
   },
   "model_runtime": {
     "connected": false,
-    "message": "IMP-051 adds the first canonical non-streaming local conversation path through explicit active bindings and synthetic runtime evidence. No real runtime or model is connected; explicit switching, fallback execution, streaming integration, and the network-disabled drill remain."
+    "message": "IMP-052 adds explicit scope-local model switching, deterministic fallback offers, bounded synthetic smoke probes, previous-binding retention, and exact rollback. No real runtime or model is connected; streaming integration and the network-disabled real-runtime continuity drill remain."
   },
   "last_reviewed": "2026-06-27"
 }

@@ -862,7 +862,7 @@ class ModelManifestService:
                 target_id=binding_id,
                 actor_type="user",
                 metadata={
-                    "scope_key": candidate.scope_key,
+                    "scope_key_hash": _scope_hash(candidate.scope_key),
                     "previous_binding": previous_id is not None,
                 },
             )
@@ -1020,7 +1020,7 @@ class ModelManifestService:
                 target_id=binding_id,
                 actor_type="user",
                 metadata={
-                    "scope_key": active.scope_key,
+                    "scope_key_hash": _scope_hash(active.scope_key),
                     "restored_binding_id": previous.binding_id,
                 },
             )
@@ -1032,6 +1032,16 @@ class ModelManifestService:
             raise
         self.repository._sync_after_commit(state_revision)
         return self.get_binding(binding_id)
+
+    def resolve_binding(
+        self,
+        binding_id: str,
+    ) -> tuple[ModelBindingInfo, RuntimeManifestInfo, ModelManifestInfo]:
+        """Resolve and revalidate one explicit binding without changing its state."""
+
+        binding = self.get_binding(binding_id)
+        runtime, model = self._activation_manifests(binding)
+        return binding, runtime, model
 
     def resolve_active_binding(
         self,
@@ -1466,6 +1476,10 @@ def _require_quarantine_actor(actor_type: ManifestActor) -> None:
 
 def _operation_id(value: str | None) -> str:
     return _validate_audit_token("operation ID", value or str(uuid4()), 200)
+
+
+def _scope_hash(value: str) -> str:
+    return f"sha256:{hashlib.sha256(value.encode('utf-8')).hexdigest()}"
 
 
 def _runtime_fingerprint(
