@@ -78,6 +78,8 @@ def test_supported_registries_are_explicit_and_immutable() -> None:
         "runtime_manifest",
         "model_manifest",
         "model_binding",
+        "conversation",
+        "conversation_event",
     }
     assert version_one.required_member_paths == version_two.required_member_paths
     assert version_two.optional_member_paths - version_one.optional_member_paths == {
@@ -87,6 +89,8 @@ def test_supported_registries_are_explicit_and_immutable() -> None:
         "records/runtime-manifests.jsonl",
         "records/model-manifests.jsonl",
         "records/model-bindings.jsonl",
+        "records/conversations.jsonl",
+        "records/conversation-events.jsonl",
     }
     assert package._package_record_registry(1) == version_one
     assert package._package_record_registry(2) == version_two

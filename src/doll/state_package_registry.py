@@ -160,6 +160,18 @@ _V2_RECORD_CATEGORIES = (
         False,
         "model_binding",
     ),
+    AuthoritativeRecordCategory(
+        "conversation",
+        "records/conversations.jsonl",
+        False,
+        "conversation",
+    ),
+    AuthoritativeRecordCategory(
+        "conversation_event",
+        "records/conversation-events.jsonl",
+        False,
+        "conversation_event",
+    ),
 )
 
 PACKAGE_RECORD_REGISTRIES: Mapping[int, AuthoritativeRecordRegistry] = MappingProxyType(
