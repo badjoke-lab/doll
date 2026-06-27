@@ -1,0 +1,36 @@
+name: IMP-053 type diagnostic
+
+on:
+  push:
+    branches:
+      - imp-053-streaming-conversation
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - name: Post bounded mypy output
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          uv run mypy src tests > /tmp/mypy-output.txt 2>&1
+          status=$?
+          {
+            echo 'Temporary IMP-053 type diagnostic (exit status:' "$status"').'
+            echo
+            echo '```text'
+            cat /tmp/mypy-output.txt
+            echo '```'
+          } > /tmp/comment.txt
+          gh issue comment 166 --body-file /tmp/comment.txt
