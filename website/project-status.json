@@ -18,7 +18,7 @@
   },
   "model_runtime": {
     "connected": false,
-    "message": "IMP-053 integrates bounded local streaming with the canonical conversation path: partial deltas remain transient, and only terminally validated output becomes one assistant message. No real runtime or model is connected; the network-disabled real-runtime continuity drill remains."
+    "message": "IMP-054 adds an exact-commit local-runtime continuity harness covering synthetic Ollama health, inventory, canonical non-streaming and streaming conversation, explicit fallback, forced rollback, State Package v2, backup restore, and fresh-process inspection. No real runtime or model evidence is accepted; the primary Intel Mac network-disabled gate is pending."
   },
   "last_reviewed": "2026-06-27"
 }
