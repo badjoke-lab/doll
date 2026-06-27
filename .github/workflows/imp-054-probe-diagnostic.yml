@@ -53,10 +53,20 @@ jobs:
           PY
           status=$?
           {
-            echo 'Temporary IMP-054 synthetic probe diagnostic (exit status:' "$status"').'
+            echo 'Temporary IMP-054 synthetic probe diagnostic (exit status:' "$status"').' 
             echo
             echo '```text'
             cat /tmp/probe.txt
             echo '```'
           } > /tmp/comment.txt
           gh issue comment 169 --body-file /tmp/comment.txt
+      - name: Upload checked-out branch for local validation
+        uses: actions/upload-artifact@v4
+        with:
+          name: imp-054-source-${{ github.sha }}
+          path: |
+            .
+            !.git/**
+            !.venv/**
+          include-hidden-files: true
+          retention-days: 1
