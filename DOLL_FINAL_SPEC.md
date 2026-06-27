@@ -24,7 +24,7 @@
 - `docs/spec/08-acceptance-and-continuity-tests.md` — SHA-256 `1ae9b70cf28257b35a30238bdc46c2caea93dbd17fdf8b516ff708c9e208a698`
 - `docs/spec/08a-ai-environment-portability-acceptance.md` — SHA-256 `3a1876d8b506204254ccd54eb58cfabcf2ddc92e3edd446d90650b9ae22ff305`
 - `docs/spec/08b-project-continuity-acceptance.md` — SHA-256 `b58623f21bdd183a21e1904ebcec954ffb2b6976254b72ac52f13deae83306cc`
-- `docs/spec/09-development-roadmap.md` — SHA-256 `cef2c273fdcb8371e3ce70c6af8fbffb2787255a8184d49907d31b023d86eb53`
+- `docs/spec/09-development-roadmap.md` — SHA-256 `556e863f32b55181f52043369e8b452e65001226c129a80b51137dd16bd5c3fd`
 
 ---
 
@@ -8563,8 +8563,8 @@ Completed:
 - Phase 4A AI environment portability foundation;
 - Phase 4B project continuity foundation;
 - IMP-001 through IMP-023;
-- IMP-030 through IMP-049;
-- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package v2 export with v1 read compatibility, a versioned authoritative record registry, ProjectRecord v2 with v1 read compatibility, WorkItemRecord v1 lifecycle and dependency integrity, and ProcedureRecord v1 lifecycle and non-authority guarantees, ProjectCheckpointRecord v1 confirmation and freshness, deterministic derived project status, deterministic project-scoped Resume Bundle export, project-continuity transfer and recovery coverage, completed Phase 4B acceptance evidence, a runtime-independent local adapter contract, and a loopback-only Ollama adapter, verified backup, restore, continuity acceptance, the model-independent safety boundary, canonical conversation and event state, portability adapter and result records, generic import staging, generic export, reviewed publication, source preservation, idempotency, loss visibility, and Phase 4A acceptance evidence.
+- IMP-030 through IMP-050;
+- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package v2 export with v1 read compatibility, a versioned authoritative record registry, ProjectRecord v2 with v1 read compatibility, WorkItemRecord v1 lifecycle and dependency integrity, and ProcedureRecord v1 lifecycle and non-authority guarantees, ProjectCheckpointRecord v1 confirmation and freshness, deterministic derived project status, deterministic project-scoped Resume Bundle export, project-continuity transfer and recovery coverage, completed Phase 4B acceptance evidence, a runtime-independent local adapter contract, a loopback-only Ollama adapter, and authoritative runtime/model manifests with explicit bindings, verified backup, restore, continuity acceptance, the model-independent safety boundary, canonical conversation and event state, portability adapter and result records, generic import staging, generic export, reviewed publication, source preservation, idempotency, loss visibility, and Phase 4A acceptance evidence.
 
 Current implementation point:
 
@@ -8578,7 +8578,10 @@ Current implementation point:
 - IMP-049 implements the first concrete Ollama adapter through fixed IPv4 loopback health, inventory, generation, and bounded streaming paths;
 - IMP-049 is fail-closed until local-only operation is confirmed, excludes cloud-marked models, and introduces no authoritative state or migration;
 - IMP-049 has fake-transport CI evidence but no accepted real-runtime evidence;
-- the model-manifest and explicit-binding foundation receives IMP-050 when opened;
+- IMP-050 adds authoritative RuntimeManifestRecord v1, ModelManifestRecord v1, and ModelBindingRecord v1 state with exact revisions, checksums, license review, compatibility, quarantine, explicit activation, previous, fallback, and scope-local rollback semantics;
+- IMP-050 advances canonical state to schema version 3 and adds typed optional State Package v2 categories while preserving package-v1 read compatibility;
+- IMP-050 performs no runtime installation, model download, inference, automatic activation, automatic fallback execution, or capability grant;
+- no runtime or model is connected and canonical local conversation receives IMP-051 when opened;
 - model execution must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts.
 
 Implementation identifier policy:
@@ -8893,7 +8896,7 @@ Phase 4B gate:
 
 Goal: connect useful local inference without allowing the runtime or model to own state, secrets, permissions, trust decisions, portability, project progress, or side effects.
 
-Status: in progress through IMP-049.
+Status: in progress through IMP-050.
 
 The remaining work retains its required order and receives monotonically increasing implementation identifiers only when scheduled. The unused identifiers IMP-024 through IMP-029 are retired and must not be reused.
 
@@ -8909,9 +8912,11 @@ Status: complete in code; real-machine evidence is deferred to the integrated dr
 
 Implemented loopback-only health, inventory, generation, bounded NDJSON streaming, timeout, cancellation, opaque model identifiers, explicit local-only confirmation, cloud-model exclusion, and closed failure mapping. Tests use an injected fake transport. No runtime or model is persistently bound and no authoritative state is added.
 
-### Model manifests and bindings
+### IMP-050 — Model manifests and explicit bindings
 
-Implement ModelManifestRecord, RuntimeManifestRecord, ModelBindingRecord, provenance, exact revision, checksums, license, compatibility, quarantine, candidate, active, previous, fallback, and rollback state.
+Status: complete.
+
+Implemented authoritative RuntimeManifestRecord v1, ModelManifestRecord v1, and ModelBindingRecord v1 records with user-controlled provenance, exact revision and checksum identity, license review, compatibility, quarantine, candidate, active, previous, fallback, disabled, and scope-local rollback state. Schema version 3, typed optional State Package v2 categories, package-v1 neutrality, backup and restore, fresh-process validation, audit history, optimistic revision checks, and one-active-binding-per-scope enforcement are covered. No runtime or model is connected and no installation, download, inference, automatic activation, or capability execution occurs.
 
 ### Canonical local conversation path
 
@@ -9078,14 +9083,13 @@ An implementation PR is done when:
 
 ## 18. Immediate work
 
-The required order after IMP-049 is:
+The required order after IMP-050 is:
 
-1. schedule the model-manifest and explicit-binding foundation as IMP-050;
-2. add model and runtime manifests, provenance, exact revisions, checksums, compatibility, quarantine, candidate, active, previous, fallback, and rollback state;
-3. implement canonical local conversation through the IMP-048 contract and Phase 3 safety boundary;
-4. implement explicit model switching and local fallback, then prove rollback without unrelated state rewrite;
-5. run the network-disabled real-runtime drill before making a local-inference release claim;
-6. prove a real local AI migration path before provider-specific cloud portability becomes a primary claim.
+1. schedule canonical local conversation through the IMP-048 contract and Phase 3 safety boundary as IMP-051;
+2. implement scoped state retrieval, response provenance, canonical conversation/event persistence, and non-authoritative model proposals;
+3. implement explicit model switching and local fallback execution, then prove rollback without unrelated state rewrite;
+4. run the network-disabled real-runtime drill before making a local-inference release claim;
+5. prove a real local AI migration path before provider-specific cloud portability becomes a primary claim.
 
 ## 19. Roadmap change control
 

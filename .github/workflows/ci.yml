@@ -2,58 +2,89 @@ name: CI
 
 on:
   pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  diagnose-payload:
+  quality:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out implementation branch
+      - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          ref: imp-050-model-manifests-bindings
-          fetch-depth: 0
+          python-version: "3.12"
 
-      - name: Diagnose staged payload
-        shell: bash
-        run: |
-          python - <<'PY' > imp050-payload-diagnostic.txt
-          from pathlib import Path
-          import base64
-          import gzip
-          import hashlib
-          import tarfile
-          import io
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
 
-          path = Path('scripts/imp050_payload/00')
-          text = path.read_text(encoding='ascii')
-          print(f'text_length={len(text)}')
-          print(f'prefix={text[:100]}')
-          print(f'suffix={text[-100:]}')
-          print(f'alphabet_ok={all(c.isalnum() or c in "+/=" for c in text)}')
-          print(f'mod4={len(text) % 4}')
-          for validate in (True, False):
-              try:
-                  raw = base64.b64decode(text + '=' * ((-len(text)) % 4), validate=validate)
-                  print(f'decode_{validate}=ok bytes={len(raw)} sha256={hashlib.sha256(raw).hexdigest()}')
-                  try:
-                      data = gzip.decompress(raw)
-                      print(f'gzip_{validate}=ok bytes={len(data)} sha256={hashlib.sha256(data).hexdigest()}')
-                      with tarfile.open(fileobj=io.BytesIO(raw), mode='r:gz') as tar:
-                          for name in tar.getnames():
-                              print(f'member={name}')
-                  except Exception as exc:
-                      print(f'gzip_{validate}=error type={type(exc).__name__}')
-              except Exception as exc:
-                  print(f'decode_{validate}=error type={type(exc).__name__}')
-          PY
-          cat imp050-payload-diagnostic.txt
+      - name: Verify dependency lock
+        run: uv lock --check
 
-      - name: Upload diagnostic
+      - name: Install project
+        run: uv sync --dev --locked
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Check formatting
+        run: uv run ruff format --check .
+
+      - name: Type check
+        run: uv run mypy src tests
+
+      - name: Check generated specification
+        run: uv run python scripts/build_final_spec.py --check
+
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install project
+        run: uv sync --dev --locked
+
+      - name: Run tests
+        run: uv run python scripts/run_ci_tests.py
+
+      - name: Upload pytest output
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: imp050-payload-diagnostic
-          path: imp050-payload-diagnostic.txt
+          name: pytest-output-${{ runner.os }}
+          path: pytest-output.txt
           if-no-files-found: error
+
+      - name: Check CLI help
+        run: uv run doll --help
+
+      - name: Check module CLI help
+        run: uv run python -m doll --help

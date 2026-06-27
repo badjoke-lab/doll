@@ -67,22 +67,30 @@ def _write_members(path: Path, members: dict[str, bytes]) -> None:
 
 def _write_v1_fixture(v2_package: Path, v1_package: Path) -> None:
     members = _read_members(v2_package)
-    members.pop(f"{package.PACKAGE_ROOT}/records/work-items.jsonl")
-    members.pop(f"{package.PACKAGE_ROOT}/records/procedures.jsonl")
-    members.pop(f"{package.PACKAGE_ROOT}/records/project-checkpoints.jsonl")
+    for member in (
+        "records/work-items.jsonl",
+        "records/procedures.jsonl",
+        "records/project-checkpoints.jsonl",
+        "records/runtime-manifests.jsonl",
+        "records/model-manifests.jsonl",
+        "records/model-bindings.jsonl",
+    ):
+        members.pop(f"{package.PACKAGE_ROOT}/{member}")
     manifest_name = f"{package.PACKAGE_ROOT}/manifest.json"
     manifest = cast(dict[str, object], json.loads(members[manifest_name]))
     manifest["package_format_version"] = 1
     included = cast(list[str], manifest["included_categories"])
-    included.remove("work_item")
-    included.remove("procedure")
-    included.remove("project_checkpoint")
-    cast(dict[str, int], manifest["record_counts"]).pop("work_item")
-    cast(dict[str, int], manifest["record_counts"]).pop("procedure")
-    cast(dict[str, int], manifest["record_counts"]).pop("project_checkpoint")
-    cast(dict[str, int], manifest["omitted_secret_counts"]).pop("work_item")
-    cast(dict[str, int], manifest["omitted_secret_counts"]).pop("procedure")
-    cast(dict[str, int], manifest["omitted_secret_counts"]).pop("project_checkpoint")
+    for record_type in (
+        "work_item",
+        "procedure",
+        "project_checkpoint",
+        "runtime_manifest",
+        "model_manifest",
+        "model_binding",
+    ):
+        included.remove(record_type)
+        cast(dict[str, int], manifest["record_counts"]).pop(record_type)
+        cast(dict[str, int], manifest["omitted_secret_counts"]).pop(record_type)
     manifest["compatibility_notes"] = [
         "Import requires package format version 1 and a supported state schema.",
         "checksums.json is the inventory and is not self-hashed.",

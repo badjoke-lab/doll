@@ -88,6 +88,7 @@ def test_existing_schema_one_migrates_to_audit_schema(tmp_path: Path) -> None:
     assert [tuple(row) for row in history] == [
         ("0001-initial-authoritative-state", "completed"),
         ("0002-append-oriented-audit-events", "completed"),
+        ("0003-local-model-manifests-and-bindings", "completed"),
     ]
 
 

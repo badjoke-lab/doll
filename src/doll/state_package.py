@@ -50,6 +50,12 @@ from doll.instruction_origin import (
     _validate_instruction_origin_graph,
 )
 from doll.memory import MemoryCorruptError, _memory_from_record
+from doll.model_manifest import (
+    ModelManifestCorruptError,
+    _binding_from_record,
+    _model_from_record,
+    _runtime_from_record,
+)
 from doll.paths import canonicalize_path, find_doll_repository_ancestor
 from doll.procedure import ProcedureCorruptError, _procedure_from_record
 from doll.project_state import (
@@ -173,6 +179,9 @@ _PACKAGE_RECORD_VALIDATORS: dict[str, Callable[[RecordEnvelope], object]] = {
     "work_item": _work_item_from_record,
     "procedure": _procedure_from_record,
     "project_checkpoint": _checkpoint_from_record,
+    "runtime_manifest": _runtime_from_record,
+    "model_manifest": _model_from_record,
+    "model_binding": _binding_from_record,
 }
 
 
@@ -1024,6 +1033,7 @@ def _envelope_from_payload(
         CheckpointCorruptError,
         InstructionOriginCorruptError,
         MemoryCorruptError,
+        ModelManifestCorruptError,
         ProcedureCorruptError,
         ProjectDecisionCorruptError,
         SettingsCorruptError,
@@ -1112,6 +1122,35 @@ def _validate_cross_record_links(records: dict[str, RecordEnvelope]) -> None:
                 _require_link_type(records, linked_id, "memory")
             for linked_id in _metadata_id_list(metadata, "artifact_ids"):
                 _require_link_type(records, linked_id, "artifact")
+        elif record.record_type == "model_manifest":
+            _require_link_type(
+                records,
+                _metadata_string(metadata, "runtime_manifest_id"),
+                "runtime_manifest",
+            )
+            for linked_id in _metadata_id_list(metadata, "verification_evidence_ids"):
+                _require_link_type(records, linked_id, "evidence")
+        elif record.record_type == "runtime_manifest":
+            for linked_id in _metadata_id_list(metadata, "verification_evidence_ids"):
+                _require_link_type(records, linked_id, "evidence")
+        elif record.record_type == "model_binding":
+            runtime_id = _metadata_string(metadata, "runtime_manifest_id")
+            model_id = _metadata_string(metadata, "model_manifest_id")
+            _require_link_type(records, runtime_id, "runtime_manifest")
+            _require_link_type(records, model_id, "model_manifest")
+            linked_model = _model_from_record(records[model_id])
+            if linked_model.runtime_manifest_id != runtime_id:
+                raise StatePackageValidationError(
+                    "model binding references a model from another runtime"
+                )
+            for key in ("previous_binding_id", "rollback_target_id"):
+                optional_binding_id = _metadata_optional_id(metadata, key)
+                if optional_binding_id is not None:
+                    if optional_binding_id == record.id:
+                        raise StatePackageValidationError("model binding cannot link to itself")
+                    _require_link_type(records, optional_binding_id, "model_binding")
+            for linked_id in _metadata_id_list(metadata, "activation_evidence_ids"):
+                _require_link_type(records, linked_id, "evidence")
         elif record.record_type == "work_item":
             _require_link_type(records, _metadata_string(metadata, "project_id"), "project")
             for key in ("depends_on_ids", "blocked_by_ids"):

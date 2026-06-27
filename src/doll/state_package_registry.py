@@ -142,6 +142,24 @@ _V2_RECORD_CATEGORIES = (
         False,
         "project_checkpoint",
     ),
+    AuthoritativeRecordCategory(
+        "runtime_manifest",
+        "records/runtime-manifests.jsonl",
+        False,
+        "runtime_manifest",
+    ),
+    AuthoritativeRecordCategory(
+        "model_manifest",
+        "records/model-manifests.jsonl",
+        False,
+        "model_manifest",
+    ),
+    AuthoritativeRecordCategory(
+        "model_binding",
+        "records/model-bindings.jsonl",
+        False,
+        "model_binding",
+    ),
 )
 
 PACKAGE_RECORD_REGISTRIES: Mapping[int, AuthoritativeRecordRegistry] = MappingProxyType(

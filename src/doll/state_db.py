@@ -216,3 +216,49 @@ MIGRATION_0002: Migration = Migration(
         """,
     ),
 )
+
+
+MIGRATION_0003: Migration = Migration(
+    migration_id="0003-local-model-manifests-and-bindings",
+    from_version=2,
+    to_version=3,
+    statements=(
+        """
+        CREATE INDEX runtime_manifest_state_idx
+        ON records(
+            record_type,
+            CASE WHEN json_valid(metadata_json)
+                 THEN json_extract(metadata_json, '$.manifest_state') END
+        )
+        """,
+        """
+        CREATE INDEX model_manifest_runtime_idx
+        ON records(
+            record_type,
+            CASE WHEN json_valid(metadata_json)
+                 THEN json_extract(metadata_json, '$.runtime_manifest_id') END
+        )
+        """,
+        """
+        CREATE INDEX model_binding_scope_state_idx
+        ON records(
+            record_type,
+            CASE WHEN json_valid(metadata_json)
+                 THEN json_extract(metadata_json, '$.scope_key') END,
+            CASE WHEN json_valid(metadata_json)
+                 THEN json_extract(metadata_json, '$.binding_state') END
+        )
+        """,
+        """
+        CREATE UNIQUE INDEX model_binding_one_active_scope_idx
+        ON records(
+            json_extract(metadata_json, '$.scope_type'),
+            json_extract(metadata_json, '$.scope_key')
+        )
+        WHERE record_type = 'model_binding'
+          AND status = 'active'
+          AND json_valid(metadata_json)
+          AND json_extract(metadata_json, '$.binding_state') = 'active'
+        """,
+    ),
+)
