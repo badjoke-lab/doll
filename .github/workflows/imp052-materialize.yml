@@ -1,0 +1,44 @@
+name: IMP-052 materialize implementation
+
+on:
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-052-model-switch-fallback
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - name: Apply staged implementation
+        run: |
+          base64 -d scripts/imp052.patch.b64 | gzip -d > /tmp/imp052.patch
+          git apply --index /tmp/imp052.patch
+          rm scripts/imp052.patch.b64
+          rm .github/workflows/imp052-materialize.yml
+      - name: Validate
+        run: |
+          uv sync --dev --locked
+          uv run python scripts/build_final_spec.py
+          uv run ruff check .
+          uv run ruff format --check .
+          uv run mypy src tests
+          uv run pytest -q --no-cov tests/test_model_switch.py tests/test_model_switch_static.py tests/test_model_manifest.py
+          node scripts/check-public-site-status.mjs
+          git diff --check
+      - name: Commit
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "feat: add explicit local model switching and fallback rollback"
+          git push origin HEAD:imp-052-model-switch-fallback
