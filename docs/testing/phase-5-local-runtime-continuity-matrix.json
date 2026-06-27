@@ -67,7 +67,7 @@
     },
     {
       "id": "LRUN-006",
-      "title": "Conversation, memory, project, and portability state preservation",
+      "title": "Conversation, memory, project, and State Package portability preservation",
       "status": "pass",
       "pytest_files": [
         "tests/test_runtime_continuity_acceptance.py"
