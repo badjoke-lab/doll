@@ -24,7 +24,7 @@
 - `docs/spec/08-acceptance-and-continuity-tests.md` — SHA-256 `1ae9b70cf28257b35a30238bdc46c2caea93dbd17fdf8b516ff708c9e208a698`
 - `docs/spec/08a-ai-environment-portability-acceptance.md` — SHA-256 `3a1876d8b506204254ccd54eb58cfabcf2ddc92e3edd446d90650b9ae22ff305`
 - `docs/spec/08b-project-continuity-acceptance.md` — SHA-256 `b58623f21bdd183a21e1904ebcec954ffb2b6976254b72ac52f13deae83306cc`
-- `docs/spec/09-development-roadmap.md` — SHA-256 `b9b2314c954bd80f2fc23f894934baf5f3e337fcdee939cd315428eabc802d01`
+- `docs/spec/09-development-roadmap.md` — SHA-256 `734916cfdb0aecbaefe7caf527b3b1112f50f677f11c6e9b6ed794b57b0330c4`
 
 ---
 
@@ -8563,8 +8563,8 @@ Completed:
 - Phase 4A AI environment portability foundation;
 - Phase 4B project continuity foundation;
 - IMP-001 through IMP-023;
-- IMP-030 through IMP-052;
-- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package v2 export with v1 read compatibility, a versioned authoritative record registry, ProjectRecord v2 with v1 read compatibility, WorkItemRecord v1 lifecycle and dependency integrity, and ProcedureRecord v1 lifecycle and non-authority guarantees, ProjectCheckpointRecord v1 confirmation and freshness, deterministic derived project status, deterministic project-scoped Resume Bundle export, project-continuity transfer and recovery coverage, completed Phase 4B acceptance evidence, a runtime-independent local adapter contract, a loopback-only Ollama adapter, authoritative runtime/model manifests with explicit bindings, and one canonical non-streaming local conversation turn with managed artifacts, deterministic context packaging, closed failure events, and non-authoritative runtime output, plus explicit scope-local model switching, deterministic fallback offers, bounded synthetic smoke probes, previous-binding retention, and exact rollback, verified backup, restore, continuity acceptance, the model-independent safety boundary, canonical conversation and event state, portability adapter and result records, generic import staging, generic export, reviewed publication, source preservation, idempotency, loss visibility, and Phase 4A acceptance evidence.
+- IMP-030 through IMP-053;
+- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package v2 export with v1 read compatibility, a versioned authoritative record registry, ProjectRecord v2 with v1 read compatibility, WorkItemRecord v1 lifecycle and dependency integrity, and ProcedureRecord v1 lifecycle and non-authority guarantees, ProjectCheckpointRecord v1 confirmation and freshness, deterministic derived project status, deterministic project-scoped Resume Bundle export, project-continuity transfer and recovery coverage, completed Phase 4B acceptance evidence, a runtime-independent local adapter contract, a loopback-only Ollama adapter, authoritative runtime/model manifests with explicit bindings, and one canonical non-streaming local conversation turn with managed artifacts, deterministic context packaging, closed failure events, and non-authoritative runtime output, plus explicit scope-local model switching, deterministic fallback offers, bounded synthetic smoke probes, previous-binding retention, exact rollback, and bounded local streaming integration that keeps partial deltas transient while committing only terminally validated output through the canonical conversation path, verified backup, restore, continuity acceptance, the model-independent safety boundary, canonical conversation and event state, portability adapter and result records, generic import staging, generic export, reviewed publication, source preservation, idempotency, loss visibility, and Phase 4A acceptance evidence.
 
 Current implementation point:
 
@@ -8585,7 +8585,9 @@ Current implementation point:
 - IMP-051 uses synthetic adapters in CI, grants no model authority, invokes no capability or tool path, and adds no schema migration or State Package format change;
 - IMP-052 adds explicit scope-local switching to a chosen binding, deterministic fallback candidate ordering, bounded synthetic preflight and post-activation probes, preservation of the previous binding, and rollback to that exact binding after failed verification;
 - IMP-052 never selects a fallback automatically, persists no probe response, rewrites no unrelated canonical state, and adds no schema migration or State Package format change;
-- no real runtime or model is connected, no user-side offline work is required through IMP-052, and no real-machine local-inference evidence is claimed;
+- IMP-053 connects the bounded local stream transcript to the existing canonical conversation path, keeps partial deltas transient, and commits one assistant message only after terminal identity, completion, non-blank, and secret-safety validation;
+- IMP-053 persists bounded error state without an assistant artifact or runtime-output origin for failed, cancelled, timed-out, malformed, blank, identity-mismatched, or secret-bearing stream results, and reuses duplicate-operation rejection and exact rollback;
+- no real runtime or model is connected, no user-side offline work is required through IMP-053, and no real-machine local-inference evidence is claimed;
 - model execution must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts.
 
 Implementation identifier policy:
@@ -8900,7 +8902,7 @@ Phase 4B gate:
 
 Goal: connect useful local inference without allowing the runtime or model to own state, secrets, permissions, trust decisions, portability, project progress, or side effects.
 
-Status: in progress through IMP-052.
+Status: in progress through IMP-053.
 
 The remaining work retains its required order and receives monotonically increasing implementation identifiers only when scheduled. The unused identifiers IMP-024 through IMP-029 are retired and must not be reused.
 
@@ -8941,6 +8943,16 @@ Implemented `ModelSwitchService` for explicit switching to one chosen binding in
 A failed preflight records bounded failure state and leaves the current active binding unchanged. A successful preflight activates the selected target through the existing transaction, preserves the exact previous binding, and verifies the new active binding. Failed post-activation verification rolls back to that exact previous binding and marks the rejected target failed. Fallbacks are ordered deterministically by user-configured priority and binding ID but are never selected automatically.
 
 Probe input contains no canonical conversation, memory, project, credential, or private-path content. Probe output remains transient and is not persisted as conversation, instruction-origin, memory, project, capability, or other authoritative state. Public results and switch audit metadata expose bounded identifiers, hashes, outcomes, and failure codes only. Schema version 3 and State Package v2 remain unchanged. CI uses injected synthetic adapters and requires no user-side local or offline work.
+
+### IMP-053 — Bounded local streaming conversation path
+
+Status: complete in code; real-runtime evidence is deferred to the integrated drill.
+
+Implemented `LocalStreamingConversationService` above the accepted `LocalRuntimeBoundary.stream` contract. The service resolves one exact active binding, revalidates runtime and model manifests plus the adapter declaration, packages the current user instruction and selected context through the existing authority, prompt-injection, and secret controls, and returns a bounded presentation-only stream transcript that is excluded from object representation.
+
+Partial deltas are never persisted. Only a terminally valid, identity-matched, non-blank, secret-safe completed stream is committed through the existing IMP-051 canonical user, context-snapshot, and assistant artifact/event path. Failed, cancelled, timed-out, malformed, blank, identity-mismatched, resource-limited, or secret-bearing results create no assistant artifact, assistant event, or runtime-output instruction-origin record. Duplicate operation IDs fail closed and persistence failure removes every record and managed file created by the attempted turn.
+
+Schema version 3 and State Package v2 remain unchanged. CI uses injected synthetic adapters only and requires no user-side local or offline work. No browser, terminal, desktop live-rendering transport, real runtime, real model, runtime installation, process launch, model download, cloud request, credential retrieval, tool execution, capability execution, or project mutation is added.
 
 ### Offline mode and local AI continuity drill
 
@@ -9088,13 +9100,12 @@ An implementation PR is done when:
 
 ## 18. Immediate work
 
-The required order after IMP-052 is:
+The required order after IMP-053 is:
 
-1. add streaming integration while keeping the canonical committed conversation-event and managed-artifact path authoritative;
-2. run the network-disabled real-runtime continuity drill before making a local-inference release claim;
-3. prove explicit fallback and model replacement on the primary machine without canonical conversation, project, memory, portability, backup, or recovery loss;
-4. prove a real local AI migration path before provider-specific cloud portability becomes a primary claim;
-5. keep cloud providers, credentials, and automatic cloud fallback outside the local continuity gate.
+1. run the network-disabled real-runtime continuity drill before making a local-inference release claim;
+2. prove explicit fallback and model replacement on the primary machine without canonical conversation, project, memory, portability, backup, or recovery loss;
+3. prove a real local AI migration path before provider-specific cloud portability becomes a primary claim;
+4. keep cloud providers, credentials, and automatic cloud fallback outside the local continuity gate.
 
 ## 19. Roadmap change control
 
