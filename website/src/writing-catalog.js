@@ -53,6 +53,15 @@ export const OFFICIAL_NOTES = Object.freeze([
 
 export const EXTERNAL_PUBLICATIONS = Object.freeze([
   Object.freeze({
+    id: "the-gate-before-the-public",
+    kind: "external-only",
+    title: "The Gate Before the Public",
+    publisher: "DEV Community",
+    url: "https://dev.to/badjoke-lab/the-gate-before-the-public-456n",
+    published: "2026-06-27",
+    summary: "A follow-up on the limited return of Claude Mythos 5, GPT-5.6's restricted preview, and the new checkpoints appearing before frontier AI reaches the public.",
+  }),
+  Object.freeze({
     id: "why-im-building-doll",
     kind: "external-only",
     title: "Why I'm Building doll: A Personal AI Continuity System",
