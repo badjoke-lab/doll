@@ -17,26 +17,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Decode and inspect payload
+      - name: Decode staged payload
         shell: bash
         run: |
+          mkdir -p diagnostic
           python - <<'PY'
           from __future__ import annotations
 
-          import gzip
           import hashlib
-          import io
           import json
-          import tarfile
-          import zipfile
+          import zlib
           from pathlib import Path
 
           parts = sorted(Path("scripts/imp051_nibbles").glob("part.*"))
-          print("parts:", [part.name for part in parts])
           encoded = "".join(part.read_text(encoding="utf-8").strip() for part in parts)
           alphabet = set(encoded)
-          print("encoded_chars:", len(encoded))
-          print("alphabet:", "".join(sorted(alphabet)))
           if not alphabet <= set("ABCDEFGHIJKLMNOP"):
               raise SystemExit("unexpected nibble alphabet")
           if len(encoded) % 2:
@@ -44,42 +39,46 @@ jobs:
 
           hex_text = "".join(format(ord(char) - ord("A"), "x") for char in encoded)
           compressed = bytes.fromhex(hex_text)
-          print("compressed_bytes:", len(compressed))
-          print("compressed_sha256:", hashlib.sha256(compressed).hexdigest())
-          print("compressed_header:", compressed[:16].hex())
-          print("compressed_trailer:", compressed[-16:].hex())
+          Path("diagnostic/payload.gz").write_bytes(compressed)
 
+          decoder = zlib.decompressobj(16 + zlib.MAX_WBITS)
+          error_type = None
+          error_message = None
           try:
-              decoded = gzip.decompress(compressed)
+              partial = decoder.decompress(compressed)
           except Exception as exc:
-              print("gzip_error_type:", type(exc).__name__)
-              print("gzip_error:", str(exc))
-              raise
+              partial = b""
+              error_type = type(exc).__name__
+              error_message = str(exc)
+          Path("diagnostic/partial.decoded").write_bytes(partial)
 
-          print("decoded_bytes:", len(decoded))
-          print("decoded_sha256:", hashlib.sha256(decoded).hexdigest())
-          print("decoded_header:", decoded[:32].hex())
-
-          if tarfile.is_tarfile(io.BytesIO(decoded)):
-              print("decoded_type: tar")
-              with tarfile.open(fileobj=io.BytesIO(decoded), mode="r:*") as archive:
-                  members = archive.getmembers()
-                  print("tar_member_count:", len(members))
-                  for member in members:
-                      member_type = member.type.decode("latin-1") if isinstance(member.type, bytes) else str(member.type)
-                      print(json.dumps({"name": member.name, "size": member.size, "type": member_type}, sort_keys=True))
-          elif zipfile.is_zipfile(io.BytesIO(decoded)):
-              print("decoded_type: zip")
-              with zipfile.ZipFile(io.BytesIO(decoded)) as archive:
-                  names = archive.namelist()
-                  print("zip_member_count:", len(names))
-                  for name in names:
-                      info = archive.getinfo(name)
-                      print(json.dumps({"name": name, "size": info.file_size}, sort_keys=True))
-          else:
-              print("decoded_type: raw")
-              preview = decoded[:12000].decode("utf-8", errors="replace")
-              print("--- decoded preview ---")
-              print(preview)
-              print("--- end preview ---")
+          summary = {
+              "parts": [part.name for part in parts],
+              "encoded_chars": len(encoded),
+              "compressed_bytes": len(compressed),
+              "compressed_sha256": hashlib.sha256(compressed).hexdigest(),
+              "compressed_header": compressed[:16].hex(),
+              "compressed_trailer": compressed[-16:].hex(),
+              "partial_decoded_bytes": len(partial),
+              "partial_decoded_sha256": hashlib.sha256(partial).hexdigest(),
+              "partial_decoded_header": partial[:32].hex(),
+              "gzip_eof": decoder.eof,
+              "gzip_unused_data_bytes": len(decoder.unused_data),
+              "gzip_unconsumed_tail_bytes": len(decoder.unconsumed_tail),
+              "error_type": error_type,
+              "error_message": error_message,
+          }
+          Path("diagnostic/summary.json").write_text(
+              json.dumps(summary, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          print(json.dumps(summary, sort_keys=True))
           PY
+
+      - name: Upload diagnostic payload
+        uses: actions/upload-artifact@v4
+        with:
+          name: imp051-payload-diagnostic
+          path: diagnostic/
+          if-no-files-found: error
+          retention-days: 1
