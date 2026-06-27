@@ -1033,6 +1033,22 @@ class ModelManifestService:
         self.repository._sync_after_commit(state_revision)
         return self.get_binding(binding_id)
 
+    def resolve_active_binding(
+        self,
+        *,
+        scope_type: str,
+        scope_key: str,
+    ) -> tuple[ModelBindingInfo, RuntimeManifestInfo, ModelManifestInfo]:
+        """Resolve and revalidate the one active binding for an explicit scope."""
+
+        safe_scope_type = _token("binding scope type", scope_type)
+        safe_scope_key = _scope_key(scope_key)
+        binding = self._active_for_scope(safe_scope_type, safe_scope_key)
+        if binding is None:
+            raise ModelManifestValidationError("scope has no active binding")
+        runtime, model = self._activation_manifests(binding)
+        return binding, runtime, model
+
     def _activation_manifests(
         self, binding: ModelBindingInfo
     ) -> tuple[RuntimeManifestInfo, ModelManifestInfo]:
