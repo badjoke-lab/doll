@@ -58,13 +58,12 @@ def inspect(
     descriptor_path: Path,
 ) -> tuple[dict[str, bool], dict[str, int]]:
     descriptor: dict[str, Any] = json.loads(descriptor_path.read_text(encoding="utf-8"))
-    required = {
+    common = {
+        "inspection_mode",
         "memory_id",
         "memory_revision",
         "project_id",
         "project_revision",
-        "conversation_id",
-        "expected_event_count",
         "scope_type",
         "scope_key",
         "runtime_manifest_id",
@@ -73,14 +72,20 @@ def inspect(
         "primary_binding_id",
         "fallback_binding_id",
     }
-    if set(descriptor) != required:
+    mode = descriptor.get("inspection_mode")
+    required = (
+        common | {"conversation_id", "expected_event_count"}
+        if mode == "full"
+        else common
+        if mode == "package"
+        else set()
+    )
+    if not required or set(descriptor) != required:
         raise RuntimeError("invalid runtime-continuity descriptor")
 
     with state.open_state_repository(workspace_root, read_only=True) as repository:
         memory = ConfirmedMemoryService(repository).get(cast(str, descriptor["memory_id"]))
         project = ProjectService(repository).get(cast(str, descriptor["project_id"]))
-        conversation_id = cast(str, descriptor["conversation_id"])
-        events = repository.list_conversation_events(conversation_id)
         manifests = ModelManifestService(repository)
         active, runtime, active_model = manifests.resolve_active_binding(
             scope_type=cast(str, descriptor["scope_type"]),
@@ -98,7 +103,8 @@ def inspect(
         )
         repository_status = repository.status()
         counts = {
-            "conversation_events": len(events),
+            "conversation_events": _record_count(repository, "conversation_event"),
+            "conversations": _record_count(repository, "conversation"),
             "runtime_outputs": len(runtime_origins),
             "runtime_manifests": _record_count(repository, "runtime_manifest"),
             "model_manifests": _record_count(repository, "model_manifest"),
@@ -114,21 +120,6 @@ def inspect(
                 project_status.latest_checkpoint is not None
                 and project_status.latest_checkpoint.freshness == "current"
             ),
-            "canonical_event_count": len(events) == descriptor["expected_event_count"],
-            "canonical_event_shape": all(
-                event.event_kind in {"user_message", "system_context_snapshot", "assistant_message"}
-                for event in events
-            ),
-            "all_turns_completed": (
-                len(events) % 3 == 0
-                and sum(event.event_kind == "assistant_message" for event in events)
-                == len(events) // 3
-            ),
-            "runtime_outputs_data_only": bool(runtime_origins)
-            and all(
-                item.data_only is True and item.authority_class == "untrusted_data"
-                for item in runtime_origins
-            ),
             "runtime_manifest_preserved": (
                 runtime.runtime_manifest_id == descriptor["runtime_manifest_id"]
             ),
@@ -140,22 +131,77 @@ def inspect(
                 descriptor["primary_model_manifest_id"],
                 descriptor["fallback_model_manifest_id"],
             },
-            "fallback_binding_active": (
-                active.binding_id == descriptor["fallback_binding_id"]
-                and fallback_binding.binding_state == "active"
-                and active_model.model_manifest_id == descriptor["fallback_model_manifest_id"]
+            "record_counts_present": all(
+                counts[key] >= 1
+                for key in (
+                    "runtime_manifests",
+                    "model_manifests",
+                    "model_bindings",
+                    "memories",
+                    "projects",
+                )
             ),
-            "primary_binding_rolled_back": (
-                primary_binding.binding_state == "rolled_back"
-                and primary_binding.rollback_target_id == descriptor["fallback_binding_id"]
-            ),
-            "switch_probe_not_persisted": not _artifact_has_switch_probe(
-                repository,
-                workspace_root,
-                conversation_id,
-            ),
-            "record_counts_present": all(value >= 1 for value in counts.values()),
         }
+        if mode == "package":
+            checks.update(
+                {
+                    "package_primary_binding_active": (
+                        active.binding_id == descriptor["primary_binding_id"]
+                        and primary_binding.binding_state == "active"
+                        and active_model.model_manifest_id
+                        == descriptor["primary_model_manifest_id"]
+                    ),
+                    "package_fallback_binding_configured": (
+                        fallback_binding.binding_state == "fallback"
+                        and fallback_binding.fallback_eligible is True
+                        and fallback_binding.fallback_priority == 10
+                    ),
+                    "package_snapshot_has_no_conversation_records": (
+                        counts["conversations"] == 0
+                        and counts["conversation_events"] == 0
+                        and counts["runtime_outputs"] == 0
+                    ),
+                }
+            )
+        else:
+            conversation_id = cast(str, descriptor["conversation_id"])
+            events = repository.list_conversation_events(conversation_id)
+            checks.update(
+                {
+                    "canonical_event_count": len(events) == descriptor["expected_event_count"],
+                    "canonical_event_shape": all(
+                        event.event_kind
+                        in {"user_message", "system_context_snapshot", "assistant_message"}
+                        for event in events
+                    ),
+                    "all_turns_completed": (
+                        len(events) % 3 == 0
+                        and sum(event.event_kind == "assistant_message" for event in events)
+                        == len(events) // 3
+                    ),
+                    "runtime_outputs_data_only": bool(runtime_origins)
+                    and all(
+                        item.data_only is True and item.authority_class == "untrusted_data"
+                        for item in runtime_origins
+                    ),
+                    "fallback_binding_active": (
+                        active.binding_id == descriptor["fallback_binding_id"]
+                        and fallback_binding.binding_state == "active"
+                        and active_model.model_manifest_id
+                        == descriptor["fallback_model_manifest_id"]
+                    ),
+                    "primary_binding_rolled_back": (
+                        primary_binding.binding_state == "rolled_back"
+                        and primary_binding.rollback_target_id
+                        == descriptor["fallback_binding_id"]
+                    ),
+                    "switch_probe_not_persisted": not _artifact_has_switch_probe(
+                        repository,
+                        workspace_root,
+                        conversation_id,
+                    ),
+                }
+            )
     return checks, counts
 
 
