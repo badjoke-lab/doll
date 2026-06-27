@@ -12,7 +12,7 @@ import socket
 import subprocess
 import sys
 import tempfile
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
 from types import TracebackType
@@ -37,7 +37,6 @@ from doll.ollama_adapter import (
     OllamaHttpResponse,
     OllamaRuntimeAdapter,
     OllamaTransport,
-    ollama_model_id,
 )
 from doll.portability import PortabilityState, SourceEnvironmentRecord
 from doll.runtime_adapter import (
@@ -50,9 +49,11 @@ from doll.runtime_adapter import (
     RuntimeGenerationRequest,
     RuntimeHealth,
     RuntimeInventorySnapshot,
+    RuntimeModelInfo,
     RuntimeStreamEvent,
 )
 from doll.state import ConversationRecord
+from doll.state_repository import StateRepository
 from doll.streaming_conversation import LocalStreamingConversationService
 from tests.project_continuity_support import create_project_continuity_fixture
 
@@ -152,7 +153,7 @@ class DeterministicOllamaTransport:
         request = json.loads(body)
         model = request.get("model")
         for response, done in (("DOLL_", False), ("STREAM_OK", True)):
-            payload = {
+            payload: dict[str, object] = {
                 "model": model,
                 "response": response,
                 "done": done,
@@ -238,8 +239,8 @@ class SocketDestinationGuard:
         self.port = port
         self.allowed_attempts = 0
         self.rejected_attempts = 0
-        self._connect: Any = None
-        self._connect_ex: Any = None
+        self._connect: Callable[..., object] | None = None
+        self._connect_ex: Callable[..., int] | None = None
 
     def __enter__(self) -> SocketDestinationGuard:
         self._connect = socket.socket.connect
@@ -251,6 +252,8 @@ class SocketDestinationGuard:
                 guard.rejected_attempts += 1
                 raise OSError("non-loopback socket destination rejected")
             guard.allowed_attempts += 1
+            if guard._connect is None:
+                raise RuntimeError("socket guard is not initialized")
             return guard._connect(sock, address)
 
         def guarded_connect_ex(sock: socket.socket, address: object) -> int:
@@ -258,7 +261,9 @@ class SocketDestinationGuard:
                 guard.rejected_attempts += 1
                 return 13
             guard.allowed_attempts += 1
-            return cast(int, guard._connect_ex(sock, address))
+            if guard._connect_ex is None:
+                raise RuntimeError("socket guard is not initialized")
+            return guard._connect_ex(sock, address)
 
         socket.socket.connect = guarded_connect  # type: ignore[method-assign]
         socket.socket.connect_ex = guarded_connect_ex  # type: ignore[method-assign]
@@ -271,8 +276,10 @@ class SocketDestinationGuard:
         traceback: TracebackType | None,
     ) -> None:
         del exc_type, exc, traceback
-        socket.socket.connect = self._connect
-        socket.socket.connect_ex = self._connect_ex
+        if self._connect is not None:
+            socket.socket.connect = self._connect  # type: ignore[method-assign]
+        if self._connect_ex is not None:
+            socket.socket.connect_ex = self._connect_ex  # type: ignore[method-assign]
 
     def _allowed(self, sock: socket.socket, address: object) -> bool:
         return (
@@ -345,7 +352,7 @@ def _select_models(
     boundary: LocalRuntimeBoundary,
     primary_name: str,
     fallback_name: str,
-) -> tuple[object, object]:
+) -> tuple[RuntimeModelInfo, RuntimeModelInfo]:
     inventory = boundary.inventory(
         OLLAMA_ADAPTER_ID,
         operation_id="imp054.inventory",
@@ -364,10 +371,10 @@ def _select_models(
 
 
 def _create_manifests(
-    repository: state.StateRepository,
+    repository: StateRepository,
     boundary: LocalRuntimeBoundary,
-    primary: Any,
-    fallback: Any,
+    primary: RuntimeModelInfo,
+    fallback: RuntimeModelInfo,
 ) -> dict[str, str]:
     manifests = ModelManifestService(repository)
     declaration = boundary.declaration(OLLAMA_ADAPTER_ID)
@@ -397,16 +404,15 @@ def _create_manifests(
     created: dict[str, str] = {"runtime_manifest_id": runtime.runtime_manifest_id}
     for role, selected in (("primary", primary), ("fallback", fallback)):
         revision = cast(str, selected.revision)
-        checksum = revision.removeprefix("sha256-")
         model = manifests.create_model(
             runtime_manifest_id=runtime.runtime_manifest_id,
-            runtime_private_locator=cast(str, selected.model_id),
+            runtime_private_locator=selected.model_id,
             display_name=f"{role.title()} local model",
             exact_revision=revision,
-            checksums={"sha256": checksum},
+            checksums={"sha256": revision.removeprefix("sha256-")},
             license_id="local-user-confirmed",
             model_format="ollama",
-            capabilities=cast(tuple[str, ...], selected.features),
+            capabilities=selected.features,
             platforms=(system_name,),
             operation_id=f"imp054.{role}.model.create",
         )
@@ -430,7 +436,7 @@ def _create_manifests(
         )
         if not _probe_model(
             boundary,
-            cast(str, selected.model_id),
+            selected.model_id,
             f"imp054.{role}.initial-probe",
         ):
             raise RuntimeError("selected local model failed the exact smoke response")
@@ -574,7 +580,6 @@ def run(
                 user_text="Reply briefly through the streaming path.",
                 operation_id="imp054.turn.primary.stream",
             )
-
             switch = ModelSwitchService(repository, boundary).switch_to_fallback(
                 scope_type="conversation",
                 scope_key="imp054",
@@ -590,15 +595,14 @@ def run(
             )
 
             rollback_adapter = PostActivationFailureAdapter(adapter)
-            rollback_boundary = LocalRuntimeBoundary(
-                RuntimeAdapterRegistry((rollback_adapter,))
-            )
+            rollback_boundary = LocalRuntimeBoundary(RuntimeAdapterRegistry((rollback_adapter,)))
             rollback = ModelSwitchService(repository, rollback_boundary).switch_binding(
                 scope_type="conversation",
                 scope_key="imp054",
                 target_binding_id=identifiers["primary_binding_id"],
                 operation_id="imp054.switch.forced-rollback",
             )
+            rollback_probe_calls = rollback_adapter.probe_calls
             fourth = LocalConversationService(repository, boundary).execute_turn(
                 conversation_id=conversation_id,
                 scope_type="conversation",
@@ -625,7 +629,6 @@ def run(
                 json.dumps(descriptor, sort_keys=True, separators=(",", ":")),
                 encoding="utf-8",
             )
-
             unrelated_preserved = (
                 ConfirmedMemoryService(repository).get(memory.record_id).revision
                 == memory.revision
@@ -669,18 +672,26 @@ def run(
             and fallback.revision is not None
         ),
         "primary_nonstream_completed": first.outcome == "completed",
-        "primary_stream_completed": second.turn.outcome == "completed"
-        and any(event.kind == "delta" for event in second.display_events),
-        "explicit_fallback_switch_completed": switch.outcome == "switched"
-        and switch.active_binding_id == identifiers["fallback_binding_id"]
-        and switch.fallback_selected is True,
+        "primary_stream_completed": (
+            second.turn.outcome == "completed"
+            and any(event.kind == "delta" for event in second.display_events)
+        ),
+        "explicit_fallback_switch_completed": (
+            switch.outcome == "switched"
+            and switch.active_binding_id == identifiers["fallback_binding_id"]
+            and switch.fallback_selected is True
+        ),
         "fallback_conversation_completed": third.outcome == "completed",
-        "forced_post_activation_failure_rolled_back": rollback.outcome == "rolled_back"
-        and rollback.active_binding_id == identifiers["fallback_binding_id"]
-        and rollback.previous_binding_id == identifiers["fallback_binding_id"]
-        and rollback_adapter.probe_calls == 2,
+        "forced_post_activation_failure_rolled_back": (
+            rollback.outcome == "rolled_back"
+            and rollback.active_binding_id == identifiers["fallback_binding_id"]
+            and rollback.previous_binding_id == identifiers["fallback_binding_id"]
+            and rollback_probe_calls == 2
+        ),
         "post_rollback_conversation_completed": fourth.outcome == "completed",
-        "all_canonical_turns_completed": all(item.outcome == "completed" for item in turn_results),
+        "all_canonical_turns_completed": all(
+            item.outcome == "completed" for item in turn_results
+        ),
         "canonical_event_count": len(events) == 12,
         "unrelated_state_revisions_preserved": unrelated_preserved,
         "state_package_v2_exported": package_inspection.package_format_version == 2,
