@@ -16,8 +16,10 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
 from types import TracebackType
-from typing import Any, cast
+from typing import cast
 from uuid import uuid4
+
+from tests.project_continuity_support import create_project_continuity_fixture
 
 import doll.backup as backup
 import doll.restore as restore
@@ -55,7 +57,6 @@ from doll.runtime_adapter import (
 from doll.state import ConversationRecord
 from doll.state_repository import StateRepository
 from doll.streaming_conversation import LocalStreamingConversationService
-from tests.project_continuity_support import create_project_continuity_fixture
 
 ROOT = Path(__file__).resolve().parents[1]
 INSPECTOR = ROOT / "scripts" / "imp_054_state_inspector.py"
@@ -630,8 +631,7 @@ def run(
                 encoding="utf-8",
             )
             unrelated_preserved = (
-                ConfirmedMemoryService(repository).get(memory.record_id).revision
-                == memory.revision
+                ConfirmedMemoryService(repository).get(memory.record_id).revision == memory.revision
                 and repository.get_record(fixture.project_id).revision == project_revision
                 and repository.get_record(environment.environment_id).revision
                 == environment_revision
@@ -689,9 +689,7 @@ def run(
             and rollback_probe_calls == 2
         ),
         "post_rollback_conversation_completed": fourth.outcome == "completed",
-        "all_canonical_turns_completed": all(
-            item.outcome == "completed" for item in turn_results
-        ),
+        "all_canonical_turns_completed": all(item.outcome == "completed" for item in turn_results),
         "canonical_event_count": len(events) == 12,
         "unrelated_state_revisions_preserved": unrelated_preserved,
         "state_package_v2_exported": package_inspection.package_format_version == 2,

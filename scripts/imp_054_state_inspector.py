@@ -95,12 +95,8 @@ def inspect(
         )
         primary_binding = manifests.get_binding(cast(str, descriptor["primary_binding_id"]))
         fallback_binding = manifests.get_binding(cast(str, descriptor["fallback_binding_id"]))
-        primary_model = manifests.get_model(
-            cast(str, descriptor["primary_model_manifest_id"])
-        )
-        fallback_model = manifests.get_model(
-            cast(str, descriptor["fallback_model_manifest_id"])
-        )
+        primary_model = manifests.get_model(cast(str, descriptor["primary_model_manifest_id"]))
+        fallback_model = manifests.get_model(cast(str, descriptor["fallback_model_manifest_id"]))
         project_status = ProjectStatusService(repository).build(project.project_id)
         runtime_origins = tuple(
             item
@@ -123,8 +119,7 @@ def inspect(
             "memory_preserved": memory.revision == descriptor["memory_revision"],
             "project_preserved": project.revision == descriptor["project_revision"],
             "source_environment_preserved": (
-                source_environment_envelope.revision
-                == descriptor["source_environment_revision"]
+                source_environment_envelope.revision == descriptor["source_environment_revision"]
             ),
             "project_checkpoint_current": (
                 project_status.latest_checkpoint is not None
@@ -132,8 +127,7 @@ def inspect(
             ),
             "canonical_event_count": len(events) == descriptor["expected_event_count"],
             "canonical_event_shape": all(
-                event.event_kind
-                in {"user_message", "system_context_snapshot", "assistant_message"}
+                event.event_kind in {"user_message", "system_context_snapshot", "assistant_message"}
                 for event in events
             ),
             "all_turns_completed": (
@@ -160,8 +154,7 @@ def inspect(
             "fallback_binding_active": (
                 active.binding_id == descriptor["fallback_binding_id"]
                 and fallback_binding.binding_state == "active"
-                and active_model.model_manifest_id
-                == descriptor["fallback_model_manifest_id"]
+                and active_model.model_manifest_id == descriptor["fallback_model_manifest_id"]
             ),
             "primary_binding_rolled_back": (
                 primary_binding.binding_state == "rolled_back"

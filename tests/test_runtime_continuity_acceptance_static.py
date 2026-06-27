@@ -30,9 +30,7 @@ def test_phase_5_matrix_maps_lrun_001_through_lrun_012_with_gate_pending() -> No
     assert matrix["acceptance_test_id"] == "IMP-054-LOCAL-RUNTIME-CONTINUITY"
     assert matrix["phase5_gate_complete"] is False
     assert matrix["accepted_real_machine_result"] is None
-    assert [item["id"] for item in entries] == [
-        f"LRUN-{number:03d}" for number in range(1, 13)
-    ]
+    assert [item["id"] for item in entries] == [f"LRUN-{number:03d}" for number in range(1, 13)]
     assert all(item["status"] == "pass" for item in entries)
     assert all(item["pytest_files"] for item in entries)
     assert all(item["evidence_levels"] == ["ci", "real-machine"] for item in entries)
