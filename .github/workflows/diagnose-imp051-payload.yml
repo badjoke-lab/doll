@@ -1,0 +1,81 @@
+name: Diagnose IMP-051 payload
+
+on:
+  push:
+    branches:
+      - diagnostic/imp-051-payload
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Decode and inspect payload
+        shell: bash
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+
+          import gzip
+          import hashlib
+          import io
+          import json
+          import tarfile
+          import zipfile
+          from pathlib import Path
+
+          parts = sorted(Path("scripts/imp051_nibbles").glob("part.*"))
+          print("parts:", [part.name for part in parts])
+          encoded = "".join(part.read_text(encoding="utf-8").strip() for part in parts)
+          alphabet = set(encoded)
+          print("encoded_chars:", len(encoded))
+          print("alphabet:", "".join(sorted(alphabet)))
+          if not alphabet <= set("ABCDEFGHIJKLMNOP"):
+              raise SystemExit("unexpected nibble alphabet")
+          if len(encoded) % 2:
+              raise SystemExit("odd nibble count")
+
+          hex_text = "".join(format(ord(char) - ord("A"), "x") for char in encoded)
+          compressed = bytes.fromhex(hex_text)
+          print("compressed_bytes:", len(compressed))
+          print("compressed_sha256:", hashlib.sha256(compressed).hexdigest())
+          print("compressed_header:", compressed[:16].hex())
+          print("compressed_trailer:", compressed[-16:].hex())
+
+          try:
+              decoded = gzip.decompress(compressed)
+          except Exception as exc:
+              print("gzip_error_type:", type(exc).__name__)
+              print("gzip_error:", str(exc))
+              raise
+
+          print("decoded_bytes:", len(decoded))
+          print("decoded_sha256:", hashlib.sha256(decoded).hexdigest())
+          print("decoded_header:", decoded[:32].hex())
+
+          if tarfile.is_tarfile(io.BytesIO(decoded)):
+              print("decoded_type: tar")
+              with tarfile.open(fileobj=io.BytesIO(decoded), mode="r:*") as archive:
+                  members = archive.getmembers()
+                  print("tar_member_count:", len(members))
+                  for member in members:
+                      print(json.dumps({"name": member.name, "size": member.size, "type": member.type.decode("latin-1") if isinstance(member.type, bytes) else str(member.type)}, sort_keys=True))
+          elif zipfile.is_zipfile(io.BytesIO(decoded)):
+              print("decoded_type: zip")
+              with zipfile.ZipFile(io.BytesIO(decoded)) as archive:
+                  names = archive.namelist()
+                  print("zip_member_count:", len(names))
+                  for name in names:
+                      info = archive.getinfo(name)
+                      print(json.dumps({"name": name, "size": info.file_size}, sort_keys=True))
+          else:
+              print("decoded_type: raw")
+              preview = decoded[:12000].decode("utf-8", errors="replace")
+              print("--- decoded preview ---")
+              print(preview)
+              print("--- end preview ---")
+          PY
