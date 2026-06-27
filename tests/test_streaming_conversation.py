@@ -591,8 +591,8 @@ def test_normalization_rejects_identity_mismatch_and_non_results() -> None:
     assert [event.kind for event in events] == ["start", "error"]
 
     with pytest.raises(RuntimeContractError, match="invalid result"):
-        _normalize_stream_result(  # type: ignore[arg-type]
-            object(),
+        _normalize_stream_result(
+            object(),  # type: ignore[arg-type]
             operation_id="expected.operation",
             adapter_id="fake.stream",
             model_id="fake.model.1",
