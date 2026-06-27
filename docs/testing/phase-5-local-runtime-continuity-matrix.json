@@ -1,0 +1,176 @@
+{
+  "schema_version": 1,
+  "phase": "5",
+  "acceptance_test_id": "IMP-054-LOCAL-RUNTIME-CONTINUITY",
+  "phase5_gate_complete": false,
+  "accepted_real_machine_result": null,
+  "runtime_tests": [
+    {
+      "id": "LRUN-001",
+      "title": "Loopback-only runtime health and exact local inventory",
+      "status": "pass",
+      "pytest_files": [
+        "tests/test_runtime_continuity_acceptance.py"
+      ],
+      "evidence_levels": [
+        "ci",
+        "real-machine"
+      ]
+    },
+    {
+      "id": "LRUN-002",
+      "title": "Canonical non-streaming local conversation",
+      "status": "pass",
+      "pytest_files": [
+        "tests/test_runtime_continuity_acceptance.py"
+      ],
+      "evidence_levels": [
+        "ci",
+        "real-machine"
+      ]
+    },
+    {
+      "id": "LRUN-003",
+      "title": "Bounded streaming with transient partial output",
+      "status": "pass",
+      "pytest_files": [
+        "tests/test_runtime_continuity_acceptance.py"
+      ],
+      "evidence_levels": [
+        "ci",
+        "real-machine"
+      ]
+    },
+    {
+      "id": "LRUN-004",
+      "title": "Explicit switch to a configured fallback binding",
+      "status": "pass",
+      "pytest_files": [
+        "tests/test_runtime_continuity_acceptance.py"
+      ],
+      "evidence_levels": [
+        "ci",
+        "real-machine"
+      ]
+    },
+    {
+      "id": "LRUN-005",
+      "title": "Forced post-activation failure and exact rollback",
+      "status": "pass",
+      "pytest_files": [
+        "tests/test_runtime_continuity_acceptance.py"
+      ],
+      "evidence_levels": [
+        "ci",
+        "real-machine"
+      ]
+    },
+    {
+      "id": "LRUN-006",
+      "title": "Conversation, memory, project, and portability state preservation",
+      "status": "pass",
+      "pytest_files": [
+        "tests/test_runtime_continuity_acceptance.py"
+      ],
+      "evidence_levels": [
+        "ci",
+        "real-machine"
+      ]
+    },
+    {
+      "id": "LRUN-007",
+      "title": "Runtime, model, and binding preservation through State Package v2",
+      "status": "pass",
+      "pytest_files": [
+        "tests/test_runtime_continuity_acceptance.py"
+      ],
+      "evidence_levels": [
+        "ci",
+        "real-machine"
+      ]
+    },
+    {
+      "id": "LRUN-008",
+      "title": "State backup and restore after model replacement",
+      "status": "pass",
+      "pytest_files": [
+        "tests/test_runtime_continuity_acceptance.py"
+      ],
+      "evidence_levels": [
+        "ci",
+        "real-machine"
+      ]
+    },
+    {
+      "id": "LRUN-009",
+      "title": "Fresh-process inspection with runtime adapters disabled",
+      "status": "pass",
+      "pytest_files": [
+        "tests/test_runtime_continuity_acceptance.py"
+      ],
+      "evidence_levels": [
+        "ci",
+        "real-machine"
+      ]
+    },
+    {
+      "id": "LRUN-010",
+      "title": "Non-loopback socket and undeclared API path rejection",
+      "status": "pass",
+      "pytest_files": [
+        "tests/test_runtime_continuity_acceptance.py",
+        "tests/test_runtime_continuity_acceptance_static.py"
+      ],
+      "evidence_levels": [
+        "ci",
+        "real-machine"
+      ]
+    },
+    {
+      "id": "LRUN-011",
+      "title": "Runtime output remains data-only and probe output remains transient",
+      "status": "pass",
+      "pytest_files": [
+        "tests/test_runtime_continuity_acceptance.py",
+        "tests/test_runtime_continuity_acceptance_static.py"
+      ],
+      "evidence_levels": [
+        "ci",
+        "real-machine"
+      ]
+    },
+    {
+      "id": "LRUN-012",
+      "title": "Exact-commit primary Intel Mac offline evidence gate",
+      "status": "pass",
+      "pytest_files": [
+        "tests/test_runtime_continuity_acceptance.py",
+        "tests/test_runtime_continuity_acceptance_static.py"
+      ],
+      "evidence_levels": [
+        "ci",
+        "real-machine"
+      ]
+    }
+  ],
+  "real_machine_gate": {
+    "required": true,
+    "status": "pending",
+    "platform": "Darwin",
+    "architectures": [
+      "x86_64",
+      "amd64"
+    ],
+    "minimum_local_models": 2,
+    "commit_sha": null,
+    "completed_at": null,
+    "network_mode": "offline-confirmed"
+  },
+  "limitations": [
+    "CI uses an injected deterministic Ollama transport and is not real-runtime evidence.",
+    "Phase 5 remains incomplete until accepted primary Intel Mac evidence is stored separately.",
+    "The drill does not install or start Ollama and does not download, delete, or modify models.",
+    "The drill does not prove cloud portability, tool execution, or autonomous project mutation.",
+    "Different local models may fail the exact bounded switch probe and must not be marked compatible when they do."
+  ]
+}
