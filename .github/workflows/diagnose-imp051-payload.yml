@@ -1,18 +1,15 @@
-name: Restore IMP-051 source
+name: Diagnose IMP-051 payload assembly
 
 on:
-  push:
-    branches:
-      - diagnostic/imp-051-payload
   pull_request:
     branches:
       - main
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  restore:
+  diagnose:
     runs-on: ubuntu-latest
     steps:
       - name: Check out IMP-051 branch
@@ -21,91 +18,97 @@ jobs:
           ref: imp-051-canonical-local-conversation
           fetch-depth: 0
 
-      - name: Recover complete source and binding resolver
+      - name: Inspect payload assembly
         shell: bash
         run: |
-          python - <<'PY'
+          mkdir -p diagnostic
+          python - <<'PY' > diagnostic/report.txt 2>&1
           from __future__ import annotations
 
-          import io
+          import hashlib
+          import json
           import tarfile
-          import zlib
           from pathlib import Path
 
-          parts = sorted(Path("scripts/imp051_nibbles").glob("part.*"))
-          encoded = "".join(part.read_text(encoding="utf-8").strip() for part in parts)
-          if not encoded or set(encoded) - set("ABCDEFGHIJKLMNOP") or len(encoded) % 2:
-              raise SystemExit("staged IMP-051 nibble payload is invalid")
-          compressed = bytes.fromhex(
-              "".join(format(ord(character) - ord("A"), "x") for character in encoded)
+          def comma_values(path: Path) -> bytes:
+              raw = path.read_text(encoding="ascii")
+              values = tuple(int(value) for value in raw.split(","))
+              print(json.dumps({
+                  "path": str(path),
+                  "characters": len(raw),
+                  "values": len(values),
+                  "minimum": min(values),
+                  "maximum": max(values),
+                  "raw_sha256": hashlib.sha256(raw.encode("ascii")).hexdigest(),
+              }, sort_keys=True))
+              return bytes(values)
+
+          nibble_paths = tuple(Path(f"scripts/imp051_nibbles/part.{index:02d}") for index in range(5))
+          encoded = "".join(path.read_text(encoding="ascii").strip() for path in nibble_paths)
+          prefix = bytes(
+              ((ord(encoded[index]) - 65) << 4) | (ord(encoded[index + 1]) - 65)
+              for index in range(0, len(encoded), 2)
           )
-          decoder = zlib.decompressobj(16 + zlib.MAX_WBITS)
-          partial = decoder.decompress(compressed)
+          print(json.dumps({"segment": "nibbles", "bytes": len(prefix), "sha256": hashlib.sha256(prefix).hexdigest()}, sort_keys=True))
 
-          recovered: list[str] = []
-          archive = tarfile.open(fileobj=io.BytesIO(partial), mode="r:")
-          while True:
-              try:
-                  member = archive.next()
-              except tarfile.ReadError:
-                  break
-              if member is None:
-                  break
-              if not member.isfile():
-                  continue
-              try:
-                  source = archive.extractfile(member)
-                  data = b"" if source is None else source.read()
-              except (EOFError, tarfile.ReadError):
-                  break
-              if len(data) != member.size:
-                  break
-              if member.name != "src/doll/local_conversation.py":
-                  continue
-              target = Path(member.name)
-              target.parent.mkdir(parents=True, exist_ok=True)
-              target.write_bytes(data)
-              recovered.append(member.name)
+          decimal_values = tuple(int(value) for value in Path("scripts/imp051_decimal/part.00").read_text(encoding="ascii").split(","))
+          decimal = bytes(decimal_values)
+          print(json.dumps({"segment": "decimal", "bytes": len(decimal), "sha256": hashlib.sha256(decimal).hexdigest()}, sort_keys=True))
 
-          if recovered != ["src/doll/local_conversation.py"]:
-              raise SystemExit(f"unexpected recovered members: {recovered!r}")
+          xor_parts = []
+          for index in range(2):
+              path = Path(f"scripts/imp051_xor_decimal/part.{index:02d}")
+              values = tuple(int(value) for value in path.read_text(encoding="ascii").split(","))
+              decoded = bytes(value ^ 173 for value in values)
+              xor_parts.append(decoded)
+              print(json.dumps({"segment": f"xor-{index}", "bytes": len(decoded), "sha256": hashlib.sha256(decoded).hexdigest()}, sort_keys=True))
 
-          model_path = Path("src/doll/model_manifest.py")
-          model_text = model_path.read_text(encoding="utf-8")
-          if "def resolve_active_binding(" not in model_text:
-              marker = "    def _activation_manifests(\n"
-              if marker not in model_text:
-                  raise SystemExit("model manifest insertion point is missing")
-              method = '''    def resolve_active_binding(
-        self,
-        *,
-        scope_type: str,
-        scope_key: str,
-    ) -> tuple[ModelBindingInfo, RuntimeManifestInfo, ModelManifestInfo]:
-        """Resolve and revalidate the one active binding for an explicit scope."""
+          plus_parts = {}
+          for index in (0, 1, 3, 4):
+              path = Path(f"scripts/imp051_plus_decimal/part.{index:02d}")
+              values = tuple(int(value) for value in path.read_text(encoding="ascii").split(","))
+              decoded = bytes(value - 3000 for value in values)
+              plus_parts[index] = decoded
+              print(json.dumps({"segment": f"plus-{index}", "bytes": len(decoded), "sha256": hashlib.sha256(decoded).hexdigest()}, sort_keys=True))
 
-        safe_scope_type = _token("binding scope type", scope_type)
-        safe_scope_key = _scope_key(scope_key)
-        binding = self._active_for_scope(safe_scope_type, safe_scope_key)
-        if binding is None:
-            raise ModelManifestValidationError("scope has no active binding")
-        runtime, model = self._activation_manifests(binding)
-        return binding, runtime, model
+          alt_parts = []
+          for name in ("part.02a", "part.02b"):
+              path = Path(f"scripts/imp051_alt_decimal/{name}")
+              values = tuple(int(value) for value in path.read_text(encoding="ascii").split(","))
+              decoded = bytes((value - 7000) // 3 for value in values)
+              alt_parts.append(decoded)
+              print(json.dumps({"segment": f"alt-{name}", "bytes": len(decoded), "sha256": hashlib.sha256(decoded).hexdigest()}, sort_keys=True))
 
-'''
-              model_text = model_text.replace(marker, method + marker, 1)
-              model_path.write_text(model_text, encoding="utf-8")
+          payload = b"".join([
+              prefix,
+              decimal,
+              *xor_parts,
+              plus_parts[0],
+              plus_parts[1],
+              *alt_parts,
+              plus_parts[3],
+              plus_parts[4],
+          ])
+          payload_path = Path("diagnostic/payload.tar.gz")
+          payload_path.write_bytes(payload)
+          print(json.dumps({
+              "payload_bytes": len(payload),
+              "payload_sha256": hashlib.sha256(payload).hexdigest(),
+              "header": payload[:16].hex(),
+              "trailer": payload[-16:].hex(),
+          }, sort_keys=True))
+          try:
+              with tarfile.open(payload_path, "r:gz") as bundle:
+                  print(json.dumps({"members": [(member.name, member.size) for member in bundle.getmembers()]}, sort_keys=True))
+          except Exception as exc:
+              print(json.dumps({"tar_error_type": type(exc).__name__, "tar_error": str(exc)}, sort_keys=True))
           PY
+          cat diagnostic/report.txt
 
-      - name: Commit recovered source
-        shell: bash
-        run: |
-          git config user.name "badjoke-lab"
-          git config user.email "227710934+badjoke-lab@users.noreply.github.com"
-          git add src/doll/local_conversation.py src/doll/model_manifest.py
-          if git diff --cached --quiet; then
-            echo "Recovered source is already committed."
-            exit 0
-          fi
-          git commit -m "feat: restore IMP-051 local conversation source"
-          git push origin HEAD:imp-051-canonical-local-conversation
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: imp051-assembly-report
+          path: diagnostic/
+          if-no-files-found: error
+          retention-days: 1
