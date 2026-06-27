@@ -2,7 +2,7 @@
 
 ## Status
 
-Implementation in progress.
+Implementation staging is complete and validation is in progress.
 
 IMP-051 connects one explicitly active local runtime/model binding to the provider-independent conversation contracts through the accepted local runtime and Phase 3 safety boundaries.
 
