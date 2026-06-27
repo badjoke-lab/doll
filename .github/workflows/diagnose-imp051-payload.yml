@@ -75,6 +75,10 @@ jobs:
           print(json.dumps(summary, sort_keys=True))
           PY
 
+      - name: Capture repository snapshot
+        shell: bash
+        run: git archive --format=tar.gz --output=diagnostic/repository.tar.gz HEAD
+
       - name: Upload diagnostic payload
         uses: actions/upload-artifact@v4
         with:
