@@ -39,8 +39,8 @@ expect(
     status.phase?.name === "Local runtime and model integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 48 &&
-    status.phase?.next_implementation === 53,
-  "project-status.json must mark Phase 5 in progress from IMP-048 with IMP-053 next",
+    status.phase?.next_implementation === 54,
+  "project-status.json must mark Phase 5 in progress from IMP-048 with IMP-054 next",
 );
 expect(
   status.model_runtime &&
@@ -166,8 +166,12 @@ expect(
   "roadmap must record the IMP-052 explicit model-switch boundary",
 );
 expect(
-  roadmap.includes("The required order after IMP-052 is:"),
-  "roadmap must advance immediate work beyond IMP-052",
+  roadmap.includes("IMP-053 connects the bounded local stream transcript"),
+  "roadmap must record the IMP-053 bounded streaming boundary",
+);
+expect(
+  roadmap.includes("The required order after IMP-053 is:"),
+  "roadmap must advance immediate work beyond IMP-053",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),
