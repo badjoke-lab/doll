@@ -1,0 +1,39 @@
+name: IMP-050 diagnose
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-050-model-manifests-bindings
+      - name: Build report
+        run: |
+          python - <<'PY'
+          from hashlib import sha256
+          from pathlib import Path
+          report=[]
+          chunks=[]
+          for path in sorted(Path('scripts/imp050_nibbles').glob('part.*')):
+              text=path.read_text().strip()
+              if path.suffix=='.rev': text=text[::-1]
+              if path.suffix=='.rot': text=''.join(chr((ord(c)-66)%16+65) for c in text)
+              chunks.append(text)
+              report.append(f'{path.name} {len(text)} {sha256(text.encode()).hexdigest()}')
+          encoded=''.join(chunks)
+          data=bytes(((ord(encoded[i])-65)<<4)|(ord(encoded[i+1])-65) for i in range(0,len(encoded),2))
+          report.append(f'encoded {len(encoded)} {sha256(encoded.encode()).hexdigest()}')
+          report.append(f'compressed {len(data)} {sha256(data).hexdigest()}')
+          Path('imp050-assembly.txt').write_text('\n'.join(report)+'\n')
+          PY
+          cat imp050-assembly.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: imp050-assembly-report
+          path: imp050-assembly.txt
