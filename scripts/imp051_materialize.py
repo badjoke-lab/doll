@@ -4,7 +4,7 @@ import hashlib
 import tarfile
 from pathlib import Path
 
-EXPECTED_HASH = "67dc298c16bb762818aeb95cad32cda48f2572a288f2847d15266aebd55bce99"
+EXPECTED_HASH = "466980749a4a1c17f16caeb8086d8fe4957b09a700d68af0940b1e23bb669461"
 EXPECTED_NAMES = {
     "src/doll/local_conversation.py",
     "src/doll/model_manifest.py",
