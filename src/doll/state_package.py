@@ -1226,9 +1226,7 @@ def _validate_conversation_package_graph(records: dict[str, RecordEnvelope]) -> 
         for parent_id in event.parent_event_ids:
             parent = events.get(parent_id)
             if parent is None:
-                raise StatePackageValidationError(
-                    "conversation event references a missing parent"
-                )
+                raise StatePackageValidationError("conversation event references a missing parent")
             if parent.conversation_id != event.conversation_id:
                 raise StatePackageValidationError(
                     "conversation event parent crosses conversation scope"

@@ -192,8 +192,7 @@ def inspect(
                     ),
                     "primary_binding_rolled_back": (
                         primary_binding.binding_state == "rolled_back"
-                        and primary_binding.rollback_target_id
-                        == descriptor["fallback_binding_id"]
+                        and primary_binding.rollback_target_id == descriptor["fallback_binding_id"]
                     ),
                     "switch_probe_not_persisted": not _artifact_has_switch_probe(
                         repository,
