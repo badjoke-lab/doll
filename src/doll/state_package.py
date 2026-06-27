@@ -76,6 +76,7 @@ from doll.state import (
     RecordProvenance,
     RecordSensitivity,
     RecordStatus,
+    StateCorruptError,
     StateError,
     _utc_now,
     initialize_state_repository,
@@ -90,7 +91,12 @@ from doll.state_package_registry import (
 from doll.state_package_registry import (
     SUPPORTED_PACKAGE_FORMAT_VERSIONS as _SUPPORTED_PACKAGE_FORMAT_VERSIONS,
 )
-from doll.state_repository import StateRepository, _validate_record_fields
+from doll.state_repository import (
+    StateRepository,
+    _conversation_event_from_envelope,
+    _conversation_from_envelope,
+    _validate_record_fields,
+)
 from doll.trust import (
     TruthCorruptError,
     _claim_from_record,
@@ -183,6 +189,8 @@ _PACKAGE_RECORD_VALIDATORS: dict[str, Callable[[RecordEnvelope], object]] = {
     "runtime_manifest": _runtime_from_record,
     "model_manifest": _model_from_record,
     "model_binding": _binding_from_record,
+    "conversation": _conversation_from_envelope,
+    "conversation_event": _conversation_event_from_envelope,
 }
 
 
@@ -1039,6 +1047,7 @@ def _envelope_from_payload(
         ProcedureCorruptError,
         ProjectDecisionCorruptError,
         SettingsCorruptError,
+        StateCorruptError,
         TruthCorruptError,
         WorkItemCorruptError,
     ) as exc:
@@ -1191,9 +1200,55 @@ def _validate_cross_record_links(records: dict[str, RecordEnvelope]) -> None:
                 optional_link_id = _metadata_optional_id(metadata, key)
                 if optional_link_id is not None:
                     _require_link_type(records, optional_link_id, "procedure")
+    _validate_conversation_package_graph(records)
     _validate_work_item_package_graph(records)
     _validate_procedure_package_graph(records)
     _validate_checkpoint_package_graph(records)
+
+
+def _validate_conversation_package_graph(records: dict[str, RecordEnvelope]) -> None:
+    conversations = {
+        record.id: _conversation_from_envelope(record)
+        for record in records.values()
+        if record.record_type == "conversation"
+    }
+    events = {
+        record.id: _conversation_event_from_envelope(record)
+        for record in records.values()
+        if record.record_type == "conversation_event"
+    }
+    graph: dict[str, tuple[str, ...]] = {}
+    for event in events.values():
+        if event.conversation_id not in conversations:
+            raise StatePackageValidationError(
+                "conversation event references a missing conversation"
+            )
+        for parent_id in event.parent_event_ids:
+            parent = events.get(parent_id)
+            if parent is None:
+                raise StatePackageValidationError("conversation event references a missing parent")
+            if parent.conversation_id != event.conversation_id:
+                raise StatePackageValidationError(
+                    "conversation event parent crosses conversation scope"
+                )
+        graph[event.event_id] = event.parent_event_ids
+
+    visiting: set[str] = set()
+    visited: set[str] = set()
+
+    def visit(event_id: str) -> None:
+        if event_id in visiting:
+            raise StatePackageValidationError("conversation event graph contains a cycle")
+        if event_id in visited:
+            return
+        visiting.add(event_id)
+        for parent_id in graph.get(event_id, ()):
+            visit(parent_id)
+        visiting.remove(event_id)
+        visited.add(event_id)
+
+    for event_id in graph:
+        visit(event_id)
 
 
 def _validate_work_item_package_graph(records: dict[str, RecordEnvelope]) -> None:

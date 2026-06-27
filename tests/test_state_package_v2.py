@@ -74,6 +74,8 @@ def _write_v1_fixture(v2_package: Path, v1_package: Path) -> None:
         "records/runtime-manifests.jsonl",
         "records/model-manifests.jsonl",
         "records/model-bindings.jsonl",
+        "records/conversations.jsonl",
+        "records/conversation-events.jsonl",
     ):
         members.pop(f"{package.PACKAGE_ROOT}/{member}")
     manifest_name = f"{package.PACKAGE_ROOT}/manifest.json"
@@ -87,6 +89,8 @@ def _write_v1_fixture(v2_package: Path, v1_package: Path) -> None:
         "runtime_manifest",
         "model_manifest",
         "model_binding",
+        "conversation",
+        "conversation_event",
     ):
         included.remove(record_type)
         cast(dict[str, int], manifest["record_counts"]).pop(record_type)

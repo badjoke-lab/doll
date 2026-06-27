@@ -80,8 +80,8 @@ Completed:
 - Phase 4A AI environment portability foundation;
 - Phase 4B project continuity foundation;
 - IMP-001 through IMP-023;
-- IMP-030 through IMP-053;
-- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package v2 export with v1 read compatibility, a versioned authoritative record registry, ProjectRecord v2 with v1 read compatibility, WorkItemRecord v1 lifecycle and dependency integrity, and ProcedureRecord v1 lifecycle and non-authority guarantees, ProjectCheckpointRecord v1 confirmation and freshness, deterministic derived project status, deterministic project-scoped Resume Bundle export, project-continuity transfer and recovery coverage, completed Phase 4B acceptance evidence, a runtime-independent local adapter contract, a loopback-only Ollama adapter, authoritative runtime/model manifests with explicit bindings, and one canonical non-streaming local conversation turn with managed artifacts, deterministic context packaging, closed failure events, and non-authoritative runtime output, plus explicit scope-local model switching, deterministic fallback offers, bounded synthetic smoke probes, previous-binding retention, exact rollback, and bounded local streaming integration that keeps partial deltas transient while committing only terminally validated output through the canonical conversation path, verified backup, restore, continuity acceptance, the model-independent safety boundary, canonical conversation and event state, portability adapter and result records, generic import staging, generic export, reviewed publication, source preservation, idempotency, loss visibility, and Phase 4A acceptance evidence.
+- IMP-030 through IMP-054;
+- local workspace, SQLite state, migrations, managed artifacts, preferences, policies, permissions, confirmed memory, projects, decisions, state-package v2 export with v1 read compatibility, a versioned authoritative record registry, ProjectRecord v2 with v1 read compatibility, WorkItemRecord v1 lifecycle and dependency integrity, and ProcedureRecord v1 lifecycle and non-authority guarantees, ProjectCheckpointRecord v1 confirmation and freshness, deterministic derived project status, deterministic project-scoped Resume Bundle export, project-continuity transfer and recovery coverage, completed Phase 4B acceptance evidence, a runtime-independent local adapter contract, a loopback-only Ollama adapter, authoritative runtime/model manifests with explicit bindings, and one canonical non-streaming local conversation turn with managed artifacts, deterministic context packaging, closed failure events, and non-authoritative runtime output, plus explicit scope-local model switching, deterministic fallback offers, bounded synthetic smoke probes, previous-binding retention, exact rollback, bounded local streaming integration that keeps partial deltas transient while committing only terminally validated output through the canonical conversation path, and an exact-commit local-runtime continuity harness covering synthetic Ollama health, inventory, conversation, streaming, explicit fallback, forced rollback, package transfer, backup restore, and fresh-process inspection while the primary Intel Mac gate remains pending, verified backup, restore, continuity acceptance, the model-independent safety boundary, canonical conversation and event state, portability adapter and result records, generic import staging, generic export, reviewed publication, source preservation, idempotency, loss visibility, and Phase 4A acceptance evidence.
 
 Current implementation point:
 
@@ -104,7 +104,9 @@ Current implementation point:
 - IMP-052 never selects a fallback automatically, persists no probe response, rewrites no unrelated canonical state, and adds no schema migration or State Package format change;
 - IMP-053 connects the bounded local stream transcript to the existing canonical conversation path, keeps partial deltas transient, and commits one assistant message only after terminal identity, completion, non-blank, and secret-safety validation;
 - IMP-053 persists bounded error state without an assistant artifact or runtime-output origin for failed, cancelled, timed-out, malformed, blank, identity-mismatched, or secret-bearing stream results, and reuses duplicate-operation rejection and exact rollback;
-- no real runtime or model is connected, no user-side offline work is required through IMP-053, and no real-machine local-inference evidence is claimed;
+- IMP-054 adds an exact-commit Phase 5 acceptance runner, deterministic injected Ollama transport for CI, canonical non-streaming and streaming turns, explicit fallback switching, forced post-activation rollback, State Package v2 transfer, backup restore, fresh-process inspection without adapters, and bounded socket-destination and evidence controls;
+- IMP-054 automated evidence does not install or start Ollama, download models, use cloud services, or claim a real runtime;
+- the primary Intel Mac network-disabled gate remains pending, so no accepted real-runtime or local-inference release claim exists and completing IMP-054 now requires a user-side offline run from the exact merged commit;
 - model execution must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts.
 
 Implementation identifier policy:
@@ -419,7 +421,7 @@ Phase 4B gate:
 
 Goal: connect useful local inference without allowing the runtime or model to own state, secrets, permissions, trust decisions, portability, project progress, or side effects.
 
-Status: in progress through IMP-053.
+Status: automated acceptance evidence implemented through IMP-054; primary Intel Mac gate pending.
 
 The remaining work retains its required order and receives monotonically increasing implementation identifiers only when scheduled. The unused identifiers IMP-024 through IMP-029 are retired and must not be reused.
 
@@ -471,9 +473,19 @@ Partial deltas are never persisted. Only a terminally valid, identity-matched, n
 
 Schema version 3 and State Package v2 remain unchanged. CI uses injected synthetic adapters only and requires no user-side local or offline work. No browser, terminal, desktop live-rendering transport, real runtime, real model, runtime installation, process launch, model download, cloud request, credential retrieval, tool execution, capability execution, or project mutation is added.
 
+### IMP-054 — Network-disabled real-runtime continuity drill
+
+Status: automated harness implemented; primary Intel Mac evidence pending.
+
+Implemented an exact-commit acceptance runner that exercises the accepted Ollama adapter with deterministic injected transport in CI. The drill covers loopback health and exact inventory, canonical non-streaming and bounded streaming conversation, explicit switching to a configured fallback, forced post-activation failure and exact rollback, preservation of memory, project, portability, conversation, runtime/model manifest, and binding state, State Package v2 transfer, state-backup restore, and fresh-process inspection with adapters disabled. State Package v2 now registers the already-existing canonical `conversation` and `conversation_event` records as optional members, validates conversation ownership and parent-event graph integrity, keeps package v1 unchanged, and remains compatible with earlier v2 packages that omit those members.
+
+Real-machine mode accepts only Darwin x86_64 or amd64, the fixed IPv4 loopback Ollama transport, an explicit local port, two distinct preinstalled model names, the exact checked-out commit, and explicit offline and local-only confirmations. A socket guard rejects every non-loopback destination, and evidence output excludes native model names, prompts, responses, paths, usernames, hostnames, credentials, and secrets.
+
+The implementation does not install or start Ollama, download or delete models, use cloud providers, retrieve credentials, execute tools or capabilities, migrate schema, or change State Package v2. Phase 5 remains incomplete until a separate completion PR stores accepted primary Intel Mac evidence from the exact merged implementation commit.
+
 ### Offline mode and local AI continuity drill
 
-Prove network-disabled startup, outbound-request guard, local conversation, project-state inspection, fallback, model replacement without state loss, and primary-machine evidence.
+Run the exact merged IMP-054 commit on the primary Intel Mac with networking disabled, review the bounded result, and store accepted evidence in a separate completion PR before making a local-inference release claim.
 
 Phase 5 gate:
 
@@ -617,12 +629,13 @@ An implementation PR is done when:
 
 ## 18. Immediate work
 
-The required order after IMP-053 is:
+The required order after automated IMP-054 evidence is:
 
-1. run the network-disabled real-runtime continuity drill before making a local-inference release claim;
-2. prove explicit fallback and model replacement on the primary machine without canonical conversation, project, memory, portability, backup, or recovery loss;
-3. prove a real local AI migration path before provider-specific cloud portability becomes a primary claim;
-4. keep cloud providers, credentials, and automatic cloud fallback outside the local continuity gate.
+1. merge the exact-commit continuity harness without claiming real-runtime completion;
+2. run the exact merged `main` commit on the primary Intel Mac with networking disabled, two preinstalled local models, and explicit local-only confirmation;
+3. store and validate the bounded accepted result in a separate completion PR, then close #169 and complete the Phase 5 local-runtime gate only if every check passed;
+4. prove a real local AI migration path before provider-specific cloud portability becomes a primary claim;
+5. keep cloud providers, credentials, and automatic cloud fallback outside the local continuity gate.
 
 ## 19. Roadmap change control
 

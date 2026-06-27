@@ -170,8 +170,12 @@ expect(
   "roadmap must record the IMP-053 bounded streaming boundary",
 );
 expect(
-  roadmap.includes("The required order after IMP-053 is:"),
-  "roadmap must advance immediate work beyond IMP-053",
+  roadmap.includes("IMP-054 adds an exact-commit Phase 5 acceptance runner"),
+  "roadmap must record the IMP-054 local-runtime continuity harness",
+);
+expect(
+  roadmap.includes("The required order after automated IMP-054 evidence is:"),
+  "roadmap must advance immediate work to the IMP-054 real-machine gate",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),
