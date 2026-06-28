@@ -23,94 +23,54 @@ jobs:
         with:
           python-version: '3.12'
       - uses: astral-sh/setup-uv@v6
-      - name: Apply bounded capture fixes
+      - name: Fix diagnostics
         run: |
           python - <<'PY'
           from pathlib import Path
 
-          adapter = Path('src/doll/ollama_adapter.py')
-          text = adapter.read_text(encoding='utf-8')
-          old = '''        "/api/version": "GET",
-                  "/api/tags": "GET",
-                  "/api/generate": "POST",
-              }.get(path)'''
-          new = '''        "/api/version": "GET",
-                  "/api/tags": "GET",
-                  "/api/generate": "POST",
-                  "/api/chat": "POST",
-              }.get(path)'''
-          if text.count(old) != 1:
-              raise SystemExit('Ollama allowlist block not found')
-          adapter.write_text(text.replace(old, new), encoding='utf-8')
-
           capture = Path('src/doll/ollama_chat_capture.py')
           text = capture.read_text(encoding='utf-8')
-          text = text.replace(
-              '''from doll.ollama_session_import import (
-                  OllamaSessionImportError,
-                  OllamaSessionSourceAdapter,
-              )''',
-              '''from doll.ollama_session_import import (
-                  OllamaSessionImportError,
-                  OllamaSessionSourceAdapter,
-                  OllamaSessionStageResult,
-              )''',
-              1,
-          )
-          old_version = '''        document = _load_json_object(response.body, "runtime version response")
-                  value = document.get("version")'''
-          new_version = '''        try:
-                      document = _load_json_object(response.body, "runtime version response")
-                  except OllamaChatCaptureError:
-                      raise OllamaChatCaptureFailure("invalid_response") from None
-                  value = document.get("version")'''
-          if text.count(old_version) != 1:
-              raise SystemExit('runtime version parsing block not found')
-          text = text.replace(old_version, new_version)
-          old_parse = '''    document = _load_json_object(raw, "chat response")
-              if document.get("model") != expected_model:'''
-          new_parse = '''    try:
-                  document = _load_json_object(raw, "chat response")
-              except OllamaChatCaptureError:
-                  raise OllamaChatCaptureFailure("invalid_response") from None
-              if document.get("model") != expected_model:'''
-          if text.count(old_parse) != 1:
-              raise SystemExit('chat response parsing block not found')
-          text = text.replace(old_parse, new_parse)
-          text = text.replace(
-              '''    def _validate_bundle(self, source_bytes: bytes, started_at: str):''',
-              '''    def _validate_bundle(
-                  self,
-                  source_bytes: bytes,
-                  started_at: str,
-              ) -> OllamaSessionStageResult:''',
-              1,
-          )
-          old_time = '''    try:
-                  parsed = datetime.fromisoformat(normalized)
-              except ValueError as exc:
-                  raise OllamaChatCaptureError(f"{label} is invalid") from exc
-              if parsed.tzinfo is None or not math.isfinite(parsed.timestamp()):
-                  raise OllamaChatCaptureError(f"{label} must include a valid timezone")'''
-          new_time = '''    try:
-                  parsed = datetime.fromisoformat(normalized)
-                  finite = math.isfinite(parsed.timestamp())
-              except (ValueError, OverflowError, OSError) as exc:
-                  raise OllamaChatCaptureError(f"{label} is invalid") from exc
-              if parsed.tzinfo is None or not finite:
-                  raise OllamaChatCaptureError(f"{label} must include a valid timezone")'''
-          if text.count(old_time) != 1:
-              raise SystemExit('timestamp validation block not found')
-          capture.write_text(text.replace(old_time, new_time), encoding='utf-8')
+          old = '''from doll.ollama_session_import import (
+              OllamaSessionImportError,
+              OllamaSessionSourceAdapter,
+          )'''
+          new = '''from doll.ollama_session_import import (
+              OllamaSessionImportError,
+              OllamaSessionSourceAdapter,
+              OllamaSessionStageResult,
+          )'''
+          if text.count(old) != 1:
+              raise SystemExit('source adapter import block not found')
+          capture.write_text(text.replace(old, new), encoding='utf-8')
 
           tests = Path('tests/test_ollama_chat_capture.py')
-          test_text = tests.read_text(encoding='utf-8')
-          test_text = test_text.replace(
-              '''(OllamaHttpResponse(500, b"private inventory detail"), "adapter_failure"),''',
-              '''(OllamaHttpResponse(500, b"private inventory detail"), "runtime_unavailable"),''',
+          text = tests.read_text(encoding='utf-8')
+          text = text.replace('replace(base, **changes)', 'replace(base, **cast(Any, changes))', 1)
+          text = text.replace('**changes,', '**cast(Any, changes),', 1)
+          text = text.replace(
+              'cases.append((encode(duplicate_message), {}, "validation failed"))',
+              'cases.append((encode(duplicate_message), {}, "duplicate message ID"))',
               1,
           )
-          tests.write_text(test_text, encoding='utf-8')
+          old_patch = '''    capture, fake = service()
+              ready(fake)
+              monkeypatch.setattr(module, "_encode_bundle", lambda document: b"not-json")
+              with pytest.raises(OllamaChatCaptureError, match="bundle validation"):
+                  capture.capture(request(), context())
+
+              with pytest.raises(OllamaChatCaptureError, match="serializable"):
+                  module._encode_bundle({"bad": {1, 2}})'''
+          new_patch = '''    with pytest.raises(OllamaChatCaptureError, match="serializable"):
+                  module._encode_bundle({"bad": {1, 2}})
+
+              capture, fake = service()
+              ready(fake)
+              monkeypatch.setattr(module, "_encode_bundle", lambda document: b"not-json")
+              with pytest.raises(OllamaChatCaptureError, match="bundle validation"):
+                  capture.capture(request(), context())'''
+          if text.count(old_patch) != 1:
+              raise SystemExit('monkeypatch test block not found')
+          tests.write_text(text.replace(old_patch, new_patch), encoding='utf-8')
           PY
       - run: uv sync --locked
       - run: uv run ruff format src/doll/ollama_adapter.py src/doll/ollama_chat_capture.py tests/test_ollama_chat_capture.py
@@ -124,10 +84,10 @@ jobs:
           uv run pytest --no-cov tests/test_ollama_adapter.py tests/test_ollama_chat_capture.py > .github/imp056-pytest.log 2>&1
           echo "exit_code=$?" >> .github/imp056-pytest.log
           exit 0
-      - name: Commit prepared implementation and diagnostics
+      - name: Commit fixes and diagnostics
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add src/doll/ollama_adapter.py src/doll/ollama_chat_capture.py tests/test_ollama_chat_capture.py .github/imp056-ruff.log .github/imp056-mypy.log .github/imp056-pytest.log
-          git commit -m "Prepare IMP-056 chat capture"
+          git add src/doll/ollama_chat_capture.py tests/test_ollama_chat_capture.py .github/imp056-ruff.log .github/imp056-mypy.log .github/imp056-pytest.log
+          git commit -m "Fix IMP-056 capture diagnostics"
           git push origin HEAD:imp-056-ollama-chat-capture
