@@ -1,6 +1,0 @@
-tests/test_ollama_chat_capture.py:353: error: Name "Any" is not defined  [name-defined]
-tests/test_ollama_chat_capture.py:353: note: Did you forget to import it from "typing"? (Suggestion: "from typing import Any")
-tests/test_ollama_chat_capture.py:448: error: Name "Any" is not defined  [name-defined]
-tests/test_ollama_chat_capture.py:448: note: Did you forget to import it from "typing"? (Suggestion: "from typing import Any")
-Found 2 errors in 1 file (checked 208 source files)
-exit_code=1
