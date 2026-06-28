@@ -113,15 +113,21 @@ jobs:
           tests.write_text(test_text, encoding='utf-8')
           PY
       - run: uv sync --locked
-      - run: uv run ruff check --fix src/doll/ollama_adapter.py src/doll/ollama_chat_capture.py tests/test_ollama_chat_capture.py
       - run: uv run ruff format src/doll/ollama_adapter.py src/doll/ollama_chat_capture.py tests/test_ollama_chat_capture.py
-      - run: uv run ruff check src/doll/ollama_adapter.py src/doll/ollama_chat_capture.py tests/test_ollama_chat_capture.py
-      - run: uv run mypy
-      - run: uv run pytest --no-cov tests/test_ollama_adapter.py tests/test_ollama_chat_capture.py
-      - name: Commit prepared implementation
+      - name: Capture checks
+        run: |
+          set +e
+          uv run ruff check --fix src/doll/ollama_adapter.py src/doll/ollama_chat_capture.py tests/test_ollama_chat_capture.py > .github/imp056-ruff.log 2>&1
+          echo "exit_code=$?" >> .github/imp056-ruff.log
+          uv run mypy > .github/imp056-mypy.log 2>&1
+          echo "exit_code=$?" >> .github/imp056-mypy.log
+          uv run pytest --no-cov tests/test_ollama_adapter.py tests/test_ollama_chat_capture.py > .github/imp056-pytest.log 2>&1
+          echo "exit_code=$?" >> .github/imp056-pytest.log
+          exit 0
+      - name: Commit prepared implementation and diagnostics
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add src/doll/ollama_adapter.py src/doll/ollama_chat_capture.py tests/test_ollama_chat_capture.py
+          git add src/doll/ollama_adapter.py src/doll/ollama_chat_capture.py tests/test_ollama_chat_capture.py .github/imp056-ruff.log .github/imp056-mypy.log .github/imp056-pytest.log
           git commit -m "Prepare IMP-056 chat capture"
           git push origin HEAD:imp-056-ollama-chat-capture
