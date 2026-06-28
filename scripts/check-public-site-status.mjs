@@ -147,31 +147,31 @@ expect(
   "roadmap must record the accepted Phase 4B gate",
 );
 expect(
-  roadmap.includes("IMP-048 establishes the runtime-independent local adapter contract"),
+  roadmap.includes("### IMP-048 — Runtime adapter contract"),
   "roadmap must record the IMP-048 runtime adapter contract",
 );
 expect(
-  roadmap.includes("IMP-049 implements the first concrete Ollama adapter"),
+  roadmap.includes("### IMP-049 — First local Ollama runtime adapter"),
   "roadmap must record the IMP-049 Ollama adapter",
 );
 expect(
-  roadmap.includes("IMP-050 adds authoritative RuntimeManifestRecord v1"),
+  roadmap.includes("### IMP-050 — Model manifests and explicit bindings"),
   "roadmap must record the IMP-050 authoritative manifest foundation",
 );
 expect(
-  roadmap.includes("IMP-051 adds the first canonical non-streaming local conversation path"),
+  roadmap.includes("### IMP-051 — Canonical local conversation execution"),
   "roadmap must record the IMP-051 canonical local conversation path",
 );
 expect(
-  roadmap.includes("IMP-052 adds explicit scope-local switching to a chosen binding"),
+  roadmap.includes("### IMP-052 — Explicit model switching and fallback rollback"),
   "roadmap must record the IMP-052 explicit model-switch boundary",
 );
 expect(
-  roadmap.includes("IMP-053 connects the bounded local stream transcript"),
+  roadmap.includes("### IMP-053 — Bounded local streaming conversation path"),
   "roadmap must record the IMP-053 bounded streaming boundary",
 );
 expect(
-  roadmap.includes("IMP-054 adds an exact-commit Phase 5 acceptance runner"),
+  roadmap.includes("### IMP-054 — Network-disabled real-runtime continuity drill"),
   "roadmap must record the IMP-054 local-runtime continuity harness",
 );
 expect(
