@@ -34,7 +34,7 @@ def _run(*arguments: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def test_imp_054_ci_evidence_runs_full_synthetic_runtime_drill() -> None:
+def test_imp_054_ci_evidence_preserves_completed_primary_machine_gate() -> None:
     result = _run("--commit-sha", _head(), "--evidence-level", "ci")
 
     assert result.returncode == 0, result.stderr or result.stdout
@@ -45,8 +45,8 @@ def test_imp_054_ci_evidence_runs_full_synthetic_runtime_drill() -> None:
     assert payload["network_mode"] == "synthetic-no-network"
     assert payload["runtime_test_count"] == 12
     assert payload["runtime_test_ids"] == [f"LRUN-{number:03d}" for number in range(1, 13)]
-    assert payload["primary_intel_mac_gate"] == "pending"
-    assert payload["phase5_gate_complete"] is False
+    assert payload["primary_intel_mac_gate"] == "pass"
+    assert payload["phase5_gate_complete"] is True
     assert payload["real_runtime_used"] is False
     assert payload["cloud_credentials_used"] is False
     assert payload["external_network_request_used"] is False

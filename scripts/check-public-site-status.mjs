@@ -31,16 +31,16 @@ expect(
   "project-status.json requires a maturity string",
 );
 expect(
-  Array.isArray(status.completed_phases) && status.completed_phases.includes("4B"),
-  "project-status.json must record completed phases through Phase 4B",
+  Array.isArray(status.completed_phases) && status.completed_phases.includes("5"),
+  "project-status.json must record completed phases through Phase 5",
 );
 expect(
-  status.phase?.id === "5" &&
-    status.phase?.name === "Local runtime and model integration" &&
-    status.phase?.state === "in_progress" &&
-    status.phase?.started_by_implementation === 48 &&
-    status.phase?.next_implementation === 54,
-  "project-status.json must mark Phase 5 in progress from IMP-048 with IMP-054 next",
+  status.phase?.id === "6" &&
+    status.phase?.name === "Local AI portability and daily-use integration" &&
+    status.phase?.state === "ready" &&
+    status.phase?.started_by_implementation === null &&
+    status.phase?.next_implementation === 55,
+  "project-status.json must mark Phase 6 ready with IMP-055 next",
 );
 expect(
   status.model_runtime &&
@@ -79,6 +79,7 @@ for (const required of [
   'data-roadmap-phase="4A"',
   'data-roadmap-phase="4B"',
   'data-roadmap-phase="5"',
+  'data-roadmap-phase="6"',
   "data-roadmap-state",
   'src="./status.js"',
 ]) {
@@ -146,36 +147,44 @@ expect(
   "roadmap must record the accepted Phase 4B gate",
 );
 expect(
-  roadmap.includes("IMP-048 establishes the runtime-independent local adapter contract"),
+  roadmap.includes("### IMP-048 — Runtime adapter contract"),
   "roadmap must record the IMP-048 runtime adapter contract",
 );
 expect(
-  roadmap.includes("IMP-049 implements the first concrete Ollama adapter"),
+  roadmap.includes("### IMP-049 — First local Ollama runtime adapter"),
   "roadmap must record the IMP-049 Ollama adapter",
 );
 expect(
-  roadmap.includes("IMP-050 adds authoritative RuntimeManifestRecord v1"),
+  roadmap.includes("### IMP-050 — Model manifests and explicit bindings"),
   "roadmap must record the IMP-050 authoritative manifest foundation",
 );
 expect(
-  roadmap.includes("IMP-051 adds the first canonical non-streaming local conversation path"),
+  roadmap.includes("### IMP-051 — Canonical local conversation execution"),
   "roadmap must record the IMP-051 canonical local conversation path",
 );
 expect(
-  roadmap.includes("IMP-052 adds explicit scope-local switching to a chosen binding"),
+  roadmap.includes("### IMP-052 — Explicit model switching and fallback rollback"),
   "roadmap must record the IMP-052 explicit model-switch boundary",
 );
 expect(
-  roadmap.includes("IMP-053 connects the bounded local stream transcript"),
+  roadmap.includes("### IMP-053 — Bounded local streaming conversation path"),
   "roadmap must record the IMP-053 bounded streaming boundary",
 );
 expect(
-  roadmap.includes("IMP-054 adds an exact-commit Phase 5 acceptance runner"),
+  roadmap.includes("### IMP-054 — Network-disabled real-runtime continuity drill"),
   "roadmap must record the IMP-054 local-runtime continuity harness",
 );
 expect(
-  roadmap.includes("The required order after automated IMP-054 evidence is:"),
-  "roadmap must advance immediate work to the IMP-054 real-machine gate",
+  roadmap.includes("Phase 5 gate status: passed on 2026-06-28."),
+  "roadmap must record the accepted Phase 5 gate",
+);
+expect(
+  roadmap.includes("the first bounded Phase 6 implementation issue receives IMP-055 when opened"),
+  "roadmap must identify IMP-055 as the next implementation identifier",
+);
+expect(
+  roadmap.includes("The required order after the Phase 5 gate is:"),
+  "roadmap must advance immediate work to Phase 6",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),

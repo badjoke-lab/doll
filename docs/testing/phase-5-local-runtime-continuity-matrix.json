@@ -2,8 +2,8 @@
   "schema_version": 1,
   "phase": "5",
   "acceptance_test_id": "IMP-054-LOCAL-RUNTIME-CONTINUITY",
-  "phase5_gate_complete": false,
-  "accepted_real_machine_result": null,
+  "phase5_gate_complete": true,
+  "accepted_real_machine_result": "docs/testing/results/IMP-054-primary-intel-mac-2026-06-28.json",
   "runtime_tests": [
     {
       "id": "LRUN-001",
@@ -155,22 +155,22 @@
   ],
   "real_machine_gate": {
     "required": true,
-    "status": "pending",
+    "status": "pass",
     "platform": "Darwin",
     "architectures": [
       "x86_64",
       "amd64"
     ],
     "minimum_local_models": 2,
-    "commit_sha": null,
-    "completed_at": null,
+    "commit_sha": "1a5b66b2417d6f3e1eafcd14d2769e9c15d7f96c",
+    "completed_at": "2026-06-28T15:23:40.505485Z",
     "network_mode": "offline-confirmed"
   },
   "limitations": [
-    "CI uses an injected deterministic Ollama transport and is not real-runtime evidence.",
-    "Phase 5 remains incomplete until accepted primary Intel Mac evidence is stored separately.",
+    "Phase 5 is complete for the accepted local-runtime and model-integration boundary.",
+    "The drill proves real local Ollama conversation, streaming, explicit fallback switching, exact rollback, state transfer, backup restore, and fresh-process continuity on the primary Intel Mac.",
     "The drill does not install or start Ollama and does not download, delete, or modify models.",
     "The drill does not prove cloud portability, tool execution, or autonomous project mutation.",
-    "Different local models may fail the exact bounded switch probe and must not be marked compatible when they do."
+    "Other local runtimes, model families, architectures, and hardware profiles require their own compatibility evidence."
   ]
 }

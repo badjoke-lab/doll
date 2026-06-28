@@ -21,29 +21,68 @@ def _imports(path: Path) -> set[str]:
     return imports
 
 
-def test_phase_5_matrix_maps_lrun_001_through_lrun_012_with_gate_pending() -> None:
+def test_phase_5_matrix_maps_lrun_001_through_lrun_012_with_gate_complete() -> None:
     matrix = json.loads(MATRIX.read_text(encoding="utf-8"))
     entries = matrix["runtime_tests"]
+    result_path = Path(matrix["accepted_real_machine_result"])
+    result_text = result_path.read_text(encoding="utf-8")
+    result = json.loads(result_text)
 
     assert matrix["schema_version"] == 1
     assert matrix["phase"] == "5"
     assert matrix["acceptance_test_id"] == "IMP-054-LOCAL-RUNTIME-CONTINUITY"
-    assert matrix["phase5_gate_complete"] is False
-    assert matrix["accepted_real_machine_result"] is None
+    assert matrix["phase5_gate_complete"] is True
+    assert result_path == Path("docs/testing/results/IMP-054-primary-intel-mac-2026-06-28.json")
     assert [item["id"] for item in entries] == [f"LRUN-{number:03d}" for number in range(1, 13)]
     assert all(item["status"] == "pass" for item in entries)
     assert all(item["pytest_files"] for item in entries)
     assert all(item["evidence_levels"] == ["ci", "real-machine"] for item in entries)
-    assert matrix["real_machine_gate"] == {
+
+    gate = matrix["real_machine_gate"]
+    assert gate == {
         "required": True,
-        "status": "pending",
+        "status": "pass",
         "platform": "Darwin",
         "architectures": ["x86_64", "amd64"],
         "minimum_local_models": 2,
-        "commit_sha": None,
-        "completed_at": None,
+        "commit_sha": "1a5b66b2417d6f3e1eafcd14d2769e9c15d7f96c",
+        "completed_at": "2026-06-28T15:23:40.505485Z",
         "network_mode": "offline-confirmed",
     }
+    assert result["test_id"] == matrix["acceptance_test_id"]
+    assert result["result"] == "pass"
+    assert result["evidence_level"] == "real-machine"
+    assert result["operating_system"] == "Darwin"
+    assert result["architecture"] == "x86_64"
+    assert result["python_version"] == "3.12.13"
+    assert result["network_mode"] == "offline-confirmed"
+    assert result["commit_sha"] == gate["commit_sha"]
+    assert result["completed_at"] == gate["completed_at"]
+    assert result["primary_intel_mac_gate"] == "pass"
+    assert result["phase5_gate_complete"] is True
+    assert result["real_runtime_used"] is True
+    assert result["runtime_test_count"] == 12
+    assert result["runtime_test_ids"] == [f"LRUN-{number:03d}" for number in range(1, 13)]
+    assert result["external_network_request_used"] is False
+    assert result["cloud_credentials_used"] is False
+    assert result["model_download_used"] is False
+    assert result["runtime_installation_used"] is False
+    assert all(result["checks"].values())
+    assert all(value is False for value in result["privacy"].values())
+    assert result["evidence"]["runtime_mode"] == "real-local"
+    assert result["evidence"]["runtime_adapter_id"] == "ollama.local"
+    assert result["evidence"]["runtime_version"] == "0.30.11"
+    assert result["evidence"]["model_count"] == 2
+    assert result["evidence"]["rejected_socket_attempts"] == 0
+
+    for forbidden in (
+        "qwen2.5",
+        "/Users/",
+        "/home/",
+        "primary-model",
+        "fallback-model",
+    ):
+        assert forbidden not in result_text
 
 
 def test_real_runtime_probe_uses_only_loopback_ollama_and_no_install_path() -> None:
