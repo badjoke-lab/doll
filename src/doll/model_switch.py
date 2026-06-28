@@ -98,8 +98,7 @@ def validate_model_switch_probe_output(value: object) -> bool:
     """Accept one bounded machine token while tolerating harmless model prefix variation."""
 
     return (
-        isinstance(value, str)
-        and _MODEL_SWITCH_PROBE_RESPONSE.fullmatch(value.strip()) is not None
+        isinstance(value, str) and _MODEL_SWITCH_PROBE_RESPONSE.fullmatch(value.strip()) is not None
     )
 
 

@@ -343,9 +343,7 @@ def _probe_model(boundary: LocalRuntimeBoundary, model_id: str, operation_id: st
             timeout_seconds=MODEL_SWITCH_PROBE_TIMEOUT_SECONDS,
         ),
     )
-    return result.outcome == "completed" and validate_model_switch_probe_output(
-        result.output_text
-    )
+    return result.outcome == "completed" and validate_model_switch_probe_output(result.output_text)
 
 
 def _select_models(
