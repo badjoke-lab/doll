@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - fix-imp-054-nonsemantic-probe
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
