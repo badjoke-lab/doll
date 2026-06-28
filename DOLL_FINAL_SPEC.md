@@ -24,7 +24,7 @@
 - `docs/spec/08-acceptance-and-continuity-tests.md` — SHA-256 `1ae9b70cf28257b35a30238bdc46c2caea93dbd17fdf8b516ff708c9e208a698`
 - `docs/spec/08a-ai-environment-portability-acceptance.md` — SHA-256 `3a1876d8b506204254ccd54eb58cfabcf2ddc92e3edd446d90650b9ae22ff305`
 - `docs/spec/08b-project-continuity-acceptance.md` — SHA-256 `b58623f21bdd183a21e1904ebcec954ffb2b6976254b72ac52f13deae83306cc`
-- `docs/spec/09-development-roadmap.md` — SHA-256 `218cb91d2c50a51bab26a03ef753c8bee89d2befb164d688502501c1d64877db`
+- `docs/spec/09-development-roadmap.md` — SHA-256 `dded96d01c37979ba460525882858ddc8efb8bbe06922844bf54cca40f4654fa`
 
 ---
 
@@ -8564,8 +8564,8 @@ Completed:
 - Phase 4B project continuity foundation;
 - Phase 5 local runtime and model integration;
 - IMP-001 through IMP-023;
-- IMP-030 through IMP-054;
-- local workspace, SQLite state, migrations, managed artifacts, canonical conversation and project state, State Package v2, backup and restore, the model-independent safety boundary, AI-environment portability, project continuity, runtime-independent adapter contracts, a loopback-only Ollama adapter, authoritative runtime and model manifests, explicit bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, and accepted primary Intel Mac offline continuity evidence through IMP-054.
+- IMP-030 through IMP-055;
+- local workspace, SQLite state, migrations, managed artifacts, canonical conversation and project state, State Package v2, backup and restore, the model-independent safety boundary, AI-environment portability, project continuity, runtime-independent adapter contracts, a loopback-only Ollama adapter, authoritative runtime and model manifests, explicit bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, and accepted primary Intel Mac offline continuity evidence through IMP-054, and the offline Ollama API session source adapter through IMP-055.
 
 Current implementation point:
 
@@ -8577,8 +8577,11 @@ Current implementation point:
 - Phase 5 passed its local-runtime continuity gate on 2026-06-28;
 - accepted real-machine evidence is bound to commit `1a5b66b2417d6f3e1eafcd14d2769e9c15d7f96c` on the primary Intel Mac with networking disabled;
 - IMP-048 through IMP-054 establish the runtime contract, loopback-only Ollama adapter, authoritative manifests and bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, State Package v2 transfer, backup restore, and accepted LRUN-001 through LRUN-012 evidence;
-- Phase 6 local AI portability and daily-use integration is now ready;
-- the first bounded Phase 6 implementation issue receives IMP-055 when opened;
+- Phase 6 local AI portability and daily-use integration is now in progress;
+- IMP-055 adds an offline source adapter for a documented caller-retained Ollama API session bundle, with exact JSON validation, content-free inventory, original-source hashing, deterministic normalization, explicit attachment-metadata loss, and reuse of the accepted generic staging and reviewed-publication boundary;
+- IMP-055 performs no live Ollama request, application-database read, shell-history read, model import, credential access, cloud request, tool execution, schema migration, or State Package format change;
+- IMP-055 does not complete PORT-013 or a stable local-environment portability claim; a later live capture or supported local-application export path and private primary-machine migration drill remain required;
+- the next bounded Phase 6 implementation receives IMP-056 when its issue is opened;
 - later local migration, cloud, and tool work must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts.
 
 Implementation identifier policy:
@@ -8979,6 +8982,8 @@ Phase 5 gate:
 
 Goal: prove that doll can enter from, operate across, and exit to documented formats around real local AI use.
 
+Status: in progress from IMP-055.
+
 Required sequence, with later non-conflicting implementation identifiers:
 
 1. select one local AI environment actually used by the project owner;
@@ -8991,6 +8996,18 @@ Required sequence, with later non-conflicting implementation identifiers:
 8. pass PORT-001, PORT-003, PORT-013, PORT-015, and applicable PORT-002 evidence;
 9. implement the project owner's ChatGPT history adapter only after the local path proves the contract;
 10. run the private PORT-014 migration drill without committing personal data.
+
+### IMP-055 — Offline Ollama API session source adapter
+
+Status: implemented with synthetic CI evidence; real local-environment migration evidence remains pending.
+
+Implemented a source-specific parser for the documented doll-defined `ollama-api-chat-session` version 1 JSON format. The adapter accepts explicit caller-provided bytes only, declares `network_behavior = none`, rejects duplicate keys, non-finite constants, invalid UTF-8, malformed exact shapes, unsupported versions, invalid timestamps and identifiers, and bounded resource violations, and produces a content-free inventory plus the SHA-256 of the exact original bundle.
+
+Supported conversations, user, assistant, system, and tool-role messages, parent relationships, tool calls, and attachment metadata normalize deterministically into the existing generic portability object model. Imported model identifiers remain non-authoritative source metadata. Attachment bytes are not read, and metadata-only handling produces explicit material loss. Unknown roles, conflicting duplicates, missing parents, and cycles use the accepted quarantine and loss paths.
+
+The adapter reuses the Phase 4A generic staging, preview, exact-plan approval, source mapping, unchanged-source idempotency, changed-source conflict, original-source preservation, atomic publication, and failure-cleanup boundaries. It introduces no authoritative record type, schema migration, State Package format change, runtime request, process launch, credential path, cloud access, tool execution, capability execution, or automatic authority promotion.
+
+Synthetic tests prove deterministic inventory and mappings, canonical publication, managed source preservation, unchanged re-import reuse, changed-source conflict without overwrite, malformed and hostile-input handling, and absence of network or runtime dependencies. IMP-055 does not establish a native Ollama export, live capture, tested round trip, PORT-013 completion, or the Phase 6 gate.
 
 Daily-use work may then expand writing, editing, summarization, translation, planning, memory review, project and decision workflows, work-item proposals, portability review, accessibility, error clarity, Lite performance, and soak testing.
 
@@ -9109,13 +9126,13 @@ An implementation PR is done when:
 
 ## 18. Immediate work
 
-The required order after the Phase 5 gate is:
+The required order after IMP-055 is:
 
-1. open the first bounded Phase 6 local-AI portability issue as IMP-055;
-2. select one local AI environment actually used by the project owner and implement its source adapter against the Phase 4A contract;
-3. prove inventory, source provenance, duplicate prevention, quarantine, explicit mapping, and loss reporting with synthetic data before any private migration drill;
-4. prove that imported canonical state remains usable after the original local application is disabled or removed;
-5. keep provider-specific cloud portability, credentials, tools, and automatic cloud fallback outside the local migration gate.
+1. merge the offline Ollama API session source adapter only after all cross-platform, quality, specification, public-status, numbering, and coverage checks pass;
+2. open the next bounded Phase 6 issue as IMP-056 for an explicit live capture or supported local-application export path that can produce the documented session bundle without reading undeclared private storage;
+3. run the private primary Intel Mac migration drill with synthetic or approved private test content, retrieve imported context through a different approved execution component, and disable or remove the original application;
+4. complete applicable PORT-001, PORT-003, PORT-013, and later PORT-015 evidence before making a stable local-portability or anti-lock-in claim;
+5. keep ChatGPT history, provider-specific cloud portability, credentials, tools, and automatic cloud fallback outside the local migration gate.
 
 ## 19. Roadmap change control
 

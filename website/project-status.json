@@ -13,13 +13,13 @@
   "phase": {
     "id": "6",
     "name": "Local AI portability and daily-use integration",
-    "state": "ready",
-    "started_by_implementation": null,
-    "next_implementation": 55
+    "state": "in_progress",
+    "started_by_implementation": 55,
+    "next_implementation": 56
   },
   "model_runtime": {
     "connected": true,
-    "message": "Phase 5 is complete. Real loopback-only Ollama conversation, streaming, explicit fallback switching, exact rollback, State Package v2 transfer, backup restore, and offline continuity passed on the primary Intel Mac. Phase 6 local AI portability is ready."
+    "message": "Phase 6 is in progress from IMP-055. The offline Ollama API session source adapter validates and inventories caller-retained local session bundles and reuses the accepted generic portability boundary. Live capture and the PORT-013 real-machine migration drill remain pending."
   },
   "last_reviewed": "2026-06-28"
 }
