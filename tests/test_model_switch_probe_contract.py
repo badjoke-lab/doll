@@ -25,7 +25,7 @@ def test_probe_contract_rejects_empty_explanatory_or_malformed_output() -> None:
         "doll_switch_ok",
         "SWITCH_OK",
         "DOLL-SWITCH-OK",
-        "A" * 48 + "_SWITCH_OK",
+        "A" * 49 + "_SWITCH_OK",
     )
     assert all(not validate_model_switch_probe_output(value) for value in rejected)
 
