@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - imp-056-ollama-chat-capture
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
