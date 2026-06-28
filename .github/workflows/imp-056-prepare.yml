@@ -1,0 +1,124 @@
+name: IMP-056 prepare
+
+on:
+  push:
+    branches:
+      - imp-056-ollama-chat-capture
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-056-ollama-chat-capture
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@v6
+      - name: Apply bounded capture fixes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          adapter = Path('src/doll/ollama_adapter.py')
+          text = adapter.read_text(encoding='utf-8')
+          old = '''        "/api/version": "GET",
+                  "/api/tags": "GET",
+                  "/api/generate": "POST",
+              }.get(path)'''
+          new = '''        "/api/version": "GET",
+                  "/api/tags": "GET",
+                  "/api/generate": "POST",
+                  "/api/chat": "POST",
+              }.get(path)'''
+          if text.count(old) != 1:
+              raise SystemExit('Ollama allowlist block not found')
+          adapter.write_text(text.replace(old, new), encoding='utf-8')
+
+          capture = Path('src/doll/ollama_chat_capture.py')
+          text = capture.read_text(encoding='utf-8')
+          text = text.replace(
+              '''from doll.ollama_session_import import (
+                  OllamaSessionImportError,
+                  OllamaSessionSourceAdapter,
+              )''',
+              '''from doll.ollama_session_import import (
+                  OllamaSessionImportError,
+                  OllamaSessionSourceAdapter,
+                  OllamaSessionStageResult,
+              )''',
+              1,
+          )
+          old_version = '''        document = _load_json_object(response.body, "runtime version response")
+                  value = document.get("version")'''
+          new_version = '''        try:
+                      document = _load_json_object(response.body, "runtime version response")
+                  except OllamaChatCaptureError:
+                      raise OllamaChatCaptureFailure("invalid_response") from None
+                  value = document.get("version")'''
+          if text.count(old_version) != 1:
+              raise SystemExit('runtime version parsing block not found')
+          text = text.replace(old_version, new_version)
+          old_parse = '''    document = _load_json_object(raw, "chat response")
+              if document.get("model") != expected_model:'''
+          new_parse = '''    try:
+                  document = _load_json_object(raw, "chat response")
+              except OllamaChatCaptureError:
+                  raise OllamaChatCaptureFailure("invalid_response") from None
+              if document.get("model") != expected_model:'''
+          if text.count(old_parse) != 1:
+              raise SystemExit('chat response parsing block not found')
+          text = text.replace(old_parse, new_parse)
+          text = text.replace(
+              '''    def _validate_bundle(self, source_bytes: bytes, started_at: str):''',
+              '''    def _validate_bundle(
+                  self,
+                  source_bytes: bytes,
+                  started_at: str,
+              ) -> OllamaSessionStageResult:''',
+              1,
+          )
+          old_time = '''    try:
+                  parsed = datetime.fromisoformat(normalized)
+              except ValueError as exc:
+                  raise OllamaChatCaptureError(f"{label} is invalid") from exc
+              if parsed.tzinfo is None or not math.isfinite(parsed.timestamp()):
+                  raise OllamaChatCaptureError(f"{label} must include a valid timezone")'''
+          new_time = '''    try:
+                  parsed = datetime.fromisoformat(normalized)
+                  finite = math.isfinite(parsed.timestamp())
+              except (ValueError, OverflowError, OSError) as exc:
+                  raise OllamaChatCaptureError(f"{label} is invalid") from exc
+              if parsed.tzinfo is None or not finite:
+                  raise OllamaChatCaptureError(f"{label} must include a valid timezone")'''
+          if text.count(old_time) != 1:
+              raise SystemExit('timestamp validation block not found')
+          capture.write_text(text.replace(old_time, new_time), encoding='utf-8')
+
+          tests = Path('tests/test_ollama_chat_capture.py')
+          test_text = tests.read_text(encoding='utf-8')
+          test_text = test_text.replace(
+              '''(OllamaHttpResponse(500, b"private inventory detail"), "adapter_failure"),''',
+              '''(OllamaHttpResponse(500, b"private inventory detail"), "runtime_unavailable"),''',
+              1,
+          )
+          tests.write_text(test_text, encoding='utf-8')
+          PY
+      - run: uv sync --locked
+      - run: uv run ruff check --fix src/doll/ollama_adapter.py src/doll/ollama_chat_capture.py tests/test_ollama_chat_capture.py
+      - run: uv run ruff format src/doll/ollama_adapter.py src/doll/ollama_chat_capture.py tests/test_ollama_chat_capture.py
+      - run: uv run ruff check src/doll/ollama_adapter.py src/doll/ollama_chat_capture.py tests/test_ollama_chat_capture.py
+      - run: uv run mypy
+      - run: uv run pytest --no-cov tests/test_ollama_adapter.py tests/test_ollama_chat_capture.py
+      - name: Commit prepared implementation
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add src/doll/ollama_adapter.py src/doll/ollama_chat_capture.py tests/test_ollama_chat_capture.py
+          git commit -m "Prepare IMP-056 chat capture"
+          git push origin HEAD:imp-056-ollama-chat-capture
