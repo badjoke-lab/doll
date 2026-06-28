@@ -23,71 +23,28 @@ jobs:
         with:
           python-version: '3.12'
       - uses: astral-sh/setup-uv@v6
-      - name: Fix diagnostics
+      - name: Restore typed test helper import
         run: |
           python - <<'PY'
           from pathlib import Path
 
-          capture = Path('src/doll/ollama_chat_capture.py')
-          text = capture.read_text(encoding='utf-8')
-          old = '''from doll.ollama_session_import import (
-              OllamaSessionImportError,
-              OllamaSessionSourceAdapter,
-          )'''
-          new = '''from doll.ollama_session_import import (
-              OllamaSessionImportError,
-              OllamaSessionSourceAdapter,
-              OllamaSessionStageResult,
-          )'''
-          if text.count(old) != 1:
-              raise SystemExit('source adapter import block not found')
-          capture.write_text(text.replace(old, new), encoding='utf-8')
-
           tests = Path('tests/test_ollama_chat_capture.py')
           text = tests.read_text(encoding='utf-8')
-          text = text.replace('replace(base, **changes)', 'replace(base, **cast(Any, changes))', 1)
-          text = text.replace('**changes,', '**cast(Any, changes),', 1)
-          text = text.replace(
-              'cases.append((encode(duplicate_message), {}, "validation failed"))',
-              'cases.append((encode(duplicate_message), {}, "duplicate message ID"))',
-              1,
-          )
-          old_patch = '''    capture, fake = service()
-              ready(fake)
-              monkeypatch.setattr(module, "_encode_bundle", lambda document: b"not-json")
-              with pytest.raises(OllamaChatCaptureError, match="bundle validation"):
-                  capture.capture(request(), context())
-
-              with pytest.raises(OllamaChatCaptureError, match="serializable"):
-                  module._encode_bundle({"bad": {1, 2}})'''
-          new_patch = '''    with pytest.raises(OllamaChatCaptureError, match="serializable"):
-                  module._encode_bundle({"bad": {1, 2}})
-
-              capture, fake = service()
-              ready(fake)
-              monkeypatch.setattr(module, "_encode_bundle", lambda document: b"not-json")
-              with pytest.raises(OllamaChatCaptureError, match="bundle validation"):
-                  capture.capture(request(), context())'''
-          if text.count(old_patch) != 1:
-              raise SystemExit('monkeypatch test block not found')
-          tests.write_text(text.replace(old_patch, new_patch), encoding='utf-8')
+          old = 'from typing import cast\n'
+          new = 'from typing import Any, cast\n'
+          if text.count(old) != 1:
+              raise SystemExit('typing import not found')
+          tests.write_text(text.replace(old, new), encoding='utf-8')
           PY
       - run: uv sync --locked
       - run: uv run ruff format src/doll/ollama_adapter.py src/doll/ollama_chat_capture.py tests/test_ollama_chat_capture.py
-      - name: Capture checks
-        run: |
-          set +e
-          uv run ruff check --fix src/doll/ollama_adapter.py src/doll/ollama_chat_capture.py tests/test_ollama_chat_capture.py > .github/imp056-ruff.log 2>&1
-          echo "exit_code=$?" >> .github/imp056-ruff.log
-          uv run mypy > .github/imp056-mypy.log 2>&1
-          echo "exit_code=$?" >> .github/imp056-mypy.log
-          uv run pytest --no-cov tests/test_ollama_adapter.py tests/test_ollama_chat_capture.py > .github/imp056-pytest.log 2>&1
-          echo "exit_code=$?" >> .github/imp056-pytest.log
-          exit 0
-      - name: Commit fixes and diagnostics
+      - run: uv run ruff check src/doll/ollama_adapter.py src/doll/ollama_chat_capture.py tests/test_ollama_chat_capture.py
+      - run: uv run mypy
+      - run: uv run pytest --no-cov tests/test_ollama_adapter.py tests/test_ollama_chat_capture.py
+      - name: Commit prepared implementation
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add src/doll/ollama_chat_capture.py tests/test_ollama_chat_capture.py .github/imp056-ruff.log .github/imp056-mypy.log .github/imp056-pytest.log
-          git commit -m "Fix IMP-056 capture diagnostics"
+          git add src/doll/ollama_adapter.py src/doll/ollama_chat_capture.py tests/test_ollama_chat_capture.py
+          git commit -m "Complete IMP-056 preparation"
           git push origin HEAD:imp-056-ollama-chat-capture
