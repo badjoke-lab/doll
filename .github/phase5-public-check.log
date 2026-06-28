@@ -1,8 +1,0 @@
-public-site-status check failed: roadmap must record the IMP-048 runtime adapter contract
-public-site-status check failed: roadmap must record the IMP-049 Ollama adapter
-public-site-status check failed: roadmap must record the IMP-050 authoritative manifest foundation
-public-site-status check failed: roadmap must record the IMP-051 canonical local conversation path
-public-site-status check failed: roadmap must record the IMP-052 explicit model-switch boundary
-public-site-status check failed: roadmap must record the IMP-053 bounded streaming boundary
-public-site-status check failed: roadmap must record the IMP-054 local-runtime continuity harness
-exit_code=1
