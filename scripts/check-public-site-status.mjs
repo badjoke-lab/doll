@@ -37,10 +37,10 @@ expect(
 expect(
   status.phase?.id === "6" &&
     status.phase?.name === "Local AI portability and daily-use integration" &&
-    status.phase?.state === "ready" &&
-    status.phase?.started_by_implementation === null &&
-    status.phase?.next_implementation === 55,
-  "project-status.json must mark Phase 6 ready with IMP-055 next",
+    status.phase?.state === "in_progress" &&
+    status.phase?.started_by_implementation === 55 &&
+    status.phase?.next_implementation === 56,
+  "project-status.json must mark Phase 6 in progress from IMP-055 with IMP-056 next",
 );
 expect(
   status.model_runtime &&
@@ -179,12 +179,16 @@ expect(
   "roadmap must record the accepted Phase 5 gate",
 );
 expect(
-  roadmap.includes("the first bounded Phase 6 implementation issue receives IMP-055 when opened"),
-  "roadmap must identify IMP-055 as the next implementation identifier",
+  roadmap.includes("### IMP-055 — Offline Ollama API session source adapter"),
+  "roadmap must record the IMP-055 Ollama session source adapter",
 );
 expect(
-  roadmap.includes("The required order after the Phase 5 gate is:"),
-  "roadmap must advance immediate work to Phase 6",
+  roadmap.includes("the next bounded Phase 6 implementation receives IMP-056 when its issue is opened"),
+  "roadmap must identify IMP-056 as the next implementation identifier",
+);
+expect(
+  roadmap.includes("The required order after IMP-055 is:"),
+  "roadmap must advance immediate work beyond IMP-055",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),
