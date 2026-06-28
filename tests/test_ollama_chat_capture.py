@@ -6,7 +6,7 @@ import time
 from collections.abc import Iterable
 from dataclasses import replace
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 from uuid import uuid4
 
 import pytest
