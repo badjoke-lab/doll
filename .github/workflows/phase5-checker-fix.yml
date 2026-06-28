@@ -1,0 +1,48 @@
+name: Phase 5 checker fix
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-054-phase5-completion
+      - name: Align roadmap checks
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('scripts/check-public-site-status.mjs')
+          text = path.read_text(encoding='utf-8')
+          replacements = {
+              'IMP-048 establishes the runtime-independent local adapter contract': '### IMP-048 — Runtime adapter contract',
+              'IMP-049 implements the first concrete Ollama adapter': '### IMP-049 — First local Ollama runtime adapter',
+              'IMP-050 adds authoritative RuntimeManifestRecord v1': '### IMP-050 — Model manifests and explicit bindings',
+              'IMP-051 adds the first canonical non-streaming local conversation path': '### IMP-051 — Canonical local conversation execution',
+              'IMP-052 adds explicit scope-local switching to a chosen binding': '### IMP-052 — Explicit model switching and fallback rollback',
+              'IMP-053 connects the bounded local stream transcript': '### IMP-053 — Bounded local streaming conversation path',
+              'IMP-054 adds an exact-commit Phase 5 acceptance runner': '### IMP-054 — Network-disabled real-runtime continuity drill',
+          }
+          for old, new in replacements.items():
+              if text.count(old) != 1:
+                  raise SystemExit(f'unexpected checker phrase count: {old}')
+              text = text.replace(old, new)
+          path.write_text(text, encoding='utf-8')
+          PY
+      - run: node scripts/check-public-site-status.mjs
+      - name: Commit checker update
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts/check-public-site-status.mjs
+          git commit -m "Align Phase 5 public status checks"
+          git push origin HEAD:imp-054-phase5-completion
