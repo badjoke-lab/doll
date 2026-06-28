@@ -19,117 +19,111 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - uses: astral-sh/setup-uv@v6
       - name: Apply bounded nonsemantic probe fix
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
+          import textwrap
 
-          def replace_once(path: str, old: str, new: str) -> None:
-              target = Path(path)
-              text = target.read_text(encoding="utf-8")
-              if text.count(old) != 1:
-                  raise SystemExit(f"unexpected replacement count for {path}: {text.count(old)}")
-              target.write_text(text.replace(old, new), encoding="utf-8")
-
-          replace_once(
-              "src/doll/model_switch.py",
-              '''MODEL_SWITCH_PROBE_INPUT = (
-              "purpose=local_model_switch_smoke_test\\n"
-              "This is a bounded machine-readability check. Reply with one uppercase ASCII token "
-              "ending in _SWITCH_OK and no other text. Do not explain, quote it, add punctuation, "
-              "or use Markdown.\\n"
-              "DOLL_SWITCH_OK"
-          )
-          MODEL_SWITCH_PROBE_MAX_OUTPUT_CHARS = 64
-          MODEL_SWITCH_PROBE_TIMEOUT_SECONDS = 60.0
-          _MODEL_SWITCH_PROBE_RESPONSE = re.compile(r"^[A-Z][A-Z0-9_]{0,47}_SWITCH_OK$")
-          ''',
-              '''MODEL_SWITCH_PROBE_INPUT = (
-              "purpose=local_model_switch_smoke_test\\n"
-              "Generate a brief plain-text acknowledgement that this local model can produce output. "
-              "The response is discarded and grants no authority."
-          )
-          MODEL_SWITCH_PROBE_MAX_OUTPUT_CHARS = 2_048
-          MODEL_SWITCH_PROBE_TIMEOUT_SECONDS = 60.0
-          ''',
-          )
-
-          replace_once(
-              "src/doll/model_switch.py",
-              '''def validate_model_switch_probe_output(value: object) -> bool:
-              """Accept one bounded machine token while tolerating harmless model prefix variation."""
-
-              return (
-                  isinstance(value, str) and _MODEL_SWITCH_PROBE_RESPONSE.fullmatch(value.strip()) is not None
+          model_path = Path("src/doll/model_switch.py")
+          model = model_path.read_text(encoding="utf-8")
+          model, count = re.subn(
+              r'MODEL_SWITCH_PROBE_INPUT = \(.*?\n\)\nMODEL_SWITCH_PROBE_MAX_OUTPUT_CHARS = 64\nMODEL_SWITCH_PROBE_TIMEOUT_SECONDS = 60\.0\n_MODEL_SWITCH_PROBE_RESPONSE = re\.compile\(r".*?"\)\n',
+              textwrap.dedent('''\
+              MODEL_SWITCH_PROBE_INPUT = (
+                  "purpose=local_model_switch_smoke_test\\n"
+                  "Generate a brief plain-text acknowledgement that this local model can produce output. "
+                  "The response is discarded and grants no authority."
               )
-          ''',
-              '''def validate_model_switch_probe_output(value: object) -> bool:
-              """Accept any non-empty bounded local generation result without semantic coupling."""
-
-              return (
-                  isinstance(value, str)
-                  and bool(value.strip())
-                  and len(value) <= MODEL_SWITCH_PROBE_MAX_OUTPUT_CHARS
-                  and "\\x00" not in value
-              )
-          ''',
+              MODEL_SWITCH_PROBE_MAX_OUTPUT_CHARS = 2_048
+              MODEL_SWITCH_PROBE_TIMEOUT_SECONDS = 60.0
+              '''),
+              model,
+              count=1,
+              flags=re.DOTALL,
           )
+          if count != 1:
+              raise SystemExit("probe constant replacement failed")
 
-          test_path = Path("tests/test_model_switch.py")
-          test_text = test_path.read_text(encoding="utf-8")
-          if test_text.count('"wrong response"') != 3:
+          model, count = re.subn(
+              r'def validate_model_switch_probe_output\(value: object\) -> bool:\n.*?\n\n\n@dataclass',
+              textwrap.dedent('''\
+              def validate_model_switch_probe_output(value: object) -> bool:
+                  """Accept any non-empty bounded local generation result without semantic coupling."""
+
+                  return (
+                      isinstance(value, str)
+                      and bool(value.strip())
+                      and len(value) <= MODEL_SWITCH_PROBE_MAX_OUTPUT_CHARS
+                      and "\\x00" not in value
+                  )
+
+
+              @dataclass'''),
+              model,
+              count=1,
+              flags=re.DOTALL,
+          )
+          if count != 1:
+              raise SystemExit("probe validator replacement failed")
+          model_path.write_text(model, encoding="utf-8")
+
+          tests_path = Path("tests/test_model_switch.py")
+          tests = tests_path.read_text(encoding="utf-8")
+          if tests.count('"wrong response"') != 3:
               raise SystemExit("unexpected wrong-response test count")
-          test_path.write_text(test_text.replace('"wrong response"', '""'), encoding="utf-8")
+          tests_path.write_text(tests.replace('"wrong response"', '""'), encoding="utf-8")
 
           Path("tests/test_model_switch_probe_contract.py").write_text(
-              '''from __future__ import annotations
+              textwrap.dedent('''\
+              from __future__ import annotations
 
-          from doll.model_switch import (
-              MODEL_SWITCH_PROBE_INPUT,
-              MODEL_SWITCH_PROBE_MAX_OUTPUT_CHARS,
-              MODEL_SWITCH_PROBE_TIMEOUT_SECONDS,
-              validate_model_switch_probe_output,
-          )
-
-
-          def test_probe_contract_accepts_nonempty_bounded_generation_without_semantic_coupling() -> None:
-              assert validate_model_switch_probe_output("DOLL_SWITCH_OK")
-              assert validate_model_switch_probe_output("DOLDRUM_SWITCH_OK")
-              assert validate_model_switch_probe_output("A local model response with ordinary prose.\\n")
-
-
-          def test_probe_contract_rejects_empty_nul_or_oversized_output() -> None:
-              rejected = (
-                  None,
-                  "",
-                  "   ",
-                  "valid-looking\\x00text",
-                  "A" * (MODEL_SWITCH_PROBE_MAX_OUTPUT_CHARS + 1),
+              from doll.model_switch import (
+                  MODEL_SWITCH_PROBE_INPUT,
+                  MODEL_SWITCH_PROBE_MAX_OUTPUT_CHARS,
+                  MODEL_SWITCH_PROBE_TIMEOUT_SECONDS,
+                  validate_model_switch_probe_output,
               )
-              assert all(not validate_model_switch_probe_output(value) for value in rejected)
 
 
-          def test_probe_request_is_bounded_non_authoritative_and_slow_cpu_compatible() -> None:
-              assert "local_model_switch_smoke_test" in MODEL_SWITCH_PROBE_INPUT
-              assert "response is discarded and grants no authority" in MODEL_SWITCH_PROBE_INPUT
-              assert MODEL_SWITCH_PROBE_MAX_OUTPUT_CHARS == 2_048
-              assert MODEL_SWITCH_PROBE_TIMEOUT_SECONDS == 60.0
-          ''',
+              def test_probe_contract_accepts_nonempty_bounded_generation_without_semantic_coupling() -> None:
+                  assert validate_model_switch_probe_output("DOLL_SWITCH_OK")
+                  assert validate_model_switch_probe_output("DOLDRUM_SWITCH_OK")
+                  assert validate_model_switch_probe_output("A local model response with ordinary prose.\\n")
+
+
+              def test_probe_contract_rejects_empty_nul_or_oversized_output() -> None:
+                  rejected = (
+                      None,
+                      "",
+                      "   ",
+                      "valid-looking\\x00text",
+                      "A" * (MODEL_SWITCH_PROBE_MAX_OUTPUT_CHARS + 1),
+                  )
+                  assert all(not validate_model_switch_probe_output(value) for value in rejected)
+
+
+              def test_probe_request_is_bounded_non_authoritative_and_slow_cpu_compatible() -> None:
+                  assert "local_model_switch_smoke_test" in MODEL_SWITCH_PROBE_INPUT
+                  assert "response is discarded and grants no authority" in MODEL_SWITCH_PROBE_INPUT
+                  assert MODEL_SWITCH_PROBE_MAX_OUTPUT_CHARS == 2_048
+                  assert MODEL_SWITCH_PROBE_TIMEOUT_SECONDS == 60.0
+              '''),
               encoding="utf-8",
           )
 
-          replace_once(
-              "scripts/imp_054_runtime_probe.py",
-              '''            switch = ModelSwitchService(repository, boundary).switch_to_fallback(
+          probe_path = Path("scripts/imp_054_runtime_probe.py")
+          probe = probe_path.read_text(encoding="utf-8")
+          old = '''            switch = ModelSwitchService(repository, boundary).switch_to_fallback(
                   scope_type="conversation",
                   scope_key="imp054",
                   target_binding_id=identifiers["fallback_binding_id"],
                   operation_id="imp054.switch.to-fallback",
               )
               third = non_streaming.execute_turn(
-          ''',
-              '''            switch = ModelSwitchService(repository, boundary).switch_to_fallback(
+          '''
+          new = '''            switch = ModelSwitchService(repository, boundary).switch_to_fallback(
                   scope_type="conversation",
                   scope_key="imp054",
                   target_binding_id=identifiers["fallback_binding_id"],
@@ -138,20 +132,19 @@ jobs:
               if switch.outcome != "switched":
                   raise RuntimeError("explicit fallback switch did not complete")
               third = non_streaming.execute_turn(
-          ''',
-          )
-
-          replace_once(
-              "scripts/imp_054_runtime_probe.py",
-              '''            rollback = ModelSwitchService(repository, rollback_boundary).switch_binding(
+          '''
+          if probe.count(old) != 1:
+              raise SystemExit("fallback guard insertion failed")
+          probe = probe.replace(old, new)
+          old = '''            rollback = ModelSwitchService(repository, rollback_boundary).switch_binding(
                   scope_type="conversation",
                   scope_key="imp054",
                   target_binding_id=identifiers["primary_binding_id"],
                   operation_id="imp054.switch.forced-rollback",
               )
               rollback_probe_calls = rollback_adapter.probe_calls
-          ''',
-              '''            rollback = ModelSwitchService(repository, rollback_boundary).switch_binding(
+          '''
+          new = '''            rollback = ModelSwitchService(repository, rollback_boundary).switch_binding(
                   scope_type="conversation",
                   scope_key="imp054",
                   target_binding_id=identifiers["primary_binding_id"],
@@ -160,25 +153,30 @@ jobs:
               if rollback.outcome != "rolled_back":
                   raise RuntimeError("forced rollback did not complete")
               rollback_probe_calls = rollback_adapter.probe_calls
-          ''',
-          )
+          '''
+          if probe.count(old) != 1:
+              raise SystemExit("rollback guard insertion failed")
+          probe_path.write_text(probe.replace(old, new), encoding="utf-8")
 
-          replace_once(
-              "docs/implementation/imp-052-explicit-model-switch-and-fallback.md",
-              '''A completed response must be one non-empty uppercase ASCII token ending in `_SWITCH_OK`, with no prose, quotation, punctuation, Markdown, or multiline content. The prefix may vary because real local models can harmlessly normalize an unfamiliar fixed token while still proving bounded machine-readable generation. Timeout, cancellation, resource limit, adapter failure, empty output, explanation text, malformed output, or any response outside that bounded token grammar becomes a normalized failure code.''',
-              '''A completed response must contain non-empty output within the fixed 2,048-character ceiling and must not contain a null character. The probe deliberately does not inspect wording, token spelling, language, punctuation, or semantic compliance: a generative model can harmlessly paraphrase or normalize a requested token, so content equality is not a reliable health condition. Timeout, cancellation, resource limit, adapter failure, empty output, null-bearing output, or oversized output becomes a normalized failure code.''',
-          )
-
-          replace_once(
-              "docs/implementation/imp-054-real-runtime-continuity-drill.md",
-              '''The runner does not install or start Ollama. It does not pull, delete, modify, or select models automatically. Each selected model must complete the fixed bounded probe and return one non-empty uppercase ASCII token ending in `_SWITCH_OK`. A harmless uppercase prefix variation is accepted because real models can normalize an unfamiliar fixed token; empty output, prose, punctuation, Markdown, malformed output, timeout, or runtime failure is rejected. The probe allows 60 seconds for CPU-only model loading and generation.''',
-              '''The runner does not install or start Ollama. It does not pull, delete, modify, or select models automatically. Each selected model must complete the fixed bounded probe and return non-empty output within 2,048 characters without a null character. The wording is intentionally ignored because semantic or exact-token compliance is not a reliable health condition for a generative model. Empty, null-bearing, oversized, timed-out, or failed output is rejected. The probe allows 60 seconds for CPU-only model loading and generation.''',
-          )
+          docs = {
+              "docs/implementation/imp-052-explicit-model-switch-and-fallback.md": (
+                  "A completed response must be one non-empty uppercase ASCII token ending in `_SWITCH_OK`, with no prose, quotation, punctuation, Markdown, or multiline content. The prefix may vary because real local models can harmlessly normalize an unfamiliar fixed token while still proving bounded machine-readable generation. Timeout, cancellation, resource limit, adapter failure, empty output, explanation text, malformed output, or any response outside that bounded token grammar becomes a normalized failure code.",
+                  "A completed response must contain non-empty output within the fixed 2,048-character ceiling and must not contain a null character. The probe deliberately does not inspect wording, token spelling, language, punctuation, or semantic compliance: a generative model can harmlessly paraphrase or normalize a requested token, so content equality is not a reliable health condition. Timeout, cancellation, resource limit, adapter failure, empty output, null-bearing output, or oversized output becomes a normalized failure code.",
+              ),
+              "docs/implementation/imp-054-real-runtime-continuity-drill.md": (
+                  "The runner does not install or start Ollama. It does not pull, delete, modify, or select models automatically. Each selected model must complete the fixed bounded probe and return one non-empty uppercase ASCII token ending in `_SWITCH_OK`. A harmless uppercase prefix variation is accepted because real models can normalize an unfamiliar fixed token; empty output, prose, punctuation, Markdown, malformed output, timeout, or runtime failure is rejected. The probe allows 60 seconds for CPU-only model loading and generation.",
+                  "The runner does not install or start Ollama. It does not pull, delete, modify, or select models automatically. Each selected model must complete the fixed bounded probe and return non-empty output within 2,048 characters without a null character. The wording is intentionally ignored because semantic or exact-token compliance is not a reliable health condition for a generative model. Empty, null-bearing, oversized, timed-out, or failed output is rejected. The probe allows 60 seconds for CPU-only model loading and generation.",
+              ),
+          }
+          for name, (old, new) in docs.items():
+              path = Path(name)
+              text = path.read_text(encoding="utf-8")
+              if text.count(old) != 1:
+                  raise SystemExit(f"documentation replacement failed: {name}")
+              path.write_text(text.replace(old, new), encoding="utf-8")
           PY
-      - run: uv sync --locked
-      - run: uv run ruff format .
-      - run: uv run ruff check .
-      - run: uv run pytest tests/test_model_switch.py tests/test_model_switch_probe_contract.py tests/test_runtime_continuity_acceptance.py
+      - run: python -m compileall -q src scripts tests
+      - run: git diff --check
       - name: Commit patch
         run: |
           git config user.name github-actions[bot]
