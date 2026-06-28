@@ -307,7 +307,7 @@ def test_explicit_fallback_switch_requires_eligible_selected_binding(tmp_path: P
 
 def test_failed_preflight_leaves_active_binding_unchanged(tmp_path: Path) -> None:
     initialized = _workspace(tmp_path)
-    adapter = SwitchAdapter(responses=["wrong response"])
+    adapter = SwitchAdapter(responses=[""])
     with state.open_state_repository(initialized.root) as repository:
         manifests, active, target = _setup(repository, adapter)
         result = _service(repository, adapter).switch_binding(
@@ -344,7 +344,7 @@ def test_runtime_failure_preflight_is_bounded(tmp_path: Path) -> None:
 
 def test_failed_post_activation_probe_restores_exact_previous_binding(tmp_path: Path) -> None:
     initialized = _workspace(tmp_path)
-    adapter = SwitchAdapter(responses=["DOLL_SWITCH_OK", "wrong response"])
+    adapter = SwitchAdapter(responses=["DOLL_SWITCH_OK", ""])
     with state.open_state_repository(initialized.root) as repository:
         manifests, active, target = _setup(repository, adapter)
         unrelated = repository.create_record(
@@ -475,7 +475,7 @@ def test_invalid_scope_current_target_and_adapter_mismatch_call_no_runtime(tmp_p
 
 def test_duplicate_operation_is_rejected_after_failed_or_successful_attempt(tmp_path: Path) -> None:
     initialized = _workspace(tmp_path)
-    adapter = SwitchAdapter(responses=["wrong response"])
+    adapter = SwitchAdapter(responses=[""])
     with state.open_state_repository(initialized.root) as repository:
         _, _, target = _setup(repository, adapter)
         service = _service(repository, adapter)

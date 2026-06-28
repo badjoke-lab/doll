@@ -572,6 +572,8 @@ def run(
                 target_binding_id=identifiers["fallback_binding_id"],
                 operation_id="imp054.switch.to-fallback",
             )
+            if switch.outcome != "switched":
+                raise RuntimeError("explicit fallback switch did not complete")
             third = non_streaming.execute_turn(
                 conversation_id=conversation_id,
                 scope_type="conversation",
@@ -588,6 +590,8 @@ def run(
                 target_binding_id=identifiers["primary_binding_id"],
                 operation_id="imp054.switch.forced-rollback",
             )
+            if rollback.outcome != "rolled_back":
+                raise RuntimeError("forced rollback did not complete")
             rollback_probe_calls = rollback_adapter.probe_calls
             fourth = LocalConversationService(repository, boundary).execute_turn(
                 conversation_id=conversation_id,

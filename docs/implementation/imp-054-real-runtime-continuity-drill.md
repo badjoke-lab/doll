@@ -56,7 +56,7 @@ A process-local socket guard rejects every destination except `127.0.0.1` on the
 
 The user must disable networking outside the runner before invoking real-machine mode. The runner requires both `--offline-confirmed` and `--local-only-confirmed`, the exact checked-out commit, Darwin on x86_64 or amd64, and two distinct explicit names of already installed local Ollama models.
 
-The runner does not install or start Ollama. It does not pull, delete, modify, or select models automatically. Each selected model must complete the fixed bounded probe and return one non-empty uppercase ASCII token ending in `_SWITCH_OK`. A harmless uppercase prefix variation is accepted because real models can normalize an unfamiliar fixed token; empty output, prose, punctuation, Markdown, malformed output, timeout, or runtime failure is rejected. The probe allows 60 seconds for CPU-only model loading and generation.
+The runner does not install or start Ollama. It does not pull, delete, modify, or select models automatically. Each selected model must complete the fixed bounded probe and return non-empty output within 2,048 characters without a null character. The wording is intentionally ignored because semantic or exact-token compliance is not a reliable health condition for a generative model. Empty, null-bearing, oversized, timed-out, or failed output is rejected. The probe allows 60 seconds for CPU-only model loading and generation.
 
 ## Canonical state and authority
 

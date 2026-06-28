@@ -31,14 +31,11 @@ _OPERATION_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,95}$")
 _MODEL_ID = re.compile(r"^[a-z0-9][a-z0-9._-]{0,127}$")
 MODEL_SWITCH_PROBE_INPUT = (
     "purpose=local_model_switch_smoke_test\n"
-    "This is a bounded machine-readability check. Reply with one uppercase ASCII token "
-    "ending in _SWITCH_OK and no other text. Do not explain, quote it, add punctuation, "
-    "or use Markdown.\n"
-    "DOLL_SWITCH_OK"
+    "Generate a brief plain-text acknowledgement that this local model can produce output. "
+    "The response is discarded and grants no authority."
 )
-MODEL_SWITCH_PROBE_MAX_OUTPUT_CHARS = 64
+MODEL_SWITCH_PROBE_MAX_OUTPUT_CHARS = 2_048
 MODEL_SWITCH_PROBE_TIMEOUT_SECONDS = 60.0
-_MODEL_SWITCH_PROBE_RESPONSE = re.compile(r"^[A-Z][A-Z0-9_]{0,47}_SWITCH_OK$")
 _MAX_BINDINGS = 500
 _TARGET_STATES = frozenset({"candidate", "previous", "fallback", "disabled"})
 
@@ -95,10 +92,13 @@ class ModelSwitchResult:
 
 
 def validate_model_switch_probe_output(value: object) -> bool:
-    """Accept one bounded machine token while tolerating harmless model prefix variation."""
+    """Accept any non-empty bounded local generation result without semantic coupling."""
 
     return (
-        isinstance(value, str) and _MODEL_SWITCH_PROBE_RESPONSE.fullmatch(value.strip()) is not None
+        isinstance(value, str)
+        and bool(value.strip())
+        and len(value) <= MODEL_SWITCH_PROBE_MAX_OUTPUT_CHARS
+        and "\x00" not in value
     )
 
 

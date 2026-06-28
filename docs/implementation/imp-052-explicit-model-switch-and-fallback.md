@@ -37,9 +37,9 @@ There is no automatic discovery, automatic selection, third-binding substitution
 
 ## Smoke-probe boundary
 
-Both probes call only `LocalRuntimeBoundary.generate`. The transient request uses a fixed explicit instruction, a 64-character output ceiling, a 60-second timeout for CPU-only local model loading and generation, and a fresh cancellation token. It contains no user conversation, imported content, memory, project data, procedure, checkpoint, credential, secret, private path, provider body, or host information.
+Both probes call only `LocalRuntimeBoundary.generate`. The transient request uses a fixed explicit instruction, a 2,048-character output ceiling, a 60-second timeout for CPU-only local model loading and generation, and a fresh cancellation token. It contains no user conversation, imported content, memory, project data, procedure, checkpoint, credential, secret, private path, provider body, or host information.
 
-A completed response must be one non-empty uppercase ASCII token ending in `_SWITCH_OK`, with no prose, quotation, punctuation, Markdown, or multiline content. The prefix may vary because real local models can harmlessly normalize an unfamiliar fixed token while still proving bounded machine-readable generation. Timeout, cancellation, resource limit, adapter failure, empty output, explanation text, malformed output, or any response outside that bounded token grammar becomes a normalized failure code.
+A completed response must contain non-empty output within the fixed 2,048-character ceiling and must not contain a null character. The probe deliberately does not inspect wording, token spelling, language, punctuation, or semantic compliance: a generative model can harmlessly paraphrase or normalize a requested token, so content equality is not a reliable health condition. Timeout, cancellation, resource limit, adapter failure, empty output, null-bearing output, or oversized output becomes a normalized failure code.
 
 Probe output is never stored as an artifact, conversation event, instruction-origin record, memory, project record, or audit value. Results expose stable identifiers, a hash of the scope key, normalized outcomes, and normalized failure codes only.
 
@@ -67,7 +67,7 @@ The probe is health evidence only. Its output is not a user instruction, policy,
 
 ## Validation boundary
 
-Tests use deterministic injected adapters and clocks. They cover target and fallback ordering, explicit successful switching, explicit fallback switching, preflight failure without active-binding change, bounded runtime failure, post-activation probe failure, post-activation adapter-declaration mismatch, exact rollback, unrelated-state preservation, cross-scope and current-target rejection, adapter mismatch before execution, duplicate operation rejection, read-only state, bounded result and audit privacy, accepted fixed and harmless-prefix-variant smoke tokens, rejected empty/explanatory/malformed output, and static absence of cloud, tool, capability, inventory, streaming, and process dependencies.
+Tests use deterministic injected adapters and clocks. They cover target and fallback ordering, explicit successful switching, explicit fallback switching, preflight failure without active-binding change, bounded runtime failure, post-activation probe failure, post-activation adapter-declaration mismatch, exact rollback, unrelated-state preservation, cross-scope and current-target rejection, adapter mismatch before execution, duplicate operation rejection, read-only state, bounded result and audit privacy, acceptance of arbitrary non-empty bounded output, rejection of empty, null-bearing, or oversized output, and static absence of cloud, tool, capability, inventory, streaming, and process dependencies.
 
 CI performs no real network request, runtime process launch, runtime installation, model download, cloud request, or credential retrieval. No user-side local/offline action is required for IMP-052.
 
