@@ -32,9 +32,7 @@ def test_phase_5_matrix_maps_lrun_001_through_lrun_012_with_gate_complete() -> N
     assert matrix["phase"] == "5"
     assert matrix["acceptance_test_id"] == "IMP-054-LOCAL-RUNTIME-CONTINUITY"
     assert matrix["phase5_gate_complete"] is True
-    assert result_path == Path(
-        "docs/testing/results/IMP-054-primary-intel-mac-2026-06-28.json"
-    )
+    assert result_path == Path("docs/testing/results/IMP-054-primary-intel-mac-2026-06-28.json")
     assert [item["id"] for item in entries] == [f"LRUN-{number:03d}" for number in range(1, 13)]
     assert all(item["status"] == "pass" for item in entries)
     assert all(item["pytest_files"] for item in entries)
