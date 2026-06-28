@@ -350,7 +350,7 @@ def test_configuration_and_request_contracts_fail_closed() -> None:
     ]
     for changes, message in invalids:
         with pytest.raises(OllamaChatCaptureError, match=message):
-            replace(base, **changes)
+            replace(base, **cast(Any, changes))
 
     with pytest.raises(OllamaChatCaptureError, match="creation timestamp"):
         OllamaChatCaptureRequest(
@@ -397,7 +397,7 @@ def test_existing_bundle_identity_and_history_rejections_precede_chat() -> None:
 
     duplicate_message = decoded_bundle(first)
     messages(conversations(duplicate_message)[0])[1]["message_id"] = "message-1"
-    cases.append((encode(duplicate_message), {}, "validation failed"))
+    cases.append((encode(duplicate_message), {}, "duplicate message ID"))
 
     non_linear = decoded_bundle(first)
     messages(conversations(non_linear)[0])[1]["parent_message_ids"] = []
@@ -445,7 +445,7 @@ def test_existing_bundle_identity_and_history_rejections_precede_chat() -> None:
                     assistant_message_id="message-4",
                     user_created_at=T3,
                     exported_at=T4,
-                    **changes,
+                    **cast(Any, changes),
                 ),
                 context(),
             )
@@ -574,14 +574,14 @@ def test_bundle_serialization_and_final_validation_are_closed(
 ) -> None:
     import doll.ollama_chat_capture as module
 
+    with pytest.raises(OllamaChatCaptureError, match="serializable"):
+        module._encode_bundle({"bad": {1, 2}})
+
     capture, fake = service()
     ready(fake)
     monkeypatch.setattr(module, "_encode_bundle", lambda document: b"not-json")
     with pytest.raises(OllamaChatCaptureError, match="bundle validation"):
         capture.capture(request(), context())
-
-    with pytest.raises(OllamaChatCaptureError, match="serializable"):
-        module._encode_bundle({"bad": {1, 2}})
 
 
 def test_module_has_no_state_tool_credential_or_cloud_dependency() -> None:

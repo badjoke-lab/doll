@@ -23,6 +23,7 @@ from doll.ollama_adapter import (
 from doll.ollama_session_import import (
     OllamaSessionImportError,
     OllamaSessionSourceAdapter,
+    OllamaSessionStageResult,
 )
 from doll.portability import PortabilityContractError
 from doll.runtime_adapter import (

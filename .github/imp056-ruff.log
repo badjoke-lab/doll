@@ -1,13 +1,24 @@
-F821 Undefined name `OllamaSessionStageResult`
-   --> src/doll/ollama_chat_capture.py:402:10
+F821 Undefined name `Any`
+   --> tests/test_ollama_chat_capture.py:353:34
     |
-400 |         source_bytes: bytes,
-401 |         started_at: str,
-402 |     ) -> OllamaSessionStageResult:
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^
-403 |         try:
-404 |             return self._source_adapter.stage(
+351 |     for changes, message in invalids:
+352 |         with pytest.raises(OllamaChatCaptureError, match=message):
+353 |             replace(base, **cast(Any, changes))
+    |                                  ^^^
+354 |
+355 |     with pytest.raises(OllamaChatCaptureError, match="creation timestamp"):
     |
 
-Found 2 errors (1 fixed, 1 remaining).
+F821 Undefined name `Any`
+   --> tests/test_ollama_chat_capture.py:448:28
+    |
+446 |                     user_created_at=T3,
+447 |                     exported_at=T4,
+448 |                     **cast(Any, changes),
+    |                            ^^^
+449 |                 ),
+450 |                 context(),
+    |
+
+Found 2 errors.
 exit_code=1
