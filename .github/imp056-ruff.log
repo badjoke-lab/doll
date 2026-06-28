@@ -1,0 +1,13 @@
+F821 Undefined name `OllamaSessionStageResult`
+   --> src/doll/ollama_chat_capture.py:402:10
+    |
+400 |         source_bytes: bytes,
+401 |         started_at: str,
+402 |     ) -> OllamaSessionStageResult:
+    |          ^^^^^^^^^^^^^^^^^^^^^^^^
+403 |         try:
+404 |             return self._source_adapter.stage(
+    |
+
+Found 2 errors (1 fixed, 1 remaining).
+exit_code=1

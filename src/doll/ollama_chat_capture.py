@@ -42,9 +42,7 @@ _MAX_USER_TEXT_CHARS = 262_144
 _MODEL_ID_PATTERN = re.compile(r"^[a-z0-9][a-z0-9._-]{0,127}$")
 _VERSION_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._+\-]{0,127}$")
 _ALLOWED_HISTORY_ROLES = frozenset({"user", "assistant", "system", "tool"})
-_ALLOWED_RESPONSE_MESSAGE_KEYS = frozenset(
-    {"role", "content", "images", "tool_calls", "thinking"}
-)
+_ALLOWED_RESPONSE_MESSAGE_KEYS = frozenset({"role", "content", "images", "tool_calls", "thinking"})
 
 
 class OllamaChatCaptureError(ValueError):
@@ -229,9 +227,7 @@ class OllamaChatCaptureService:
                 "existing session runtime version differs from current runtime"
             )
 
-        request_messages = [
-            {"role": item["role"], "content": item["content"]} for item in messages
-        ]
+        request_messages = [{"role": item["role"], "content": item["content"]} for item in messages]
         request_messages.append({"role": "user", "content": request.user_text})
         chat_body = _encode_chat_request(native_model, request_messages)
         response = self._request_json(
@@ -369,7 +365,10 @@ class OllamaChatCaptureService:
         )
         if response.status_code != 200:
             raise OllamaChatCaptureFailure("runtime_unavailable")
-        document = _load_json_object(response.body, "runtime version response")
+        try:
+            document = _load_json_object(response.body, "runtime version response")
+        except OllamaChatCaptureError:
+            raise OllamaChatCaptureFailure("invalid_response") from None
         value = document.get("version")
         if not isinstance(value, str) or _VERSION_PATTERN.fullmatch(value) is None:
             raise OllamaChatCaptureFailure("invalid_response")
@@ -396,7 +395,11 @@ class OllamaChatCaptureService:
         except RuntimeContractError:
             raise OllamaChatCaptureFailure("adapter_failure") from None
 
-    def _validate_bundle(self, source_bytes: bytes, started_at: str):
+    def _validate_bundle(
+        self,
+        source_bytes: bytes,
+        started_at: str,
+    ) -> OllamaSessionStageResult:
         try:
             return self._source_adapter.stage(
                 source_bytes,
@@ -469,7 +472,10 @@ def _parse_chat_response(
     expected_model: str,
     maximum_chars: int,
 ) -> tuple[str, str, OllamaChatFinishReason]:
-    document = _load_json_object(raw, "chat response")
+    try:
+        document = _load_json_object(raw, "chat response")
+    except OllamaChatCaptureError:
+        raise OllamaChatCaptureFailure("invalid_response") from None
     if document.get("model") != expected_model:
         raise OllamaChatCaptureFailure("invalid_response")
     created_at = document.get("created_at")
@@ -503,7 +509,11 @@ def _parse_chat_response(
         or "\x00" in content
         or len(content) > maximum_chars
     ):
-        code: RuntimeFailureCode = "resource_limit" if isinstance(content, str) and len(content) > maximum_chars else "invalid_response"
+        code: RuntimeFailureCode = (
+            "resource_limit"
+            if isinstance(content, str) and len(content) > maximum_chars
+            else "invalid_response"
+        )
         raise OllamaChatCaptureFailure(code)
     for key in ("images", "tool_calls", "thinking"):
         value = message.get(key)
@@ -626,9 +636,10 @@ def _timestamp(value: object, label: str) -> datetime:
     normalized = value[:-1] + "+00:00" if value.endswith("Z") else value
     try:
         parsed = datetime.fromisoformat(normalized)
-    except ValueError as exc:
+        finite = math.isfinite(parsed.timestamp())
+    except (ValueError, OverflowError, OSError) as exc:
         raise OllamaChatCaptureError(f"{label} is invalid") from exc
-    if parsed.tzinfo is None or not math.isfinite(parsed.timestamp()):
+    if parsed.tzinfo is None or not finite:
         raise OllamaChatCaptureError(f"{label} must include a valid timezone")
     return parsed
 

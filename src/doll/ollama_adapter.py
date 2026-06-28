@@ -675,6 +675,7 @@ def _validate_http_request(
         "/api/version": "GET",
         "/api/tags": "GET",
         "/api/generate": "POST",
+        "/api/chat": "POST",
     }.get(path)
     if expected_method is None:
         raise RuntimeContractError("unsupported Ollama API path")

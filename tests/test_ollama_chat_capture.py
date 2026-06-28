@@ -6,7 +6,7 @@ import time
 from collections.abc import Iterable
 from dataclasses import replace
 from pathlib import Path
-from typing import Any, cast
+from typing import cast
 from uuid import uuid4
 
 import pytest
@@ -466,7 +466,7 @@ def test_model_inventory_and_transport_failures_are_bounded() -> None:
     cases: list[tuple[object, str]] = [
         (OllamaHttpResponse(200, tags(model("only:cloud"))), "model_not_found"),
         (OllamaHttpResponse(200, tags(model("other:1b"))), "model_not_found"),
-        (OllamaHttpResponse(500, b"private inventory detail"), "adapter_failure"),
+        (OllamaHttpResponse(500, b"private inventory detail"), "runtime_unavailable"),
         (OllamaTransportFailure("timeout"), "timeout"),
         (OllamaTransportFailure("cancelled"), "cancelled"),
         (OllamaTransportFailure("resource_limit"), "resource_limit"),

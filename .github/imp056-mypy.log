@@ -1,0 +1,9 @@
+src/doll/ollama_chat_capture.py:402: error: Name "OllamaSessionStageResult" is not defined  [name-defined]
+tests/test_ollama_chat_capture.py:353: error: Argument 2 to "replace" of "OllamaChatCaptureRequest" has incompatible type "**dict[str, object]"; expected "str"  [arg-type]
+tests/test_ollama_chat_capture.py:353: error: Argument 2 to "replace" of "OllamaChatCaptureRequest" has incompatible type "**dict[str, object]"; expected "bytes | None"  [arg-type]
+tests/test_ollama_chat_capture.py:353: error: Argument 2 to "replace" of "OllamaChatCaptureRequest" has incompatible type "**dict[str, object]"; expected "str | None"  [arg-type]
+tests/test_ollama_chat_capture.py:353: error: Argument 2 to "replace" of "OllamaChatCaptureRequest" has incompatible type "**dict[str, object]"; expected "int"  [arg-type]
+tests/test_ollama_chat_capture.py:448: error: Argument 6 to "request" has incompatible type "**dict[str, object]"; expected "str"  [arg-type]
+tests/test_ollama_chat_capture.py:448: error: Argument 6 to "request" has incompatible type "**dict[str, object]"; expected "int"  [arg-type]
+Found 7 errors in 2 files (checked 208 source files)
+exit_code=1
