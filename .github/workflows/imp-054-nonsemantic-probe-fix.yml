@@ -8,6 +8,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: imp054-nonsemantic-probe-fixer
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
@@ -28,17 +32,18 @@ jobs:
 
           model_path = Path("src/doll/model_switch.py")
           model = model_path.read_text(encoding="utf-8")
+          constants_replacement = textwrap.dedent('''\
+          MODEL_SWITCH_PROBE_INPUT = (
+              "purpose=local_model_switch_smoke_test\\n"
+              "Generate a brief plain-text acknowledgement that this local model can produce output. "
+              "The response is discarded and grants no authority."
+          )
+          MODEL_SWITCH_PROBE_MAX_OUTPUT_CHARS = 2_048
+          MODEL_SWITCH_PROBE_TIMEOUT_SECONDS = 60.0
+          ''')
           model, count = re.subn(
               r'MODEL_SWITCH_PROBE_INPUT = \(.*?\n\)\nMODEL_SWITCH_PROBE_MAX_OUTPUT_CHARS = 64\nMODEL_SWITCH_PROBE_TIMEOUT_SECONDS = 60\.0\n_MODEL_SWITCH_PROBE_RESPONSE = re\.compile\(r".*?"\)\n',
-              textwrap.dedent('''\
-              MODEL_SWITCH_PROBE_INPUT = (
-                  "purpose=local_model_switch_smoke_test\\n"
-                  "Generate a brief plain-text acknowledgement that this local model can produce output. "
-                  "The response is discarded and grants no authority."
-              )
-              MODEL_SWITCH_PROBE_MAX_OUTPUT_CHARS = 2_048
-              MODEL_SWITCH_PROBE_TIMEOUT_SECONDS = 60.0
-              '''),
+              lambda _: constants_replacement,
               model,
               count=1,
               flags=re.DOTALL,
@@ -46,21 +51,22 @@ jobs:
           if count != 1:
               raise SystemExit("probe constant replacement failed")
 
+          validator_replacement = textwrap.dedent('''\
+          def validate_model_switch_probe_output(value: object) -> bool:
+              """Accept any non-empty bounded local generation result without semantic coupling."""
+
+              return (
+                  isinstance(value, str)
+                  and bool(value.strip())
+                  and len(value) <= MODEL_SWITCH_PROBE_MAX_OUTPUT_CHARS
+                  and "\\x00" not in value
+              )
+
+
+          @dataclass''')
           model, count = re.subn(
               r'def validate_model_switch_probe_output\(value: object\) -> bool:\n.*?\n\n\n@dataclass',
-              textwrap.dedent('''\
-              def validate_model_switch_probe_output(value: object) -> bool:
-                  """Accept any non-empty bounded local generation result without semantic coupling."""
-
-                  return (
-                      isinstance(value, str)
-                      and bool(value.strip())
-                      and len(value) <= MODEL_SWITCH_PROBE_MAX_OUTPUT_CHARS
-                      and "\\x00" not in value
-                  )
-
-
-              @dataclass'''),
+              lambda _: validator_replacement,
               model,
               count=1,
               flags=re.DOTALL,
