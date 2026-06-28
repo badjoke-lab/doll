@@ -9,7 +9,7 @@ from dataclasses import dataclass, field, replace
 from datetime import datetime
 from typing import cast
 
-from doll.generic_import import GenericImportStageResult, GenericImportStager
+from doll.generic_import import GenericImportStager, GenericImportStageResult
 from doll.portability import (
     AdapterResourceLimits,
     PortabilityContractError,
@@ -46,9 +46,7 @@ _MESSAGE_KEYS = frozenset(
         "tool_calls",
     }
 )
-_ATTACHMENT_KEYS = frozenset(
-    {"attachment_id", "name", "media_type", "size_bytes", "sha256"}
-)
+_ATTACHMENT_KEYS = frozenset({"attachment_id", "name", "media_type", "size_bytes", "sha256"})
 _TOOL_CALL_KEYS = frozenset({"tool_call_id", "name", "arguments"})
 _ROLE_TO_SOURCE_TYPE = {
     "user": "user-message",
@@ -276,9 +274,7 @@ class OllamaSessionSourceAdapter:
     ) -> tuple[list[object], tuple[int, int, int]]:
         conversation = _object(raw_conversation, f"conversation {conversation_index}")
         _require_exact_keys(conversation, _CONVERSATION_KEYS, "conversation")
-        native_conversation_id = _identifier(
-            conversation["conversation_id"], "conversation id"
-        )
+        native_conversation_id = _identifier(conversation["conversation_id"], "conversation id")
         conversation_id = f"conversation:{native_conversation_id}"
         title = _optional_text(conversation["title"], "conversation title")
         created_at = _optional_timestamp(conversation["created_at"], "conversation created at")
@@ -357,9 +353,7 @@ class OllamaSessionSourceAdapter:
             tool_call = _object(raw_tool_call, f"tool call {tool_index}")
             _require_exact_keys(tool_call, _TOOL_CALL_KEYS, "tool call")
             native_tool_id = _identifier(tool_call["tool_call_id"], "tool call id")
-            tool_id = (
-                f"tool-call:{native_conversation_id}:{native_message_id}:{native_tool_id}"
-            )
+            tool_id = f"tool-call:{native_conversation_id}:{native_message_id}:{native_tool_id}"
             name = _text(tool_call["name"], "tool call name")
             arguments = _object(tool_call["arguments"], "tool call arguments")
             objects.append(
@@ -380,12 +374,9 @@ class OllamaSessionSourceAdapter:
         for attachment_index, raw_attachment in enumerate(attachments):
             attachment = _object(raw_attachment, f"attachment {attachment_index}")
             _require_exact_keys(attachment, _ATTACHMENT_KEYS, "attachment")
-            native_attachment_id = _identifier(
-                attachment["attachment_id"], "attachment id"
-            )
+            native_attachment_id = _identifier(attachment["attachment_id"], "attachment id")
             attachment_id = (
-                f"attachment:{native_conversation_id}:{native_message_id}:"
-                f"{native_attachment_id}"
+                f"attachment:{native_conversation_id}:{native_message_id}:{native_attachment_id}"
             )
             name = _text(attachment["name"], "attachment name")
             media_type = _optional_text(attachment["media_type"], "attachment media type")

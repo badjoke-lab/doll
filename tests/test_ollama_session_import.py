@@ -183,9 +183,7 @@ def test_contract_and_supported_bundle_inventory_are_deterministic() -> None:
     assert staged.mapping_report.mapped_without_known_loss_count == 4
     assert staged.mapping_report.mapped_with_transformation_count == 1
     assert staged.mapping_report.material_loss_count == 1
-    assert {loss.category for loss in staged.loss_records} == {
-        "attachment-metadata-only"
-    }
+    assert {loss.category for loss in staged.loss_records} == {"attachment-metadata-only"}
     assert [item.source_type for item in staged.staged_objects] == [
         "attachment",
         "conversation",
@@ -292,9 +290,9 @@ def test_changed_source_creates_review_conflict_without_overwrite(tmp_path: Path
         )
 
         second = _stage(changed)
-        changed_preview = GenericImportPublisher(
-            repository, second.source_environment
-        ).preview(second.stage_result, changed, preserve_source=False)
+        changed_preview = GenericImportPublisher(repository, second.source_environment).preview(
+            second.stage_result, changed, preserve_source=False
+        )
         assert {conflict.reason for conflict in changed_preview.conflicts} == {
             "changed-source-object"
         }
@@ -378,9 +376,7 @@ def test_duplicate_missing_cycle_and_unsupported_role_are_quarantined() -> None:
 
     unsupported = _bundle(
         environment_id,
-        conversations=[
-            _conversation(messages=[_message("message-1", "developer", "data")])
-        ],
+        conversations=[_conversation(messages=[_message("message-1", "developer", "data")])],
     )
     unsupported_result = _stage(unsupported).stage_result
     assert {item.reason for item in unsupported_result.quarantined_objects} == {
@@ -388,8 +384,7 @@ def test_duplicate_missing_cycle_and_unsupported_role_are_quarantined() -> None:
     }
     assert unsupported_result.mapping_report.unsupported_but_preserved_count == 1
     assert all(
-        item.authority_class == "external_data"
-        for item in unsupported_result.staged_objects
+        item.authority_class == "external_data" for item in unsupported_result.staged_objects
     )
 
 
@@ -436,21 +431,15 @@ def test_root_contract_and_resource_limits_fail_closed() -> None:
     cases.append((wrong_conversations, "conversations must be a list"))
 
     for payload, message in cases:
-        with pytest.raises(
-            (OllamaSessionImportError, PortabilityContractError), match=message
-        ):
+        with pytest.raises((OllamaSessionImportError, PortabilityContractError), match=message):
             _stage(json.dumps(payload, separators=(",", ":")).encode())
 
     with pytest.raises(OllamaSessionImportError, match="source bytes must be bytes"):
         _stage(cast(Any, "text"))
-    small_input = OllamaSessionSourceAdapter(
-        ollama_session_source_contract(max_input_bytes=10)
-    )
+    small_input = OllamaSessionSourceAdapter(ollama_session_source_contract(max_input_bytes=10))
     with pytest.raises(OllamaSessionImportError, match="byte limit"):
         _stage(_bundle(environment_id), adapter=small_input)
-    small_objects = OllamaSessionSourceAdapter(
-        ollama_session_source_contract(max_object_count=1)
-    )
+    small_objects = OllamaSessionSourceAdapter(ollama_session_source_contract(max_object_count=1))
     with pytest.raises(OllamaSessionImportError, match="object count"):
         _stage(_bundle(environment_id), adapter=small_objects)
 
