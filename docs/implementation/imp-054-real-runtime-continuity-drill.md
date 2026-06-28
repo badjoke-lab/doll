@@ -37,7 +37,7 @@ CI uses `DeterministicOllamaTransport`, which implements the accepted transport 
 
 - one bounded version response;
 - exactly two local inventory entries with deterministic digests;
-- the exact `DOLL_SWITCH_OK` smoke response;
+- one accepted uppercase `_SWITCH_OK` machine token for each smoke probe;
 - bounded non-streaming and streaming conversation output.
 
 No CI socket connection, runtime process, installed Ollama instance, model file, model download, cloud provider, credential, or external service is used.
@@ -56,7 +56,7 @@ A process-local socket guard rejects every destination except `127.0.0.1` on the
 
 The user must disable networking outside the runner before invoking real-machine mode. The runner requires both `--offline-confirmed` and `--local-only-confirmed`, the exact checked-out commit, Darwin on x86_64 or amd64, and two distinct explicit names of already installed local Ollama models.
 
-The runner does not install or start Ollama. It does not pull, delete, modify, or select models automatically. A model that cannot return the exact bounded smoke response is rejected and must not be marked compatible.
+The runner does not install or start Ollama. It does not pull, delete, modify, or select models automatically. Each selected model must complete the fixed bounded probe and return one non-empty uppercase ASCII token ending in `_SWITCH_OK`. A harmless uppercase prefix variation is accepted because real models can normalize an unfamiliar fixed token; empty output, prose, punctuation, Markdown, malformed output, timeout, or runtime failure is rejected. The probe allows 60 seconds for CPU-only model loading and generation.
 
 ## Canonical state and authority
 

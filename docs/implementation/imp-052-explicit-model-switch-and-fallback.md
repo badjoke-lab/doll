@@ -26,7 +26,7 @@ A switch request contains one exact scope, one exact target binding ID, and one 
 2. validates the selected target and exact runtime/model manifests;
 3. validates the registered adapter declaration and local-only contract;
 4. reserves the operation through a bounded audit event and rejects reuse;
-5. runs a deterministic pre-activation smoke probe;
+5. runs a bounded pre-activation machine-readability probe;
 6. records the target smoke result;
 7. activates only a target whose preflight passed;
 8. resolves the newly active binding and runs a post-activation probe;
@@ -37,9 +37,9 @@ There is no automatic discovery, automatic selection, third-binding substitution
 
 ## Smoke-probe boundary
 
-Both probes call only `LocalRuntimeBoundary.generate`. The transient request uses a fixed versioned JSON challenge, a fixed expected response, a 64-character output ceiling, a 15-second timeout, and a fresh cancellation token. It contains no user conversation, imported content, memory, project data, procedure, checkpoint, credential, secret, private path, provider body, or host information.
+Both probes call only `LocalRuntimeBoundary.generate`. The transient request uses a fixed explicit instruction, a 64-character output ceiling, a 60-second timeout for CPU-only local model loading and generation, and a fresh cancellation token. It contains no user conversation, imported content, memory, project data, procedure, checkpoint, credential, secret, private path, provider body, or host information.
 
-A completed response must equal the fixed expected response after surrounding whitespace is removed. Timeout, cancellation, resource limit, adapter failure, empty output, malformed output, or any different text becomes a normalized bounded failure code.
+A completed response must be one non-empty uppercase ASCII token ending in `_SWITCH_OK`, with no prose, quotation, punctuation, Markdown, or multiline content. The prefix may vary because real local models can harmlessly normalize an unfamiliar fixed token while still proving bounded machine-readable generation. Timeout, cancellation, resource limit, adapter failure, empty output, explanation text, malformed output, or any response outside that bounded token grammar becomes a normalized failure code.
 
 Probe output is never stored as an artifact, conversation event, instruction-origin record, memory, project record, or audit value. Results expose stable identifiers, a hash of the scope key, normalized outcomes, and normalized failure codes only.
 
@@ -67,7 +67,7 @@ The probe is health evidence only. Its output is not a user instruction, policy,
 
 ## Validation boundary
 
-Tests use deterministic injected adapters and clocks. They cover target and fallback ordering, explicit successful switching, explicit fallback switching, preflight failure without active-binding change, bounded runtime failure, post-activation probe failure, post-activation adapter-declaration mismatch, exact rollback, unrelated-state preservation, cross-scope and current-target rejection, adapter mismatch before execution, duplicate operation rejection, read-only state, bounded result and audit privacy, and static absence of cloud, tool, capability, inventory, streaming, and process dependencies.
+Tests use deterministic injected adapters and clocks. They cover target and fallback ordering, explicit successful switching, explicit fallback switching, preflight failure without active-binding change, bounded runtime failure, post-activation probe failure, post-activation adapter-declaration mismatch, exact rollback, unrelated-state preservation, cross-scope and current-target rejection, adapter mismatch before execution, duplicate operation rejection, read-only state, bounded result and audit privacy, accepted fixed and harmless-prefix-variant smoke tokens, rejected empty/explanatory/malformed output, and static absence of cloud, tool, capability, inventory, streaming, and process dependencies.
 
 CI performs no real network request, runtime process launch, runtime installation, model download, cloud request, or credential retrieval. No user-side local/offline action is required for IMP-052.
 

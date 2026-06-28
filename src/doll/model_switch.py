@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import hashlib
-import json
 import re
 from dataclasses import dataclass
 from typing import Literal
@@ -30,18 +29,16 @@ ModelSwitchOutcome = Literal["switched", "preflight_failed", "rolled_back"]
 
 _OPERATION_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,95}$")
 _MODEL_ID = re.compile(r"^[a-z0-9][a-z0-9._-]{0,127}$")
-_PROBE_RESPONSE = "DOLL_SWITCH_OK"
-_PROBE_INPUT = json.dumps(
-    {
-        "expected_response": _PROBE_RESPONSE,
-        "purpose": "local_model_switch_smoke_test",
-        "schema_version": 1,
-    },
-    sort_keys=True,
-    separators=(",", ":"),
+MODEL_SWITCH_PROBE_INPUT = (
+    "purpose=local_model_switch_smoke_test\n"
+    "This is a bounded machine-readability check. Reply with one uppercase ASCII token "
+    "ending in _SWITCH_OK and no other text. Do not explain, quote it, add punctuation, "
+    "or use Markdown.\n"
+    "DOLL_SWITCH_OK"
 )
-_PROBE_MAX_OUTPUT_CHARS = 64
-_PROBE_TIMEOUT_SECONDS = 15.0
+MODEL_SWITCH_PROBE_MAX_OUTPUT_CHARS = 64
+MODEL_SWITCH_PROBE_TIMEOUT_SECONDS = 60.0
+_MODEL_SWITCH_PROBE_RESPONSE = re.compile(r"^[A-Z][A-Z0-9_]{0,47}_SWITCH_OK$")
 _MAX_BINDINGS = 500
 _TARGET_STATES = frozenset({"candidate", "previous", "fallback", "disabled"})
 
@@ -95,6 +92,14 @@ class ModelSwitchResult:
     outcome: ModelSwitchOutcome
     failure_code: RuntimeFailureCode | None
     fallback_selected: bool
+
+
+def validate_model_switch_probe_output(value: object) -> bool:
+    """Accept one bounded machine token while tolerating harmless model prefix variation."""
+
+    return (
+        isinstance(value, str) and _MODEL_SWITCH_PROBE_RESPONSE.fullmatch(value.strip()) is not None
+    )
 
 
 @dataclass(slots=True)
@@ -436,15 +441,15 @@ class ModelSwitchService:
             RuntimeGenerationRequest(
                 operation_id=operation_id,
                 model_id=_runtime_model_id(model.runtime_private_locator),
-                input_text=_PROBE_INPUT,
-                max_output_chars=_PROBE_MAX_OUTPUT_CHARS,
-                timeout_seconds=_PROBE_TIMEOUT_SECONDS,
+                input_text=MODEL_SWITCH_PROBE_INPUT,
+                max_output_chars=MODEL_SWITCH_PROBE_MAX_OUTPUT_CHARS,
+                timeout_seconds=MODEL_SWITCH_PROBE_TIMEOUT_SECONDS,
                 cancellation=RuntimeCancellationToken(),
             ),
         )
         if result.outcome != "completed":
             return result.failure_code or "adapter_failure"
-        if result.output_text is None or result.output_text.strip() != _PROBE_RESPONSE:
+        if not validate_model_switch_probe_output(result.output_text):
             return "invalid_response"
         return None
 

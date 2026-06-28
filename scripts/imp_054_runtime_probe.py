@@ -28,7 +28,13 @@ from doll import state, workspace
 from doll.local_conversation import LocalConversationService
 from doll.memory import ConfirmedMemoryService
 from doll.model_manifest import ModelManifestService
-from doll.model_switch import ModelSwitchService
+from doll.model_switch import (
+    MODEL_SWITCH_PROBE_INPUT,
+    MODEL_SWITCH_PROBE_MAX_OUTPUT_CHARS,
+    MODEL_SWITCH_PROBE_TIMEOUT_SECONDS,
+    ModelSwitchService,
+    validate_model_switch_probe_output,
+)
 from doll.ollama_adapter import (
     OLLAMA_ADAPTER_ID,
     OLLAMA_ADAPTER_VERSION,
@@ -62,15 +68,7 @@ INSPECTOR = ROOT / "scripts" / "imp_054_state_inspector.py"
 PRIMARY_SYNTHETIC_MODEL = "doll-test-primary:latest"
 FALLBACK_SYNTHETIC_MODEL = "doll-test-fallback:latest"
 SWITCH_RESPONSE = "DOLL_SWITCH_OK"
-SWITCH_INPUT = json.dumps(
-    {
-        "expected_response": SWITCH_RESPONSE,
-        "purpose": "local_model_switch_smoke_test",
-        "schema_version": 1,
-    },
-    sort_keys=True,
-    separators=(",", ":"),
-)
+SWITCH_INPUT = MODEL_SWITCH_PROBE_INPUT
 _ALLOWED_PATHS = frozenset({"/api/version", "/api/tags", "/api/generate"})
 
 
@@ -341,11 +339,11 @@ def _probe_model(boundary: LocalRuntimeBoundary, model_id: str, operation_id: st
             operation_id=operation_id,
             model_id=model_id,
             input_text=SWITCH_INPUT,
-            max_output_chars=64,
-            timeout_seconds=60,
+            max_output_chars=MODEL_SWITCH_PROBE_MAX_OUTPUT_CHARS,
+            timeout_seconds=MODEL_SWITCH_PROBE_TIMEOUT_SECONDS,
         ),
     )
-    return result.outcome == "completed" and result.output_text == SWITCH_RESPONSE
+    return result.outcome == "completed" and validate_model_switch_probe_output(result.output_text)
 
 
 def _select_models(
@@ -439,7 +437,7 @@ def _create_manifests(
             selected.model_id,
             f"imp054.{role}.initial-probe",
         ):
-            raise RuntimeError("selected local model failed the exact smoke response")
+            raise RuntimeError("selected local model failed the bounded smoke response")
         binding = manifests.set_smoke_test(
             binding.binding_id,
             expected_revision=binding.revision,
