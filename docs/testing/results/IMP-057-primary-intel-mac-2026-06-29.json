@@ -1,0 +1,146 @@
+{
+  "architecture": "x86_64",
+  "checks": {
+    "all_local_portability_entries_executable": true,
+    "all_local_portability_ids_mapped": true,
+    "alternate_inspector_excludes_capture_runtime": true,
+    "backup_fresh_process_alternate_retrieval": true,
+    "backup_registration_is_source_local": true,
+    "capture_bundle_valid": true,
+    "capture_component_removed_before_inspection": true,
+    "changed_source_conflict_blocks_overwrite": true,
+    "ci_mode_used_no_socket": true,
+    "entry_status_matches_machine_gate": true,
+    "generic_export_completed": true,
+    "imported_events_remain_data_only": true,
+    "matrix_schema_valid": true,
+    "no_non_loopback_socket_attempt": true,
+    "only_declared_ollama_paths_used": true,
+    "package_fresh_process_alternate_retrieval": true,
+    "phase_identifier_valid": true,
+    "preview_side_effect_free": true,
+    "primary_machine_gate_declared": true,
+    "real_mode_used_loopback_socket": true,
+    "reviewed_import_published": true,
+    "runtime_requests_exercised": true,
+    "source_fresh_process_alternate_retrieval": true,
+    "source_preserved_with_exact_hash": true,
+    "state_backup_restored": true,
+    "state_package_v2_exported": true,
+    "stored_machine_evidence_valid": true,
+    "transferred_record_counts_match_pre_backup": true,
+    "unchanged_reimport_idempotent": true
+  },
+  "cloud_credentials_used": false,
+  "commit_sha": "7b63ff512e20d1d6ae65da8938486b093e14b6c6",
+  "completed_at": "2026-06-29T15:48:03.615410Z",
+  "evidence": {
+    "allowed_loopback_socket_attempts": 3,
+    "alternate_component_id": "doll-generic-export",
+    "backup_sha256": "da1357a1260aadc47a24c3767236ae5183b3d5fa072bda64d5322ad0d585b5c7",
+    "capture_component_id": "ollama-chat-capture",
+    "duplicate_counts": {
+      "unchanged_reimport_canonical_duplicates": 0
+    },
+    "fresh_record_counts": {
+      "backup_restore_target": {
+        "conversation": 1,
+        "conversation_event": 2,
+        "portability_import_batch": 2,
+        "portability_mapping_report": 2,
+        "portability_original_source": 2,
+        "portability_source_mapping": 3,
+        "source_environment": 1
+      },
+      "source_after_backup_registration": {
+        "backup_manifest": 1,
+        "conversation": 1,
+        "conversation_event": 2,
+        "portability_import_batch": 2,
+        "portability_mapping_report": 2,
+        "portability_original_source": 2,
+        "portability_source_mapping": 3,
+        "source_environment": 1
+      },
+      "state_package_target": {
+        "conversation": 1,
+        "conversation_event": 2,
+        "portability_import_batch": 2,
+        "portability_mapping_report": 2,
+        "portability_original_source": 2,
+        "portability_source_mapping": 3,
+        "source_environment": 1
+      }
+    },
+    "generic_export_manifest_hash": "a9b85d1869f533e1f2def16ca47c1131937d670f8e8b202bcdf0707793c1029b",
+    "loss_counts_by_severity": {
+      "material": 0
+    },
+    "mapping_report_reference": "11aff7b1-57da-5f49-bf9c-1495f0d48566",
+    "model_id_hash": "sha256:416d645871035aadaf9f8525ee5317e8756861178035063cd86ac42e8f374519",
+    "ollama_request_count": 3,
+    "published_object_counts": {
+      "conversation": 1,
+      "conversation_event": 2,
+      "total": 3
+    },
+    "quarantine_counts": {
+      "captured_source": 0
+    },
+    "rejected_socket_attempts": 0,
+    "runtime_mode": "real-local",
+    "runtime_version": "0.30.11",
+    "source_adapter_id": "ollama-api-session",
+    "source_adapter_version": "1.0.0",
+    "source_environment_class": "local-ai-runtime-session",
+    "source_format": "ollama-api-chat-session",
+    "source_format_version": "1",
+    "source_object_counts": {
+      "conversation": 1,
+      "conversation_event": 2,
+      "total": 3
+    },
+    "source_root_hash": "9be175aba5aa3d57c85fe86c16a7e52ec39c2115785ada79f1a4829924177855",
+    "state_package_sha256": "db746d152204cd3d50af6348ace6e68b3e4fa469a431e95ff749a792c61cc9e7"
+  },
+  "evidence_level": "real-machine",
+  "external_network_request_used": false,
+  "limitations": [
+    "Synthetic CI uses an injected transport and is not real Ollama evidence.",
+    "Primary Intel Mac evidence remains pending until a separate completion pull request stores the privacy-safe exact-commit result.",
+    "The drill covers explicit non-streaming text capture and parent relationships, not native Ollama history discovery, attachments, multimodal content, tools, or streaming capture.",
+    "The alternate component is a fresh-process canonical-state reader and generic exporter; no second model or runtime adapter is claimed.",
+    "Target-specific export back to Ollama, ChatGPT migration, PORT-015, the full Phase 6 gate, and a stable anti-lock-in claim remain outside this implementation."
+  ],
+  "local_portability_gate_complete": true,
+  "model_download_used": false,
+  "network_mode": "offline-confirmed",
+  "operating_system": "Darwin",
+  "phase6_gate_complete": false,
+  "portability_test_count": 3,
+  "portability_test_ids": [
+    "PORT-001",
+    "PORT-003",
+    "PORT-013"
+  ],
+  "preferred_interface_required": false,
+  "primary_intel_mac_gate": "pass",
+  "privacy": {
+    "absolute_paths_in_report": false,
+    "credentials_in_report": false,
+    "hostnames_in_report": false,
+    "native_model_names_in_report": false,
+    "private_fixture_content_in_report": false,
+    "prompt_or_response_text_in_report": false,
+    "secret_values_in_report": false,
+    "usernames_in_report": false
+  },
+  "python_version": "3.14.6",
+  "real_runtime_used": true,
+  "result": "pass",
+  "runtime_installation_used": false,
+  "specification_version": "0.2",
+  "stable_anti_lock_in_claim": false,
+  "started_at": "2026-06-29T15:48:03.613990Z",
+  "test_id": "IMP-057-LOCAL-PORTABILITY-MIGRATION"
+}

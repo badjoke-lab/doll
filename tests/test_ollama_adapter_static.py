@@ -132,19 +132,23 @@ def test_imp_057_matrix_and_alternate_component_boundary() -> None:
     assert matrix["schema_version"] == 1
     assert matrix["phase"] == "6"
     assert matrix["implementation"] == "IMP-057"
-    assert matrix["local_portability_gate_complete"] is False
-    assert matrix["accepted_real_machine_result"] is None
+    assert matrix["local_portability_gate_complete"] is True
+    assert matrix["accepted_real_machine_result"] == (
+        "docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json"
+    )
     entries = matrix["portability_tests"]
     assert [item["id"] for item in entries] == [
         "PORT-001",
         "PORT-003",
         "PORT-013",
     ]
-    assert {item["status"] for item in entries} == {"ci-pass"}
-    assert {tuple(item["passed_evidence_levels"]) for item in entries} == {("ci",)}
+    assert {item["status"] for item in entries} == {"pass"}
+    assert {tuple(item["passed_evidence_levels"]) for item in entries} == {("ci", "real-machine")}
     assert {tuple(item["required_evidence_levels"]) for item in entries} == {("ci", "real-machine")}
-    assert matrix["real_machine_gate"]["status"] == "pending"
+    assert matrix["real_machine_gate"]["status"] == "pass"
     assert matrix["real_machine_gate"]["minimum_local_models"] == 1
+    assert matrix["real_machine_gate"]["commit_sha"] == ("7b63ff512e20d1d6ae65da8938486b093e14b6c6")
+    assert matrix["real_machine_gate"]["completed_at"] == "2026-06-29T15:48:03.615410Z"
 
     imports = _module_imports(IMP057_INSPECTOR)
     assert imports.isdisjoint(
@@ -208,8 +212,8 @@ def test_imp_057_ci_migration_runner() -> None:
     assert payload["test_id"] == "IMP-057-LOCAL-PORTABILITY-MIGRATION"
     assert payload["result"] == "pass"
     assert payload["evidence_level"] == "ci"
-    assert payload["primary_intel_mac_gate"] == "pending"
-    assert payload["local_portability_gate_complete"] is False
+    assert payload["primary_intel_mac_gate"] == "pass"
+    assert payload["local_portability_gate_complete"] is True
     assert payload["phase6_gate_complete"] is False
     assert payload["real_runtime_used"] is False
     assert payload["portability_test_ids"] == ["PORT-001", "PORT-003", "PORT-013"]

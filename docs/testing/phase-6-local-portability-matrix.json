@@ -2,19 +2,20 @@
   "schema_version": 1,
   "phase": "6",
   "implementation": "IMP-057",
-  "local_portability_gate_complete": false,
-  "accepted_real_machine_result": null,
+  "local_portability_gate_complete": true,
+  "accepted_real_machine_result": "docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json",
   "portability_tests": [
     {
       "id": "PORT-001",
-      "status": "ci-pass",
+      "status": "pass",
       "description": "Imported canonical state survives removal of the capture component and remains transferable and recoverable.",
       "pytest_files": [
         "tests/test_local_portability_acceptance.py",
         "tests/test_ollama_adapter_static.py"
       ],
       "passed_evidence_levels": [
-        "ci"
+        "ci",
+        "real-machine"
       ],
       "required_evidence_levels": [
         "ci",
@@ -23,14 +24,15 @@
     },
     {
       "id": "PORT-003",
-      "status": "ci-pass",
+      "status": "pass",
       "description": "A fresh process retrieves and generically exports the imported conversation without the IMP-056 capture component or preferred interface.",
       "pytest_files": [
         "tests/test_local_portability_acceptance.py",
         "tests/test_ollama_adapter_static.py"
       ],
       "passed_evidence_levels": [
-        "ci"
+        "ci",
+        "real-machine"
       ],
       "required_evidence_levels": [
         "ci",
@@ -39,14 +41,15 @@
     },
     {
       "id": "PORT-013",
-      "status": "ci-pass",
+      "status": "pass",
       "description": "One local Ollama session is captured, imported with provenance and relationship metadata, exported generically, transferred, restored, and inspected after capture removal.",
       "pytest_files": [
         "tests/test_local_portability_acceptance.py",
         "tests/test_ollama_adapter_static.py"
       ],
       "passed_evidence_levels": [
-        "ci"
+        "ci",
+        "real-machine"
       ],
       "required_evidence_levels": [
         "ci",
@@ -56,7 +59,7 @@
   ],
   "real_machine_gate": {
     "required": true,
-    "status": "pending",
+    "status": "pass",
     "platform": "Darwin",
     "architectures": [
       "x86_64",
@@ -64,14 +67,15 @@
     ],
     "minimum_local_models": 1,
     "network_mode": "offline-confirmed",
-    "commit_sha": null,
-    "completed_at": null
+    "commit_sha": "7b63ff512e20d1d6ae65da8938486b093e14b6c6",
+    "completed_at": "2026-06-29T15:48:03.615410Z"
   },
   "limitations": [
     "Synthetic CI uses an injected transport and is not real Ollama evidence.",
-    "Primary Intel Mac evidence remains pending until a separate completion pull request stores the privacy-safe exact-commit result.",
-    "The drill covers explicit non-streaming text capture and parent relationships, not native Ollama history discovery, attachments, multimodal content, tools, or streaming capture.",
+    "Primary Intel Mac evidence is accepted for the exact merged IMP-057 implementation commit and stored as a privacy-reviewed result.",
+    "The bounded drill completes PORT-001, PORT-003, and the IMP-057 portion of PORT-013 for explicit non-streaming text capture and parent relationships.",
+    "Native Ollama history discovery, attachments, multimodal content, tools, streaming capture, and target-specific export remain outside this evidence.",
     "The alternate component is a fresh-process canonical-state reader and generic exporter; no second model or runtime adapter is claimed.",
-    "Target-specific export back to Ollama, ChatGPT migration, PORT-015, the full Phase 6 gate, and a stable anti-lock-in claim remain outside this implementation."
+    "ChatGPT migration, PORT-015, the complete Phase 6 gate, general application replacement, and a stable general anti-lock-in claim remain outside this implementation."
   ]
 }
