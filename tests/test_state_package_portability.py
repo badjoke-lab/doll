@@ -179,7 +179,11 @@ def _record_set() -> dict[str, state.RecordEnvelope]:
     snapshot = _snapshot()
     canonical = _envelope(_CANONICAL_ID, "conversation", {})
     records = (
-        _envelope(environment.environment_id, "source_environment", environment.canonical_metadata()),
+        _envelope(
+            environment.environment_id,
+            "source_environment",
+            environment.canonical_metadata(),
+        ),
         _envelope(batch.import_batch_id, "portability_import_batch", batch.canonical_metadata()),
         _envelope(
             report.mapping_report_id,
@@ -211,39 +215,66 @@ def test_portability_record_decoders_round_trip() -> None:
     quarantine = _quarantine()
     snapshot = _snapshot()
 
-    assert source_environment_from_record(
-        _envelope(environment.environment_id, "source_environment", environment.canonical_metadata())
-    ) == environment
-    assert import_batch_from_record(
-        _envelope(batch.import_batch_id, "portability_import_batch", batch.canonical_metadata())
-    ) == batch
-    assert mapping_report_from_record(
-        _envelope(
-            report.mapping_report_id,
-            "portability_mapping_report",
-            report.canonical_metadata(),
+    assert (
+        source_environment_from_record(
+            _envelope(
+                environment.environment_id,
+                "source_environment",
+                environment.canonical_metadata(),
+            )
         )
-    ) == report
-    assert portability_loss_from_record(
-        _envelope(loss.loss_record_id, "portability_loss", loss.canonical_metadata())
-    ) == loss
-    assert source_mapping_from_record(
-        _envelope(mapping.mapping_id, "portability_source_mapping", mapping.canonical_metadata())
-    ) == mapping
-    assert quarantine_from_record(
-        _envelope(
-            quarantine.quarantine_id,
-            "portability_quarantine",
-            quarantine.canonical_metadata(),
+        == environment
+    )
+    assert (
+        import_batch_from_record(
+            _envelope(batch.import_batch_id, "portability_import_batch", batch.canonical_metadata())
         )
-    ) == quarantine
-    assert original_source_from_record(
-        _envelope(
-            snapshot.snapshot_record_id,
-            "portability_original_source",
-            snapshot.canonical_metadata(),
+        == batch
+    )
+    assert (
+        mapping_report_from_record(
+            _envelope(
+                report.mapping_report_id,
+                "portability_mapping_report",
+                report.canonical_metadata(),
+            )
         )
-    ) == snapshot
+        == report
+    )
+    assert (
+        portability_loss_from_record(
+            _envelope(loss.loss_record_id, "portability_loss", loss.canonical_metadata())
+        )
+        == loss
+    )
+    assert (
+        source_mapping_from_record(
+            _envelope(
+                mapping.mapping_id, "portability_source_mapping", mapping.canonical_metadata()
+            )
+        )
+        == mapping
+    )
+    assert (
+        quarantine_from_record(
+            _envelope(
+                quarantine.quarantine_id,
+                "portability_quarantine",
+                quarantine.canonical_metadata(),
+            )
+        )
+        == quarantine
+    )
+    assert (
+        original_source_from_record(
+            _envelope(
+                snapshot.snapshot_record_id,
+                "portability_original_source",
+                snapshot.canonical_metadata(),
+            )
+        )
+        == snapshot
+    )
 
 
 def test_managed_source_projection_and_hash_only_omission() -> None:
@@ -389,9 +420,7 @@ def test_portability_graph_validation_rejects_missing_links() -> None:
         validate_portability_package_graph(records)
 
     loss = _loss()
-    records = {
-        _LOSS_ID: _envelope(_LOSS_ID, "portability_loss", loss.canonical_metadata())
-    }
+    records = {_LOSS_ID: _envelope(_LOSS_ID, "portability_loss", loss.canonical_metadata())}
     with pytest.raises(PortabilityPackageCorruptError, match="loss batch"):
         validate_portability_package_graph(records)
 
