@@ -2,7 +2,7 @@
 
 ## Status
 
-Implementation harness in progress. Deterministic synthetic CI is required before merge. Accepted primary Intel Mac evidence remains pending and must be stored by a separate completion pull request bound to the exact merged implementation commit.
+Implementation harness complete. Deterministic synthetic CI is accepted for the implementation boundary. Primary Intel Mac evidence remains pending and must be stored by a separate completion pull request bound to the exact merged implementation commit.
 
 ## Purpose
 
@@ -30,7 +30,7 @@ The implementation does not add a second source format, new authoritative record
 
 CI uses an injected deterministic Ollama transport. It performs no socket operation and returns synthetic text. The complete capture, import, idempotency, conflict, generic export, State Package, backup, restore, and alternate fresh-process inspection flow runs on Linux, macOS, and Windows.
 
-CI proves orchestration and failure-preserving contracts. It is not evidence that a real local Ollama installation or model works on the project owner's machine.
+CI proves orchestration and failure-preserving contracts. It is not evidence that a real local Ollama installation or model works on the project owner's machine. Matrix entries therefore remain `ci-pass`, with only `ci` listed under passed evidence levels, until accepted real-machine evidence is stored.
 
 ### Primary Intel Mac
 
@@ -146,7 +146,7 @@ Issue #178 remains open after that merge. A separate completion pull request mus
 1. run the exact merged implementation commit on the primary Intel Mac with networking disabled;
 2. review the bounded result for private-data leakage;
 3. store only the accepted result and matrix binding;
-4. validate PORT-001, PORT-003, and the bounded local path required by PORT-013;
+4. change the bounded PORT-001, PORT-003, and PORT-013 entries from `ci-pass` to `pass` only after accepted real-machine evidence exists;
 5. leave PORT-015 and the complete Phase 6 gate pending unless their full separate criteria are met.
 
 ## Explicit non-claims
