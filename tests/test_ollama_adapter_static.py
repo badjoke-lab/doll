@@ -134,11 +134,17 @@ def test_imp_057_matrix_and_alternate_component_boundary() -> None:
     assert matrix["implementation"] == "IMP-057"
     assert matrix["local_portability_gate_complete"] is False
     assert matrix["accepted_real_machine_result"] is None
-    assert [item["id"] for item in matrix["portability_tests"]] == [
+    entries = matrix["portability_tests"]
+    assert [item["id"] for item in entries] == [
         "PORT-001",
         "PORT-003",
         "PORT-013",
     ]
+    assert {item["status"] for item in entries} == {"ci-pass"}
+    assert {tuple(item["passed_evidence_levels"]) for item in entries} == {("ci",)}
+    assert {tuple(item["required_evidence_levels"]) for item in entries} == {
+        ("ci", "real-machine")
+    }
     assert matrix["real_machine_gate"]["status"] == "pending"
     assert matrix["real_machine_gate"]["minimum_local_models"] == 1
 
