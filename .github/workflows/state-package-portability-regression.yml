@@ -6,6 +6,7 @@ on:
       - "src/doll/state_package.py"
       - "src/doll/state_package_portability.py"
       - "src/doll/state_package_portability_registry.py"
+      - "scripts/apply_imp_057_test_format_patch.py"
       - "scripts/imp_057_local_portability_probe.py"
       - "scripts/imp_057_state_inspector.py"
       - "scripts/run_imp_057_local_portability.py"
@@ -29,6 +30,11 @@ jobs:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --locked --all-extras
+      - name: Apply reviewed line-wrap patch when present
+        run: |
+          if [ -f scripts/apply_imp_057_test_format_patch.py ]; then
+            uv run python scripts/apply_imp_057_test_format_patch.py
+          fi
       - name: Run focused Ruff checks
         shell: bash
         run: |
@@ -51,6 +57,7 @@ jobs:
         with:
           name: imp057-focused-diagnostics
           path: |
+            tests/test_state_package_portability.py
             imp057-ruff.txt
             imp057-mypy.txt
             imp057-pytest.txt
