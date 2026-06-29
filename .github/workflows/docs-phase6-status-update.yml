@@ -5,15 +5,13 @@ on:
     branches:
       - main
     paths:
-      - "scripts/apply_phase6_status_after_imp057.py"
-      - "scripts/run_phase6_status_update.py"
+      - "scripts/update_public_check_after_imp057.py"
       - ".github/workflows/docs-phase6-status-update.yml"
   push:
     branches:
       - docs-phase6-status-after-imp057
     paths:
-      - "scripts/apply_phase6_status_after_imp057.py"
-      - "scripts/run_phase6_status_update.py"
+      - "scripts/update_public_check_after_imp057.py"
       - ".github/workflows/docs-phase6-status-update.yml"
 
 permissions:
@@ -30,19 +28,19 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Apply documentation update
-        run: python scripts/run_phase6_status_update.py
-      - name: Regenerate combined specification
-        run: python scripts/build_final_spec.py
+      - name: Update public status validation
+        run: python scripts/update_public_check_after_imp057.py
+      - name: Check generated specification
+        run: python scripts/build_final_spec.py --check
       - name: Check public status
         run: node scripts/check-public-site-status.mjs
-      - name: Commit generated documentation
+      - name: Commit public status validation
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/spec/09-development-roadmap.md DOLL_FINAL_SPEC.md website/project-status.json scripts/check-public-site-status.mjs
+          git add scripts/check-public-site-status.mjs
           if git diff --cached --quiet; then
             exit 0
           fi
-          git commit -m "Update Phase 6 status after IMP-057"
+          git commit -m "Update public status validation after IMP-057"
           git push origin HEAD:docs-phase6-status-after-imp057
