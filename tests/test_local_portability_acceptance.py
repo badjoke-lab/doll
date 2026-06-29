@@ -25,9 +25,8 @@ def test_synthetic_local_portability_migration_directly() -> None:
             ollama_port=11434,
         )
 
-    assert all(checks.values()), {
-        name: passed for name, passed in checks.items() if not passed
-    }
+    failed_checks = {name for name, passed in checks.items() if not passed}
+    assert not failed_checks
     assert evidence["runtime_mode"] == "synthetic"
     assert evidence["source_object_counts"] == {
         "conversation": 1,
