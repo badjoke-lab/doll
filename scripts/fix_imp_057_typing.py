@@ -72,13 +72,15 @@ def main() -> int:
             )
 ''',
     )
-    text = probe.read_text(encoding="utf-8")
-    expected = text.count("# type: ignore[method-assign]")
-    if expected != 4:
-        raise RuntimeError("unexpected socket assignment ignore count")
-    probe.write_text(
-        text.replace("# type: ignore[method-assign]", "# type: ignore[assignment]"),
-        encoding="utf-8",
+    replace_once(
+        probe,
+        "        socket.socket.connect = guarded_connect  # type: ignore[method-assign]\n",
+        "        socket.socket.connect = guarded_connect  # type: ignore[assignment]\n",
+    )
+    replace_once(
+        probe,
+        "        socket.socket.connect_ex = guarded_connect_ex  # type: ignore[method-assign]\n",
+        "        socket.socket.connect_ex = guarded_connect_ex  # type: ignore[assignment]\n",
     )
 
     runner = Path("scripts/run_imp_057_local_portability.py")
