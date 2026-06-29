@@ -82,6 +82,11 @@ def main() -> int:
         "        socket.socket.connect_ex = guarded_connect_ex  # type: ignore[method-assign]\n",
         "        socket.socket.connect_ex = guarded_connect_ex  # type: ignore[assignment]\n",
     )
+    replace_once(
+        probe,
+        "            socket.socket.connect = self._connect  # type: ignore[method-assign]\n",
+        "            socket.socket.connect = self._connect  # type: ignore[assignment]\n",
+    )
 
     runner = Path("scripts/run_imp_057_local_portability.py")
     replace_once(
