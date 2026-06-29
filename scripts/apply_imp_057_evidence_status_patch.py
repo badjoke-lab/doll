@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 TARGET = Path("scripts/run_imp_057_local_portability.py")
+TEST_TARGET = Path("tests/test_ollama_adapter_static.py")
 
 OLD = '''def _matrix_evidence() -> tuple[dict[str, bool], list[str], bool]:
     matrix: dict[str, Any] = json.loads(MATRIX.read_text(encoding="utf-8"))
@@ -106,12 +107,39 @@ NEW = '''def _matrix_evidence() -> tuple[dict[str, bool], list[str], bool]:
     return checks, cast(list[str], limitations), stored_complete
 '''
 
+TEST_OLD = '''    assert [item["id"] for item in matrix["portability_tests"]] == [
+        "PORT-001",
+        "PORT-003",
+        "PORT-013",
+    ]
+    assert matrix["real_machine_gate"]["status"] == "pending"
+'''
+
+TEST_NEW = '''    entries = matrix["portability_tests"]
+    assert [item["id"] for item in entries] == [
+        "PORT-001",
+        "PORT-003",
+        "PORT-013",
+    ]
+    assert {item["status"] for item in entries} == {"ci-pass"}
+    assert {tuple(item["passed_evidence_levels"]) for item in entries} == {("ci",)}
+    assert {
+        tuple(item["required_evidence_levels"]) for item in entries
+    } == {("ci", "real-machine")}
+    assert matrix["real_machine_gate"]["status"] == "pending"
+'''
+
+
+def _replace_once(path: Path, old: str, new: str) -> None:
+    text = path.read_text(encoding="utf-8")
+    if text.count(old) != 1:
+        raise RuntimeError(f"unexpected evidence status patch context: {path}")
+    path.write_text(text.replace(old, new, 1), encoding="utf-8")
+
 
 def main() -> int:
-    text = TARGET.read_text(encoding="utf-8")
-    if text.count(OLD) != 1:
-        raise RuntimeError("unexpected IMP-057 matrix evidence patch context")
-    TARGET.write_text(text.replace(OLD, NEW, 1), encoding="utf-8")
+    _replace_once(TARGET, OLD, NEW)
+    _replace_once(TEST_TARGET, TEST_OLD, TEST_NEW)
     return 0
 
 
