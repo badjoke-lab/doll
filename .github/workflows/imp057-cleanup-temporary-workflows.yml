@@ -1,0 +1,28 @@
+name: IMP-057 clean temporary workflows
+
+on:
+  push:
+    branches:
+      - imp-057-local-portability-drill
+    paths:
+      - ".github/workflows/imp057-cleanup-temporary-workflows.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-057-local-portability-drill
+          fetch-depth: 0
+      - name: Remove temporary workflows
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -f .github/workflows/imp057-format-fix.yml
+          git rm -f .github/workflows/imp057-cleanup-temporary-workflows.yml
+          git commit -m "Remove temporary IMP-057 workflows"
+          git push origin HEAD:imp-057-local-portability-drill
