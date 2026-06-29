@@ -11,6 +11,10 @@ import pytest
 import doll.state_package as package
 from doll import state, workspace
 from doll.settings import PreferenceService
+from doll.state_package_portability_registry import (
+    PORTABILITY_RECORD_CATEGORIES,
+    PORTABILITY_RECORD_TYPES,
+)
 from doll.state_package_registry import (
     PACKAGE_SYSTEM_CATEGORIES,
     AuthoritativeRecordCategory,
@@ -68,6 +72,7 @@ def _write_members(path: Path, members: dict[str, bytes]) -> None:
 def test_supported_registries_are_explicit_and_immutable() -> None:
     version_one = get_authoritative_record_registry(1)
     version_two = get_authoritative_record_registry(2)
+    package_version_two = package._package_record_registry(2)
 
     assert version_one.package_format_version == 1
     assert version_two.package_format_version == 2
@@ -92,8 +97,12 @@ def test_supported_registries_are_explicit_and_immutable() -> None:
         "records/conversations.jsonl",
         "records/conversation-events.jsonl",
     }
+    assert package_version_two == AuthoritativeRecordRegistry(
+        2,
+        (*version_two.categories, *PORTABILITY_RECORD_CATEGORIES),
+    )
+    assert package_version_two.record_types - version_two.record_types == PORTABILITY_RECORD_TYPES
     assert package._package_record_registry(1) == version_one
-    assert package._package_record_registry(2) == version_two
 
     with pytest.raises(TypeError):
         version_two.by_record_type["new"] = version_two.categories[0]  # type: ignore[index]
