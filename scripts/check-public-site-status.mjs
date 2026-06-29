@@ -39,8 +39,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 57,
-  "project-status.json must mark Phase 6 in progress through IMP-056 with IMP-057 next",
+    status.phase?.next_implementation === 58,
+  "project-status.json must mark Phase 6 in progress through IMP-057 with IMP-058 next",
 );
 expect(
   status.model_runtime &&
@@ -187,12 +187,16 @@ expect(
   "roadmap must record the IMP-056 explicit local capture path",
 );
 expect(
-  roadmap.includes("the next bounded Phase 6 implementation receives IMP-057 when its issue is opened"),
-  "roadmap must identify IMP-057 as the next implementation identifier",
+  roadmap.includes("### IMP-057 — Local-portability migration harness"),
+  "roadmap must record the IMP-057 local-portability harness",
 );
 expect(
-  roadmap.includes("The required order after IMP-056 is:"),
-  "roadmap must advance immediate work beyond IMP-056",
+  roadmap.includes("the next bounded implementation receives IMP-058 only when a new implementation issue is opened"),
+  "roadmap must identify IMP-058 as the next unallocated implementation identifier",
+);
+expect(
+  roadmap.includes("The required order after the IMP-057 harness merge is:"),
+  "roadmap must record the real-machine gate after IMP-057",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),
