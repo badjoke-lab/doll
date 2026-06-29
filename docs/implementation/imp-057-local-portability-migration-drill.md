@@ -46,7 +46,7 @@ Real-machine mode is accepted only when all of the following are explicit:
 
 The runner installs, downloads, deletes, activates, or selects no model automatically.
 
-The accepted run used Darwin `x86_64`, networking disabled, fixed IPv4 loopback Ollama, one explicitly selected already-installed local model, and exact implementation commit `7b63ff512e20d1d6ae65da8938486b093e14b6c6`. The privacy-reviewed result is stored at `docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json`.
+The accepted run completed at `2026-06-29T15:48:03.615410Z` on Darwin `x86_64` with networking disabled, fixed IPv4 loopback Ollama, one explicitly selected already-installed local model, and exact implementation commit `7b63ff512e20d1d6ae65da8938486b093e14b6c6`. The privacy-reviewed result is stored at `docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json`.
 
 ## Capture boundary
 
