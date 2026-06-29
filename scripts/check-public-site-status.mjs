@@ -195,8 +195,12 @@ expect(
   "roadmap must identify IMP-058 as the next unallocated implementation identifier",
 );
 expect(
-  roadmap.includes("The required order after the IMP-057 harness merge is:"),
-  "roadmap must record the real-machine gate after IMP-057",
+  roadmap.includes("docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json"),
+  "roadmap must bind the accepted IMP-057 primary Intel Mac evidence",
+);
+expect(
+  roadmap.includes("The required order after accepted IMP-057 real-machine evidence is:"),
+  "roadmap must record the accepted real-machine evidence after IMP-057",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),

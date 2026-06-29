@@ -2,7 +2,7 @@
 
 ## Status
 
-Implementation harness complete. Deterministic synthetic CI is accepted for the implementation boundary. Primary Intel Mac evidence remains pending and must be stored by a separate completion pull request bound to the exact merged implementation commit.
+Implementation and evidence complete for the bounded IMP-057 migration drill. Deterministic synthetic CI and privacy-reviewed primary Intel Mac evidence are accepted and bound to the exact merged implementation commit.
 
 ## Purpose
 
@@ -30,7 +30,7 @@ The implementation does not add a second source format, new authoritative record
 
 CI uses an injected deterministic Ollama transport. It performs no socket operation and returns synthetic text. The complete capture, import, idempotency, conflict, generic export, State Package, backup, restore, and alternate fresh-process inspection flow runs on Linux, macOS, and Windows.
 
-CI proves orchestration and failure-preserving contracts. It is not evidence that a real local Ollama installation or model works on the project owner's machine. Matrix entries therefore remain `ci-pass`, with only `ci` listed under passed evidence levels, until accepted real-machine evidence is stored.
+CI proves orchestration and failure-preserving contracts. It is not by itself evidence that a real local Ollama installation or model works on the project owner's machine. After the accepted real-machine result was stored, the bounded PORT-001, PORT-003, and PORT-013 entries moved from `ci-pass` to `pass` with both `ci` and `real-machine` listed as passed evidence levels.
 
 ### Primary Intel Mac
 
@@ -45,6 +45,8 @@ Real-machine mode is accepted only when all of the following are explicit:
 - Ollama is already running on the declared fixed IPv4 loopback port.
 
 The runner installs, downloads, deletes, activates, or selects no model automatically.
+
+The accepted run used Darwin `x86_64`, networking disabled, fixed IPv4 loopback Ollama, one explicitly selected already-installed local model, and exact implementation commit `7b63ff512e20d1d6ae65da8938486b093e14b6c6`. The privacy-reviewed result is stored at `docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json`.
 
 ## Capture boundary
 
@@ -141,13 +143,13 @@ The output must be reviewed before it is stored. The native model argument and a
 
 The harness may merge after all cross-platform, dependency-lock, Ruff, formatting, strict mypy, specification, public-status, numbering, CLI, and coverage checks pass.
 
-Issue #178 remains open after that merge. A separate completion pull request must:
+Issue #178 is completed by the separate evidence pull request. That completion:
 
-1. run the exact merged implementation commit on the primary Intel Mac with networking disabled;
-2. review the bounded result for private-data leakage;
-3. store only the accepted result and matrix binding;
-4. change the bounded PORT-001, PORT-003, and PORT-013 entries from `ci-pass` to `pass` only after accepted real-machine evidence exists;
-5. leave PORT-015 and the complete Phase 6 gate pending unless their full separate criteria are met.
+1. ran the exact merged implementation commit on the primary Intel Mac with networking disabled;
+2. reviewed the bounded result for private-data leakage;
+3. stored only the accepted privacy-safe result and matrix binding;
+4. changed the bounded PORT-001, PORT-003, and PORT-013 entries from `ci-pass` to `pass`;
+5. left PORT-015 and the complete Phase 6 gate pending because their separate criteria are not met.
 
 ## Explicit non-claims
 
@@ -161,4 +163,4 @@ IMP-057 does not establish:
 - general application replacement beyond this declared capture component;
 - PORT-015;
 - the complete Phase 6 gate;
-- a stable local-environment portability or anti-lock-in claim before accepted real-machine evidence is stored.
+- a stable general local-environment portability or anti-lock-in claim beyond the bounded IMP-057 component and evidence surface.
