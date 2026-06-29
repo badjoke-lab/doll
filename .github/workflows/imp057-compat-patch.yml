@@ -1,0 +1,41 @@
+name: IMP-057 apply State Package compatibility
+
+on:
+  push:
+    branches:
+      - imp-057-local-portability-drill
+    paths:
+      - "scripts/apply_imp_057_state_package_compat.py"
+      - ".github/workflows/imp057-compat-patch.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-057-local-portability-drill
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked --all-extras
+      - name: Apply compatibility patch
+        run: uv run python scripts/apply_imp_057_state_package_compat.py
+      - name: Verify compatibility patch
+        run: |
+          uv run ruff check --fix src/doll/state_package.py
+          uv run ruff format src/doll/state_package.py
+          uv run mypy src tests
+          uv run pytest -q --no-cov tests/test_state_package_coverage.py tests/test_local_portability_acceptance.py
+      - name: Commit compatibility patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/doll/state_package.py
+          git commit -m "Preserve State Package artifact helper compatibility"
+          git push origin HEAD:imp-057-local-portability-drill
