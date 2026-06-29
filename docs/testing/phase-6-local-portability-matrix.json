@@ -10,8 +10,7 @@
       "status": "pass",
       "description": "Imported canonical state survives removal of the capture component and remains transferable and recoverable.",
       "pytest_files": [
-        "tests/test_local_portability_acceptance.py",
-        "tests/test_local_portability_acceptance_static.py"
+        "tests/test_ollama_adapter_static.py"
       ],
       "evidence_levels": [
         "ci",
@@ -23,8 +22,7 @@
       "status": "pass",
       "description": "A fresh process retrieves and generically exports the imported conversation without the IMP-056 capture component or preferred interface.",
       "pytest_files": [
-        "tests/test_local_portability_acceptance.py",
-        "tests/test_local_portability_acceptance_static.py"
+        "tests/test_ollama_adapter_static.py"
       ],
       "evidence_levels": [
         "ci",
@@ -36,8 +34,7 @@
       "status": "pass",
       "description": "One local Ollama session is captured, imported with provenance and relationship metadata, exported generically, transferred, restored, and inspected after capture removal.",
       "pytest_files": [
-        "tests/test_local_portability_acceptance.py",
-        "tests/test_local_portability_acceptance_static.py"
+        "tests/test_ollama_adapter_static.py"
       ],
       "evidence_levels": [
         "ci",
