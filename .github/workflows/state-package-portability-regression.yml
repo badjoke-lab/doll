@@ -29,6 +29,12 @@ jobs:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --locked --all-extras
+      - name: Run focused Ruff checks
+        shell: bash
+        run: |
+          set -o pipefail
+          uv run ruff check tests/test_state_package_portability.py tests/test_state_package_registry.py 2>&1 | tee imp057-ruff.txt
+          uv run ruff format --check tests/test_state_package_portability.py tests/test_state_package_registry.py 2>&1 | tee -a imp057-ruff.txt
       - name: Run full type check
         shell: bash
         run: |
@@ -45,5 +51,6 @@ jobs:
         with:
           name: imp057-focused-diagnostics
           path: |
+            imp057-ruff.txt
             imp057-mypy.txt
             imp057-pytest.txt
