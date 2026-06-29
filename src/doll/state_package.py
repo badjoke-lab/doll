@@ -24,6 +24,7 @@ from pydantic import ValidationError
 from doll import __version__
 from doll.artifact import (
     ArtifactCorruptError,
+    ArtifactInfo,
     WorkspaceFileService,
     _artifact_from_record,
 )
@@ -1459,9 +1460,22 @@ def _validate_active_setting_identities(records: list[RecordEnvelope]) -> None:
 
 
 def _validate_artifact_members(
-    expected_paths: dict[str, tuple[str, int, str]],
+    artifacts: dict[str, ArtifactInfo] | dict[str, tuple[str, int, str]],
     members: dict[str, bytes],
 ) -> dict[str, bytes]:
+    expected_paths: dict[str, tuple[str, int, str]] = {}
+    for value in artifacts.values():
+        if isinstance(value, ArtifactInfo):
+            managed_path = value.managed_path
+            size_bytes = value.size_bytes
+            content_hash = value.content_hash
+        else:
+            managed_path, size_bytes, content_hash = value
+        path = validate_managed_path(managed_path).as_posix()
+        if path in expected_paths:
+            raise StatePackageValidationError("duplicate artifact managed path")
+        expected_paths[path] = (path, size_bytes, content_hash)
+
     actual_members = {
         name.removeprefix(f"{PACKAGE_ROOT}/files/authoritative/"): content
         for name, content in members.items()
@@ -1849,6 +1863,20 @@ def _managed_file_metadata(record: RecordEnvelope) -> tuple[str, int, str] | Non
             return None
         return (source.managed_path, source.size_bytes, source.content_hash)
     return None
+
+
+def _read_artifact_bytes(
+    repository: StateRepository,
+    artifact: ArtifactInfo,
+) -> bytes:
+    """Retain the pre-generalization artifact helper contract for callers and tests."""
+
+    return _read_authoritative_file_bytes(
+        repository,
+        artifact.managed_path,
+        artifact.size_bytes,
+        artifact.content_hash,
+    )
 
 
 def _read_authoritative_file_bytes(
