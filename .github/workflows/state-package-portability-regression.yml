@@ -35,6 +35,8 @@ jobs:
           if [ -f scripts/apply_imp_057_test_format_patch.py ]; then
             uv run python scripts/apply_imp_057_test_format_patch.py
           fi
+      - name: Format focused tests
+        run: uv run ruff format tests/test_state_package_portability.py tests/test_state_package_registry.py
       - name: Run focused Ruff checks
         shell: bash
         run: |
