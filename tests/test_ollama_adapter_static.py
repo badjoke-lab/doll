@@ -202,3 +202,22 @@ def test_imp_057_ci_migration_runner() -> None:
     assert evidence["ollama_request_count"] == 3
     assert evidence["allowed_loopback_socket_attempts"] == 0
     assert evidence["rejected_socket_attempts"] == 0
+
+
+def test_imp_057_lint_diagnostics() -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "ruff",
+            "check",
+            str(IMP057_PROBE),
+            str(IMP057_INSPECTOR),
+            str(IMP057_RUNNER),
+            str(Path(__file__)),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
