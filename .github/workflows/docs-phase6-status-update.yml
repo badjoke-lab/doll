@@ -1,6 +1,12 @@
 name: Apply Phase 6 status update
 
 on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "scripts/apply_phase6_status_after_imp057.py"
+      - ".github/workflows/docs-phase6-status-update.yml"
   push:
     branches:
       - docs-phase6-status-after-imp057
@@ -33,5 +39,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add docs/spec/09-development-roadmap.md DOLL_FINAL_SPEC.md website/project-status.json
+          if git diff --cached --quiet; then
+            exit 0
+          fi
           git commit -m "Update Phase 6 status after IMP-057"
           git push origin HEAD:docs-phase6-status-after-imp057
