@@ -95,13 +95,9 @@ def test_adapter_surface_has_no_state_or_side_effect_method() -> None:
         for node in tree.body
         if isinstance(node, ast.ClassDef) and node.name == "OllamaRuntimeAdapter"
     )
-    method_names = {
-        node.name for node in adapter.body if isinstance(node, ast.FunctionDef)
-    }
+    method_names = {node.name for node in adapter.body if isinstance(node, ast.FunctionDef)}
 
-    assert {"declaration", "health", "inventory", "generate", "stream"}.issubset(
-        method_names
-    )
+    assert {"declaration", "health", "inventory", "generate", "stream"}.issubset(method_names)
     for forbidden in (
         "approve",
         "authorize",
@@ -147,17 +143,11 @@ def test_imp_057_matrix_and_alternate_component_boundary() -> None:
         "PORT-013",
     ]
     assert {item["status"] for item in entries} == {"pass"}
-    assert {tuple(item["passed_evidence_levels"]) for item in entries} == {
-        ("ci", "real-machine")
-    }
-    assert {tuple(item["required_evidence_levels"]) for item in entries} == {
-        ("ci", "real-machine")
-    }
+    assert {tuple(item["passed_evidence_levels"]) for item in entries} == {("ci", "real-machine")}
+    assert {tuple(item["required_evidence_levels"]) for item in entries} == {("ci", "real-machine")}
     assert matrix["real_machine_gate"]["status"] == "pass"
     assert matrix["real_machine_gate"]["minimum_local_models"] == 1
-    assert matrix["real_machine_gate"]["commit_sha"] == (
-        "7b63ff512e20d1d6ae65da8938486b093e14b6c6"
-    )
+    assert matrix["real_machine_gate"]["commit_sha"] == ("7b63ff512e20d1d6ae65da8938486b093e14b6c6")
     assert matrix["real_machine_gate"]["completed_at"] == "2026-06-29T15:48:03.615410Z"
 
     imports = _module_imports(IMP057_INSPECTOR)
@@ -171,10 +161,7 @@ def test_imp_057_matrix_and_alternate_component_boundary() -> None:
         }
     )
     probe = IMP057_PROBE.read_text(encoding="utf-8")
-    assert (
-        '_ALLOWED_PATHS = frozenset({"/api/tags", "/api/version", "/api/chat"})'
-        in probe
-    )
+    assert '_ALLOWED_PATHS = frozenset({"/api/tags", "/api/version", "/api/chat"})' in probe
     assert "GenericImportPublisher" in probe
     assert "GenericExportBuilder" in probe
     assert "export_state_package" in probe
