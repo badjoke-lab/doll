@@ -16,23 +16,61 @@ def main() -> int:
     probe = Path("scripts/imp_057_local_portability_probe.py")
     replace_once(
         probe,
-        '''            payload = {\n                "models": [\n''',
-        '''            inventory_payload: dict[str, object] = {\n                "models": [\n''',
+        '''            payload = {
+                "models": [
+                    {
+                        "name": self.model_name,
+                        "model": self.model_name,
+                        "digest": "5" * 64,
+                    }
+                ]
+            }
+            return OllamaHttpResponse(
+                200,
+                json.dumps(payload, separators=(",", ":")).encode("utf-8"),
+            )
+''',
+        '''            inventory_payload: dict[str, object] = {
+                "models": [
+                    {
+                        "name": self.model_name,
+                        "model": self.model_name,
+                        "digest": "5" * 64,
+                    }
+                ]
+            }
+            return OllamaHttpResponse(
+                200,
+                json.dumps(inventory_payload, separators=(",", ":")).encode("utf-8"),
+            )
+''',
     )
     replace_once(
         probe,
-        '                json.dumps(payload, separators=(",", ":")).encode("utf-8"),\n',
-        '                json.dumps(inventory_payload, separators=(",", ":")).encode("utf-8"),\n',
-    )
-    replace_once(
-        probe,
-        '''            payload = {\n                "model": self.model_name,\n''',
-        '''            chat_payload: dict[str, object] = {\n                "model": self.model_name,\n''',
-    )
-    replace_once(
-        probe,
-        '                json.dumps(payload, separators=(",", ":")).encode("utf-8"),\n',
-        '                json.dumps(chat_payload, separators=(",", ":")).encode("utf-8"),\n',
+        '''            payload = {
+                "model": self.model_name,
+                "created_at": "2026-06-29T03:00:01Z",
+                "message": {"role": "assistant", "content": SYNTHETIC_RESPONSE},
+                "done": True,
+                "done_reason": "stop",
+            }
+            return OllamaHttpResponse(
+                200,
+                json.dumps(payload, separators=(",", ":")).encode("utf-8"),
+            )
+''',
+        '''            chat_payload: dict[str, object] = {
+                "model": self.model_name,
+                "created_at": "2026-06-29T03:00:01Z",
+                "message": {"role": "assistant", "content": SYNTHETIC_RESPONSE},
+                "done": True,
+                "done_reason": "stop",
+            }
+            return OllamaHttpResponse(
+                200,
+                json.dumps(chat_payload, separators=(",", ":")).encode("utf-8"),
+            )
+''',
     )
     text = probe.read_text(encoding="utf-8")
     expected = text.count("# type: ignore[method-assign]")
@@ -59,12 +97,25 @@ def main() -> int:
     replace_once(
         portability,
         '            preservation_state=cast(str, metadata["preservation_state"]),\n',
-        '''            preservation_state=cast(\n                Literal["managed_snapshot", "hash_only"],\n                metadata["preservation_state"],\n            ),\n''',
+        '''            preservation_state=cast(
+                Literal["managed_snapshot", "hash_only"],
+                metadata["preservation_state"],
+            ),
+''',
     )
     replace_once(
         portability,
-        '''    for snapshot in snapshots.values():\n        batch = batches.get(snapshot.import_batch_id)\n        if batch is None or batch.source_root_hash != snapshot.source_root_hash:\n''',
-        '''    for snapshot in snapshots.values():\n        snapshot_batch = batches.get(snapshot.import_batch_id)\n        if (\n            snapshot_batch is None\n            or snapshot_batch.source_root_hash != snapshot.source_root_hash\n        ):\n''',
+        '''    for snapshot in snapshots.values():
+        batch = batches.get(snapshot.import_batch_id)
+        if batch is None or batch.source_root_hash != snapshot.source_root_hash:
+''',
+        '''    for snapshot in snapshots.values():
+        snapshot_batch = batches.get(snapshot.import_batch_id)
+        if (
+            snapshot_batch is None
+            or snapshot_batch.source_root_hash != snapshot.source_root_hash
+        ):
+''',
     )
     return 0
 
