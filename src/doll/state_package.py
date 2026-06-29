@@ -82,6 +82,22 @@ from doll.state import (
     initialize_state_repository,
     open_state_repository,
 )
+from doll.state_package_portability import (
+    PortabilityPackageCorruptError,
+    import_batch_from_record,
+    managed_source_from_record,
+    mapping_report_from_record,
+    original_source_from_record,
+    portability_loss_from_record,
+    quarantine_from_record,
+    source_environment_from_record,
+    source_mapping_from_record,
+    validate_portability_package_graph,
+)
+from doll.state_package_portability_registry import (
+    PORTABILITY_RECORD_CATEGORIES,
+    PORTABILITY_RECORD_TYPES,
+)
 from doll.state_package_registry import (
     PACKAGE_SYSTEM_CATEGORIES,
     AuthoritativeRecordRegistry,
@@ -139,6 +155,7 @@ _FIXED_MEMBER_PATHS = (
 )
 _DRIVE_PATH = re.compile(r"^[A-Za-z]:")
 _ALLOWED_LIFECYCLE = frozenset({"active", "archived"})
+_CONDITIONAL_V2_RECORD_TYPES = PORTABILITY_RECORD_TYPES
 
 
 _PACKAGE_FORMAT_REQUIRED_FIELDS: dict[int, frozenset[str]] = {
@@ -191,6 +208,13 @@ _PACKAGE_RECORD_VALIDATORS: dict[str, Callable[[RecordEnvelope], object]] = {
     "model_binding": _binding_from_record,
     "conversation": _conversation_from_envelope,
     "conversation_event": _conversation_event_from_envelope,
+    "source_environment": source_environment_from_record,
+    "portability_import_batch": import_batch_from_record,
+    "portability_mapping_report": mapping_report_from_record,
+    "portability_loss": portability_loss_from_record,
+    "portability_source_mapping": source_mapping_from_record,
+    "portability_quarantine": quarantine_from_record,
+    "portability_original_source": original_source_from_record,
 }
 
 
@@ -228,9 +252,15 @@ class StatePackageImportError(StatePackageError):
 
 def _package_record_registry(package_format_version: int) -> AuthoritativeRecordRegistry:
     try:
-        return get_authoritative_record_registry(package_format_version)
+        registry = get_authoritative_record_registry(package_format_version)
     except StatePackageRegistryError as exc:
         raise StatePackageValidationError("package format version is unsupported") from exc
+    if package_format_version == 2:
+        return AuthoritativeRecordRegistry(
+            package_format_version=2,
+            categories=(*registry.categories, *PORTABILITY_RECORD_CATEGORIES),
+        )
+    return registry
 
 
 def _validate_registry_validators(registry: AuthoritativeRecordRegistry) -> None:
@@ -388,22 +418,20 @@ def import_state_package(package_path: Path, target: Path) -> ImportResult:
         _initialize_import_workspace(staging, bootstrap_record)
         with initialize_state_repository(staging) as repository:
             for record in data.records:
-                if record.record_type != "artifact":
+                managed_file = _managed_file_metadata(record)
+                if managed_file is None:
                     continue
-                artifact = _artifact_from_record(record)
-                content = data.artifact_files[artifact.managed_path]
+                managed_path, size_bytes, content_hash = managed_file
+                content = data.artifact_files[managed_path]
                 published = publish_new_workspace_file(
                     repository.workspace.root / "artifacts",
-                    artifact.managed_path,
+                    managed_path,
                     content,
                     max_bytes=DEFAULT_MAX_ARTIFACT_BYTES,
                 )
-                if (
-                    published.content_hash != artifact.content_hash
-                    or published.size_bytes != artifact.size_bytes
-                ):
+                if published.content_hash != content_hash or published.size_bytes != size_bytes:
                     raise StatePackageIntegrityError(
-                        "staged artifact does not match package metadata"
+                        "staged authoritative file does not match package metadata"
                     )
                 published_files.append(published)
             imported_revision = _import_database_rows(repository, data)
@@ -473,13 +501,20 @@ def _build_export_members(
             continue
         _validate_export_record(record, category.validator_id)
         records_by_type[record_type].append(_record_payload(record))
-        if record_type == "artifact":
-            artifact = _artifact_from_record(record)
-            verification = WorkspaceFileService(repository).verify(record.id)
-            if verification.actual_hash != artifact.content_hash:
-                raise StatePackageIntegrityError("artifact hash verification failed")
-            content = _read_artifact_bytes(repository, artifact)
-            member_path = f"files/authoritative/{artifact.managed_path}"
+        managed_file = _managed_file_metadata(record)
+        if managed_file is not None:
+            managed_path, size_bytes, content_hash = managed_file
+            if record_type == "artifact":
+                verification = WorkspaceFileService(repository).verify(record.id)
+                if verification.actual_hash != content_hash:
+                    raise StatePackageIntegrityError("artifact hash verification failed")
+            content = _read_authoritative_file_bytes(
+                repository,
+                managed_path,
+                size_bytes,
+                content_hash,
+            )
+            member_path = f"files/authoritative/{managed_path}"
             if member_path in artifact_files:
                 raise StatePackageValidationError("duplicate authoritative file path")
             artifact_files[member_path] = content
@@ -494,14 +529,26 @@ def _build_export_members(
         "records/migration-history.jsonl": _jsonl_bytes(migration_history),
         "README.txt": _readme_bytes(),
     }
+    included_record_types = {
+        category.record_type
+        for category in registry.categories
+        if category.record_type not in _CONDITIONAL_V2_RECORD_TYPES
+        or records_by_type[category.record_type]
+        or omitted_secret_counts[category.record_type]
+    }
     for category in registry.categories:
-        members[category.member_path] = _jsonl_bytes(records_by_type[category.record_type])
+        if category.record_type in included_record_types:
+            members[category.member_path] = _jsonl_bytes(records_by_type[category.record_type])
     members.update(artifact_files)
 
     payload_size = sum(len(value) for value in members.values())
     record_counts = {
         record_type: len(records_by_type[record_type])
-        for record_type in sorted(registry.record_types)
+        for record_type in sorted(included_record_types)
+    }
+    included_omitted_secret_counts = {
+        record_type: omitted_secret_counts[record_type]
+        for record_type in sorted(included_record_types)
     }
     manifest: dict[str, object] = {
         "package_format_version": PACKAGE_FORMAT_VERSION,
@@ -527,7 +574,7 @@ def _build_export_members(
         "total_payload_size_bytes": payload_size,
         "checksum_algorithm": CHECKSUM_ALGORITHM,
         "encryption_state": ENCRYPTION_STATE,
-        "omitted_secret_counts": omitted_secret_counts,
+        "omitted_secret_counts": included_omitted_secret_counts,
         "external_references": [],
         "compatibility_notes": [
             "Import supports package format versions 1 and 2 with a supported state schema.",
@@ -864,7 +911,8 @@ def _validate_package_payloads(
                 _required_member(members, member_name),
                 category.member_path,
             )
-        actual_counts[category.record_type] = len(payloads)
+        if declared or category.record_type not in _CONDITIONAL_V2_RECORD_TYPES:
+            actual_counts[category.record_type] = len(payloads)
         for payload in payloads:
             record = _envelope_from_payload(
                 payload,
@@ -883,6 +931,8 @@ def _validate_package_payloads(
             required=category.required_member,
         )
         for category in registry.categories
+        if category.record_type not in _CONDITIONAL_V2_RECORD_TYPES
+        or category.record_type in included_categories
     }
     if actual_counts != expected_counts:
         raise StatePackageIntegrityError("record counts do not match manifest")
@@ -894,6 +944,8 @@ def _validate_package_payloads(
             required=category.required_member,
         )
         for category in registry.categories
+        if category.record_type not in _CONDITIONAL_V2_RECORD_TYPES
+        or category.record_type in included_categories
     }
     _validate_active_setting_identities(records)
     _validate_cross_record_links(records_by_id)
@@ -917,12 +969,15 @@ def _validate_package_payloads(
     ):
         raise StatePackageIntegrityError("migration count does not match manifest")
 
-    artifacts = {
-        record.id: _artifact_from_record(record)
-        for record in records
-        if record.record_type == "artifact"
-    }
-    artifact_files = _validate_artifact_members(artifacts, members)
+    managed_files: dict[str, tuple[str, int, str]] = {}
+    for record in records:
+        managed_file = _managed_file_metadata(record)
+        if managed_file is None:
+            continue
+        if managed_file[0] in managed_files:
+            raise StatePackageValidationError("duplicate authoritative managed file path")
+        managed_files[managed_file[0]] = managed_file
+    artifact_files = _validate_artifact_members(managed_files, members)
     file_count = _required_nonnegative_int(manifest, "authoritative_file_count")
     if len(artifact_files) != file_count:
         raise StatePackageIntegrityError("authoritative file count does not match manifest")
@@ -1044,6 +1099,7 @@ def _envelope_from_payload(
         InstructionOriginCorruptError,
         MemoryCorruptError,
         ModelManifestCorruptError,
+        PortabilityPackageCorruptError,
         ProcedureCorruptError,
         ProjectDecisionCorruptError,
         SettingsCorruptError,
@@ -1201,6 +1257,7 @@ def _validate_cross_record_links(records: dict[str, RecordEnvelope]) -> None:
                 if optional_link_id is not None:
                     _require_link_type(records, optional_link_id, "procedure")
     _validate_conversation_package_graph(records)
+    validate_portability_package_graph(records)
     _validate_work_item_package_graph(records)
     _validate_procedure_package_graph(records)
     _validate_checkpoint_package_graph(records)
@@ -1403,29 +1460,36 @@ def _validate_active_setting_identities(records: list[RecordEnvelope]) -> None:
 
 
 def _validate_artifact_members(
-    artifacts: dict[str, ArtifactInfo],
+    artifacts: dict[str, ArtifactInfo] | dict[str, tuple[str, int, str]],
     members: dict[str, bytes],
 ) -> dict[str, bytes]:
-    expected_paths: dict[str, ArtifactInfo] = {}
-    for artifact in artifacts.values():
-        path = validate_managed_path(artifact.managed_path).as_posix()
+    expected_paths: dict[str, tuple[str, int, str]] = {}
+    for value in artifacts.values():
+        if isinstance(value, ArtifactInfo):
+            managed_path = value.managed_path
+            size_bytes = value.size_bytes
+            content_hash = value.content_hash
+        else:
+            managed_path, size_bytes, content_hash = value
+        path = validate_managed_path(managed_path).as_posix()
         if path in expected_paths:
             raise StatePackageValidationError("duplicate artifact managed path")
-        expected_paths[path] = artifact
+        expected_paths[path] = (path, size_bytes, content_hash)
+
     actual_members = {
         name.removeprefix(f"{PACKAGE_ROOT}/files/authoritative/"): content
         for name, content in members.items()
         if name.startswith(f"{PACKAGE_ROOT}/files/authoritative/")
     }
     if set(actual_members) != set(expected_paths):
-        raise StatePackageIntegrityError("artifact file inventory does not match records")
-    for path, artifact in expected_paths.items():
+        raise StatePackageIntegrityError("authoritative file inventory does not match records")
+    for path, (_, size_bytes, content_hash) in expected_paths.items():
         content = actual_members[path]
-        if len(content) != artifact.size_bytes:
-            raise StatePackageIntegrityError("artifact file size does not match record")
+        if len(content) != size_bytes:
+            raise StatePackageIntegrityError("authoritative file size does not match record")
         digest = f"sha256:{hashlib.sha256(content).hexdigest()}"
-        if digest != artifact.content_hash:
-            raise StatePackageIntegrityError("artifact file hash does not match record")
+        if digest != content_hash:
+            raise StatePackageIntegrityError("authoritative file hash does not match record")
     return actual_members
 
 
@@ -1560,10 +1624,10 @@ def _target_conflicts(data: _PackageData, target: Path) -> tuple[ImportConflict,
         else:
             conflicts.append(ImportConflict("older_target_record", incoming.id))
     for record in data.records:
-        if record.record_type != "artifact":
+        managed_file = _managed_file_metadata(record)
+        if managed_file is None:
             continue
-        artifact = _artifact_from_record(record)
-        if (target / "artifacts" / artifact.managed_path).exists():
+        if (target / "artifacts" / managed_file[0]).exists():
             conflicts.append(ImportConflict("artifact_path_collision", record.id))
     if not conflicts:
         conflicts.append(ImportConflict("target_not_empty"))
@@ -1726,8 +1790,9 @@ def _validate_imported_workspace(
                 imported = repository.get_record(record.id)
                 if _record_payload(imported) != _record_payload(record):
                     raise StatePackageIntegrityError("imported record differs from package")
-                if record.record_type == "artifact":
-                    WorkspaceFileService(repository).verify(record.id)
+                managed_file = _managed_file_metadata(record)
+                if managed_file is not None:
+                    _verify_managed_file(repository, managed_file)
     except StatePackageError:
         raise
     except BaseException as exc:
@@ -1784,24 +1849,69 @@ def _validate_export_record(
     )
 
 
+def _managed_file_metadata(record: RecordEnvelope) -> tuple[str, int, str] | None:
+    if record.record_type == "artifact":
+        artifact = _artifact_from_record(record)
+        return (
+            validate_managed_path(artifact.managed_path).as_posix(),
+            artifact.size_bytes,
+            artifact.content_hash,
+        )
+    if record.record_type == "portability_original_source":
+        source = managed_source_from_record(record)
+        if source is None:
+            return None
+        return (source.managed_path, source.size_bytes, source.content_hash)
+    return None
+
+
 def _read_artifact_bytes(
     repository: StateRepository,
     artifact: ArtifactInfo,
 ) -> bytes:
-    safe_path = validate_managed_path(artifact.managed_path)
+    """Retain the pre-generalization artifact helper contract for callers and tests."""
+
+    return _read_authoritative_file_bytes(
+        repository,
+        artifact.managed_path,
+        artifact.size_bytes,
+        artifact.content_hash,
+    )
+
+
+def _read_authoritative_file_bytes(
+    repository: StateRepository,
+    managed_path: str,
+    size_bytes: int,
+    content_hash: str,
+) -> bytes:
+    safe_path = validate_managed_path(managed_path)
     path = repository.workspace.root / "artifacts" / safe_path
     try:
         content = path.read_bytes()
     except OSError as exc:
-        raise StatePackageIntegrityError("managed artifact could not be read") from exc
+        raise StatePackageIntegrityError("managed authoritative file could not be read") from exc
     if len(content) > DEFAULT_MAX_ARTIFACT_BYTES:
-        raise StatePackageLimitError("managed artifact exceeds export size limit")
-    if len(content) != artifact.size_bytes:
-        raise StatePackageIntegrityError("managed artifact size changed during export")
+        raise StatePackageLimitError("managed authoritative file exceeds export size limit")
+    if len(content) != size_bytes:
+        raise StatePackageIntegrityError("managed authoritative file size changed during export")
     digest = f"sha256:{hashlib.sha256(content).hexdigest()}"
-    if digest != artifact.content_hash:
-        raise StatePackageIntegrityError("managed artifact hash changed during export")
+    if digest != content_hash:
+        raise StatePackageIntegrityError("managed authoritative file hash changed during export")
     return content
+
+
+def _verify_managed_file(
+    repository: StateRepository,
+    managed_file: tuple[str, int, str],
+) -> None:
+    managed_path, size_bytes, content_hash = managed_file
+    _read_authoritative_file_bytes(
+        repository,
+        managed_path,
+        size_bytes,
+        content_hash,
+    )
 
 
 def _export_audit_events(repository: StateRepository) -> list[dict[str, object]]:

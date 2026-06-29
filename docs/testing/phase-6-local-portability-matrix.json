@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "phase": "6",
+  "implementation": "IMP-057",
+  "local_portability_gate_complete": false,
+  "accepted_real_machine_result": null,
+  "portability_tests": [
+    {
+      "id": "PORT-001",
+      "status": "ci-pass",
+      "description": "Imported canonical state survives removal of the capture component and remains transferable and recoverable.",
+      "pytest_files": [
+        "tests/test_local_portability_acceptance.py",
+        "tests/test_ollama_adapter_static.py"
+      ],
+      "passed_evidence_levels": [
+        "ci"
+      ],
+      "required_evidence_levels": [
+        "ci",
+        "real-machine"
+      ]
+    },
+    {
+      "id": "PORT-003",
+      "status": "ci-pass",
+      "description": "A fresh process retrieves and generically exports the imported conversation without the IMP-056 capture component or preferred interface.",
+      "pytest_files": [
+        "tests/test_local_portability_acceptance.py",
+        "tests/test_ollama_adapter_static.py"
+      ],
+      "passed_evidence_levels": [
+        "ci"
+      ],
+      "required_evidence_levels": [
+        "ci",
+        "real-machine"
+      ]
+    },
+    {
+      "id": "PORT-013",
+      "status": "ci-pass",
+      "description": "One local Ollama session is captured, imported with provenance and relationship metadata, exported generically, transferred, restored, and inspected after capture removal.",
+      "pytest_files": [
+        "tests/test_local_portability_acceptance.py",
+        "tests/test_ollama_adapter_static.py"
+      ],
+      "passed_evidence_levels": [
+        "ci"
+      ],
+      "required_evidence_levels": [
+        "ci",
+        "real-machine"
+      ]
+    }
+  ],
+  "real_machine_gate": {
+    "required": true,
+    "status": "pending",
+    "platform": "Darwin",
+    "architectures": [
+      "x86_64",
+      "amd64"
+    ],
+    "minimum_local_models": 1,
+    "network_mode": "offline-confirmed",
+    "commit_sha": null,
+    "completed_at": null
+  },
+  "limitations": [
+    "Synthetic CI uses an injected transport and is not real Ollama evidence.",
+    "Primary Intel Mac evidence remains pending until a separate completion pull request stores the privacy-safe exact-commit result.",
+    "The drill covers explicit non-streaming text capture and parent relationships, not native Ollama history discovery, attachments, multimodal content, tools, or streaming capture.",
+    "The alternate component is a fresh-process canonical-state reader and generic exporter; no second model or runtime adapter is claimed.",
+    "Target-specific export back to Ollama, ChatGPT migration, PORT-015, the full Phase 6 gate, and a stable anti-lock-in claim remain outside this implementation."
+  ]
+}
