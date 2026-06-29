@@ -95,9 +95,13 @@ def test_adapter_surface_has_no_state_or_side_effect_method() -> None:
         for node in tree.body
         if isinstance(node, ast.ClassDef) and node.name == "OllamaRuntimeAdapter"
     )
-    method_names = {node.name for node in adapter.body if isinstance(node, ast.FunctionDef)}
+    method_names = {
+        node.name for node in adapter.body if isinstance(node, ast.FunctionDef)
+    }
 
-    assert {"declaration", "health", "inventory", "generate", "stream"}.issubset(method_names)
+    assert {"declaration", "health", "inventory", "generate", "stream"}.issubset(
+        method_names
+    )
     for forbidden in (
         "approve",
         "authorize",
@@ -167,7 +171,10 @@ def test_imp_057_matrix_and_alternate_component_boundary() -> None:
         }
     )
     probe = IMP057_PROBE.read_text(encoding="utf-8")
-    assert '_ALLOWED_PATHS = frozenset({"/api/tags", "/api/version", "/api/chat"})' in probe
+    assert (
+        '_ALLOWED_PATHS = frozenset({"/api/tags", "/api/version", "/api/chat"})'
+        in probe
+    )
     assert "GenericImportPublisher" in probe
     assert "GenericExportBuilder" in probe
     assert "export_state_package" in probe
