@@ -39,8 +39,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 56,
-  "project-status.json must mark Phase 6 in progress from IMP-055 with IMP-056 next",
+    status.phase?.next_implementation === 57,
+  "project-status.json must mark Phase 6 in progress through IMP-056 with IMP-057 next",
 );
 expect(
   status.model_runtime &&
@@ -183,12 +183,16 @@ expect(
   "roadmap must record the IMP-055 Ollama session source adapter",
 );
 expect(
-  roadmap.includes("the next bounded Phase 6 implementation receives IMP-056 when its issue is opened"),
-  "roadmap must identify IMP-056 as the next implementation identifier",
+  roadmap.includes("### IMP-056 — Explicit loopback Ollama chat session capture"),
+  "roadmap must record the IMP-056 explicit local capture path",
 );
 expect(
-  roadmap.includes("The required order after IMP-055 is:"),
-  "roadmap must advance immediate work beyond IMP-055",
+  roadmap.includes("the next bounded Phase 6 implementation receives IMP-057 when its issue is opened"),
+  "roadmap must identify IMP-057 as the next implementation identifier",
+);
+expect(
+  roadmap.includes("The required order after IMP-056 is:"),
+  "roadmap must advance immediate work beyond IMP-056",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),

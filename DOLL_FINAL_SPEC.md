@@ -24,7 +24,7 @@
 - `docs/spec/08-acceptance-and-continuity-tests.md` — SHA-256 `1ae9b70cf28257b35a30238bdc46c2caea93dbd17fdf8b516ff708c9e208a698`
 - `docs/spec/08a-ai-environment-portability-acceptance.md` — SHA-256 `3a1876d8b506204254ccd54eb58cfabcf2ddc92e3edd446d90650b9ae22ff305`
 - `docs/spec/08b-project-continuity-acceptance.md` — SHA-256 `b58623f21bdd183a21e1904ebcec954ffb2b6976254b72ac52f13deae83306cc`
-- `docs/spec/09-development-roadmap.md` — SHA-256 `dded96d01c37979ba460525882858ddc8efb8bbe06922844bf54cca40f4654fa`
+- `docs/spec/09-development-roadmap.md` — SHA-256 `1612630aebc0d58438de0969102699ff2f016bc9c1c2b6ca802ef3733058380a`
 
 ---
 
@@ -8564,8 +8564,8 @@ Completed:
 - Phase 4B project continuity foundation;
 - Phase 5 local runtime and model integration;
 - IMP-001 through IMP-023;
-- IMP-030 through IMP-055;
-- local workspace, SQLite state, migrations, managed artifacts, canonical conversation and project state, State Package v2, backup and restore, the model-independent safety boundary, AI-environment portability, project continuity, runtime-independent adapter contracts, a loopback-only Ollama adapter, authoritative runtime and model manifests, explicit bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, and accepted primary Intel Mac offline continuity evidence through IMP-054, and the offline Ollama API session source adapter through IMP-055.
+- IMP-030 through IMP-056;
+- local workspace, SQLite state, migrations, managed artifacts, canonical conversation and project state, State Package v2, backup and restore, the model-independent safety boundary, AI-environment portability, project continuity, runtime-independent adapter contracts, a loopback-only Ollama adapter, authoritative runtime and model manifests, explicit bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, and accepted primary Intel Mac offline continuity evidence through IMP-054, the offline Ollama API session source adapter through IMP-055, and explicit loopback Ollama chat capture through IMP-056.
 
 Current implementation point:
 
@@ -8580,8 +8580,11 @@ Current implementation point:
 - Phase 6 local AI portability and daily-use integration is now in progress;
 - IMP-055 adds an offline source adapter for a documented caller-retained Ollama API session bundle, with exact JSON validation, content-free inventory, original-source hashing, deterministic normalization, explicit attachment-metadata loss, and reuse of the accepted generic staging and reviewed-publication boundary;
 - IMP-055 performs no live Ollama request, application-database read, shell-history read, model import, credential access, cloud request, tool execution, schema migration, or State Package format change;
-- IMP-055 does not complete PORT-013 or a stable local-environment portability claim; a later live capture or supported local-application export path and private primary-machine migration drill remain required;
-- the next bounded Phase 6 implementation receives IMP-056 when its issue is opened;
+- IMP-055 does not complete PORT-013 or a stable local-environment portability claim;
+- IMP-056 adds an explicit non-streaming text-only capture path through fixed IPv4 loopback, resolves one opaque already-installed local model through the filtered inventory, and returns an IMP-055-valid session bundle without reading application databases, logs, shell history, or unrelated sessions;
+- IMP-056 synthetic CI proves new-session and append capture, unrelated-conversation preservation, strict source and runtime identity checks, bounded failure behavior, and no Doll State, tool, credential, cloud, subprocess, model-download, or automatic authority path;
+- IMP-056 does not complete the primary Intel Mac migration drill, PORT-013, tested round trip, application removal, or the Phase 6 gate;
+- the next bounded Phase 6 implementation receives IMP-057 when its issue is opened;
 - later local migration, cloud, and tool work must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts.
 
 Implementation identifier policy:
@@ -9009,6 +9012,18 @@ The adapter reuses the Phase 4A generic staging, preview, exact-plan approval, s
 
 Synthetic tests prove deterministic inventory and mappings, canonical publication, managed source preservation, unchanged re-import reuse, changed-source conflict without overwrite, malformed and hostile-input handling, and absence of network or runtime dependencies. IMP-055 does not establish a native Ollama export, live capture, tested round trip, PORT-013 completion, or the Phase 6 gate.
 
+### IMP-056 — Explicit loopback Ollama chat session capture
+
+Status: implemented with deterministic injected-transport CI evidence; real primary Intel Mac migration evidence remains pending.
+
+Implemented a typed service that starts or appends one explicit text-only local Ollama conversation turn. The caller supplies exact source-environment, conversation, message, operation, and timestamp identities plus one opaque model ID. The service requires explicit local-only confirmation, resolves the opaque model through the existing cloud-filtered local inventory, reads the local runtime version, and permits only `GET /api/tags`, `GET /api/version`, and non-streaming `POST /api/chat` on fixed IPv4 loopback.
+
+Existing source bytes must first pass IMP-055 validation. The selected conversation must be unique, text-only, within limits, and a single linear parent chain; duplicate identifiers, unsupported roles, attachments, tool calls, wrong source identity, and runtime-version mismatch fail before chat. Unrelated conversations remain preserved. The response must use the exact selected native model, assistant role, bounded non-blank content, supported completion state and reason, and a valid timestamp, with no images, tools, thinking payload, duplicate keys, invalid UTF-8, or undeclared message members.
+
+On success, the service appends one user event and one assistant event to the source bundle, records the resolved native model only as imported source metadata, updates runtime and export metadata, and revalidates the complete returned bytes through IMP-055. It writes no Doll State and creates no policy, memory, permission, credential, capability, model binding, confirmation, procedure, checkpoint, blocker, or project-completion authority.
+
+Synthetic tests prove the exact inventory/version/chat sequence, new and appended sessions, preserved unrelated conversations, cloud-model exclusion, cancellation, timeout, malformed response, source-history rejection, bounded failure privacy, and absence of State, credential, capability, process, remote HTTP, model-download, or tool dependencies. IMP-056 does not provide automatic/background capture, private application discovery, streaming, multimodal or tool fidelity, target-specific export, tested round trip, application replacement, PORT-013 completion, or the Phase 6 gate.
+
 Daily-use work may then expand writing, editing, summarization, translation, planning, memory review, project and decision workflows, work-item proposals, portability review, accessibility, error clarity, Lite performance, and soak testing.
 
 ## 13. Phase 7 — Optional cloud and multiple models
@@ -9126,13 +9141,13 @@ An implementation PR is done when:
 
 ## 18. Immediate work
 
-The required order after IMP-055 is:
+The required order after IMP-056 is:
 
-1. merge the offline Ollama API session source adapter only after all cross-platform, quality, specification, public-status, numbering, and coverage checks pass;
-2. open the next bounded Phase 6 issue as IMP-056 for an explicit live capture or supported local-application export path that can produce the documented session bundle without reading undeclared private storage;
-3. run the private primary Intel Mac migration drill with synthetic or approved private test content, retrieve imported context through a different approved execution component, and disable or remove the original application;
+1. merge the explicit loopback Ollama chat capture only after all cross-platform, quality, specification, public-status, numbering, and coverage checks pass;
+2. open the next bounded Phase 6 issue as IMP-057 for the exact-commit primary Intel Mac capture, import, alternate approved execution, and original-path removal drill;
+3. preserve reviewed synthetic or approved private evidence without committing personal conversation content, native model names, prompts, responses, paths, usernames, hostnames, credentials, or secrets;
 4. complete applicable PORT-001, PORT-003, PORT-013, and later PORT-015 evidence before making a stable local-portability or anti-lock-in claim;
-5. keep ChatGPT history, provider-specific cloud portability, credentials, tools, and automatic cloud fallback outside the local migration gate.
+5. keep ChatGPT history, provider-specific cloud portability, credentials, tools, automatic cloud fallback, multimodal capture, and target-specific export outside the local migration gate.
 
 ## 19. Roadmap change control
 

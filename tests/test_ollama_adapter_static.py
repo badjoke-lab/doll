@@ -44,7 +44,7 @@ def test_ollama_adapter_contains_only_the_fixed_loopback_api_surface() -> None:
     }
     api_paths = {value for value in string_values if value.startswith("/api/")}
 
-    assert api_paths == {"/api/generate", "/api/tags", "/api/version"}
+    assert api_paths == {"/api/chat", "/api/generate", "/api/tags", "/api/version"}
     assert 'OLLAMA_LOOPBACK_HOST = "127.0.0.1"' in source
     assert "ollama.com" not in source
     assert "localhost" not in source
