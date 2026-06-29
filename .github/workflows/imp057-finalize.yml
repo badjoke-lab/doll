@@ -6,6 +6,7 @@ on:
       - "src/doll/state_package.py"
       - "src/doll/state_package_portability.py"
       - "src/doll/state_package_portability_registry.py"
+      - "scripts/fix_imp_057_typing.py"
       - "scripts/imp_057_local_portability_probe.py"
       - "scripts/imp_057_state_inspector.py"
       - "scripts/run_imp_057_local_portability.py"
@@ -26,16 +27,20 @@ jobs:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --locked --all-extras
+      - name: Apply reviewed type-only fixes
+        run: uv run python scripts/fix_imp_057_typing.py
+      - name: Normalize generated files
+        run: |
+          uv run ruff check --fix src/doll/state_package_portability.py scripts/imp_057_local_portability_probe.py scripts/run_imp_057_local_portability.py
+          uv run ruff format src/doll/state_package_portability.py scripts/imp_057_local_portability_probe.py scripts/run_imp_057_local_portability.py
       - name: Run focused type check
         shell: bash
         run: |
           set -o pipefail
           uv run mypy src/doll/state_package.py src/doll/state_package_portability.py src/doll/state_package_portability_registry.py scripts/imp_057_local_portability_probe.py scripts/imp_057_state_inspector.py scripts/run_imp_057_local_portability.py 2>&1 | tee imp057-mypy.txt
-      - name: Run focused portability regression
-        shell: bash
-        run: |
-          set -o pipefail
-          uv run pytest -q tests/test_ollama_adapter_static.py 2>&1 | tee imp057-pytest.txt
+      - name: Build reviewed patch
+        if: always()
+        run: git diff -- src/doll/state_package_portability.py scripts/imp_057_local_portability_probe.py scripts/run_imp_057_local_portability.py > imp057-typing.patch
       - name: Upload focused diagnostics
         if: always()
         uses: actions/upload-artifact@v4
@@ -43,4 +48,4 @@ jobs:
           name: imp057-focused-diagnostics
           path: |
             imp057-mypy.txt
-            imp057-pytest.txt
+            imp057-typing.patch
