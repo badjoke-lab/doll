@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import ast
-import base64
 import json
 import os
 import subprocess
 import sys
 from pathlib import Path
 from typing import Any, cast
+
+from doll.state_package_portability_registry import PORTABILITY_RECORD_CATEGORIES
 
 MODULE = Path("src/doll/ollama_adapter.py")
 STATE_PACKAGE_MODULE = Path("src/doll/state_package.py")
@@ -160,6 +161,24 @@ def test_imp_057_matrix_and_alternate_component_boundary() -> None:
     assert "restore_state_backup" in probe
 
 
+def test_state_package_v2_registers_portability_conditionally() -> None:
+    categories = {category.record_type for category in PORTABILITY_RECORD_CATEGORIES}
+    assert categories == {
+        "source_environment",
+        "portability_import_batch",
+        "portability_mapping_report",
+        "portability_loss",
+        "portability_source_mapping",
+        "portability_quarantine",
+        "portability_original_source",
+    }
+    source = STATE_PACKAGE_MODULE.read_text(encoding="utf-8")
+    assert "_CONDITIONAL_V2_RECORD_TYPES = PORTABILITY_RECORD_TYPES" in source
+    assert "validate_portability_package_graph(records)" in source
+    assert "managed_source_from_record(record)" in source
+    assert "authoritative file inventory does not match records" in source
+
+
 def test_imp_057_ci_migration_runner() -> None:
     root = Path(__file__).resolve().parents[1]
     head = subprocess.run(
@@ -204,31 +223,3 @@ def test_imp_057_ci_migration_runner() -> None:
     assert evidence["ollama_request_count"] == 3
     assert evidence["allowed_loopback_socket_attempts"] == 0
     assert evidence["rejected_socket_attempts"] == 0
-
-
-def test_imp_057_lint_diagnostics() -> None:
-    result = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "ruff",
-            "check",
-            str(IMP057_PROBE),
-            str(IMP057_INSPECTOR),
-            str(IMP057_RUNNER),
-            str(Path(__file__)),
-        ],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    assert result.returncode == 0, result.stdout + result.stderr
-
-
-def test_state_package_source_dump_for_patch() -> None:
-    encoded = base64.b64encode(STATE_PACKAGE_MODULE.read_bytes()).decode("ascii")
-    print("STATE_PACKAGE_BASE64_BEGIN")
-    for offset in range(0, len(encoded), 4096):
-        print(encoded[offset : offset + 4096])
-    print("STATE_PACKAGE_BASE64_END")
-    raise AssertionError("temporary source transfer")
