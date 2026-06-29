@@ -18,7 +18,6 @@ TEST_ID = "IMP-057-LOCAL-PORTABILITY-MIGRATION"
 ROOT = Path(__file__).resolve().parents[1]
 MATRIX = ROOT / "docs" / "testing" / "phase-6-local-portability-matrix.json"
 PROBE = ROOT / "scripts" / "imp_057_local_portability_probe.py"
-DIAGNOSTIC = ROOT / "scripts" / "diagnose_imp_057_probe.py"
 INSPECTOR = ROOT / "scripts" / "imp_057_state_inspector.py"
 IDS = ("PORT-001", "PORT-003", "PORT-013")
 SHA = re.compile(r"^[0-9a-f]{40}$")
@@ -225,19 +224,6 @@ def _machine_mode(arguments: argparse.Namespace) -> bool:
     return machine
 
 
-def _diagnostic_tail(environment: dict[str, str]) -> str:
-    result = subprocess.run(
-        [sys.executable, str(DIAGNOSTIC)],
-        cwd=ROOT,
-        env=environment,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    lines = [line.strip() for line in result.stderr.splitlines() if line.strip()]
-    return " | ".join(lines[-8:]) or "diagnostic produced no stderr"
-
-
 def _run_probe(
     arguments: argparse.Namespace,
     *,
@@ -270,9 +256,7 @@ def _run_probe(
     checks = payload.get("checks")
     evidence = payload.get("evidence")
     if result.returncode or payload.get("result") != "pass":
-        if machine:
-            raise RuntimeError("local-portability migration probe failed")
-        raise RuntimeError(_diagnostic_tail(environment))
+        raise RuntimeError("local-portability migration probe failed")
     if not isinstance(checks, dict) or not all(
         isinstance(key, str) and isinstance(value, bool) for key, value in checks.items()
     ):
@@ -345,8 +329,6 @@ def main() -> int:
             "error_stage": stage,
             "error_class": type(exc).__name__,
         }
-        if stage == "migration_probe" and arguments.evidence_level == "ci":
-            payload["error_detail"] = str(exc)
         print(json.dumps(payload, sort_keys=True, separators=(",", ":")))
         return 2
     print(json.dumps(payload, sort_keys=True, separators=(",", ":")))

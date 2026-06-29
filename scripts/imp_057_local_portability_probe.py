@@ -548,8 +548,7 @@ def run(
             and first_result.source_snapshot.source_root_hash == captured.source_root_hash
         ),
         "imported_events_remain_data_only": (
-            all(event.origin_class == "imported_data" for event in events)
-            and authority_count == 0
+            all(event.origin_class == "imported_data" for event in events) and authority_count == 0
         ),
         "unchanged_reimport_idempotent": (
             second_result.created_canonical_record_ids == ()
@@ -583,7 +582,7 @@ def run(
         "source_environment_class": first_stage.source_environment.environment_class,
         "source_format": first_stage.source_environment.export_format,
         "source_format_version": first_stage.source_environment.export_version,
-        "source_adapter_id": adapter.contract.adapter_id if False else "ollama-api-session",
+        "source_adapter_id": "ollama-api-session",
         "source_adapter_version": "1.0.0",
         "capture_component_id": "ollama-chat-capture",
         "alternate_component_id": "doll-generic-export",
@@ -602,9 +601,7 @@ def run(
             "total": 3,
         },
         "duplicate_counts": {"unchanged_reimport_canonical_duplicates": 0},
-        "quarantine_counts": {
-            "captured_source": len(first_stage.stage_result.quarantined_objects)
-        },
+        "quarantine_counts": {"captured_source": len(first_stage.stage_result.quarantined_objects)},
         "loss_counts_by_severity": {
             "material": first_stage.stage_result.mapping_report.material_loss_count
         },

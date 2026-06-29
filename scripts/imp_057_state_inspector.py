@@ -99,7 +99,7 @@ def inspect(
             "schema_version_unchanged": repository.status().schema_version == 3,
             "canonical_conversation_retrieved": (
                 conversation.source_environment_id == descriptor["source_environment_id"]
-                and conversation.source_conversation_id == "imp057-conversation"
+                and conversation.source_conversation_id == "conversation:imp057-conversation"
             ),
             "canonical_events_retrieved": (
                 len(events) == descriptor["expected_event_count"]
