@@ -530,6 +530,8 @@ def run(
     source_checks, source_counts = _fresh_inspection(source.root, descriptor_path)
     package_checks, package_counts = _fresh_inspection(package_target, descriptor_path)
     backup_checks, backup_counts = _fresh_inspection(backup_target, descriptor_path)
+    expected_source_counts = dict(source_counts_before_transfer)
+    expected_source_counts["backup_manifest"] = expected_source_counts.get("backup_manifest", 0) + 1
 
     checks = {
         "capture_bundle_valid": (
@@ -569,9 +571,10 @@ def run(
         "source_fresh_process_alternate_retrieval": all(source_checks.values()),
         "package_fresh_process_alternate_retrieval": all(package_checks.values()),
         "backup_fresh_process_alternate_retrieval": all(backup_checks.values()),
-        "fresh_process_record_counts_match": (
-            source_counts == package_counts == backup_counts == source_counts_before_transfer
+        "transferred_record_counts_match_pre_backup": (
+            package_counts == backup_counts == source_counts_before_transfer
         ),
+        "backup_registration_is_source_local": source_counts == expected_source_counts,
         "only_declared_ollama_paths_used": rejected_request_count == 0,
         "no_non_loopback_socket_attempt": rejected_socket_attempts == 0,
         "real_mode_used_loopback_socket": mode != "real-machine" or allowed_socket_attempts > 0,
@@ -609,7 +612,11 @@ def run(
         "generic_export_manifest_hash": generic_bundle.export_batch.manifest_hash,
         "state_package_sha256": _file_hash(package_path),
         "backup_sha256": _file_hash(backup_path),
-        "fresh_record_counts": source_counts,
+        "fresh_record_counts": {
+            "source_after_backup_registration": source_counts,
+            "state_package_target": package_counts,
+            "backup_restore_target": backup_counts,
+        },
         "ollama_request_count": request_count,
         "allowed_loopback_socket_attempts": allowed_socket_attempts,
         "rejected_socket_attempts": rejected_socket_attempts,
