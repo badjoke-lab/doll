@@ -1,0 +1,165 @@
+name: IMP-056 finalize
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-056-ollama-chat-capture
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@v6
+      - name: Update IMP-056 records
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+
+          def replace_once(path: str, old: str, new: str) -> None:
+              target = Path(path)
+              text = target.read_text(encoding="utf-8")
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"unexpected replacement count for {path}: {count}")
+              target.write_text(text.replace(old, new), encoding="utf-8")
+
+          replace_once(
+              "tests/test_ollama_adapter_static.py",
+              'assert api_paths == {"/api/generate", "/api/tags", "/api/version"}',
+              'assert api_paths == {"/api/chat", "/api/generate", "/api/tags", "/api/version"}',
+          )
+
+          roadmap = Path("docs/spec/09-development-roadmap.md")
+          text = roadmap.read_text(encoding="utf-8")
+          text = text.replace("- IMP-030 through IMP-055;", "- IMP-030 through IMP-056;", 1)
+          text = text.replace(
+              "and the offline Ollama API session source adapter through IMP-055.",
+              "the offline Ollama API session source adapter through IMP-055, and explicit loopback Ollama chat capture through IMP-056.",
+              1,
+          )
+          old_current = """- IMP-055 does not complete PORT-013 or a stable local-environment portability claim; a later live capture or supported local-application export path and private primary-machine migration drill remain required;
+          - the next bounded Phase 6 implementation receives IMP-056 when its issue is opened;
+          - later local migration, cloud, and tool work must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts."""
+          new_current = """- IMP-055 does not complete PORT-013 or a stable local-environment portability claim;
+          - IMP-056 adds an explicit non-streaming text-only capture path through fixed IPv4 loopback, resolves one opaque already-installed local model through the filtered inventory, and returns an IMP-055-valid session bundle without reading application databases, logs, shell history, or unrelated sessions;
+          - IMP-056 synthetic CI proves new-session and append capture, unrelated-conversation preservation, strict source and runtime identity checks, bounded failure behavior, and no Doll State, tool, credential, cloud, subprocess, model-download, or automatic authority path;
+          - IMP-056 does not complete the primary Intel Mac migration drill, PORT-013, tested round trip, application removal, or the Phase 6 gate;
+          - the next bounded Phase 6 implementation receives IMP-057 when its issue is opened;
+          - later local migration, cloud, and tool work must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts."""
+          if text.count(old_current) != 1:
+              raise SystemExit("roadmap current IMP-055 block not found")
+          text = text.replace(old_current, new_current)
+
+          marker = """Synthetic tests prove deterministic inventory and mappings, canonical publication, managed source preservation, unchanged re-import reuse, changed-source conflict without overwrite, malformed and hostile-input handling, and absence of network or runtime dependencies. IMP-055 does not establish a native Ollama export, live capture, tested round trip, PORT-013 completion, or the Phase 6 gate.
+
+          Daily-use work may then expand"""
+          addition = """Synthetic tests prove deterministic inventory and mappings, canonical publication, managed source preservation, unchanged re-import reuse, changed-source conflict without overwrite, malformed and hostile-input handling, and absence of network or runtime dependencies. IMP-055 does not establish a native Ollama export, live capture, tested round trip, PORT-013 completion, or the Phase 6 gate.
+
+          ### IMP-056 — Explicit loopback Ollama chat session capture
+
+          Status: implemented with deterministic injected-transport CI evidence; real primary Intel Mac migration evidence remains pending.
+
+          Implemented a typed service that starts or appends one explicit text-only local Ollama conversation turn. The caller supplies exact source-environment, conversation, message, operation, and timestamp identities plus one opaque model ID. The service requires explicit local-only confirmation, resolves the opaque model through the existing cloud-filtered local inventory, reads the local runtime version, and permits only `GET /api/tags`, `GET /api/version`, and non-streaming `POST /api/chat` on fixed IPv4 loopback.
+
+          Existing source bytes must first pass IMP-055 validation. The selected conversation must be unique, text-only, within limits, and a single linear parent chain; duplicate identifiers, unsupported roles, attachments, tool calls, wrong source identity, and runtime-version mismatch fail before chat. Unrelated conversations remain preserved. The response must use the exact selected native model, assistant role, bounded non-blank content, supported completion state and reason, and a valid timestamp, with no images, tools, thinking payload, duplicate keys, invalid UTF-8, or undeclared message members.
+
+          On success, the service appends one user event and one assistant event to the source bundle, records the resolved native model only as imported source metadata, updates runtime and export metadata, and revalidates the complete returned bytes through IMP-055. It writes no Doll State and creates no policy, memory, permission, credential, capability, model binding, confirmation, procedure, checkpoint, blocker, or project-completion authority.
+
+          Synthetic tests prove the exact inventory/version/chat sequence, new and appended sessions, preserved unrelated conversations, cloud-model exclusion, cancellation, timeout, malformed response, source-history rejection, bounded failure privacy, and absence of State, credential, capability, process, remote HTTP, model-download, or tool dependencies. IMP-056 does not provide automatic/background capture, private application discovery, streaming, multimodal or tool fidelity, target-specific export, tested round trip, application replacement, PORT-013 completion, or the Phase 6 gate.
+
+          Daily-use work may then expand"""
+          if text.count(marker) != 1:
+              raise SystemExit("IMP-055 Phase 6 marker not found")
+          text = text.replace(marker, addition)
+
+          old_immediate = """The required order after IMP-055 is:
+
+          1. merge the offline Ollama API session source adapter only after all cross-platform, quality, specification, public-status, numbering, and coverage checks pass;
+          2. open the next bounded Phase 6 issue as IMP-056 for an explicit live capture or supported local-application export path that can produce the documented session bundle without reading undeclared private storage;
+          3. run the private primary Intel Mac migration drill with synthetic or approved private test content, retrieve imported context through a different approved execution component, and disable or remove the original application;
+          4. complete applicable PORT-001, PORT-003, PORT-013, and later PORT-015 evidence before making a stable local-portability or anti-lock-in claim;
+          5. keep ChatGPT history, provider-specific cloud portability, credentials, tools, and automatic cloud fallback outside the local migration gate."""
+          new_immediate = """The required order after IMP-056 is:
+
+          1. merge the explicit loopback Ollama chat capture only after all cross-platform, quality, specification, public-status, numbering, and coverage checks pass;
+          2. open the next bounded Phase 6 issue as IMP-057 for the exact-commit primary Intel Mac capture, import, alternate approved execution, and original-path removal drill;
+          3. preserve reviewed synthetic or approved private evidence without committing personal conversation content, native model names, prompts, responses, paths, usernames, hostnames, credentials, or secrets;
+          4. complete applicable PORT-001, PORT-003, PORT-013, and later PORT-015 evidence before making a stable local-portability or anti-lock-in claim;
+          5. keep ChatGPT history, provider-specific cloud portability, credentials, tools, automatic cloud fallback, multimodal capture, and target-specific export outside the local migration gate."""
+          if text.count(old_immediate) != 1:
+              raise SystemExit("roadmap immediate IMP-055 block not found")
+          roadmap.write_text(text.replace(old_immediate, new_immediate), encoding="utf-8")
+
+          replace_once(
+              "README.md",
+              "Phases 4A, 4B, and 5 are complete. Phase 6 local AI portability and daily-use integration is in progress from IMP-055. IMP-055 adds an offline parser for a documented caller-retained Ollama API session bundle and reuses the accepted generic staging, provenance, duplicate prevention, quarantine, mapping, loss, reviewed publication, source preservation, and canonical conversation boundaries. It opens no socket or subprocess, reads no application database or shell history, imports no model or credential, and does not complete PORT-013 or claim a native Ollama export. IMP-056 is the next implementation identifier when its bounded issue is opened. The current position is published through the [live implementation activity endpoint](https://doll.badjoke-lab.com/api/project-status). Unused legacy identifiers IMP-024 through IMP-029 are retired and are not reused.",
+              "Phases 4A, 4B, and 5 are complete. Phase 6 local AI portability and daily-use integration is in progress. IMP-055 adds strict offline import for a documented caller-retained Ollama API session bundle. IMP-056 adds explicit non-streaming text-only capture through fixed IPv4 loopback, resolves only an already-installed local model by opaque inventory ID, and returns an IMP-055-valid bundle without reading application databases, logs, shell history, or unrelated sessions. It writes no Doll State and does not complete PORT-013, tested round trip, application removal, or the Phase 6 gate. IMP-057 is the next implementation identifier when its bounded issue is opened. The current position is published through the [live implementation activity endpoint](https://doll.badjoke-lab.com/api/project-status). Unused legacy identifiers IMP-024 through IMP-029 are retired and are not reused.",
+          )
+
+          status = json.loads(Path("website/project-status.json").read_text(encoding="utf-8"))
+          status["phase"]["next_implementation"] = 57
+          status["model_runtime"]["message"] = (
+              "Phase 6 is in progress through IMP-056. Offline session import and explicit text-only loopback Ollama capture are implemented with synthetic CI evidence. The exact-commit primary Intel Mac capture, import, alternate execution, original-path removal drill, and PORT-013 remain pending."
+          )
+          status["last_reviewed"] = "2026-06-29"
+          Path("website/project-status.json").write_text(
+              json.dumps(status, indent=2) + "\n",
+              encoding="utf-8",
+          )
+
+          checker = Path("scripts/check-public-site-status.mjs")
+          check = checker.read_text(encoding="utf-8")
+          check = check.replace(
+              "status.phase?.next_implementation === 56,\n  \"project-status.json must mark Phase 6 in progress from IMP-055 with IMP-056 next\"",
+              "status.phase?.next_implementation === 57,\n  \"project-status.json must mark Phase 6 in progress through IMP-056 with IMP-057 next\"",
+              1,
+          )
+          old_checks = """expect(
+            roadmap.includes("the next bounded Phase 6 implementation receives IMP-056 when its issue is opened"),
+            "roadmap must identify IMP-056 as the next implementation identifier",
+          );
+          expect(
+            roadmap.includes("The required order after IMP-055 is:"),
+            "roadmap must advance immediate work beyond IMP-055",
+          );"""
+          new_checks = """expect(
+            roadmap.includes("### IMP-056 — Explicit loopback Ollama chat session capture"),
+            "roadmap must record the IMP-056 explicit local capture path",
+          );
+          expect(
+            roadmap.includes("the next bounded Phase 6 implementation receives IMP-057 when its issue is opened"),
+            "roadmap must identify IMP-057 as the next implementation identifier",
+          );
+          expect(
+            roadmap.includes("The required order after IMP-056 is:"),
+            "roadmap must advance immediate work beyond IMP-056",
+          );"""
+          if check.count(old_checks) != 1:
+              raise SystemExit("public status roadmap checks not found")
+          checker.write_text(check.replace(old_checks, new_checks), encoding="utf-8")
+          PY
+      - run: uv sync --locked
+      - run: uv run python scripts/build_final_spec.py
+      - run: uv run ruff check src/doll/ollama_adapter.py src/doll/ollama_chat_capture.py tests/test_ollama_adapter_static.py tests/test_ollama_chat_capture.py
+      - run: uv run ruff format --check src/doll/ollama_adapter.py src/doll/ollama_chat_capture.py tests/test_ollama_adapter_static.py tests/test_ollama_chat_capture.py
+      - run: uv run mypy
+      - run: uv run pytest --no-cov tests/test_ollama_adapter.py tests/test_ollama_adapter_static.py tests/test_ollama_chat_capture.py
+      - run: node scripts/check-public-site-status.mjs
+      - name: Commit final IMP-056 records
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add tests/test_ollama_adapter_static.py README.md docs/spec/09-development-roadmap.md DOLL_FINAL_SPEC.md website/project-status.json scripts/check-public-site-status.mjs
+          git commit -m "Finalize IMP-056 records"
+          git push origin HEAD:imp-056-ollama-chat-capture
