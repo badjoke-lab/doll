@@ -1,0 +1,47 @@
+name: State Package portability regression
+
+on:
+  pull_request:
+    paths:
+      - "src/doll/state_package.py"
+      - "src/doll/state_package_portability.py"
+      - "src/doll/state_package_portability_registry.py"
+      - "scripts/imp_057_local_portability_probe.py"
+      - "scripts/imp_057_state_inspector.py"
+      - "scripts/run_imp_057_local_portability.py"
+      - "tests/test_local_portability_acceptance.py"
+      - "tests/test_ollama_adapter_static.py"
+      - ".github/workflows/state-package-portability-regression.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked --all-extras
+      - name: Run full type check
+        shell: bash
+        run: |
+          set -o pipefail
+          uv run mypy src tests 2>&1 | tee imp057-mypy.txt
+      - name: Run focused portability regression
+        shell: bash
+        run: |
+          set -o pipefail
+          uv run pytest -q --no-cov tests/test_local_portability_acceptance.py tests/test_ollama_adapter_static.py 2>&1 | tee imp057-pytest.txt
+      - name: Upload focused diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: imp057-focused-diagnostics
+          path: |
+            imp057-mypy.txt
+            imp057-pytest.txt
