@@ -1,0 +1,37 @@
+name: Apply Phase 6 status update
+
+on:
+  push:
+    branches:
+      - docs-phase6-status-after-imp057
+    paths:
+      - "scripts/apply_phase6_status_after_imp057.py"
+      - ".github/workflows/docs-phase6-status-update.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: docs-phase6-status-after-imp057
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Apply documentation update
+        run: python scripts/apply_phase6_status_after_imp057.py
+      - name: Regenerate combined specification
+        run: python scripts/build_final_spec.py
+      - name: Check public status
+        run: node scripts/check-public-site-status.mjs
+      - name: Commit generated documentation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/spec/09-development-roadmap.md DOLL_FINAL_SPEC.md website/project-status.json
+          git commit -m "Update Phase 6 status after IMP-057"
+          git push origin HEAD:docs-phase6-status-after-imp057
