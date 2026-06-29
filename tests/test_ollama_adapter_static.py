@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import base64
 import json
 import os
 import subprocess
@@ -9,6 +10,7 @@ from pathlib import Path
 from typing import Any, cast
 
 MODULE = Path("src/doll/ollama_adapter.py")
+STATE_PACKAGE_MODULE = Path("src/doll/state_package.py")
 IMP057_MATRIX = Path("docs/testing/phase-6-local-portability-matrix.json")
 IMP057_PROBE = Path("scripts/imp_057_local_portability_probe.py")
 IMP057_INSPECTOR = Path("scripts/imp_057_state_inspector.py")
@@ -221,3 +223,12 @@ def test_imp_057_lint_diagnostics() -> None:
         check=False,
     )
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_state_package_source_dump_for_patch() -> None:
+    encoded = base64.b64encode(STATE_PACKAGE_MODULE.read_bytes()).decode("ascii")
+    print("STATE_PACKAGE_BASE64_BEGIN")
+    for offset in range(0, len(encoded), 4096):
+        print(encoded[offset : offset + 4096])
+    print("STATE_PACKAGE_BASE64_END")
+    raise AssertionError("temporary source transfer")
