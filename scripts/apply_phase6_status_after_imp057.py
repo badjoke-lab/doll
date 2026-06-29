@@ -7,6 +7,7 @@ from pathlib import Path
 
 ROADMAP = Path("docs/spec/09-development-roadmap.md")
 STATUS = Path("website/project-status.json")
+CHECK = Path("scripts/check-public-site-status.mjs")
 
 
 def replace_once(text: str, old: str, new: str) -> str:
@@ -101,9 +102,30 @@ def update_public_status() -> None:
     STATUS.write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
 
 
+def update_public_status_check() -> None:
+    text = CHECK.read_text(encoding="utf-8")
+    text = replace_once(
+        text,
+        "    status.phase?.next_implementation === 57,",
+        "    status.phase?.next_implementation === 58,",
+    )
+    text = replace_once(
+        text,
+        '  "project-status.json must mark Phase 6 in progress through IMP-056 with IMP-057 next",',
+        '  "project-status.json must mark Phase 6 in progress through IMP-057 with IMP-058 next",',
+    )
+    text = replace_once(
+        text,
+        '  roadmap.includes("### IMP-056 — Explicit loopback Ollama chat session capture"),\n  "roadmap must record the IMP-056 explicit local capture path",\n);\nexpect(\n  roadmap.includes("the next bounded Phase 6 implementation receives IMP-057 when its issue is opened"),\n  "roadmap must identify IMP-057 as the next implementation identifier",\n);\nexpect(\n  roadmap.includes("The required order after IMP-056 is:"),\n  "roadmap must advance immediate work beyond IMP-056",\n);',
+        '  roadmap.includes("### IMP-056 — Explicit loopback Ollama chat session capture"),\n  "roadmap must record the IMP-056 explicit local capture path",\n);\nexpect(\n  roadmap.includes("### IMP-057 — Local-portability migration harness"),\n  "roadmap must record the IMP-057 local-portability harness",\n);\nexpect(\n  roadmap.includes("the next bounded implementation receives IMP-058 only when a new implementation issue is opened"),\n  "roadmap must identify IMP-058 as the next unallocated implementation identifier",\n);\nexpect(\n  roadmap.includes("The required order after the IMP-057 harness merge is:"),\n  "roadmap must record the real-machine gate after IMP-057",\n);',
+    )
+    CHECK.write_text(text, encoding="utf-8")
+
+
 def main() -> int:
     update_roadmap()
     update_public_status()
+    update_public_status_check()
     return 0
 
 
