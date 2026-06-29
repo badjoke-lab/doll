@@ -1,31 +1,40 @@
-name: Local portability acceptance
+name: IMP-057 apply typing fixes
 
 on:
-  pull_request:
+  push:
+    branches:
+      - imp-057-local-portability-drill
     paths:
-      - "src/doll/state_package.py"
-      - "src/doll/state_package_portability.py"
-      - "src/doll/state_package_portability_registry.py"
-      - "scripts/imp_057_local_portability_probe.py"
-      - "scripts/imp_057_state_inspector.py"
-      - "scripts/run_imp_057_local_portability.py"
-      - "docs/testing/phase-6-local-portability-matrix.json"
-      - "tests/test_ollama_adapter_static.py"
-      - ".github/workflows/imp057-apply-state-package-patch.yml"
-  workflow_dispatch:
+      - scripts/fix_imp_057_typing.py
+      - .github/workflows/imp057-apply-state-package-patch.yml
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  acceptance:
+  apply:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: imp-057-local-portability-drill
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --locked --all-extras
-      - name: Run synthetic local-portability acceptance
-        run: uv run python scripts/run_imp_057_local_portability.py --commit-sha "$(git rev-parse HEAD)"
+      - name: Apply type-only fixes
+        run: uv run python scripts/fix_imp_057_typing.py
+      - name: Normalize and verify
+        run: |
+          uv run ruff check --fix src/doll/state_package_portability.py scripts/imp_057_local_portability_probe.py scripts/run_imp_057_local_portability.py
+          uv run ruff format src/doll/state_package_portability.py scripts/imp_057_local_portability_probe.py scripts/run_imp_057_local_portability.py
+          uv run mypy src/doll/state_package.py src/doll/state_package_portability.py src/doll/state_package_portability_registry.py scripts/imp_057_local_portability_probe.py scripts/imp_057_state_inspector.py scripts/run_imp_057_local_portability.py
+      - name: Commit type fixes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/doll/state_package_portability.py scripts/imp_057_local_portability_probe.py scripts/run_imp_057_local_portability.py
+          git commit -m "Fix IMP-057 strict typing"
+          git push origin HEAD:imp-057-local-portability-drill
