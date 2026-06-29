@@ -1,40 +1,30 @@
-name: IMP-057 finalize branch
+name: State Package portability regression
 
 on:
-  push:
-    branches:
-      - imp-057-local-portability-drill
+  pull_request:
     paths:
-      - scripts/finalize_imp_057_branch.py
-      - .github/workflows/imp057-finalize.yml
+      - "src/doll/state_package.py"
+      - "src/doll/state_package_portability.py"
+      - "src/doll/state_package_portability_registry.py"
+      - "scripts/imp_057_local_portability_probe.py"
+      - "scripts/imp_057_state_inspector.py"
+      - "scripts/run_imp_057_local_portability.py"
+      - "tests/test_ollama_adapter_static.py"
+      - ".github/workflows/imp057-finalize.yml"
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  finalize:
+  regression:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: imp-057-local-portability-drill
-          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --locked --all-extras
-      - name: Apply final cleanup
-        run: uv run python scripts/finalize_imp_057_branch.py
-      - name: Normalize implementation files
-        run: |
-          uv run ruff check --fix src/doll/state_package.py src/doll/state_package_portability.py src/doll/state_package_portability_registry.py scripts/imp_057_local_portability_probe.py scripts/imp_057_state_inspector.py scripts/run_imp_057_local_portability.py tests/test_ollama_adapter_static.py || true
-          uv run ruff format src/doll/state_package.py src/doll/state_package_portability.py src/doll/state_package_portability_registry.py scripts/imp_057_local_portability_probe.py scripts/imp_057_state_inspector.py scripts/run_imp_057_local_portability.py tests/test_ollama_adapter_static.py
-          uv run python -m py_compile src/doll/state_package.py scripts/imp_057_local_portability_probe.py scripts/imp_057_state_inspector.py scripts/run_imp_057_local_portability.py
-      - name: Commit cleanup
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/doll/state_package.py src/doll/state_package_portability.py src/doll/state_package_portability_registry.py scripts/imp_057_local_portability_probe.py scripts/imp_057_state_inspector.py scripts/run_imp_057_local_portability.py tests/test_ollama_adapter_static.py
-          git commit -m "Finalize IMP-057 migration harness"
-          git push origin HEAD:imp-057-local-portability-drill
+      - name: Run focused portability regression
+        run: uv run pytest -q tests/test_ollama_adapter_static.py
