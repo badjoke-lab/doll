@@ -1,0 +1,52 @@
+name: Validate IMP-057 completion draft v2
+
+on:
+  pull_request:
+    paths:
+      - .github/scripts/patch_imp057_completion_tests.py
+      - .github/workflows/imp057-completion-pr-v2-temporary.yml
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - name: Apply accepted evidence updates
+        run: python .github/scripts/apply_imp057_completion.py
+      - name: Update completion-state tests
+        run: python .github/scripts/patch_imp057_completion_tests.py
+      - name: Install locked dependencies
+        run: uv sync --locked --all-extras
+      - name: Check generated specification
+        run: uv run python scripts/build_final_spec.py --check
+      - name: Check public project status
+        run: node scripts/check-public-site-status.mjs
+      - name: Run bounded portability acceptance
+        run: uv run python scripts/run_imp_057_local_portability.py --commit-sha "$(git rev-parse HEAD)"
+      - name: Run targeted regression tests
+        run: >-
+          uv run pytest -q --no-cov
+          tests/test_local_portability_acceptance.py
+          tests/test_ollama_adapter_static.py
+          tests/test_state_package_portability.py
+          tests/test_state_package_registry.py
+      - name: Upload generated completion files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: imp057-completion-files-v2
+          path: |
+            DOLL_FINAL_SPEC.md
+            docs/implementation/imp-057-local-portability-migration-drill.md
+            docs/spec/09-development-roadmap.md
+            docs/testing/phase-6-local-portability-matrix.json
+            scripts/check-public-site-status.mjs
+            tests/test_ollama_adapter_static.py
+            website/project-status.json
