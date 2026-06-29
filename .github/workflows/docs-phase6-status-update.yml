@@ -6,12 +6,14 @@ on:
       - main
     paths:
       - "scripts/apply_phase6_status_after_imp057.py"
+      - "scripts/run_phase6_status_update.py"
       - ".github/workflows/docs-phase6-status-update.yml"
   push:
     branches:
       - docs-phase6-status-after-imp057
     paths:
       - "scripts/apply_phase6_status_after_imp057.py"
+      - "scripts/run_phase6_status_update.py"
       - ".github/workflows/docs-phase6-status-update.yml"
 
 permissions:
@@ -29,7 +31,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Apply documentation update
-        run: python scripts/apply_phase6_status_after_imp057.py
+        run: python scripts/run_phase6_status_update.py
       - name: Regenerate combined specification
         run: python scripts/build_final_spec.py
       - name: Check public status
