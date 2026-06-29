@@ -142,9 +142,7 @@ def test_imp_057_matrix_and_alternate_component_boundary() -> None:
     ]
     assert {item["status"] for item in entries} == {"ci-pass"}
     assert {tuple(item["passed_evidence_levels"]) for item in entries} == {("ci",)}
-    assert {tuple(item["required_evidence_levels"]) for item in entries} == {
-        ("ci", "real-machine")
-    }
+    assert {tuple(item["required_evidence_levels"]) for item in entries} == {("ci", "real-machine")}
     assert matrix["real_machine_gate"]["status"] == "pending"
     assert matrix["real_machine_gate"]["minimum_local_models"] == 1
 
