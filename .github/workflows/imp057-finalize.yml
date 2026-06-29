@@ -27,8 +27,11 @@ jobs:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --locked --all-extras
-      - name: Apply reviewed type-only fixes
-        run: uv run python scripts/fix_imp_057_typing.py
+      - name: Apply reviewed type-only fixes when present
+        run: |
+          if [ -f scripts/fix_imp_057_typing.py ]; then
+            uv run python scripts/fix_imp_057_typing.py
+          fi
       - name: Normalize generated files
         run: |
           uv run ruff check --fix src/doll/state_package_portability.py scripts/imp_057_local_portability_probe.py scripts/run_imp_057_local_portability.py
