@@ -1,0 +1,31 @@
+name: Apply validated IMP-057 completion
+
+on:
+  push:
+    branches:
+      - imp-057-real-machine-completion
+    paths:
+      - .github/workflows/imp057-apply-temporary.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-057-real-machine-completion
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Generate accepted completion state
+        run: |
+          python .github/scripts/apply_imp057_completion.py
+          python .github/scripts/patch_imp057_completion_tests.py
+          rm -f .github/workflows/imp057-apply-temporary.yml
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Accept IMP-057 primary Intel Mac evidence
+          branch: imp-057-real-machine-completion
