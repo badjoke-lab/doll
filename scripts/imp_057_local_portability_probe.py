@@ -105,7 +105,7 @@ class DeterministicOllamaTransport:
         if method == "GET" and path == "/api/version" and body is None:
             return OllamaHttpResponse(200, b'{"version":"0.0.0-test"}')
         if method == "GET" and path == "/api/tags" and body is None:
-            payload = {
+            inventory_payload: dict[str, object] = {
                 "models": [
                     {
                         "name": self.model_name,
@@ -116,13 +116,13 @@ class DeterministicOllamaTransport:
             }
             return OllamaHttpResponse(
                 200,
-                json.dumps(payload, separators=(",", ":")).encode("utf-8"),
+                json.dumps(inventory_payload, separators=(",", ":")).encode("utf-8"),
             )
         if method == "POST" and path == "/api/chat" and body is not None:
             request = json.loads(body)
             if request.get("model") != self.model_name or request.get("stream") is not False:
                 return OllamaHttpResponse(400, b"{}")
-            payload = {
+            chat_payload: dict[str, object] = {
                 "model": self.model_name,
                 "created_at": "2026-06-29T03:00:01Z",
                 "message": {"role": "assistant", "content": SYNTHETIC_RESPONSE},
@@ -131,7 +131,7 @@ class DeterministicOllamaTransport:
             }
             return OllamaHttpResponse(
                 200,
-                json.dumps(payload, separators=(",", ":")).encode("utf-8"),
+                json.dumps(chat_payload, separators=(",", ":")).encode("utf-8"),
             )
         return OllamaHttpResponse(404, b"{}")
 
@@ -240,8 +240,8 @@ class SocketDestinationGuard:
                 raise RuntimeError("socket guard is not initialized")
             return guard._connect_ex(sock, address)
 
-        socket.socket.connect = guarded_connect  # type: ignore[method-assign]
-        socket.socket.connect_ex = guarded_connect_ex  # type: ignore[method-assign]
+        socket.socket.connect = guarded_connect  # type: ignore[assignment]
+        socket.socket.connect_ex = guarded_connect_ex  # type: ignore[assignment]
         return self
 
     def __exit__(
@@ -252,7 +252,7 @@ class SocketDestinationGuard:
     ) -> None:
         del exc_type, exc, traceback
         if self._connect is not None:
-            socket.socket.connect = self._connect  # type: ignore[method-assign]
+            socket.socket.connect = self._connect  # type: ignore[assignment]
         if self._connect_ex is not None:
             socket.socket.connect_ex = self._connect_ex  # type: ignore[method-assign]
 

@@ -201,7 +201,7 @@ def _machine_mode(arguments: argparse.Namespace) -> bool:
         or not 1 <= arguments.ollama_port <= 65535
     ):
         raise RuntimeError("invalid Ollama port")
-    machine = arguments.evidence_level == "real-machine"
+    machine = cast(str, arguments.evidence_level) == "real-machine"
     if machine:
         if (
             platform.system() != "Darwin"

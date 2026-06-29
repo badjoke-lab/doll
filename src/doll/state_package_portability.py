@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import cast
+from typing import Literal, cast
 
 from doll.generic_import_publication import (
     _IMPORT_BATCH_KEYS,
@@ -197,7 +197,10 @@ def original_source_from_record(record: RecordEnvelope) -> OriginalSourceSnapsho
             import_batch_id=cast(str, metadata["import_batch_id"]),
             source_root_hash=cast(str, metadata["source_root_hash"]),
             source_format=cast(str, metadata["source_format"]),
-            preservation_state=cast(str, metadata["preservation_state"]),
+            preservation_state=cast(
+                Literal["managed_snapshot", "hash_only"],
+                metadata["preservation_state"],
+            ),
             managed_path=cast(str | None, metadata["managed_path"]),
             size_bytes=cast(int, metadata["size_bytes"]),
             authority_class=cast(str, metadata["authority_class"]),
@@ -284,8 +287,8 @@ def validate_portability_package_graph(records: dict[str, RecordEnvelope]) -> No
         if quarantine.import_batch_id not in batches:
             raise PortabilityPackageCorruptError("quarantine import batch is missing")
     for snapshot in snapshots.values():
-        batch = batches.get(snapshot.import_batch_id)
-        if batch is None or batch.source_root_hash != snapshot.source_root_hash:
+        snapshot_batch = batches.get(snapshot.import_batch_id)
+        if snapshot_batch is None or snapshot_batch.source_root_hash != snapshot.source_root_hash:
             raise PortabilityPackageCorruptError("original source import batch is invalid")
 
 
