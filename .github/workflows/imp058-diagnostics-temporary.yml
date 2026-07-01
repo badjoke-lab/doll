@@ -9,9 +9,12 @@ on:
   pull_request:
     paths:
       - .github/workflows/imp058-diagnostics-temporary.yml
+      - scripts/imp_058_shutdown_escape_probe.py
+      - scripts/run_imp_058_shutdown_escape.py
       - src/doll/shutdown_escape.py
       - src/doll/shutdown_escape_inspector.py
       - tests/test_shutdown_escape.py
+      - tests/test_shutdown_escape_acceptance.py
 
 permissions:
   contents: read
@@ -26,22 +29,25 @@ jobs:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --locked --all-extras
-      - name: Capture formatted-source diagnostics
+      - name: Capture complete diagnostics
         shell: bash
         run: |
           set +e
-          uv run ruff check src/doll/shutdown_escape.py src/doll/shutdown_escape_inspector.py tests/test_shutdown_escape.py --output-format=concise > ruff.txt 2>&1
+          FILES="src/doll/shutdown_escape.py src/doll/shutdown_escape_inspector.py scripts/imp_058_shutdown_escape_probe.py scripts/run_imp_058_shutdown_escape.py tests/test_shutdown_escape.py tests/test_shutdown_escape_acceptance.py"
+          uv run ruff check $FILES --output-format=concise > ruff.txt 2>&1
           echo $? > ruff.exit
-          uv run ruff format --check --diff src/doll/shutdown_escape.py src/doll/shutdown_escape_inspector.py tests/test_shutdown_escape.py > format.txt 2>&1
+          uv run ruff format --check --diff $FILES > format.txt 2>&1
           echo $? > format.exit
-          uv run mypy src/doll/shutdown_escape.py src/doll/shutdown_escape_inspector.py tests/test_shutdown_escape.py > mypy.txt 2>&1
+          uv run mypy $FILES > mypy.txt 2>&1
           echo $? > mypy.exit
-          uv run pytest -q --no-cov tests/test_shutdown_escape.py > pytest.txt 2>&1
+          uv run pytest -q --no-cov tests/test_shutdown_escape.py tests/test_shutdown_escape_acceptance.py > pytest.txt 2>&1
           echo $? > pytest.exit
+          uv run python scripts/run_imp_058_shutdown_escape.py --commit-sha "$(git rev-parse HEAD)" > runner.txt 2>&1
+          echo $? > runner.exit
           exit 0
       - uses: actions/upload-artifact@v4
         with:
-          name: imp058-diagnostics
+          name: imp058-complete-diagnostics
           path: |
             ruff.txt
             ruff.exit
@@ -51,3 +57,5 @@ jobs:
             mypy.exit
             pytest.txt
             pytest.exit
+            runner.txt
+            runner.exit
