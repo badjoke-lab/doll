@@ -26,7 +26,7 @@ jobs:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --locked --all-extras
-      - name: Capture diagnostics
+      - name: Capture formatted-source diagnostics
         shell: bash
         run: |
           set +e
