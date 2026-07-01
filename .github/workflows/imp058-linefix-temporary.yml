@@ -1,0 +1,54 @@
+name: Fix IMP-058 line length
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/imp058-linefix-temporary.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-058-shutdown-escape-bundle
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked --all-extras
+      - name: Apply exact line-length fixes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("src/doll/shutdown_escape.py")
+          text = path.read_text(encoding="utf-8")
+          replacements = {
+              '            "SELECT id, sensitivity FROM records WHERE record_type = \'conversation\' ORDER BY id"\n': (
+                  '            "SELECT id, sensitivity FROM records "\n'
+                  '            "WHERE record_type = \'conversation\' ORDER BY id"\n'
+              ),
+              '        b"No model, cloud credential, network connection, preferred UI, or doll service is required.\\n"\n': (
+                  '        b"No model, cloud credential, network connection, preferred UI, "\n'
+                  '        b"or doll service is required.\\n"\n'
+              ),
+          }
+          for old, new in replacements.items():
+              if text.count(old) != 1:
+                  raise SystemExit(f"expected one replacement target: {old!r}")
+              text = text.replace(old, new)
+          path.write_text(text, encoding="utf-8", newline="\n")
+          PY
+          uv run ruff format src/doll/shutdown_escape.py
+          uv run ruff check src/doll/shutdown_escape.py
+      - name: Commit line-length fixes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/doll/shutdown_escape.py
+          git commit -m "Fix IMP-058 line lengths"
+          git push origin HEAD:imp-058-shutdown-escape-bundle
