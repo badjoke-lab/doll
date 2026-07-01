@@ -27,7 +27,7 @@ def _fake_repository(
         read_only=True,
         workspace=SimpleNamespace(
             root=workspace_root,
-            record=SimpleNamespace(state_revision=getattr(statuses[0], "state_revision")),
+            record=SimpleNamespace(state_revision=statuses[0].state_revision),
         ),
         status=lambda: next(iterator),
     )
