@@ -152,9 +152,7 @@ def test_checksum_entry_validation_rejects_unsorted_or_duplicate_paths() -> None
         "size_bytes": 0,
     }
     with pytest.raises(inspector.EscapeInspectionError):
-        inspector._checksum_entries(
-            {"algorithm": "sha256", "entries": [entry, dict(entry)]}
-        )
+        inspector._checksum_entries({"algorithm": "sha256", "entries": [entry, dict(entry)]})
 
 
 def test_validate_infos_rejects_archive_structure(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -176,33 +174,23 @@ def test_validate_infos_rejects_archive_structure(monkeypatch: pytest.MonkeyPatc
     with pytest.raises(inspector.EscapeInspectionError):
         inspector._validate_infos([_info(f"{inspector.ROOT}/directory/")])
     with pytest.raises(inspector.EscapeInspectionError):
-        inspector._validate_infos(
-            [_info(f"{inspector.ROOT}/link", mode=stat.S_IFLNK | 0o777)]
-        )
+        inspector._validate_infos([_info(f"{inspector.ROOT}/link", mode=stat.S_IFLNK | 0o777)])
 
     monkeypatch.setattr(inspector, "MAX_MEMBER_BYTES", 0)
     with pytest.raises(inspector.EscapeInspectionError):
-        inspector._validate_infos(
-            [_info(f"{inspector.ROOT}/large", size=1, compressed=1)]
-        )
+        inspector._validate_infos([_info(f"{inspector.ROOT}/large", size=1, compressed=1)])
     monkeypatch.setattr(inspector, "MAX_MEMBER_BYTES", 512 * 1024 * 1024)
 
     monkeypatch.setattr(inspector, "MAX_TOTAL_BYTES", 0)
     with pytest.raises(inspector.EscapeInspectionError):
-        inspector._validate_infos(
-            [_info(f"{inspector.ROOT}/total", size=1, compressed=1)]
-        )
+        inspector._validate_infos([_info(f"{inspector.ROOT}/total", size=1, compressed=1)])
     monkeypatch.setattr(inspector, "MAX_TOTAL_BYTES", 1024 * 1024 * 1024)
 
     with pytest.raises(inspector.EscapeInspectionError):
-        inspector._validate_infos(
-            [_info(f"{inspector.ROOT}/zero", size=1, compressed=0)]
-        )
+        inspector._validate_infos([_info(f"{inspector.ROOT}/zero", size=1, compressed=0)])
     monkeypatch.setattr(inspector, "MAX_COMPRESSION_RATIO", 1)
     with pytest.raises(inspector.EscapeInspectionError):
-        inspector._validate_infos(
-            [_info(f"{inspector.ROOT}/ratio", size=2, compressed=1)]
-        )
+        inspector._validate_infos([_info(f"{inspector.ROOT}/ratio", size=2, compressed=1)])
 
 
 def test_embedded_zip_verifier_rejects_missing_and_unreadable() -> None:
@@ -222,9 +210,7 @@ def test_embedded_zip_verifier_rejects_duplicate_casefold_and_non_regular() -> N
     with pytest.raises(inspector.EscapeInspectionError):
         inspector._verify_json_checksum_zip(duplicate, "embedded")
 
-    casefold = _zip_bytes(
-        [("embedded/A", b""), ("embedded/a", b"")]
-    )
+    casefold = _zip_bytes([("embedded/A", b""), ("embedded/a", b"")])
     with pytest.raises(inspector.EscapeInspectionError):
         inspector._verify_json_checksum_zip(casefold, "embedded")
 
@@ -246,22 +232,14 @@ def test_embedded_zip_verifier_rejects_limits(monkeypatch: pytest.MonkeyPatch) -
 
 def test_embedded_zip_verifier_rejects_inventory_and_checksums() -> None:
     with pytest.raises(inspector.EscapeInspectionError):
-        inspector._verify_json_checksum_zip(
-            _zip_bytes([("embedded/file", b"x")]), "embedded"
-        )
+        inspector._verify_json_checksum_zip(_zip_bytes([("embedded/file", b"x")]), "embedded")
+    with pytest.raises(inspector.EscapeInspectionError):
+        inspector._verify_json_checksum_zip(_embedded_zip(algorithm="sha1"), "embedded")
+    with pytest.raises(inspector.EscapeInspectionError):
+        inspector._verify_json_checksum_zip(_embedded_zip(entries=[None]), "embedded")
     with pytest.raises(inspector.EscapeInspectionError):
         inspector._verify_json_checksum_zip(
-            _embedded_zip(algorithm="sha1"), "embedded"
-        )
-    with pytest.raises(inspector.EscapeInspectionError):
-        inspector._verify_json_checksum_zip(
-            _embedded_zip(entries=[None]), "embedded"
-        )
-    with pytest.raises(inspector.EscapeInspectionError):
-        inspector._verify_json_checksum_zip(
-            _embedded_zip(
-                entries=[{"path": 1, "sha256": "0" * 64, "size_bytes": 0}]
-            ),
+            _embedded_zip(entries=[{"path": 1, "sha256": "0" * 64, "size_bytes": 0}]),
             "embedded",
         )
     with pytest.raises(inspector.EscapeInspectionError):
