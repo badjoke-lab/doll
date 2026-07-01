@@ -1,0 +1,47 @@
+name: IMP-058 diagnostics
+
+on:
+  push:
+    branches:
+      - imp-058-shutdown-escape-bundle
+    paths:
+      - .github/workflows/imp058-diagnostics-temporary.yml
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostics:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked --all-extras
+      - name: Capture diagnostics
+        shell: bash
+        run: |
+          set +e
+          uv run ruff check src/doll/shutdown_escape.py src/doll/shutdown_escape_inspector.py tests/test_shutdown_escape.py --output-format=concise > ruff.txt 2>&1
+          echo $? > ruff.exit
+          uv run ruff format --check --diff src/doll/shutdown_escape.py src/doll/shutdown_escape_inspector.py tests/test_shutdown_escape.py > format.txt 2>&1
+          echo $? > format.exit
+          uv run mypy src/doll/shutdown_escape.py src/doll/shutdown_escape_inspector.py tests/test_shutdown_escape.py > mypy.txt 2>&1
+          echo $? > mypy.exit
+          uv run pytest -q --no-cov tests/test_shutdown_escape.py > pytest.txt 2>&1
+          echo $? > pytest.exit
+          exit 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: imp058-diagnostics
+          path: |
+            ruff.txt
+            ruff.exit
+            format.txt
+            format.exit
+            mypy.txt
+            mypy.exit
+            pytest.txt
+            pytest.exit
