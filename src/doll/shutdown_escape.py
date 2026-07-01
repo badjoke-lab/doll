@@ -253,12 +253,21 @@ def _exportable_conversations(
     repository: StateRepository,
 ) -> tuple[tuple[ConversationRecord, ...], tuple[ConversationEventRecord, ...], int]:
     try:
-        conversation_rows = repository.connection.execute(
-            "SELECT id, sensitivity FROM records WHERE record_type = 'conversation' ORDER BY id"
-        ).fetchall()
+        conversation_query = "\n".join(
+            (
+                "SELECT id, sensitivity",
+                "FROM records",
+                "WHERE record_type = 'conversation'",
+                "ORDER BY id",
+            )
+        )
+        conversation_rows = repository.connection.execute(conversation_query).fetchall()
         event_rows = repository.connection.execute(
             """
-            SELECT id, sensitivity, json_extract(metadata_json, '$.conversation_id') AS conversation_id
+            SELECT
+                id,
+                sensitivity,
+                json_extract(metadata_json, '$.conversation_id') AS conversation_id
             FROM records
             WHERE record_type = 'conversation_event'
             ORDER BY id
@@ -400,13 +409,16 @@ def _json_bytes(value: object) -> bytes:
 
 
 def _readme_bytes() -> bytes:
-    return (
-        b"Doll shutdown escape bundle\n"
-        b"\n"
-        b"This archive is a user-owned recovery artifact.\n"
-        b"Start with RECOVERY.md and manifest.json.\n"
-        b"Run `python inspect_escape.py <bundle.zip>` after extracting inspect_escape.py.\n"
-        b"No model, cloud credential, network connection, preferred UI, or doll service is required.\n"
+    return b"".join(
+        (
+            b"Doll shutdown escape bundle\n",
+            b"\n",
+            b"This archive is a user-owned recovery artifact.\n",
+            b"Start with RECOVERY.md and manifest.json.\n",
+            b"Run `python inspect_escape.py <bundle.zip>` after extracting inspect_escape.py.\n",
+            b"No model, cloud credential, network connection, preferred UI, ",
+            b"or doll service is required.\n",
+        )
     )
 
 
