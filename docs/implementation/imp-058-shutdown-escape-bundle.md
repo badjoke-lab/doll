@@ -104,7 +104,7 @@ CI builds a synthetic non-private Doll workspace containing one secret preferenc
 9. preservation of an existing destination;
 10. absence of model, network, UI, cloud, or doll-service dependency.
 
-CI records PORT-015 as `ci-pass`. It is not primary-machine shutdown evidence and cannot complete PORT-015 or establish stable general anti-lock-in.
+CI records PORT-015 as `ci-pass`. It is not primary-machine shutdown evidence and cannot complete PORT-015 or establish stable general anti-lock-in. The machine-readable evidence binding is `docs/testing/phase-6-shutdown-escape-matrix.json`.
 
 ### Primary Intel Mac
 
