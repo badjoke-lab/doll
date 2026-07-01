@@ -1,9 +1,15 @@
 name: Fix IMP-058 line length
 
 on:
+  push:
+    branches:
+      - imp-058-shutdown-escape-bundle
+    paths:
+      - .github/workflows/imp058-linefix-temporary.yml
   pull_request:
     paths:
       - .github/workflows/imp058-linefix-temporary.yml
+      - .github/scripts/fix_imp058_line_lengths.py
 
 permissions:
   contents: write
@@ -22,37 +28,7 @@ jobs:
       - run: uv sync --locked --all-extras
       - name: Apply exact line-length fixes
         run: |
-          python - <<'PY'
-          from pathlib import Path
-
-          path = Path("src/doll/shutdown_escape.py")
-          text = path.read_text(encoding="utf-8")
-
-          old_query = '''            "SELECT id, sensitivity FROM records WHERE record_type = 'conversation' ORDER BY id"
-'''
-          new_query = '''            """
-            SELECT id, sensitivity
-            FROM records
-            WHERE record_type = 'conversation'
-            ORDER BY id
-            """
-'''
-          old_readme = '''        b"No model, cloud credential, network connection, preferred UI, or doll service is required.\\n"
-'''
-          new_readme = '''        b"No model, cloud credential, network connection, preferred UI, "
-        b"or doll service is required.\\n"
-'''
-
-          for old, new, label in (
-              (old_query, new_query, "conversation query"),
-              (old_readme, new_readme, "README sentence"),
-          ):
-              if text.count(old) != 1:
-                  raise SystemExit(f"expected one {label} target, found {text.count(old)}")
-              text = text.replace(old, new)
-
-          path.write_text(text, encoding="utf-8", newline="\n")
-          PY
+          python .github/scripts/fix_imp058_line_lengths.py
           uv run ruff format src/doll/shutdown_escape.py
           uv run ruff check src/doll/shutdown_escape.py
       - name: Commit line-length fixes
