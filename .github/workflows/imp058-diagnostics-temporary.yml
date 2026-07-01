@@ -44,6 +44,21 @@ jobs:
           echo $? > pytest.exit
           uv run python scripts/run_imp_058_shutdown_escape.py --commit-sha "$(git rev-parse HEAD)" > runner.txt 2>&1
           echo $? > runner.exit
+          uv run python - <<'PY' > probe-direct.json 2>&1
+          import importlib.util
+          import json
+          from pathlib import Path
+
+          path = Path("scripts/imp_058_shutdown_escape_probe.py")
+          spec = importlib.util.spec_from_file_location("imp058_probe", path)
+          if spec is None or spec.loader is None:
+              raise RuntimeError("cannot load IMP-058 probe")
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+          checks, evidence = module._run("ci")
+          print(json.dumps({"checks": checks, "evidence": evidence}, sort_keys=True))
+          PY
+          echo $? > probe-direct.exit
           exit 0
       - uses: actions/upload-artifact@v4
         with:
@@ -59,3 +74,5 @@ jobs:
             pytest.exit
             runner.txt
             runner.exit
+            probe-direct.json
+            probe-direct.exit
