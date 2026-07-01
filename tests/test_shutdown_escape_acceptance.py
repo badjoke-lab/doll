@@ -56,6 +56,8 @@ def test_imp_058_matrix_keeps_port_015_at_ci_pass() -> None:
             "pytest_files": [
                 "tests/test_shutdown_escape.py",
                 "tests/test_shutdown_escape_acceptance.py",
+                "tests/test_shutdown_escape_coverage.py",
+                "tests/test_shutdown_escape_platform_coverage.py",
             ],
             "passed_evidence_levels": ["ci"],
             "required_evidence_levels": ["ci", "real-machine"],
