@@ -6,6 +6,12 @@ on:
       - imp-058-shutdown-escape-bundle
     paths:
       - .github/workflows/imp058-diagnostics-temporary.yml
+  pull_request:
+    paths:
+      - .github/workflows/imp058-diagnostics-temporary.yml
+      - src/doll/shutdown_escape.py
+      - src/doll/shutdown_escape_inspector.py
+      - tests/test_shutdown_escape.py
 
 permissions:
   contents: read
