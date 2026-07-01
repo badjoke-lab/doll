@@ -11,7 +11,9 @@
       "description": "A deterministic verified shutdown escape bundle remains inspectable without a model, network, preferred UI, cloud credential, running doll service, or import of the doll package.",
       "pytest_files": [
         "tests/test_shutdown_escape.py",
-        "tests/test_shutdown_escape_acceptance.py"
+        "tests/test_shutdown_escape_acceptance.py",
+        "tests/test_shutdown_escape_coverage.py",
+        "tests/test_shutdown_escape_platform_coverage.py"
       ],
       "passed_evidence_levels": [
         "ci"
