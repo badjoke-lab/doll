@@ -1,5 +1,5 @@
-from pathlib import Path
 import re
+from pathlib import Path
 
 path = Path("src/doll/shutdown_escape.py")
 text = path.read_text(encoding="utf-8")
@@ -19,7 +19,7 @@ query_replacement = '''        conversation_query = "\\n".join(
         )
         conversation_rows = repository.connection.execute(conversation_query).fetchall()
 '''
-text, query_count = query_pattern.subn(query_replacement, text)
+text, query_count = query_pattern.subn(lambda _: query_replacement, text)
 if query_count != 1:
     raise SystemExit(f"expected one conversation query target, found {query_count}")
 
@@ -40,7 +40,7 @@ readme_replacement = '''def _readme_bytes() -> bytes:
         )
     )
 '''
-text, readme_count = readme_pattern.subn(readme_replacement, text)
+text, readme_count = readme_pattern.subn(lambda _: readme_replacement, text)
 if readme_count != 1:
     raise SystemExit(f"expected one README function target, found {readme_count}")
 
