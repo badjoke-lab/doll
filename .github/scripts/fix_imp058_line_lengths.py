@@ -23,6 +23,18 @@ text, query_count = query_pattern.subn(lambda _: query_replacement, text)
 if query_count != 1:
     raise SystemExit(f"expected one conversation query target, found {query_count}")
 
+event_query_old = '''            SELECT id, sensitivity, json_extract(metadata_json, '$.conversation_id') AS conversation_id
+'''
+event_query_new = '''            SELECT
+                id,
+                sensitivity,
+                json_extract(metadata_json, '$.conversation_id') AS conversation_id
+'''
+event_query_count = text.count(event_query_old)
+if event_query_count != 1:
+    raise SystemExit(f"expected one event query target, found {event_query_count}")
+text = text.replace(event_query_old, event_query_new)
+
 readme_pattern = re.compile(
     r"def _readme_bytes\(\) -> bytes:\n.*?(?=\n\ndef _recovery_bytes\(\) -> bytes:)",
     re.DOTALL,
