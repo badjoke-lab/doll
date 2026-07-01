@@ -6,6 +6,9 @@ on:
       - imp-058-shutdown-escape-bundle
     paths:
       - .github/workflows/imp058-format-temporary.yml
+  pull_request:
+    paths:
+      - .github/workflows/imp058-format-temporary.yml
 
 permissions:
   contents: write
