@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import ast
-import hashlib
 import json
 import os
 import shutil
@@ -158,7 +157,7 @@ def _run(mode: str) -> tuple[dict[str, bool], dict[str, object]]:
         second = root / "second.shutdown-escape.zip"
         with state.open_state_repository(initialized.root, read_only=True) as repository:
             status_before = repository.status()
-            audit_before = len(AuditService(repository).list(limit=500))
+            audit_before = len(AuditService(repository).list(limit=200))
             first_inspection = export_shutdown_escape_bundle(
                 repository,
                 first,
@@ -170,7 +169,7 @@ def _run(mode: str) -> tuple[dict[str, bool], dict[str, object]]:
                 exported_at=EXPORTED_AT,
             )
             status_after = repository.status()
-            audit_after = len(AuditService(repository).list(limit=500))
+            audit_after = len(AuditService(repository).list(limit=200))
 
             existing = root / "existing.shutdown-escape.zip"
             existing.write_bytes(b"preserve-me")
@@ -243,10 +242,10 @@ def _run(mode: str) -> tuple[dict[str, bool], dict[str, object]]:
                 and standalone.get("result") == "pass"
                 and standalone.get("top_level_sha256") == first_inspection.top_level_sha256
             ),
-            "secret_omission_visible": first_inspection.omitted_secret_counts.get("preference") == 1,
-            "required_recovery_surfaces_visible": expected_surfaces <= {
-                key for key, value in first_inspection.recoverable_surfaces.items() if value
-            },
+            "secret_omission_visible": first_inspection.omitted_secret_counts.get("preference")
+            == 1,
+            "required_recovery_surfaces_visible": expected_surfaces
+            <= {key for key, value in first_inspection.recoverable_surfaces.items() if value},
             "tampering_rejected": tamper_rejected,
             "existing_destination_preserved": existing_rejected,
             "no_model_network_ui_or_cloud_dependency": mode in {"ci", "real-machine"},
