@@ -226,7 +226,9 @@ def test_export_rejects_write_repository_and_unsafe_destinations(tmp_path: Path)
     initialized = _initialized(tmp_path)
     with state.open_state_repository(initialized.root) as repository:
         with pytest.raises(ShutdownEscapeValidationError):
-            export_shutdown_escape_bundle(repository, tmp_path / "write.zip", exported_at=EXPORTED_AT)
+            export_shutdown_escape_bundle(
+                repository, tmp_path / "write.zip", exported_at=EXPORTED_AT
+            )
 
     with state.open_state_repository(initialized.root, read_only=True) as repository:
         with pytest.raises(ShutdownEscapeValidationError):

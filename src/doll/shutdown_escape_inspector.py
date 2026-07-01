@@ -91,7 +91,9 @@ def inspect_bundle(path: str) -> dict[str, object]:
         _verify_generic_export(members, generic_path)
 
     resume_paths = manifest.get("resume_bundle_paths")
-    if not isinstance(resume_paths, list) or not all(isinstance(item, str) for item in resume_paths):
+    if not isinstance(resume_paths, list) or not all(
+        isinstance(item, str) for item in resume_paths
+    ):
         raise EscapeInspectionError("resume bundle path list is invalid")
     for resume_path in resume_paths:
         _verify_json_checksum_zip(members.get(resume_path), "Resume Bundle")

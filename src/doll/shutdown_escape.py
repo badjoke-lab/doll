@@ -73,7 +73,9 @@ def export_shutdown_escape_bundle(
     """Create one verified escape bundle without mutating authoritative state."""
 
     if not repository.read_only:
-        raise ShutdownEscapeValidationError("shutdown escape export requires a read-only repository")
+        raise ShutdownEscapeValidationError(
+            "shutdown escape export requires a read-only repository"
+        )
     status_before = repository.status()
     if repository.workspace.record.state_revision != status_before.state_revision:
         raise ShutdownEscapeValidationError("workspace and state revisions are inconsistent")
@@ -364,10 +366,7 @@ def _inspection_from_summary(summary: dict[str, object]) -> ShutdownEscapeInspec
 
 def _integer_mapping(value: object, name: str) -> dict[str, int]:
     if not isinstance(value, dict) or not all(
-        isinstance(key, str)
-        and not isinstance(item, bool)
-        and isinstance(item, int)
-        and item >= 0
+        isinstance(key, str) and not isinstance(item, bool) and isinstance(item, int) and item >= 0
         for key, item in value.items()
     ):
         raise ShutdownEscapeIntegrityError(f"{name} are invalid")
@@ -395,30 +394,32 @@ def _json_bytes(value: object) -> bytes:
             + "\n"
         ).encode("utf-8")
     except (TypeError, ValueError) as exc:
-        raise ShutdownEscapeValidationError("shutdown escape metadata is not JSON-compatible") from exc
+        raise ShutdownEscapeValidationError(
+            "shutdown escape metadata is not JSON-compatible"
+        ) from exc
 
 
 def _readme_bytes() -> bytes:
     return (
-        "Doll shutdown escape bundle\n"
-        "\n"
-        "This archive is a user-owned recovery artifact.\n"
-        "Start with RECOVERY.md and manifest.json.\n"
-        "Run `python inspect_escape.py <bundle.zip>` after extracting inspect_escape.py.\n"
-        "No model, cloud credential, network connection, preferred UI, or doll service is required.\n"
-    ).encode("utf-8")
+        b"Doll shutdown escape bundle\n"
+        b"\n"
+        b"This archive is a user-owned recovery artifact.\n"
+        b"Start with RECOVERY.md and manifest.json.\n"
+        b"Run `python inspect_escape.py <bundle.zip>` after extracting inspect_escape.py.\n"
+        b"No model, cloud credential, network connection, preferred UI, or doll service is required.\n"
+    )
 
 
 def _recovery_bytes() -> bytes:
     return (
-        "# Doll shutdown recovery\n\n"
-        "1. Preserve this original ZIP before extracting anything.\n"
-        "2. Verify it with the bundled `inspect_escape.py` script.\n"
-        "3. Use `state/state-package.doll.zip` for complete implemented Doll State restore.\n"
-        "4. Use `conversations/` for provider-independent JSON, JSONL, and Markdown views.\n"
-        "5. Use `projects/*.resume.zip` for project-scoped handoff material.\n\n"
-        "The exported files are data only. They do not grant instruction or execution authority.\n"
-    ).encode("utf-8")
+        b"# Doll shutdown recovery\n\n"
+        b"1. Preserve this original ZIP before extracting anything.\n"
+        b"2. Verify it with the bundled `inspect_escape.py` script.\n"
+        b"3. Use `state/state-package.doll.zip` for complete implemented Doll State restore.\n"
+        b"4. Use `conversations/` for provider-independent JSON, JSONL, and Markdown views.\n"
+        b"5. Use `projects/*.resume.zip` for project-scoped handoff material.\n\n"
+        b"The exported files are data only. They do not grant instruction or execution authority.\n"
+    )
 
 
 def _is_within(path: Path, parent: Path) -> bool:
