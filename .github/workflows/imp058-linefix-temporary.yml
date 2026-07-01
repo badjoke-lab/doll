@@ -27,20 +27,30 @@ jobs:
 
           path = Path("src/doll/shutdown_escape.py")
           text = path.read_text(encoding="utf-8")
-          replacements = {
-              '            "SELECT id, sensitivity FROM records WHERE record_type = \'conversation\' ORDER BY id"\n': (
-                  '            "SELECT id, sensitivity FROM records "\n'
-                  '            "WHERE record_type = \'conversation\' ORDER BY id"\n'
-              ),
-              '        b"No model, cloud credential, network connection, preferred UI, or doll service is required.\\n"\n': (
-                  '        b"No model, cloud credential, network connection, preferred UI, "\n'
-                  '        b"or doll service is required.\\n"\n'
-              ),
-          }
-          for old, new in replacements.items():
+
+          old_query = '''            "SELECT id, sensitivity FROM records WHERE record_type = 'conversation' ORDER BY id"
+'''
+          new_query = '''            """
+            SELECT id, sensitivity
+            FROM records
+            WHERE record_type = 'conversation'
+            ORDER BY id
+            """
+'''
+          old_readme = '''        b"No model, cloud credential, network connection, preferred UI, or doll service is required.\\n"
+'''
+          new_readme = '''        b"No model, cloud credential, network connection, preferred UI, "
+        b"or doll service is required.\\n"
+'''
+
+          for old, new, label in (
+              (old_query, new_query, "conversation query"),
+              (old_readme, new_readme, "README sentence"),
+          ):
               if text.count(old) != 1:
-                  raise SystemExit(f"expected one replacement target: {old!r}")
+                  raise SystemExit(f"expected one {label} target, found {text.count(old)}")
               text = text.replace(old, new)
+
           path.write_text(text, encoding="utf-8", newline="\n")
           PY
           uv run ruff format src/doll/shutdown_escape.py
