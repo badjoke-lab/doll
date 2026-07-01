@@ -1,0 +1,33 @@
+name: Format IMP-058 files
+
+on:
+  push:
+    branches:
+      - imp-058-shutdown-escape-bundle
+    paths:
+      - .github/workflows/imp058-format-temporary.yml
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-058-shutdown-escape-bundle
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked --all-extras
+      - name: Apply Ruff fixes and formatting
+        run: |
+          uv run ruff check --fix src/doll/shutdown_escape.py src/doll/shutdown_escape_inspector.py tests/test_shutdown_escape.py
+          uv run ruff format src/doll/shutdown_escape.py src/doll/shutdown_escape_inspector.py tests/test_shutdown_escape.py
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Format IMP-058 implementation
+          branch: imp-058-shutdown-escape-bundle
+          file_pattern: src/doll/shutdown_escape.py src/doll/shutdown_escape_inspector.py tests/test_shutdown_escape.py
