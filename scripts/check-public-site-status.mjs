@@ -24,6 +24,9 @@ function expect(condition, message) {
 }
 
 const status = JSON.parse(read("website/project-status.json"));
+const shutdownEscape = JSON.parse(
+  read("docs/testing/phase-6-shutdown-escape-matrix.json"),
+);
 
 expect(status.schema_version === 2, "project-status.json must use schema_version 2");
 expect(
@@ -39,8 +42,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 58,
-  "project-status.json must mark Phase 6 in progress through IMP-057 with IMP-058 next",
+    status.phase?.next_implementation === 59,
+  "project-status.json must mark Phase 6 in progress through IMP-058 with IMP-059 next",
 );
 expect(
   status.model_runtime &&
@@ -51,6 +54,15 @@ expect(
 expect(
   /^\d{4}-\d{2}-\d{2}$/.test(status.last_reviewed || ""),
   "project-status.json last_reviewed must be YYYY-MM-DD",
+);
+expect(
+  shutdownEscape.implementation === "IMP-058" &&
+    shutdownEscape.shutdown_escape_gate_complete === false &&
+    shutdownEscape.portability_tests?.length === 1 &&
+    shutdownEscape.portability_tests[0]?.id === "PORT-015" &&
+    shutdownEscape.portability_tests[0]?.status === "ci-pass" &&
+    shutdownEscape.real_machine_gate?.status === "pending",
+  "IMP-058 shutdown escape matrix must remain ci-pass with primary-machine evidence pending",
 );
 
 const readme = read("README.md");
@@ -191,16 +203,20 @@ expect(
   "roadmap must record the IMP-057 local-portability harness",
 );
 expect(
-  roadmap.includes("the next bounded implementation receives IMP-058 only when a new implementation issue is opened"),
-  "roadmap must identify IMP-058 as the next unallocated implementation identifier",
+  roadmap.includes("### IMP-058 — Deterministic Doll shutdown escape bundle"),
+  "roadmap must record the IMP-058 shutdown escape bundle",
+);
+expect(
+  roadmap.includes("the next bounded implementation receives IMP-059 only when a new implementation issue is opened"),
+  "roadmap must identify IMP-059 as the next unallocated implementation identifier",
 );
 expect(
   roadmap.includes("docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json"),
   "roadmap must bind the accepted IMP-057 primary Intel Mac evidence",
 );
 expect(
-  roadmap.includes("The required order after accepted IMP-057 real-machine evidence is:"),
-  "roadmap must record the accepted real-machine evidence after IMP-057",
+  roadmap.includes("The required order after the IMP-058 shutdown escape harness merge is:"),
+  "roadmap must record the pending IMP-058 primary-machine gate",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),
