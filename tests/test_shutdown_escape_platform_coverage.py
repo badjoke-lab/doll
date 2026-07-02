@@ -20,8 +20,8 @@ from doll.shutdown_escape import (
 
 def _fake_repository(
     workspace_root: Path,
-    statuses: list[object],
-) -> SimpleNamespace:
+    statuses: list[Any],
+) -> Any:
     iterator = iter(statuses)
     return SimpleNamespace(
         read_only=True,
@@ -34,8 +34,8 @@ def _fake_repository(
 
 
 def test_export_rejects_workspace_revision_mismatch(tmp_path: Path) -> None:
-    status = SimpleNamespace(state_revision=2)
-    repository = SimpleNamespace(
+    status: Any = SimpleNamespace(state_revision=2)
+    repository: Any = SimpleNamespace(
         read_only=True,
         workspace=SimpleNamespace(
             root=tmp_path / "workspace",
@@ -52,7 +52,7 @@ def test_export_rejects_destination_inside_repository_checkout(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    status = SimpleNamespace(state_revision=1)
+    status: Any = SimpleNamespace(state_revision=1)
     repository = _fake_repository(tmp_path / "workspace", [status])
     monkeypatch.setattr(
         shutdown_escape,
@@ -68,7 +68,7 @@ def test_export_wraps_unexpected_build_failure_and_removes_output(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    status = SimpleNamespace(state_revision=1)
+    status: Any = SimpleNamespace(state_revision=1)
     repository = _fake_repository(tmp_path / "workspace", [status])
     output = tmp_path / "escape.zip"
     monkeypatch.setattr(shutdown_escape, "find_doll_repository_ancestor", lambda _: None)
@@ -87,7 +87,7 @@ def test_export_cleans_temporary_file_after_bounded_failure(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    status = SimpleNamespace(state_revision=1)
+    status: Any = SimpleNamespace(state_revision=1)
     repository = _fake_repository(tmp_path / "workspace", [status])
     output = tmp_path / "escape.zip"
     monkeypatch.setattr(shutdown_escape, "find_doll_repository_ancestor", lambda _: None)
@@ -109,8 +109,8 @@ def test_export_rejects_repository_status_change(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    before = SimpleNamespace(state_revision=1, marker="before")
-    after = SimpleNamespace(state_revision=1, marker="after")
+    before: Any = SimpleNamespace(state_revision=1, marker="before")
+    after: Any = SimpleNamespace(state_revision=1, marker="after")
     repository = _fake_repository(tmp_path / "workspace", [before, after])
     output = tmp_path / "escape.zip"
     monkeypatch.setattr(shutdown_escape, "find_doll_repository_ancestor", lambda _: None)
@@ -135,7 +135,7 @@ class _FailingConnection:
 
 
 def test_record_discovery_wraps_database_failures() -> None:
-    repository = SimpleNamespace(connection=_FailingConnection())
+    repository: Any = SimpleNamespace(connection=_FailingConnection())
 
     with pytest.raises(ShutdownEscapeValidationError, match="conversation records"):
         _exportable_conversations(repository)
@@ -144,7 +144,7 @@ def test_record_discovery_wraps_database_failures() -> None:
 
 
 def test_secret_event_excludes_its_entire_conversation() -> None:
-    results = iter(
+    results: Any = iter(
         [
             [("conversation-id", "private")],
             [("event-id", "secret", "conversation-id")],
@@ -152,11 +152,11 @@ def test_secret_event_excludes_its_entire_conversation() -> None:
     )
 
     class Connection:
-        def execute(self, _query: str) -> SimpleNamespace:
+        def execute(self, _query: str) -> Any:
             rows = next(results)
             return SimpleNamespace(fetchall=lambda: rows)
 
-    repository = SimpleNamespace(connection=Connection())
+    repository: Any = SimpleNamespace(connection=Connection())
     conversations, events, omitted = _exportable_conversations(repository)
 
     assert conversations == ()
@@ -169,7 +169,7 @@ def test_directory_fsync_executes_posix_branch(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     calls: list[tuple[str, object]] = []
-    fake_os = SimpleNamespace(
+    fake_os: Any = SimpleNamespace(
         name="posix",
         O_RDONLY=0,
         open=lambda path, flags: calls.append(("open", (path, flags))) or 17,
