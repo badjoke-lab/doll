@@ -169,12 +169,23 @@ def test_directory_fsync_executes_posix_branch(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     calls: list[tuple[str, object]] = []
+
+    def fake_open(path: Path, flags: int) -> int:
+        calls.append(("open", (path, flags)))
+        return 17
+
+    def fake_fsync(descriptor: int) -> None:
+        calls.append(("fsync", descriptor))
+
+    def fake_close(descriptor: int) -> None:
+        calls.append(("close", descriptor))
+
     fake_os: Any = SimpleNamespace(
         name="posix",
         O_RDONLY=0,
-        open=lambda path, flags: calls.append(("open", (path, flags))) or 17,
-        fsync=lambda descriptor: calls.append(("fsync", descriptor)),
-        close=lambda descriptor: calls.append(("close", descriptor)),
+        open=fake_open,
+        fsync=fake_fsync,
+        close=fake_close,
     )
     monkeypatch.setattr(shutdown_escape, "os", fake_os)
 
