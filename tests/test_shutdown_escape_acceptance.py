@@ -37,17 +37,20 @@ def _run(*arguments: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def test_imp_058_matrix_keeps_port_015_at_ci_pass() -> None:
+def test_imp_058_matrix_binds_accepted_primary_machine_evidence() -> None:
     matrix = json.loads(MATRIX.read_text(encoding="utf-8"))
     assert matrix["schema_version"] == 1
     assert matrix["phase"] == "6"
     assert matrix["implementation"] == "IMP-058"
-    assert matrix["shutdown_escape_gate_complete"] is False
-    assert matrix["accepted_real_machine_result"] is None
+    assert matrix["shutdown_escape_gate_complete"] is True
+    assert (
+        matrix["accepted_real_machine_result"]
+        == "docs/testing/results/IMP-058-primary-intel-mac-2026-07-03.json"
+    )
     assert matrix["portability_tests"] == [
         {
             "id": "PORT-015",
-            "status": "ci-pass",
+            "status": "pass",
             "description": (
                 "A deterministic verified shutdown escape bundle remains inspectable without a "
                 "model, network, preferred UI, cloud credential, running doll service, or import "
@@ -59,20 +62,20 @@ def test_imp_058_matrix_keeps_port_015_at_ci_pass() -> None:
                 "tests/test_shutdown_escape_coverage.py",
                 "tests/test_shutdown_escape_platform_coverage.py",
             ],
-            "passed_evidence_levels": ["ci"],
+            "passed_evidence_levels": ["ci", "real-machine"],
             "required_evidence_levels": ["ci", "real-machine"],
         }
     ]
     gate = matrix["real_machine_gate"]
     assert gate == {
         "required": True,
-        "status": "pending",
+        "status": "pass",
         "platform": "Darwin",
         "architectures": ["x86_64", "amd64"],
         "minimum_local_models": 0,
         "network_mode": "offline-confirmed",
-        "commit_sha": None,
-        "completed_at": None,
+        "commit_sha": "bd06897c46b6fcb6dd3789195e8bdd0bfa54941b",
+        "completed_at": "2026-07-02T16:17:55.323148Z",
     }
 
 
@@ -99,8 +102,8 @@ def test_imp_058_ci_runner_passes_without_model_network_or_service() -> None:
     assert payload["commit_sha"] == _head()
     assert payload["evidence_level"] == "ci"
     assert payload["network_mode"] == "synthetic-no-network"
-    assert payload["primary_intel_mac_gate"] == "pending"
-    assert payload["shutdown_escape_gate_complete"] is False
+    assert payload["primary_intel_mac_gate"] == "pass"
+    assert payload["shutdown_escape_gate_complete"] is True
     assert payload["phase6_gate_complete"] is False
     assert payload["stable_anti_lock_in_claim"] is False
     assert payload["real_machine_used"] is False
