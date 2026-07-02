@@ -57,12 +57,18 @@ expect(
 );
 expect(
   shutdownEscape.implementation === "IMP-058" &&
-    shutdownEscape.shutdown_escape_gate_complete === false &&
+    shutdownEscape.shutdown_escape_gate_complete === true &&
+    shutdownEscape.accepted_real_machine_result ===
+      "docs/testing/results/IMP-058-primary-intel-mac-2026-07-03.json" &&
     shutdownEscape.portability_tests?.length === 1 &&
     shutdownEscape.portability_tests[0]?.id === "PORT-015" &&
-    shutdownEscape.portability_tests[0]?.status === "ci-pass" &&
-    shutdownEscape.real_machine_gate?.status === "pending",
-  "IMP-058 shutdown escape matrix must remain ci-pass with primary-machine evidence pending",
+    shutdownEscape.portability_tests[0]?.status === "pass" &&
+    shutdownEscape.portability_tests[0]?.passed_evidence_levels?.includes("ci") &&
+    shutdownEscape.portability_tests[0]?.passed_evidence_levels?.includes("real-machine") &&
+    shutdownEscape.real_machine_gate?.status === "pass" &&
+    shutdownEscape.real_machine_gate?.commit_sha ===
+      "bd06897c46b6fcb6dd3789195e8bdd0bfa54941b",
+  "IMP-058 shutdown escape matrix must bind accepted primary-machine evidence",
 );
 
 const readme = read("README.md");
@@ -215,8 +221,12 @@ expect(
   "roadmap must bind the accepted IMP-057 primary Intel Mac evidence",
 );
 expect(
-  roadmap.includes("The required order after the IMP-058 shutdown escape harness merge is:"),
-  "roadmap must record the pending IMP-058 primary-machine gate",
+  roadmap.includes("docs/testing/results/IMP-058-primary-intel-mac-2026-07-03.json"),
+  "roadmap must bind the accepted IMP-058 primary Intel Mac evidence",
+);
+expect(
+  roadmap.includes("The required order after accepted IMP-058 real-machine evidence is:"),
+  "roadmap must record accepted IMP-058 primary-machine evidence",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),
