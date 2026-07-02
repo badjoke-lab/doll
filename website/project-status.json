@@ -15,11 +15,11 @@
     "name": "Local AI portability and daily-use integration",
     "state": "in_progress",
     "started_by_implementation": 55,
-    "next_implementation": 58
+    "next_implementation": 59
   },
   "model_runtime": {
     "connected": true,
-    "message": "Phase 6 is in progress through IMP-057. Offline session import, explicit text-only loopback Ollama capture, and the deterministic end-to-end local-portability harness are implemented. PORT-001, PORT-003, and bounded PORT-013 pass in CI and on accepted exact-commit primary Intel Mac evidence; the bounded IMP-057 local-portability gate is complete. PORT-015, native history migration, general application replacement, stable general anti-lock-in, and the Phase 6 gate are not complete."
+    "message": "Phase 6 is in progress through IMP-058. Offline Ollama session import, explicit text-only loopback capture, the accepted bounded local-portability migration drill, and a deterministic shutdown escape bundle are implemented. PORT-001, PORT-003, and bounded PORT-013 pass in CI and on accepted primary Intel Mac evidence. PORT-015 passes CI only and still requires privacy-reviewed exact-commit primary Intel Mac evidence; the complete Phase 6 gate and stable general anti-lock-in are not complete."
   },
-  "last_reviewed": "2026-06-29"
+  "last_reviewed": "2026-07-02"
 }

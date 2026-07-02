@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "phase": "6",
+  "implementation": "IMP-058",
+  "shutdown_escape_gate_complete": false,
+  "accepted_real_machine_result": null,
+  "portability_tests": [
+    {
+      "id": "PORT-015",
+      "status": "ci-pass",
+      "description": "A deterministic verified shutdown escape bundle remains inspectable without a model, network, preferred UI, cloud credential, running doll service, or import of the doll package.",
+      "pytest_files": [
+        "tests/test_shutdown_escape.py",
+        "tests/test_shutdown_escape_acceptance.py",
+        "tests/test_shutdown_escape_coverage.py",
+        "tests/test_shutdown_escape_platform_coverage.py"
+      ],
+      "passed_evidence_levels": [
+        "ci"
+      ],
+      "required_evidence_levels": [
+        "ci",
+        "real-machine"
+      ]
+    }
+  ],
+  "real_machine_gate": {
+    "required": true,
+    "status": "pending",
+    "platform": "Darwin",
+    "architectures": [
+      "x86_64",
+      "amd64"
+    ],
+    "minimum_local_models": 0,
+    "network_mode": "offline-confirmed",
+    "commit_sha": null,
+    "completed_at": null
+  },
+  "limitations": [
+    "CI proves deterministic construction, validation, failure cleanup, and doll-independent inspection with synthetic non-private state.",
+    "PORT-015 remains ci-pass until privacy-reviewed exact-commit primary Intel Mac evidence is stored in a separate completion pull request.",
+    "The State Package is the complete implemented machine-restorable surface; generic conversation and Resume Bundle members are inspectable recovery views.",
+    "Secret records, credentials, model assets, runtime assets, caches, and temporary files are omitted.",
+    "No target-specific application import, native Ollama history discovery, ChatGPT history migration, or provider-specific round trip is claimed.",
+    "The complete Phase 6 gate and a stable general anti-lock-in claim remain pending."
+  ]
+}

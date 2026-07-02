@@ -1,0 +1,73 @@
+name: Shutdown escape acceptance
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/shutdown-escape-acceptance.yml
+      - docs/testing/phase-6-shutdown-escape-matrix.json
+      - scripts/imp_058_shutdown_escape_probe.py
+      - scripts/run_imp_058_shutdown_escape.py
+      - src/doll/shutdown_escape.py
+      - src/doll/shutdown_escape_inspector.py
+      - tests/test_shutdown_escape.py
+      - tests/test_shutdown_escape_acceptance.py
+      - tests/test_shutdown_escape_coverage.py
+      - tests/test_shutdown_escape_platform_coverage.py
+  pull_request:
+    paths:
+      - .github/workflows/shutdown-escape-acceptance.yml
+      - docs/testing/phase-6-shutdown-escape-matrix.json
+      - scripts/imp_058_shutdown_escape_probe.py
+      - scripts/run_imp_058_shutdown_escape.py
+      - src/doll/shutdown_escape.py
+      - src/doll/shutdown_escape_inspector.py
+      - tests/test_shutdown_escape.py
+      - tests/test_shutdown_escape_acceptance.py
+      - tests/test_shutdown_escape_coverage.py
+      - tests/test_shutdown_escape_platform_coverage.py
+
+permissions:
+  contents: read
+
+jobs:
+  acceptance:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked --all-extras
+      - name: Run shutdown escape tests
+        shell: bash
+        run: |
+          set -o pipefail
+          uv run pytest -q --no-cov \
+            tests/test_shutdown_escape.py \
+            tests/test_shutdown_escape_acceptance.py \
+            tests/test_shutdown_escape_coverage.py \
+            tests/test_shutdown_escape_platform_coverage.py \
+            2>&1 | tee imp058-shutdown-escape-pytest.txt
+      - name: Run bounded acceptance report
+        shell: bash
+        run: |
+          uv run python scripts/run_imp_058_shutdown_escape.py \
+            --commit-sha "$(git rev-parse HEAD)" \
+            > imp058-shutdown-escape-ci.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: imp058-shutdown-escape-${{ matrix.os }}
+          path: |
+            imp058-shutdown-escape-ci.json
+            imp058-shutdown-escape-pytest.txt
