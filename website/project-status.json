@@ -19,7 +19,7 @@
   },
   "model_runtime": {
     "connected": true,
-    "message": "Phase 6 is in progress through IMP-058. Offline Ollama session import, explicit text-only loopback capture, the accepted bounded local-portability migration drill, and a deterministic shutdown escape bundle are implemented. PORT-001, PORT-003, and bounded PORT-013 pass in CI and on accepted primary Intel Mac evidence. PORT-015 passes CI only and still requires privacy-reviewed exact-commit primary Intel Mac evidence; the complete Phase 6 gate and stable general anti-lock-in are not complete."
+    "message": "Phase 6 is in progress through IMP-058. Offline Ollama session import, explicit text-only loopback capture, the accepted bounded local-portability migration drill, and the deterministic shutdown escape bundle are implemented. PORT-001, PORT-003, bounded PORT-013, and PORT-015 pass in CI and on accepted primary Intel Mac evidence. The complete Phase 6 gate, target-specific application replacement, and stable general anti-lock-in remain incomplete."
   },
-  "last_reviewed": "2026-07-02"
+  "last_reviewed": "2026-07-03"
 }
