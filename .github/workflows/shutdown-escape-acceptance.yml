@@ -13,6 +13,8 @@ on:
       - src/doll/shutdown_escape_inspector.py
       - tests/test_shutdown_escape.py
       - tests/test_shutdown_escape_acceptance.py
+      - tests/test_shutdown_escape_coverage.py
+      - tests/test_shutdown_escape_platform_coverage.py
   pull_request:
     paths:
       - .github/workflows/shutdown-escape-acceptance.yml
@@ -23,6 +25,8 @@ on:
       - src/doll/shutdown_escape_inspector.py
       - tests/test_shutdown_escape.py
       - tests/test_shutdown_escape_acceptance.py
+      - tests/test_shutdown_escape_coverage.py
+      - tests/test_shutdown_escape_platform_coverage.py
 
 permissions:
   contents: read
@@ -51,6 +55,8 @@ jobs:
           uv run pytest -q --no-cov \
             tests/test_shutdown_escape.py \
             tests/test_shutdown_escape_acceptance.py \
+            tests/test_shutdown_escape_coverage.py \
+            tests/test_shutdown_escape_platform_coverage.py \
             2>&1 | tee imp058-shutdown-escape-pytest.txt
       - name: Run bounded acceptance report
         shell: bash
