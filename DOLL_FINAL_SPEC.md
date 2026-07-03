@@ -24,7 +24,7 @@
 - `docs/spec/08-acceptance-and-continuity-tests.md` — SHA-256 `1ae9b70cf28257b35a30238bdc46c2caea93dbd17fdf8b516ff708c9e208a698`
 - `docs/spec/08a-ai-environment-portability-acceptance.md` — SHA-256 `3a1876d8b506204254ccd54eb58cfabcf2ddc92e3edd446d90650b9ae22ff305`
 - `docs/spec/08b-project-continuity-acceptance.md` — SHA-256 `b58623f21bdd183a21e1904ebcec954ffb2b6976254b72ac52f13deae83306cc`
-- `docs/spec/09-development-roadmap.md` — SHA-256 `13615af0da30b8e966838bbd633de2946344471654e804d6e124140b56a7a47d`
+- `docs/spec/09-development-roadmap.md` — SHA-256 `656d11c7d029e8ebc59af9f2b5889772971a65a8a2e75bc3e6a4d38be11261c9`
 
 ---
 
@@ -8584,8 +8584,8 @@ Current implementation point:
 - accepted primary Intel Mac evidence is bound to exact IMP-057 implementation commit `7b63ff512e20d1d6ae65da8938486b093e14b6c6` and stored at `docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json`;
 - PORT-001, PORT-003, and the bounded IMP-057 portion of PORT-013 pass at both `ci` and `real-machine` evidence levels;
 - IMP-058 adds a deterministic `doll-shutdown-escape` bundle that composes a verified State Package, generic conversation export, project Resume Bundles, bounded recovery documentation, and a standard-library-only standalone inspector;
-- deterministic Linux, macOS, and Windows CI records PORT-015 at `ci-pass`; Issue #183 remains open for privacy-reviewed exact-commit primary Intel Mac evidence with networking disabled and no model or doll service required;
-- IMP-058 does not complete PORT-015, the Phase 6 gate, target-specific application round trips, or a stable general anti-lock-in claim before that real-machine evidence is accepted;
+- accepted primary Intel Mac evidence is bound to exact IMP-058 implementation commit `bd06897c46b6fcb6dd3789195e8bdd0bfa54941b` and stored at `docs/testing/results/IMP-058-primary-intel-mac-2026-07-03.json`;
+- PORT-015 passes at both `ci` and `real-machine` evidence levels, completing the bounded IMP-058 shutdown-escape gate without claiming the complete Phase 6 gate, target-specific application round trips, or stable general anti-lock-in;
 - the next bounded implementation receives IMP-059 only when a new implementation issue is opened;
 - later local migration, cloud, and tool work must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts.
 
@@ -9042,15 +9042,15 @@ IMP-057 does not complete PORT-015, target-specific export, ChatGPT history migr
 
 ### IMP-058 — Deterministic Doll shutdown escape bundle
 
-Status: implementation harness complete with deterministic synthetic CI evidence; primary Intel Mac evidence remains pending in Issue #183.
+Status: implementation and primary Intel Mac evidence complete. Accepted evidence is bound to exact implementation commit `bd06897c46b6fcb6dd3789195e8bdd0bfa54941b` and stored at `docs/testing/results/IMP-058-primary-intel-mac-2026-07-03.json`.
 
 Implemented a versioned `doll-shutdown-escape` ZIP that composes one verified State Package, deterministic generic conversation files when fully non-secret conversations exist, one verified Resume Bundle per non-secret project, bounded recovery documents, a top-level manifest and SHA-256 inventory, and a bundled standard-library-only inspector that imports no doll module.
 
 Export requires a read-only repository, publishes outside the workspace and repository checkout, uses deterministic archive metadata and create-new atomic publication, verifies before publication, preserves existing destinations, cleans failures, and leaves workspace status and audit history unchanged. Secret records and credential material are omitted and counted.
 
-Synthetic CI removes the source workspace before fresh-process `python -I` inspection, verifies all embedded recovery surfaces, proves repeated byte-identical export, and rejects tampering and unsafe archive structure. PORT-015 remains `ci-pass` until a separate privacy-reviewed exact-commit primary Intel Mac result is stored. The real-machine run requires networking disabled and requires no model, runtime execution, cloud credential, preferred UI, or doll service.
+Synthetic CI removes the source workspace before fresh-process `python -I` inspection, verifies all embedded recovery surfaces, proves repeated byte-identical export, and rejects tampering and unsafe archive structure. Accepted privacy-reviewed primary Intel Mac evidence at `docs/testing/results/IMP-058-primary-intel-mac-2026-07-03.json` binds PORT-015 to exact implementation commit `bd06897c46b6fcb6dd3789195e8bdd0bfa54941b` and promotes it to `pass` at both `ci` and `real-machine` evidence levels. The run used networking disabled and required no model, runtime execution, cloud credential, preferred UI, or doll service.
 
-IMP-058 does not establish ChatGPT history migration, native Ollama history discovery, target-specific application import, provider-specific round-trip fidelity, secret portability, the complete Phase 6 gate, or a stable general anti-lock-in claim before accepted real-machine evidence.
+IMP-058 does not establish ChatGPT history migration, native Ollama history discovery, target-specific application import, provider-specific round-trip fidelity, secret portability, the complete Phase 6 gate, or a stable general anti-lock-in claim from this bounded result alone.
 
 Daily-use work may then expand writing, editing, summarization, translation, planning, memory review, project and decision workflows, work-item proposals, portability review, accessibility, error clarity, Lite performance, and soak testing.
 
@@ -9169,14 +9169,13 @@ An implementation PR is done when:
 
 ## 18. Immediate work
 
-The required order after the IMP-058 shutdown escape harness merge is:
+The required order after accepted IMP-058 real-machine evidence is:
 
-1. keep Issue #183 open until the exact merged implementation commit is run on the primary Intel Mac with networking disabled and no model or doll service required;
-2. review the bounded JSON result and store only privacy-safe exact-commit evidence in a separate completion pull request;
-3. change PORT-015 from `ci-pass` to `pass` only after the real-machine evidence is accepted;
-4. do not claim the complete Phase 6 gate, target-specific application replacement, secret portability, or stable general anti-lock-in while the real-machine gate is pending;
-5. allocate IMP-059 only when a new bounded implementation issue with explicit acceptance and real-machine requirements is opened;
-6. keep ChatGPT history, provider-specific cloud portability, credentials, tools, automatic cloud fallback, multimodal capture, and target-specific export outside the completed IMP-058 implementation boundary.
+1. keep the accepted claim limited to PORT-015 and the bounded deterministic shutdown-escape surface;
+2. do not extend the result to ChatGPT history migration, native Ollama history discovery, target-specific application replacement, secret portability, the complete Phase 6 gate, or stable general anti-lock-in;
+3. allocate IMP-059 only when a new bounded implementation issue with explicit acceptance and real-machine requirements is opened;
+4. continue local-first daily-use and migration work through the Phase 3 safety boundary and Phase 4A/4B canonical state contracts;
+5. keep provider-specific cloud portability, credentials, tools, automatic cloud fallback, multimodal capture, and target-specific export outside the completed IMP-058 boundary.
 
 ## 19. Roadmap change control
 
