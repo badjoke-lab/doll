@@ -2,7 +2,7 @@
 
 ## Status
 
-Implementation harness complete with deterministic synthetic CI evidence. Primary Intel Mac evidence remains pending and must be stored by a separate completion pull request bound to the exact merged implementation commit.
+Implementation and primary Intel Mac evidence complete. The accepted privacy-reviewed result is bound to exact implementation commit `bd06897c46b6fcb6dd3789195e8bdd0bfa54941b` and stored at `docs/testing/results/IMP-058-primary-intel-mac-2026-07-03.json` (SHA-256 `3c6e3dbff6a09626b73bce18fa0259739c749682392b4738286e32d87378e63d`).
 
 ## Purpose
 
@@ -104,7 +104,7 @@ CI builds a synthetic non-private Doll workspace containing one secret preferenc
 9. preservation of an existing destination;
 10. absence of model, network, UI, cloud, or doll-service dependency.
 
-CI records PORT-015 as `ci-pass`. It is not primary-machine shutdown evidence and cannot complete PORT-015 or establish stable general anti-lock-in. The machine-readable evidence binding is `docs/testing/phase-6-shutdown-escape-matrix.json`.
+CI alone records PORT-015 as `ci-pass`. The accepted primary Intel Mac result promotes PORT-015 to `pass`; the machine-readable evidence binding is `docs/testing/phase-6-shutdown-escape-matrix.json`. This bounded completion does not establish the complete Phase 6 gate or stable general anti-lock-in.
 
 ### Primary Intel Mac
 
@@ -117,7 +117,7 @@ Real-machine evidence is accepted only when all of the following are explicit:
 - local-only operation is confirmed with `--local-only-confirmed`;
 - no model argument, model execution, runtime installation, or doll service is required.
 
-The real-machine run uses only the same synthetic non-private acceptance fixture. It does not read the user's personal Doll State.
+The real-machine run uses only the same synthetic non-private acceptance fixture. It does not read the user's personal Doll State. Accepted evidence completed at `2026-07-02T16:17:55.323148Z` against exact implementation commit `bd06897c46b6fcb6dd3789195e8bdd0bfa54941b` and is stored at `docs/testing/results/IMP-058-primary-intel-mac-2026-07-03.json`.
 
 ## Commands
 
@@ -144,14 +144,14 @@ The bounded output must be reviewed before storage. Accepted evidence must not c
 
 The implementation harness may merge after Linux, macOS, Windows, dependency-lock, Ruff, formatting, strict mypy, generated-specification, public-status, implementation-numbering, CLI, and coverage checks pass.
 
-Issue #183 remains open after that merge. A separate completion pull request must:
+Issue #183 is completed by the privacy-reviewed evidence pull request. The accepted result:
 
-1. run the exact merged implementation commit on the primary Intel Mac with networking disabled;
-2. use the synthetic non-private fixture and require no model or doll service;
-3. review the bounded JSON result for private-data leakage;
-4. store only the accepted privacy-safe result and matrix binding;
-5. change PORT-015 from `ci-pass` to `pass` only after accepted real-machine evidence exists;
-6. leave the complete Phase 6 gate pending unless all separate Phase 6 criteria are met.
+1. ran exact merged implementation commit `bd06897c46b6fcb6dd3789195e8bdd0bfa54941b` on the primary Intel Mac with networking disabled;
+2. used only the synthetic non-private fixture and required no model or doll service;
+3. passed every named check and the explicit privacy review;
+4. is stored at `docs/testing/results/IMP-058-primary-intel-mac-2026-07-03.json` with SHA-256 `3c6e3dbff6a09626b73bce18fa0259739c749682392b4738286e32d87378e63d`;
+5. promotes PORT-015 from `ci-pass` to `pass` at both `ci` and `real-machine` evidence levels;
+6. leaves the complete Phase 6 gate and stable general anti-lock-in claim pending.
 
 ## Explicit non-claims
 
@@ -166,4 +166,4 @@ IMP-058 does not establish:
 - secret or credential portability;
 - general replacement of every source application;
 - the complete Phase 6 gate;
-- a stable general anti-lock-in claim before accepted real-machine evidence is stored.
+- a stable general anti-lock-in claim from this bounded shutdown-escape result alone.

@@ -2,12 +2,12 @@
   "schema_version": 1,
   "phase": "6",
   "implementation": "IMP-058",
-  "shutdown_escape_gate_complete": false,
-  "accepted_real_machine_result": null,
+  "shutdown_escape_gate_complete": true,
+  "accepted_real_machine_result": "docs/testing/results/IMP-058-primary-intel-mac-2026-07-03.json",
   "portability_tests": [
     {
       "id": "PORT-015",
-      "status": "ci-pass",
+      "status": "pass",
       "description": "A deterministic verified shutdown escape bundle remains inspectable without a model, network, preferred UI, cloud credential, running doll service, or import of the doll package.",
       "pytest_files": [
         "tests/test_shutdown_escape.py",
@@ -16,7 +16,8 @@
         "tests/test_shutdown_escape_platform_coverage.py"
       ],
       "passed_evidence_levels": [
-        "ci"
+        "ci",
+        "real-machine"
       ],
       "required_evidence_levels": [
         "ci",
@@ -26,7 +27,7 @@
   ],
   "real_machine_gate": {
     "required": true,
-    "status": "pending",
+    "status": "pass",
     "platform": "Darwin",
     "architectures": [
       "x86_64",
@@ -34,12 +35,12 @@
     ],
     "minimum_local_models": 0,
     "network_mode": "offline-confirmed",
-    "commit_sha": null,
-    "completed_at": null
+    "commit_sha": "bd06897c46b6fcb6dd3789195e8bdd0bfa54941b",
+    "completed_at": "2026-07-02T16:17:55.323148Z"
   },
   "limitations": [
     "CI proves deterministic construction, validation, failure cleanup, and doll-independent inspection with synthetic non-private state.",
-    "PORT-015 remains ci-pass until privacy-reviewed exact-commit primary Intel Mac evidence is stored in a separate completion pull request.",
+    "PORT-015 passes at both ci and real-machine evidence levels through privacy-reviewed exact-commit primary Intel Mac evidence.",
     "The State Package is the complete implemented machine-restorable surface; generic conversation and Resume Bundle members are inspectable recovery views.",
     "Secret records, credentials, model assets, runtime assets, caches, and temporary files are omitted.",
     "No target-specific application import, native Ollama history discovery, ChatGPT history migration, or provider-specific round trip is claimed.",
