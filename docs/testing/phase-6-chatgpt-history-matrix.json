@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "phase": "6",
+  "implementation": "IMP-059",
+  "port014_foundation_complete": true,
+  "chatgpt_history_gate_complete": false,
+  "accepted_private_manual_result": null,
+  "portability_tests": [
+    {
+      "id": "PORT-014",
+      "status": "ci-pass",
+      "description": "A selected synthetic ChatGPT conversations.json history is parsed offline, staged, reviewed, published as external data, exported generically, and retained through the shutdown escape surface without provider credentials or model execution.",
+      "pytest_files": [
+        "tests/test_chatgpt_export_import.py",
+        "tests/test_chatgpt_export_acceptance.py"
+      ],
+      "passed_evidence_levels": [
+        "ci"
+      ],
+      "required_evidence_levels": [
+        "ci",
+        "private-manual"
+      ]
+    }
+  ],
+  "private_manual_gate": {
+    "required": true,
+    "status": "pending",
+    "source_format": "chatgpt-conversations-json",
+    "source_format_version": "observed-v1",
+    "commit_sha": null,
+    "completed_at": null
+  },
+  "limitations": [
+    "CI uses only synthetic non-private conversations.json bytes and proves the bounded source-adapter foundation, not the project-owner migration drill.",
+    "The adapter accepts one explicitly supplied conversations.json file only; ZIP extraction and numbered-file aggregation are not implemented.",
+    "Only explicitly selected conversations are mapped into staged content objects.",
+    "The observed provider JSON shape is versioned adapter behavior and is not claimed as a stable OpenAI public schema.",
+    "Non-text content, attachment references, unsupported roles, malformed nodes, missing parents, cycles, conflicting duplicates, and unknown provider fields are quarantined or reported through mapping and loss records.",
+    "No account merge, sidebar restoration, memory migration, GPT migration, settings migration, file restoration, target-specific export, or round-trip fidelity is claimed.",
+    "PORT-014 and the ChatGPT history migration claim remain pending until privacy-reviewed exact-commit private manual evidence is accepted.",
+    "The complete Phase 6 gate and stable general anti-lock-in remain incomplete."
+  ]
+}
