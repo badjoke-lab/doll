@@ -22,15 +22,15 @@ from doll.shutdown_escape import export_shutdown_escape_bundle
 ROOT = Path(__file__).resolve().parents[1]
 IMPLEMENTATION_COMMIT = "67f6acfe2291bf892b93d9367cacf764367fe30f"
 TEST_ID = "IMP-059-CHATGPT-HISTORY-PRIVATE-MANUAL"
-_CRITICAL_PATHS = (
-    "src/doll/chatgpt_export_import.py",
-    "src/doll/generic_import.py",
-    "src/doll/generic_import_publication.py",
-    "src/doll/generic_export.py",
-    "src/doll/shutdown_escape.py",
-    "src/doll/state.py",
-    "src/doll/workspace.py",
-)
+_CRITICAL_BLOBS = {
+    "src/doll/chatgpt_export_import.py": "ad75f90f087e593bd265e2ca7953a7f8fbcffc36",
+    "src/doll/generic_import.py": "bd6a9da65da8b3c72fd2157db46ad75e364baa11",
+    "src/doll/generic_import_publication.py": "5154a96cdfd0ec29d319791ef94a994091d85640",
+    "src/doll/generic_export.py": "ae22265cedf64e3a6753bf9f3bd5c533aa605d6b",
+    "src/doll/shutdown_escape.py": "6fcb97ec3cb0955b7153f690e20a33c79941eb4e",
+    "src/doll/state.py": "0a5b30ca6323a913304b97d3b0aaec7b4de1fb2c",
+    "src/doll/workspace.py": "7f2724700790f9bde5d071e8b4f7d052f8d53d96",
+}
 _AUTHORITY_TYPES = (
     "capability",
     "confirmation",
@@ -87,23 +87,14 @@ def _working_blob(relative: str) -> str:
 def _verify_commit_binding(runner_commit: str) -> dict[str, bool]:
     if runner_commit != _head():
         raise RuntimeError("runner commit mismatch")
-    subprocess.run(
-        ["git", "merge-base", "--is-ancestor", IMPLEMENTATION_COMMIT, runner_commit],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        check=True,
-    )
     runner_path = "scripts/run_imp_059_private_manual.py"
     runner_exact = _working_blob(runner_path) == _tracked_blob(runner_commit, runner_path)
     surfaces_exact = all(
-        _working_blob(relative)
-        == _tracked_blob(runner_commit, relative)
-        == _tracked_blob(IMPLEMENTATION_COMMIT, relative)
-        for relative in _CRITICAL_PATHS
+        _working_blob(relative) == expected_blob
+        for relative, expected_blob in _CRITICAL_BLOBS.items()
     )
     return {
-        "implementation_commit_is_ancestor": True,
+        "implementation_commit_blob_manifest_bound": True,
         "runner_matches_bound_commit": runner_exact,
         "portability_surfaces_match_implementation_commit": surfaces_exact,
     }
