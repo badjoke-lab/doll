@@ -27,6 +27,9 @@ const status = JSON.parse(read("website/project-status.json"));
 const shutdownEscape = JSON.parse(
   read("docs/testing/phase-6-shutdown-escape-matrix.json"),
 );
+const chatgptHistory = JSON.parse(
+  read("docs/testing/phase-6-chatgpt-history-matrix.json"),
+);
 
 expect(status.schema_version === 2, "project-status.json must use schema_version 2");
 expect(
@@ -42,8 +45,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 59,
-  "project-status.json must mark Phase 6 in progress through IMP-058 with IMP-059 next",
+    status.phase?.next_implementation === 60,
+  "project-status.json must mark Phase 6 in progress through IMP-059 with IMP-060 next",
 );
 expect(
   status.model_runtime &&
@@ -69,6 +72,17 @@ expect(
     shutdownEscape.real_machine_gate?.commit_sha ===
       "bd06897c46b6fcb6dd3789195e8bdd0bfa54941b",
   "IMP-058 shutdown escape matrix must bind accepted primary-machine evidence",
+);
+expect(
+  chatgptHistory.implementation === "IMP-059" &&
+    chatgptHistory.port014_foundation_complete === true &&
+    chatgptHistory.chatgpt_history_gate_complete === false &&
+    chatgptHistory.accepted_private_manual_result === null &&
+    chatgptHistory.portability_tests?.length === 1 &&
+    chatgptHistory.portability_tests[0]?.id === "PORT-014" &&
+    chatgptHistory.portability_tests[0]?.status === "ci-pass" &&
+    chatgptHistory.private_manual_gate?.status === "pending",
+  "IMP-059 ChatGPT history matrix must keep private PORT-014 evidence pending",
 );
 
 const readme = read("README.md");
@@ -213,8 +227,12 @@ expect(
   "roadmap must record the IMP-058 shutdown escape bundle",
 );
 expect(
-  roadmap.includes("the next bounded implementation receives IMP-059 only when a new implementation issue is opened"),
-  "roadmap must identify IMP-059 as the next unallocated implementation identifier",
+  roadmap.includes("### IMP-059 — Bounded ChatGPT conversations.json source adapter"),
+  "roadmap must record the IMP-059 ChatGPT conversations.json source adapter",
+);
+expect(
+  roadmap.includes("the next bounded implementation receives IMP-060 only when a new implementation issue is opened"),
+  "roadmap must identify IMP-060 as the next unallocated implementation identifier",
 );
 expect(
   roadmap.includes("docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json"),
@@ -225,8 +243,8 @@ expect(
   "roadmap must bind the accepted IMP-058 primary Intel Mac evidence",
 );
 expect(
-  roadmap.includes("The required order after accepted IMP-058 real-machine evidence is:"),
-  "roadmap must record accepted IMP-058 primary-machine evidence",
+  roadmap.includes("The required order after the IMP-059 source-adapter implementation merge is:"),
+  "roadmap must record the pending IMP-059 private-manual gate",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),

@@ -24,7 +24,7 @@
 - `docs/spec/08-acceptance-and-continuity-tests.md` — SHA-256 `1ae9b70cf28257b35a30238bdc46c2caea93dbd17fdf8b516ff708c9e208a698`
 - `docs/spec/08a-ai-environment-portability-acceptance.md` — SHA-256 `3a1876d8b506204254ccd54eb58cfabcf2ddc92e3edd446d90650b9ae22ff305`
 - `docs/spec/08b-project-continuity-acceptance.md` — SHA-256 `b58623f21bdd183a21e1904ebcec954ffb2b6976254b72ac52f13deae83306cc`
-- `docs/spec/09-development-roadmap.md` — SHA-256 `656d11c7d029e8ebc59af9f2b5889772971a65a8a2e75bc3e6a4d38be11261c9`
+- `docs/spec/09-development-roadmap.md` — SHA-256 `7d3afbf48eaf4238b74e60fddb7e65114943f0b4cb00eac2f36072f769573f7d`
 
 ---
 
@@ -8565,7 +8565,7 @@ Completed:
 - Phase 5 local runtime and model integration;
 - IMP-001 through IMP-023;
 - IMP-030 through IMP-057;
-- local workspace, SQLite state, migrations, managed artifacts, canonical conversation and project state, State Package v2, backup and restore, the model-independent safety boundary, AI-environment portability, project continuity, runtime-independent adapter contracts, a loopback-only Ollama adapter, authoritative runtime and model manifests, explicit bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, and accepted primary Intel Mac offline continuity evidence through IMP-054, the offline Ollama API session source adapter through IMP-055, explicit loopback Ollama chat capture through IMP-056, the deterministic local-portability migration harness through IMP-057, and the deterministic shutdown escape bundle through IMP-058.
+- local workspace, SQLite state, migrations, managed artifacts, canonical conversation and project state, State Package v2, backup and restore, the model-independent safety boundary, AI-environment portability, project continuity, runtime-independent adapter contracts, a loopback-only Ollama adapter, authoritative runtime and model manifests, explicit bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, and accepted primary Intel Mac offline continuity evidence through IMP-054, the offline Ollama API session source adapter through IMP-055, explicit loopback Ollama chat capture through IMP-056, the deterministic local-portability migration harness through IMP-057, the deterministic shutdown escape bundle through IMP-058, and the bounded ChatGPT conversations.json source adapter through IMP-059.
 
 Current implementation point:
 
@@ -8577,7 +8577,7 @@ Current implementation point:
 - Phase 5 passed its local-runtime continuity gate on 2026-06-28;
 - accepted real-machine evidence is bound to commit `1a5b66b2417d6f3e1eafcd14d2769e9c15d7f96c` on the primary Intel Mac with networking disabled;
 - IMP-048 through IMP-054 establish the runtime contract, loopback-only Ollama adapter, authoritative manifests and bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, State Package v2 transfer, backup restore, and accepted LRUN-001 through LRUN-012 evidence;
-- Phase 6 local AI portability and daily-use integration is in progress through IMP-058;
+- Phase 6 local AI portability and daily-use integration is in progress through IMP-059;
 - IMP-055 adds an offline source adapter for a documented caller-retained Ollama API session bundle, with exact JSON validation, content-free inventory, original-source hashing, deterministic normalization, explicit attachment-metadata loss, and reuse of the accepted generic staging and reviewed-publication boundary;
 - IMP-056 adds an explicit non-streaming text-only capture path through fixed IPv4 loopback, resolves one opaque already-installed local model through the filtered inventory, and returns an IMP-055-valid session bundle without reading application databases, logs, shell history, or unrelated sessions;
 - IMP-057 merged at commit `7b63ff512e20d1d6ae65da8938486b093e14b6c6` and composes explicit capture, reviewed canonical import, idempotency and conflict checks, generic export, State Package v2 transfer, backup restore, and alternate fresh-process inspection without the capture component;
@@ -8586,7 +8586,9 @@ Current implementation point:
 - IMP-058 adds a deterministic `doll-shutdown-escape` bundle that composes a verified State Package, generic conversation export, project Resume Bundles, bounded recovery documentation, and a standard-library-only standalone inspector;
 - accepted primary Intel Mac evidence is bound to exact IMP-058 implementation commit `bd06897c46b6fcb6dd3789195e8bdd0bfa54941b` and stored at `docs/testing/results/IMP-058-primary-intel-mac-2026-07-03.json`;
 - PORT-015 passes at both `ci` and `real-machine` evidence levels, completing the bounded IMP-058 shutdown-escape gate without claiming the complete Phase 6 gate, target-specific application round trips, or stable general anti-lock-in;
-- the next bounded implementation receives IMP-059 only when a new implementation issue is opened;
+- IMP-059 adds an offline selected-history adapter for one caller-extracted ChatGPT `conversations.json` file, reusing the accepted generic staging, reviewed publication, provenance, idempotency, conflict, loss, generic-export, and shutdown-escape boundaries;
+- PORT-014 remains at `ci-pass` because only synthetic non-private evidence exists; project-owner private manual evidence is still required before a ChatGPT history migration claim;
+- the next bounded implementation receives IMP-060 only when a new implementation issue is opened;
 - later local migration, cloud, and tool work must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts.
 
 Implementation identifier policy:
@@ -9052,6 +9054,18 @@ Synthetic CI removes the source workspace before fresh-process `python -I` inspe
 
 IMP-058 does not establish ChatGPT history migration, native Ollama history discovery, target-specific application import, provider-specific round-trip fidelity, secret portability, the complete Phase 6 gate, or a stable general anti-lock-in claim from this bounded result alone.
 
+### IMP-059 — Bounded ChatGPT conversations.json source adapter
+
+Status: implementation foundation complete with deterministic synthetic CI evidence; project-owner private manual evidence remains pending in Issue #186.
+
+Implemented an offline source adapter for one explicitly supplied caller-extracted ChatGPT `conversations.json` file. The adapter inventories all conversations without exposing content in its public summary and maps message content only for a non-empty explicit selected conversation-ID set. Supported text-only user, assistant, system, and tool messages preserve supported graph parents and source provenance through the accepted generic portability object model.
+
+The adapter identifies the provider shape as `chatgpt-conversations-json` `observed-v1` rather than claiming a stable OpenAI public schema. Unknown provider fields, unsupported roles, non-text content, malformed nodes, attachment references, missing parents, cycles, and conflicting duplicates enter quarantine or mapping/loss reporting. Provider model, author, status, and identifiers remain external-data metadata and cannot create policy, permission, capability, credential, confirmed memory, trusted fact, project state, work completion, procedure approval, checkpoint confirmation, or model binding.
+
+Synthetic CI proves deterministic selected-only staging, reviewed publication, exact-source preservation, unchanged-source idempotency, changed-source conflict blocking, authority separation, generic export, and shutdown-escape recovery without network, credentials, provider account access, model execution, runtime installation, preferred UI, or private source data. Machine-readable evidence is bound through `docs/testing/phase-6-chatgpt-history-matrix.json`.
+
+PORT-014 remains `ci-pass`. IMP-059 does not parse the export ZIP, aggregate numbered conversation files, import attachment bytes, restore a ChatGPT account or sidebar, migrate memories, GPTs, settings, subscriptions, files, or workspaces, export back to ChatGPT, prove round-trip fidelity, complete the Phase 6 gate, or establish stable general anti-lock-in.
+
 Daily-use work may then expand writing, editing, summarization, translation, planning, memory review, project and decision workflows, work-item proposals, portability review, accessibility, error clarity, Lite performance, and soak testing.
 
 ## 13. Phase 7 — Optional cloud and multiple models
@@ -9169,13 +9183,14 @@ An implementation PR is done when:
 
 ## 18. Immediate work
 
-The required order after accepted IMP-058 real-machine evidence is:
+The required order after the IMP-059 source-adapter implementation merge is:
 
-1. keep the accepted claim limited to PORT-015 and the bounded deterministic shutdown-escape surface;
-2. do not extend the result to ChatGPT history migration, native Ollama history discovery, target-specific application replacement, secret portability, the complete Phase 6 gate, or stable general anti-lock-in;
-3. allocate IMP-059 only when a new bounded implementation issue with explicit acceptance and real-machine requirements is opened;
-4. continue local-first daily-use and migration work through the Phase 3 safety boundary and Phase 4A/4B canonical state contracts;
-5. keep provider-specific cloud portability, credentials, tools, automatic cloud fallback, multimodal capture, and target-specific export outside the completed IMP-058 boundary.
+1. keep Issue #186 open until a fresh project-owner ChatGPT export is handled locally by the exact merged implementation commit with no network, provider credential, or model execution;
+2. extract `conversations.json` outside the repository, select a bounded conversation subset explicitly, and review inventory, quarantine, mapping, and loss results without committing private source data;
+3. verify reviewed canonical publication, generic export, and shutdown-escape preservation, then store only a privacy-safe bounded result in a separate completion pull request;
+4. change PORT-014 from `ci-pass` to `pass` and claim bounded ChatGPT history migration only after the private manual evidence is accepted;
+5. allocate IMP-060 only when a new bounded implementation issue is opened; ZIP ingestion, numbered-file aggregation, attachment bytes, target-specific export, cloud credentials, tools, and automatic cloud fallback remain separate work;
+6. keep the complete Phase 6 gate and stable general anti-lock-in incomplete until their independent remaining requirements pass.
 
 ## 19. Roadmap change control
 
