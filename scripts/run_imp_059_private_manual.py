@@ -97,7 +97,8 @@ def _verify_commit_binding(runner_commit: str) -> dict[str, bool]:
     runner_path = "scripts/run_imp_059_private_manual.py"
     runner_exact = _working_blob(runner_path) == _tracked_blob(runner_commit, runner_path)
     surfaces_exact = all(
-        _working_blob(relative) == _tracked_blob(runner_commit, relative)
+        _working_blob(relative)
+        == _tracked_blob(runner_commit, relative)
         == _tracked_blob(IMPLEMENTATION_COMMIT, relative)
         for relative in _CRITICAL_PATHS
     )
@@ -117,7 +118,10 @@ def _outside_repository(path: Path) -> bool:
     return False
 
 
-def _read_private_inputs(source: Path, selection_file: Path) -> tuple[bytes, tuple[str, ...]]:
+def _read_private_inputs(
+    source: Path,
+    selection_file: Path,
+) -> tuple[bytes, tuple[str, ...]]:
     if not _outside_repository(source) or not _outside_repository(selection_file):
         raise RuntimeError("private input paths must remain outside the repository")
     source_bytes = source.read_bytes()
@@ -149,17 +153,34 @@ def _authority_count(repository: state.StateRepository) -> int:
     return int(row[0])
 
 
+def _privacy_block() -> dict[str, bool]:
+    return {
+        "absolute_paths_in_report": False,
+        "usernames_in_report": False,
+        "hostnames_in_report": False,
+        "provider_account_ids_in_report": False,
+        "conversation_ids_in_report": False,
+        "titles_in_report": False,
+        "prompt_or_response_text_in_report": False,
+        "native_model_names_in_report": False,
+        "secret_values_in_report": False,
+        "credentials_in_report": False,
+        "private_fixture_content_in_report": False,
+    }
+
+
 def _review_payload(
     *,
     runner_commit: str,
     commit_checks: dict[str, bool],
     staged: Any,
+    contract_offline: bool,
 ) -> dict[str, object]:
     inventory = staged.inventory
     stage_result = staged.stage_result
     checks = {
         **commit_checks,
-        "contract_is_offline": staged.source_environment.network_behavior == "none",
+        "contract_is_offline": contract_offline,
         "selection_is_explicit_and_nonempty": inventory.selected_conversation_count > 0,
         "content_free_review_surface_only": True,
     }
@@ -190,28 +211,13 @@ def _review_payload(
     }
 
 
-def _privacy_block() -> dict[str, bool]:
-    return {
-        "absolute_paths_in_report": False,
-        "usernames_in_report": False,
-        "hostnames_in_report": False,
-        "provider_account_ids_in_report": False,
-        "conversation_ids_in_report": False,
-        "titles_in_report": False,
-        "prompt_or_response_text_in_report": False,
-        "native_model_names_in_report": False,
-        "secret_values_in_report": False,
-        "credentials_in_report": False,
-        "private_fixture_content_in_report": False,
-    }
-
-
 def _complete(
     *,
     runner_commit: str,
     commit_checks: dict[str, bool],
     source_bytes: bytes,
     staged: Any,
+    contract_offline: bool,
     network_confirmed: bool,
     reviewed_confirmed: bool,
 ) -> dict[str, object]:
@@ -227,7 +233,11 @@ def _complete(
         with state.open_state_repository(initialized.root) as repository:
             publisher = GenericImportPublisher(repository, staged.source_environment)
             before_preview = repository.status()
-            preview = publisher.preview(staged.stage_result, source_bytes, preserve_source=True)
+            preview = publisher.preview(
+                staged.stage_result,
+                source_bytes,
+                preserve_source=True,
+            )
             preview_side_effect_free = repository.status() == before_preview
             published = publisher.publish(
                 preview,
@@ -239,11 +249,16 @@ def _complete(
             events = tuple(
                 event
                 for conversation in conversations
-                for event in repository.list_conversation_events(conversation.conversation_id)
+                for event in repository.list_conversation_events(
+                    conversation.conversation_id
+                )
             )
             authority_count = _authority_count(repository)
             export_batch_id = str(
-                uuid5(NAMESPACE_URL, f"imp059-private:{staged.inventory.source_root_hash}")
+                uuid5(
+                    NAMESPACE_URL,
+                    f"imp059-private:{staged.inventory.source_root_hash}",
+                )
             )
             generic = GenericExportBuilder().build(
                 conversations,
@@ -265,7 +280,7 @@ def _complete(
             **commit_checks,
             "operator_confirmed_network_disabled": network_confirmed,
             "operator_confirmed_review_complete": reviewed_confirmed,
-            "contract_is_offline": staged.source_environment.network_behavior == "none",
+            "contract_is_offline": contract_offline,
             "preview_is_side_effect_free": preview_side_effect_free,
             "selected_history_published": (
                 published.import_batch.status == "published"
@@ -336,15 +351,25 @@ def _complete(
                 "duplicate_object_count": staged.stage_result.duplicate_object_count,
                 "quarantine_count": len(staged.stage_result.quarantined_objects),
                 "material_loss_count": staged.stage_result.mapping_report.material_loss_count,
-                "mapping_report_reference": staged.stage_result.mapping_report.mapping_report_id,
+                "mapping_report_reference": (
+                    staged.stage_result.mapping_report.mapping_report_id
+                ),
                 "generic_export_manifest_hash": generic.export_batch.manifest_hash,
                 "shutdown_escape_sha256": escape.top_level_sha256,
                 "runtime_mode": "private-manual",
             },
             "privacy": _privacy_block(),
             "limitations": [
-                "The result proves only a bounded selected-history migration drill from one caller-extracted conversations.json file.",
-                "ZIP ingestion, numbered-file aggregation, attachment-byte recovery, account restoration, memory migration, GPT migration, settings migration, file restoration, and target-specific round-trip fidelity remain outside this result.",
+                (
+                    "The result proves only a bounded selected-history migration drill "
+                    "from one caller-extracted conversations.json file."
+                ),
+                (
+                    "ZIP ingestion, numbered-file aggregation, attachment-byte recovery, "
+                    "account restoration, memory migration, GPT migration, settings migration, "
+                    "file restoration, and target-specific round-trip fidelity remain outside "
+                    "this result."
+                ),
                 "The complete Phase 6 gate and stable general anti-lock-in remain incomplete.",
             ],
         }
@@ -358,8 +383,12 @@ def main() -> int:
         if not all(commit_checks.values()):
             raise RuntimeError("commit binding failed")
         stage = "private_input"
-        source_bytes, selected = _read_private_inputs(arguments.source, arguments.selection_file)
+        source_bytes, selected = _read_private_inputs(
+            arguments.source,
+            arguments.selection_file,
+        )
         adapter = ChatGPTExportSourceAdapter()
+        contract_offline = adapter.contract.network_behavior == "none"
         stage = "source_adapter"
         staged = adapter.stage(
             source_bytes,
@@ -374,6 +403,7 @@ def main() -> int:
                 runner_commit=arguments.runner_commit,
                 commit_checks=commit_checks,
                 staged=staged,
+                contract_offline=contract_offline,
             )
         else:
             stage = "private_manual_completion"
@@ -382,6 +412,7 @@ def main() -> int:
                 commit_checks=commit_checks,
                 source_bytes=source_bytes,
                 staged=staged,
+                contract_offline=contract_offline,
                 network_confirmed=arguments.confirm_network_disabled,
                 reviewed_confirmed=arguments.confirm_reviewed,
             )
