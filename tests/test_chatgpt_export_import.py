@@ -465,7 +465,6 @@ def test_incompatible_contract_and_static_network_boundary() -> None:
     assert not imports & {"httpx", "requests", "socket", "subprocess", "urllib"}
 
 
-
 def test_invalid_source_envelopes_fail_closed() -> None:
     invalid_sources = (
         b"",
@@ -478,3 +477,55 @@ def test_invalid_source_envelopes_fail_closed() -> None:
     for source in invalid_sources:
         with pytest.raises(ChatGPTExportImportError):
             _stage(source)
+
+
+def test_unselected_malformed_inventory_is_counted_without_publication() -> None:
+    selected = _conversation("selected")
+    selected_mapping = cast(dict[str, Any], selected["mapping"])
+    cast(dict[str, Any], selected_mapping["root"])["provider_future_node_field"] = True
+
+    unselected = _conversation(
+        "not-selected",
+        user_text="private unselected marker",
+    )
+    mapping = cast(dict[str, Any], unselected["mapping"])
+
+    mapping["bad-node"] = "not-an-object"
+
+    mapping["bad-message"] = {
+        "id": "bad-message",
+        "message": "not-an-object",
+    }
+
+    mapping["bad-author"] = {
+        "id": "bad-author",
+        "message": {
+            "id": "bad-author-message",
+            "author": "not-an-object",
+            "content": {
+                "content_type": "text",
+                "parts": ["private malformed marker"],
+            },
+            "metadata": {},
+        },
+    }
+
+    mapping["bad-content"] = {
+        "id": "bad-content",
+        "message": {
+            "id": "bad-content-message",
+            "author": {"role": "user"},
+            "content": "not-an-object",
+            "metadata": {},
+        },
+    }
+
+    result = _stage(_source(selected, unselected))
+
+    assert result.inventory.conversation_count == 2
+    assert result.inventory.malformed_object_count == 5
+    assert result.inventory.unknown_field_count == 1
+
+    summary = json.dumps(result.canonical_summary())
+    assert "private unselected marker" not in summary
+    assert "private malformed marker" not in summary
