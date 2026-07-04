@@ -88,9 +88,7 @@ def _verify_commit_binding(runner_commit: str) -> dict[str, bool]:
     if runner_commit != _head():
         raise RuntimeError("runner commit mismatch")
     runner_path = "scripts/run_imp_059_private_manual.py"
-    runner_exact = _working_blob(runner_path) == _tracked_blob(
-        runner_commit, runner_path
-    )
+    runner_exact = _working_blob(runner_path) == _tracked_blob(runner_commit, runner_path)
     surfaces_exact = all(
         _working_blob(relative) == expected_blob
         for relative, expected_blob in _CRITICAL_BLOBS.items()
@@ -242,9 +240,7 @@ def _complete(
             events = tuple(
                 event
                 for conversation in conversations
-                for event in repository.list_conversation_events(
-                    conversation.conversation_id
-                )
+                for event in repository.list_conversation_events(conversation.conversation_id)
             )
             authority_count = _authority_count(repository)
             export_batch_id = str(
@@ -262,9 +258,7 @@ def _complete(
             )
 
         escape_path = root / "shutdown-escape.zip"
-        with state.open_state_repository(
-            initialized.root, read_only=True
-        ) as repository:
+        with state.open_state_repository(initialized.root, read_only=True) as repository:
             escape = export_shutdown_escape_bundle(
                 repository,
                 escape_path,
@@ -346,9 +340,7 @@ def _complete(
                 "duplicate_object_count": staged.stage_result.duplicate_object_count,
                 "quarantine_count": len(staged.stage_result.quarantined_objects),
                 "material_loss_count": staged.stage_result.mapping_report.material_loss_count,
-                "mapping_report_reference": (
-                    staged.stage_result.mapping_report.mapping_report_id
-                ),
+                "mapping_report_reference": (staged.stage_result.mapping_report.mapping_report_id),
                 "generic_export_manifest_hash": generic.export_batch.manifest_hash,
                 "shutdown_escape_sha256": escape.top_level_sha256,
                 "runtime_mode": "private-manual",
