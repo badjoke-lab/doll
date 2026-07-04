@@ -7,20 +7,26 @@ on:
     paths:
       - .github/workflows/chatgpt-export-acceptance.yml
       - docs/testing/phase-6-chatgpt-history-matrix.json
+      - docs/testing/imp-059-private-manual-runbook.md
       - scripts/imp_059_chatgpt_export_probe.py
       - scripts/run_imp_059_chatgpt_export.py
+      - scripts/run_imp_059_private_manual.py
       - src/doll/chatgpt_export_import.py
       - tests/test_chatgpt_export_import.py
       - tests/test_chatgpt_export_acceptance.py
+      - tests/test_chatgpt_private_manual_acceptance.py
   pull_request:
     paths:
       - .github/workflows/chatgpt-export-acceptance.yml
       - docs/testing/phase-6-chatgpt-history-matrix.json
+      - docs/testing/imp-059-private-manual-runbook.md
       - scripts/imp_059_chatgpt_export_probe.py
       - scripts/run_imp_059_chatgpt_export.py
+      - scripts/run_imp_059_private_manual.py
       - src/doll/chatgpt_export_import.py
       - tests/test_chatgpt_export_import.py
       - tests/test_chatgpt_export_acceptance.py
+      - tests/test_chatgpt_private_manual_acceptance.py
 
 permissions:
   contents: read
@@ -49,6 +55,7 @@ jobs:
           uv run pytest -q --no-cov \
             tests/test_chatgpt_export_import.py \
             tests/test_chatgpt_export_acceptance.py \
+            tests/test_chatgpt_private_manual_acceptance.py \
             2>&1 | tee imp059-chatgpt-export-pytest.txt
       - name: Run bounded acceptance report
         shell: bash
