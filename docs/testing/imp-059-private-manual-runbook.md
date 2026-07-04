@@ -8,9 +8,9 @@ The source JSON and the selected-conversation file must remain outside the repos
 
 The runner verifies that:
 
-- the accepted IMP-059 implementation merge commit is an ancestor of the runner commit;
-- the working runner matches its exact commit;
-- portability-critical implementation files still match the accepted IMP-059 implementation merge commit;
+- the accepted IMP-059 implementation merge commit is recorded as the implementation evidence binding;
+- the working runner matches its exact runner commit;
+- portability-critical implementation files match the fixed blob manifest from the accepted IMP-059 implementation merge commit;
 - the adapter contract remains offline;
 - review output is content-free;
 - canonical publication occurs only after explicit review confirmation;
