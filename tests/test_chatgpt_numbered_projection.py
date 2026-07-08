@@ -176,7 +176,10 @@ def test_sequential_projection_rejects_invalid_json(tmp_path: Path) -> None:
     member_path = tmp_path / "conversations-1.json"
     member_path.write_bytes(b"{")
 
-    with pytest.raises(ChatGPTNumberedAggregationError, match="supported JSON conversation list"):
+    with pytest.raises(
+        ChatGPTNumberedAggregationError,
+        match="supported JSON conversation list",
+    ):
         ChatGPTNumberedSequentialProjector().project(
             (ChatGPTNumberedPathMember(member_path.name, member_path),),
             ("selected",),
@@ -187,32 +190,45 @@ def test_sequential_projection_rejects_excessive_nesting(tmp_path: Path) -> None
     member_path = tmp_path / "conversations-1.json"
     _write_member(member_path, [_conversation("selected")])
 
-    with pytest.raises(ChatGPTNumberedAggregationError, match="nesting exceeds limit"):
+    with pytest.raises(
+        ChatGPTNumberedAggregationError,
+        match="nesting exceeds limit",
+    ):
         ChatGPTNumberedSequentialProjector(max_nesting_depth=1).project(
             (ChatGPTNumberedPathMember(member_path.name, member_path),),
             ("selected",),
         )
 
 
-def test_sequential_projection_rejects_conversation_count_limit(tmp_path: Path) -> None:
+def test_sequential_projection_rejects_conversation_count_limit(
+    tmp_path: Path,
+) -> None:
     member_path = tmp_path / "conversations-1.json"
     _write_member(member_path, [_conversation("selected")])
 
-    with pytest.raises(ChatGPTNumberedAggregationError, match="conversation count exceeds limit"):
+    with pytest.raises(
+        ChatGPTNumberedAggregationError,
+        match="conversation count exceeds limit",
+    ):
         ChatGPTNumberedSequentialProjector(max_conversation_count=0).project(
             (ChatGPTNumberedPathMember(member_path.name, member_path),),
             ("selected",),
         )
 
 
-def test_sequential_projection_rejects_invalid_conversation_identity(tmp_path: Path) -> None:
+def test_sequential_projection_rejects_invalid_conversation_identity(
+    tmp_path: Path,
+) -> None:
     member_path = tmp_path / "conversations-1.json"
     invalid = _conversation("selected")
     invalid.pop("id")
     invalid.pop("conversation_id")
     _write_member(member_path, [invalid])
 
-    with pytest.raises(ChatGPTNumberedAggregationError, match="invalid conversation identity"):
+    with pytest.raises(
+        ChatGPTNumberedAggregationError,
+        match="invalid conversation identity",
+    ):
         ChatGPTNumberedSequentialProjector().project(
             (ChatGPTNumberedPathMember(member_path.name, member_path),),
             ("selected",),
@@ -223,7 +239,10 @@ def test_sequential_projection_rejects_missing_selection(tmp_path: Path) -> None
     member_path = tmp_path / "conversations-1.json"
     _write_member(member_path, [_conversation("present")])
 
-    with pytest.raises(ChatGPTNumberedAggregationError, match="selected conversation ids were not found"):
+    with pytest.raises(
+        ChatGPTNumberedAggregationError,
+        match="selected conversation ids were not found",
+    ):
         ChatGPTNumberedSequentialProjector().project(
             (ChatGPTNumberedPathMember(member_path.name, member_path),),
             ("missing",),
@@ -242,7 +261,10 @@ def test_sequential_projection_rejects_member_changed_during_run(
 
     monkeypatch.setattr(projection_module, "_hash_path", changed_hash)
 
-    with pytest.raises(ChatGPTNumberedAggregationError, match="changed during sequential projection"):
+    with pytest.raises(
+        ChatGPTNumberedAggregationError,
+        match="changed during sequential projection",
+    ):
         ChatGPTNumberedSequentialProjector().project(
             (ChatGPTNumberedPathMember(member_path.name, member_path),),
             ("selected",),
@@ -250,44 +272,38 @@ def test_sequential_projection_rejects_member_changed_during_run(
 
 
 @pytest.mark.parametrize(
-    ("members_factory", "message"),
+    ("member_specs", "message"),
     [
         (
-            lambda root: (
-                ChatGPTNumberedPathMember("conversations.json", root / "conversations.json"),
-            ),
+            (("conversations.json", "conversations.json"),),
             "label is unsupported",
         ),
         (
-            lambda root: (
-                ChatGPTNumberedPathMember("conversations-1.json", root / "conversations-1.json"),
-                ChatGPTNumberedPathMember("conversations-01.json", root / "conversations-01.json"),
+            (
+                ("conversations-1.json", "conversations-1.json"),
+                ("conversations-01.json", "conversations-01.json"),
             ),
             "indices contain duplicates",
         ),
         (
-            lambda root: (
-                ChatGPTNumberedPathMember("conversations-1.json", root / "shared.json"),
-                ChatGPTNumberedPathMember("conversations-2.json", root / "shared.json"),
+            (
+                ("conversations-1.json", "shared.json"),
+                ("conversations-2.json", "shared.json"),
             ),
             "paths contain duplicates",
         ),
         (
-            lambda root: (
-                ChatGPTNumberedPathMember("conversations-1.json", root / "missing.json"),
-            ),
+            (("conversations-1.json", "missing.json"),),
             "path is not a file",
         ),
         (
-            lambda root: (
-                ChatGPTNumberedPathMember("conversations-2.json", root / "conversations-2.json"),
-            ),
+            (("conversations-2.json", "conversations-2.json"),),
             "sequence must start at zero or one",
         ),
         (
-            lambda root: (
-                ChatGPTNumberedPathMember("conversations-1.json", root / "conversations-1.json"),
-                ChatGPTNumberedPathMember("conversations-3.json", root / "conversations-3.json"),
+            (
+                ("conversations-1.json", "conversations-1.json"),
+                ("conversations-3.json", "conversations-3.json"),
             ),
             "sequence contains a gap",
         ),
@@ -295,7 +311,7 @@ def test_sequential_projection_rejects_member_changed_during_run(
 )
 def test_sequential_projection_rejects_invalid_member_layouts(
     tmp_path: Path,
-    members_factory: object,
+    member_specs: tuple[tuple[str, str], ...],
     message: str,
 ) -> None:
     for name in (
@@ -308,19 +324,25 @@ def test_sequential_projection_rejects_invalid_member_layouts(
     ):
         _write_member(tmp_path / name, [_conversation("selected")])
 
-    factory = members_factory
-    assert callable(factory)
-    members = factory(tmp_path)
+    members = tuple(
+        ChatGPTNumberedPathMember(label, tmp_path / relative)
+        for label, relative in member_specs
+    )
 
     with pytest.raises(ChatGPTNumberedAggregationError, match=message):
         ChatGPTNumberedSequentialProjector().project(members, ("selected",))
 
 
-def test_sequential_projection_rejects_total_input_byte_limit(tmp_path: Path) -> None:
+def test_sequential_projection_rejects_total_input_byte_limit(
+    tmp_path: Path,
+) -> None:
     member_path = tmp_path / "conversations-1.json"
     _write_member(member_path, [_conversation("selected")])
 
-    with pytest.raises(ChatGPTNumberedAggregationError, match="aggregate numbered input"):
+    with pytest.raises(
+        ChatGPTNumberedAggregationError,
+        match="aggregate numbered input",
+    ):
         ChatGPTNumberedSequentialProjector(max_total_input_bytes=1).project(
             (ChatGPTNumberedPathMember(member_path.name, member_path),),
             ("selected",),
