@@ -8,14 +8,18 @@ on:
       - .github/workflows/chatgpt-numbered-aggregation-acceptance.yml
       - scripts/run_imp_060_private_manual.py
       - src/doll/chatgpt_numbered_aggregation.py
+      - src/doll/chatgpt_numbered_projection.py
       - tests/test_chatgpt_numbered_aggregation.py
+      - tests/test_chatgpt_numbered_projection.py
       - tests/test_chatgpt_numbered_private_manual_acceptance.py
   pull_request:
     paths:
       - .github/workflows/chatgpt-numbered-aggregation-acceptance.yml
       - scripts/run_imp_060_private_manual.py
       - src/doll/chatgpt_numbered_aggregation.py
+      - src/doll/chatgpt_numbered_projection.py
       - tests/test_chatgpt_numbered_aggregation.py
+      - tests/test_chatgpt_numbered_projection.py
       - tests/test_chatgpt_numbered_private_manual_acceptance.py
 
 permissions:
@@ -44,6 +48,7 @@ jobs:
           set -o pipefail
           uv run pytest -q --no-cov \
             tests/test_chatgpt_numbered_aggregation.py \
+            tests/test_chatgpt_numbered_projection.py \
             tests/test_chatgpt_numbered_private_manual_acceptance.py \
             2>&1 | tee imp060-numbered-aggregation-pytest.txt
       - uses: actions/upload-artifact@v4
