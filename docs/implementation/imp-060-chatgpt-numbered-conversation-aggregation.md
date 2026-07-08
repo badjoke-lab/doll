@@ -75,7 +75,9 @@ Each member must decode as strict UTF-8 JSON with:
 - no duplicate object keys;
 - no non-finite constants;
 - a list root;
-- valid conversation identity semantics compatible with IMP-059.
+- valid conversation identity semantics compatible with IMP-059 for mapped records.
+
+Identityless dictionary records that lack both `id` and `conversation_id` are not assigned synthetic identities. They are quarantined by content-free count, remain covered by the exact raw member hashes and member-set root, and are excluded from duplicate comparison, logical valid-conversation aggregation, and selected projection. Conflicting identifiers, invalid identifier types or shapes, and non-object conversation records remain fail-closed errors.
 
 After the sequential pass, each member is re-hashed from disk and compared with the byte count and SHA-256 captured during processing. A member that changes during the run fails closed.
 
@@ -102,8 +104,8 @@ The projection:
 
 The evidence model distinguishes:
 
-- `aggregate_source_hash`: SHA-256 of the logical deterministic complete aggregate stream;
-- `member_set_root_hash`: hash binding ordered canonical member labels and exact member manifests;
+- `aggregate_source_hash`: SHA-256 of the logical deterministic first-unique identity-valid conversation stream;
+- `member_set_root_hash`: hash binding ordered canonical member labels and exact member manifests, including members that contain identity-quarantined records;
 - `selected_projection_sha256`: SHA-256 of the bounded selected projection actually handed to IMP-059.
 
 Exact-source preservation in the complete private drill therefore applies to the selected projection. The complete numbered source set is instead bound by the member manifests, per-member hashes, member-set root hash, and logical aggregate hash.
@@ -116,9 +118,11 @@ The private-manual aggregation result contains:
 - SHA-256 of the logical deterministic complete aggregate stream;
 - a member-set root hash binding ordered canonical member labels and exact member hashes;
 - content-free member manifests with label, numeric index, byte count, conversation count, and SHA-256;
-- aggregate input and output conversation counts;
+- aggregate input and identity-valid output conversation counts;
 - exact duplicate conversation count;
-- aggregate node, message, attachment-reference, malformed-object, and unknown-field counts;
+- identity quarantine record count and affected member count;
+- explicit aggregate hash scope;
+- aggregate node, message, attachment-reference, malformed-object, and unknown-field counts over the identity-valid set;
 - selected projection byte count and SHA-256.
 
 The manifest never includes caller paths, conversation IDs, titles, prompts, responses, model names, usernames, hostnames, credentials, or secret values.
@@ -149,15 +153,16 @@ Synthetic acceptance must establish:
 2. caller argument-order independence;
 3. support for zero-based and one-based contiguous sequences;
 4. rejection of unsupported labels, duplicate indices, missing members, invalid starts, malformed JSON, duplicate keys, non-finite constants, non-list roots, and resource-limit violations;
-5. exact duplicate collapse and conflicting duplicate fail-closed behavior;
-6. equality of the sequential logical aggregate hash and member-set root hash with the accepted in-memory aggregator for equivalent small inputs;
-7. selected projection contains only the explicit selected set;
-8. selected projection byte limit remains enforced;
-9. content-free manifest and projection evidence;
-10. selected-only IMP-059 review semantics after projection;
-11. complete reviewed publication, generic export, and shutdown escape through the existing IMP-059 path;
-12. no private path or fixture content in bounded output;
-13. Linux, macOS, and Windows acceptance.
+5. identityless dictionary records are quarantined by count without synthetic identity creation, while conflicting, invalid-shape, and non-object identity errors remain fail closed;
+6. exact duplicate collapse and conflicting duplicate fail-closed behavior;
+7. equality of the sequential logical aggregate hash and member-set root hash with the accepted in-memory aggregator for equivalent small inputs without quarantined identityless records;
+8. selected projection contains only the explicit selected set;
+9. selected projection byte limit remains enforced;
+10. content-free manifest, quarantine, and projection evidence;
+11. selected-only IMP-059 review semantics after projection;
+12. complete reviewed publication, generic export, and shutdown escape through the existing IMP-059 path;
+13. no private path or fixture content in bounded output;
+14. Linux, macOS, and Windows acceptance.
 
 ## Non-claims
 

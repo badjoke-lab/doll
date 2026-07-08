@@ -221,8 +221,7 @@ def test_sequential_projection_rejects_invalid_conversation_identity(
 ) -> None:
     member_path = tmp_path / "conversations-1.json"
     invalid = _conversation("selected")
-    invalid.pop("id")
-    invalid.pop("conversation_id")
+    invalid["conversation_id"] = "conflicting"
     _write_member(member_path, [invalid])
 
     with pytest.raises(
