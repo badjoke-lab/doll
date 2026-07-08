@@ -122,7 +122,9 @@ class ChatGPTNumberedConversationAggregator:
         parsed.sort(key=lambda item: item[0])
         ordered_indices = [index for index, _ in parsed]
         if ordered_indices[0] not in {0, 1}:
-            raise ChatGPTNumberedAggregationError("numbered member sequence must start at zero or one")
+            raise ChatGPTNumberedAggregationError(
+                "numbered member sequence must start at zero or one"
+            )
         expected = list(range(ordered_indices[0], ordered_indices[0] + len(ordered_indices)))
         if ordered_indices != expected:
             raise ChatGPTNumberedAggregationError("numbered member sequence contains a gap")
