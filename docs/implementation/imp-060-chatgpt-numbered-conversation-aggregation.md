@@ -60,6 +60,8 @@ Members are:
 - rejected on duplicate paths, labels, or numeric indices;
 - rejected when aggregate bytes, member count, conversation count, or nesting exceed the bounded limits.
 
+The default aggregate input byte ceiling is 1 GiB. This remains a hard bounded limit rather than an unbounded input path and is calibrated above the content-free observed fresh project-owner export size while preserving fail-closed behavior for larger aggregate inputs.
+
 Each member must decode as strict UTF-8 JSON with:
 
 - no duplicate object keys;

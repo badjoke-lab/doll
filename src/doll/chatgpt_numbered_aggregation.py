@@ -82,7 +82,7 @@ class ChatGPTNumberedConversationAggregator:
     """Aggregate explicit numbered members without filesystem discovery or network access."""
 
     max_member_count: int = 128
-    max_total_input_bytes: int = 256 * 1024 * 1024
+    max_total_input_bytes: int = 1024 * 1024 * 1024
     max_conversation_count: int = 1_000_000
     max_nesting_depth: int = 96
 
