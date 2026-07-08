@@ -207,6 +207,12 @@ def test_non_finite_json_constant_member_fails_closed() -> None:
         ChatGPTNumberedConversationAggregator().aggregate((member,))
 
 
+def test_default_aggregate_byte_limit_is_one_gib() -> None:
+    aggregator = ChatGPTNumberedConversationAggregator()
+
+    assert aggregator.max_total_input_bytes == 1024 * 1024 * 1024
+
+
 def test_aggregate_byte_limit_is_enforced() -> None:
     member = _member("conversations-1.json", [_conversation("a")])
     aggregator = ChatGPTNumberedConversationAggregator(max_total_input_bytes=1)
