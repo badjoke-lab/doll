@@ -325,8 +325,7 @@ def test_sequential_projection_rejects_invalid_member_layouts(
         _write_member(tmp_path / name, [_conversation("selected")])
 
     members = tuple(
-        ChatGPTNumberedPathMember(label, tmp_path / relative)
-        for label, relative in member_specs
+        ChatGPTNumberedPathMember(label, tmp_path / relative) for label, relative in member_specs
     )
 
     with pytest.raises(ChatGPTNumberedAggregationError, match=message):
