@@ -45,8 +45,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 60,
-  "project-status.json must mark Phase 6 in progress through IMP-059 with IMP-060 next",
+    status.phase?.next_implementation === 61,
+  "project-status.json must mark Phase 6 in progress through IMP-060 with IMP-061 next",
 );
 expect(
   status.model_runtime &&
@@ -231,8 +231,12 @@ expect(
   "roadmap must record the IMP-059 ChatGPT conversations.json source adapter",
 );
 expect(
-  roadmap.includes("the next bounded implementation receives IMP-060 only when a new implementation issue is opened"),
-  "roadmap must identify IMP-060 as the next unallocated implementation identifier",
+  roadmap.includes("### IMP-060 — Bounded ChatGPT numbered conversation-file aggregation"),
+  "roadmap must record the IMP-060 numbered conversation aggregation boundary",
+);
+expect(
+  roadmap.includes("the next bounded implementation receives IMP-061 only when a new implementation issue is opened"),
+  "roadmap must identify IMP-061 as the next unallocated implementation identifier",
 );
 expect(
   roadmap.includes("docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json"),
@@ -243,7 +247,7 @@ expect(
   "roadmap must bind the accepted IMP-058 primary Intel Mac evidence",
 );
 expect(
-  roadmap.includes("The required order after the IMP-059 source-adapter implementation merge is:"),
+  roadmap.includes("The required order after the fresh project-owner export exposed numbered conversation members is:"),
   "roadmap must record the pending IMP-059 private-manual gate",
 );
 expect(
