@@ -1,0 +1,53 @@
+name: ChatGPT numbered aggregation acceptance
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/chatgpt-numbered-aggregation-acceptance.yml
+      - scripts/run_imp_060_private_manual.py
+      - src/doll/chatgpt_numbered_aggregation.py
+      - tests/test_chatgpt_numbered_aggregation.py
+      - tests/test_chatgpt_numbered_private_manual_acceptance.py
+  pull_request:
+    paths:
+      - .github/workflows/chatgpt-numbered-aggregation-acceptance.yml
+      - scripts/run_imp_060_private_manual.py
+      - src/doll/chatgpt_numbered_aggregation.py
+      - tests/test_chatgpt_numbered_aggregation.py
+      - tests/test_chatgpt_numbered_private_manual_acceptance.py
+
+permissions:
+  contents: read
+
+jobs:
+  acceptance:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked --all-extras
+      - name: Run numbered aggregation acceptance tests
+        shell: bash
+        run: |
+          set -o pipefail
+          uv run pytest -q --no-cov \
+            tests/test_chatgpt_numbered_aggregation.py \
+            tests/test_chatgpt_numbered_private_manual_acceptance.py \
+            2>&1 | tee imp060-numbered-aggregation-pytest.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: imp060-numbered-aggregation-${{ matrix.os }}
+          path: imp060-numbered-aggregation-pytest.txt
