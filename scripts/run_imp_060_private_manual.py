@@ -1,4 +1,4 @@
-"""Run privacy-safe IMP-060 numbered ChatGPT export aggregation and IMP-059 review."""
+"""Run privacy-safe IMP-060 numbered ChatGPT export review and completion."""
 
 from __future__ import annotations
 
@@ -10,9 +10,10 @@ import sys
 import tempfile
 from pathlib import Path
 
-from doll.chatgpt_numbered_aggregation import (
-    ChatGPTNumberedConversationAggregator,
-    ChatGPTNumberedMember,
+from doll.chatgpt_numbered_projection import (
+    ChatGPTNumberedPathMember,
+    ChatGPTNumberedProjectionResult,
+    ChatGPTNumberedSequentialProjector,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,6 +21,7 @@ TEST_ID = "IMP-060-CHATGPT-NUMBERED-PRIVATE-MANUAL"
 _BOUND_PATHS = (
     "scripts/run_imp_060_private_manual.py",
     "src/doll/chatgpt_numbered_aggregation.py",
+    "src/doll/chatgpt_numbered_projection.py",
 )
 
 
@@ -66,10 +68,11 @@ def _verify_commit_binding(runner_commit: str) -> dict[str, bool]:
     return {
         "numbered_runner_matches_bound_commit": exact,
         "numbered_aggregator_matches_bound_commit": exact,
+        "numbered_projection_matches_bound_commit": exact,
     }
 
 
-def _read_members(member_list: Path) -> tuple[ChatGPTNumberedMember, ...]:
+def _read_member_paths(member_list: Path) -> tuple[ChatGPTNumberedPathMember, ...]:
     if not _outside_repository(member_list):
         raise RuntimeError("member list must remain outside the repository")
     lines = [
@@ -81,7 +84,7 @@ def _read_members(member_list: Path) -> tuple[ChatGPTNumberedMember, ...]:
         raise RuntimeError("member list is empty")
 
     resolved_paths: set[Path] = set()
-    members: list[ChatGPTNumberedMember] = []
+    members: list[ChatGPTNumberedPathMember] = []
     for value in lines:
         path = Path(value).expanduser().resolve()
         if not _outside_repository(path):
@@ -91,18 +94,26 @@ def _read_members(member_list: Path) -> tuple[ChatGPTNumberedMember, ...]:
         if not path.is_file():
             raise RuntimeError("numbered member path is not a file")
         resolved_paths.add(path)
-        members.append(
-            ChatGPTNumberedMember(
-                label=path.name,
-                source_bytes=path.read_bytes(),
-            )
-        )
+        members.append(ChatGPTNumberedPathMember(label=path.name, path=path))
     return tuple(members)
+
+
+def _read_selection(selection_file: Path) -> tuple[str, ...]:
+    if not _outside_repository(selection_file):
+        raise RuntimeError("selection file must remain outside the repository")
+    selected = tuple(
+        line.strip()
+        for line in selection_file.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    )
+    if not selected:
+        raise RuntimeError("selection file is empty")
+    return selected
 
 
 def _run_imp059(
     arguments: argparse.Namespace,
-    aggregate_path: Path,
+    projection_path: Path,
 ) -> tuple[int, dict[str, object]]:
     command = [
         sys.executable,
@@ -110,7 +121,7 @@ def _run_imp059(
         "--mode",
         arguments.mode,
         "--source",
-        str(aggregate_path),
+        str(projection_path),
         "--selection-file",
         str(arguments.selection_file),
         "--source-environment-id",
@@ -146,6 +157,67 @@ def _run_imp059(
     return completed.returncode, payload
 
 
+def _apply_projection_evidence(
+    payload: dict[str, object],
+    projection: ChatGPTNumberedProjectionResult,
+    binding_checks: dict[str, bool],
+) -> None:
+    payload["test_id"] = TEST_ID
+    payload["numbered_aggregation"] = projection.canonical_summary()
+    payload["numbered_binding_checks"] = binding_checks
+
+    review = payload.get("review")
+    if isinstance(review, dict):
+        projection_hash = review.pop("source_root_hash", None)
+        if projection_hash is not None:
+            review["selected_projection_source_root_hash"] = projection_hash
+        review["conversation_count"] = projection.output_conversation_count
+        review["attachment_reference_count"] = (
+            projection.aggregate_attachment_reference_count
+        )
+        review["malformed_object_count"] = projection.aggregate_malformed_object_count
+        review["unknown_field_count"] = projection.aggregate_unknown_field_count
+
+    checks = payload.get("checks")
+    if isinstance(checks, dict) and "exact_source_preserved" in checks:
+        preserved = checks.pop("exact_source_preserved")
+        checks["selected_projection_exact_source_preserved"] = preserved
+
+    evidence = payload.get("evidence")
+    if isinstance(evidence, dict):
+        projection_hash = evidence.pop("source_root_hash", None)
+        if projection_hash is not None:
+            evidence["selected_projection_source_root_hash"] = projection_hash
+        evidence["conversation_count"] = projection.output_conversation_count
+        evidence["aggregate_attachment_reference_count"] = (
+            projection.aggregate_attachment_reference_count
+        )
+        evidence["aggregate_malformed_object_count"] = (
+            projection.aggregate_malformed_object_count
+        )
+        evidence["aggregate_unknown_field_count"] = projection.aggregate_unknown_field_count
+
+    if payload.get("mode") == "complete":
+        payload["limitations"] = [
+            (
+                "The result proves only a bounded selected-history migration drill from one "
+                "explicit caller-provided numbered conversation member set."
+            ),
+            (
+                "The complete numbered member set is sequentially validated and "
+                "cryptographically bound, while only the bounded selected projection is handed "
+                "to the unchanged IMP-059 mapping, publication, generic export, and shutdown "
+                "escape path."
+            ),
+            (
+                "ZIP ingestion, automatic discovery, attachment-byte recovery, account "
+                "restoration, memory migration, GPT migration, settings migration, file "
+                "restoration, and target-specific round-trip fidelity remain outside this result."
+            ),
+            "The complete Phase 6 gate and stable general anti-lock-in remain incomplete.",
+        ]
+
+
 def main() -> int:
     arguments = _arguments()
     stage = "environment"
@@ -153,22 +225,19 @@ def main() -> int:
         binding_checks = _verify_commit_binding(arguments.runner_commit)
         if not all(binding_checks.values()):
             raise RuntimeError("numbered runner commit binding failed")
-        if not _outside_repository(arguments.selection_file):
-            raise RuntimeError("selection file must remain outside the repository")
 
         stage = "numbered_members"
-        members = _read_members(arguments.member_list)
-        aggregation = ChatGPTNumberedConversationAggregator().aggregate(members)
+        members = _read_member_paths(arguments.member_list)
+        selected = _read_selection(arguments.selection_file)
+        projection = ChatGPTNumberedSequentialProjector().project(members, selected)
 
         stage = "imp059_private_manual"
         with tempfile.TemporaryDirectory(prefix="doll-imp060-private-") as raw:
-            aggregate_path = Path(raw) / "conversations.json"
-            aggregate_path.write_bytes(aggregation.aggregated_bytes)
-            returncode, payload = _run_imp059(arguments, aggregate_path)
+            projection_path = Path(raw) / "conversations.json"
+            projection_path.write_bytes(projection.selected_projection_bytes)
+            returncode, payload = _run_imp059(arguments, projection_path)
 
-        payload["test_id"] = TEST_ID
-        payload["numbered_aggregation"] = aggregation.canonical_summary()
-        payload["numbered_binding_checks"] = binding_checks
+        _apply_projection_evidence(payload, projection, binding_checks)
         status = 0 if returncode == 0 and payload.get("result") in {"review-ready", "pass"} else 1
     except BaseException as exc:
         payload = {
