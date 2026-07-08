@@ -49,6 +49,8 @@ class ChatGPTNumberedProjectionResult:
     input_conversation_count: int
     output_conversation_count: int
     exact_duplicate_conversation_count: int
+    identity_quarantine_count: int
+    identity_quarantine_member_count: int
     aggregate_node_count: int
     aggregate_message_count: int
     aggregate_attachment_reference_count: int
@@ -60,6 +62,7 @@ class ChatGPTNumberedProjectionResult:
             "aggregation_format": _AGGREGATION_FORMAT,
             "aggregation_version": _AGGREGATION_VERSION,
             "processing_mode": "sequential-member-selected-projection",
+            "aggregate_hash_scope": "identity-valid-first-unique-conversations",
             "aggregate_source_hash": self.aggregate_source_hash,
             "member_set_root_hash": self.member_set_root_hash,
             "member_count": len(self.members),
@@ -67,6 +70,8 @@ class ChatGPTNumberedProjectionResult:
             "input_conversation_count": self.input_conversation_count,
             "output_conversation_count": self.output_conversation_count,
             "exact_duplicate_conversation_count": self.exact_duplicate_conversation_count,
+            "identity_quarantine_count": self.identity_quarantine_count,
+            "identity_quarantine_member_count": self.identity_quarantine_member_count,
             "aggregate_node_count": self.aggregate_node_count,
             "aggregate_message_count": self.aggregate_message_count,
             "aggregate_attachment_reference_count": self.aggregate_attachment_reference_count,
@@ -115,6 +120,8 @@ class ChatGPTNumberedSequentialProjector:
         input_count = 0
         output_count = 0
         duplicate_count = 0
+        identity_quarantine_count = 0
+        identity_quarantine_member_indices: set[int] = set()
         aggregate_node_count = 0
         aggregate_message_count = 0
         aggregate_attachment_count = 0
@@ -164,6 +171,11 @@ class ChatGPTNumberedSequentialProjector:
                             item_index,
                         )
                     except ChatGPTExportImportError as exc:
+                        if _is_identityless_conversation(raw_conversation):
+                            identity_quarantine_count += 1
+                            identity_quarantine_member_indices.add(index)
+                            continue
+
                         raise ChatGPTNumberedAggregationError(
                             "numbered member contains an invalid conversation identity"
                         ) from exc
@@ -262,6 +274,8 @@ class ChatGPTNumberedSequentialProjector:
             input_conversation_count=input_count,
             output_conversation_count=output_count,
             exact_duplicate_conversation_count=duplicate_count,
+            identity_quarantine_count=identity_quarantine_count,
+            identity_quarantine_member_count=len(identity_quarantine_member_indices),
             aggregate_node_count=aggregate_node_count,
             aggregate_message_count=aggregate_message_count,
             aggregate_attachment_reference_count=aggregate_attachment_count,
@@ -322,6 +336,16 @@ class ChatGPTNumberedSequentialProjector:
         if ordered_indices != expected:
             raise ChatGPTNumberedAggregationError("numbered member sequence contains a gap")
         return parsed
+
+
+def _is_identityless_conversation(
+    raw_conversation: object,
+) -> bool:
+    return (
+        isinstance(raw_conversation, dict)
+        and raw_conversation.get("id") is None
+        and raw_conversation.get("conversation_id") is None
+    )
 
 
 def _canonical_conversation(conversation: dict[str, object]) -> bytes:
