@@ -139,9 +139,7 @@ class ChatGPTNumberedSequentialProjector:
                         "numbered member is not a supported JSON conversation list"
                     ) from exc
                 if depth > self.max_nesting_depth:
-                    raise ChatGPTNumberedAggregationError(
-                        "numbered member nesting exceeds limit"
-                    )
+                    raise ChatGPTNumberedAggregationError("numbered member nesting exceeds limit")
                 input_count += len(root)
                 if input_count > self.max_conversation_count:
                     raise ChatGPTNumberedAggregationError(
@@ -179,7 +177,8 @@ class ChatGPTNumberedSequentialProjector:
                             or not _stored_bytes_equal(canonical_store, previous, canonical)
                         ):
                             raise ChatGPTNumberedAggregationError(
-                                "conflicting duplicate conversation identity across numbered members"
+                                "conflicting duplicate conversation identity "
+                                "across numbered members"
                             )
                         duplicate_count += 1
                         continue
@@ -275,9 +274,7 @@ class ChatGPTNumberedSequentialProjector:
         members: tuple[ChatGPTNumberedPathMember, ...],
     ) -> list[tuple[int, ChatGPTNumberedPathMember]]:
         if not isinstance(members, tuple) or not members:
-            raise ChatGPTNumberedAggregationError(
-                "numbered path members must be a non-empty tuple"
-            )
+            raise ChatGPTNumberedAggregationError("numbered path members must be a non-empty tuple")
         if len(members) > self.max_member_count:
             raise ChatGPTNumberedAggregationError("numbered member count exceeds limit")
 
@@ -295,22 +292,16 @@ class ChatGPTNumberedSequentialProjector:
             index = int(match.group("index"))
             resolved = member.path.expanduser().resolve()
             if member.label in labels:
-                raise ChatGPTNumberedAggregationError(
-                    "numbered member labels contain duplicates"
-                )
+                raise ChatGPTNumberedAggregationError("numbered member labels contain duplicates")
             if index in indices:
-                raise ChatGPTNumberedAggregationError(
-                    "numbered member indices contain duplicates"
-                )
+                raise ChatGPTNumberedAggregationError("numbered member indices contain duplicates")
             if resolved in paths:
                 raise ChatGPTNumberedAggregationError("numbered member paths contain duplicates")
             if not resolved.is_file():
                 raise ChatGPTNumberedAggregationError("numbered member path is not a file")
             declared_total_bytes += resolved.stat().st_size
             if declared_total_bytes > self.max_total_input_bytes:
-                raise ChatGPTNumberedAggregationError(
-                    "aggregate numbered input exceeds byte limit"
-                )
+                raise ChatGPTNumberedAggregationError("aggregate numbered input exceeds byte limit")
             labels.add(member.label)
             indices.add(index)
             paths.add(resolved)
@@ -329,9 +320,7 @@ class ChatGPTNumberedSequentialProjector:
             )
         expected = list(range(ordered_indices[0], ordered_indices[0] + len(parsed)))
         if ordered_indices != expected:
-            raise ChatGPTNumberedAggregationError(
-                "numbered member sequence contains a gap"
-            )
+            raise ChatGPTNumberedAggregationError("numbered member sequence contains a gap")
         return parsed
 
 

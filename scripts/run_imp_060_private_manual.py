@@ -172,9 +172,7 @@ def _apply_projection_evidence(
         if projection_hash is not None:
             review["selected_projection_source_root_hash"] = projection_hash
         review["conversation_count"] = projection.output_conversation_count
-        review["attachment_reference_count"] = (
-            projection.aggregate_attachment_reference_count
-        )
+        review["attachment_reference_count"] = projection.aggregate_attachment_reference_count
         review["malformed_object_count"] = projection.aggregate_malformed_object_count
         review["unknown_field_count"] = projection.aggregate_unknown_field_count
 
@@ -192,9 +190,7 @@ def _apply_projection_evidence(
         evidence["aggregate_attachment_reference_count"] = (
             projection.aggregate_attachment_reference_count
         )
-        evidence["aggregate_malformed_object_count"] = (
-            projection.aggregate_malformed_object_count
-        )
+        evidence["aggregate_malformed_object_count"] = projection.aggregate_malformed_object_count
         evidence["aggregate_unknown_field_count"] = projection.aggregate_unknown_field_count
 
     if payload.get("mode") == "complete":
