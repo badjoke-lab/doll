@@ -14,6 +14,7 @@ The runner verifies that:
 - the adapter contract remains offline;
 - review output is content-free;
 - canonical publication occurs only after explicit review confirmation;
+- selected history publication accepts either `published` or `partially_published` batch status only when the selected conversation and supported-message counts are preserved exactly;
 - exact source preservation, generic export, and shutdown escape succeed in a temporary local workspace;
 - imported content remains external data and creates no authority records.
 

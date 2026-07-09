@@ -272,7 +272,7 @@ def _complete(
             "contract_is_offline": contract_offline,
             "preview_is_side_effect_free": preview_side_effect_free,
             "selected_history_published": (
-                published.import_batch.status == "published"
+                published.import_batch.status in {"published", "partially_published"}
                 and len(conversations) == staged.inventory.selected_conversation_count
                 and len(events) == staged.inventory.supported_message_count
             ),

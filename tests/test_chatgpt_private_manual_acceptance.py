@@ -13,6 +13,7 @@ OBSERVED_AT = "2026-07-05T00:00:00Z"
 ENVIRONMENT_ID = "59000000-0000-4000-8000-000000000101"
 REVIEW_BATCH_ID = "59000000-0000-4000-8000-000000000102"
 COMPLETE_BATCH_ID = "59000000-0000-4000-8000-000000000103"
+PARTIAL_COMPLETE_BATCH_ID = "59000000-0000-4000-8000-000000000104"
 SELECTED_ID = "private-selected-id-should-not-leak"
 UNSELECTED_ID = "private-unselected-id-should-not-leak"
 PRIVATE_MARKERS = (
@@ -23,6 +24,7 @@ PRIVATE_MARKERS = (
     "Private selected assistant text should not leak",
     "Private unselected title should not leak",
     "Private unselected text should not leak",
+    "Private unknown provider value should not leak",
 )
 
 
@@ -106,6 +108,30 @@ def _write_private_inputs(tmp_path: Path) -> tuple[Path, Path]:
         encoding="utf-8",
     )
     selection_path.write_text(f"{SELECTED_ID}\n", encoding="utf-8")
+    return source_path, selection_path
+
+
+def _write_private_inputs_with_unknown_provider_field(
+    tmp_path: Path,
+) -> tuple[Path, Path]:
+    source_path, selection_path = _write_private_inputs(tmp_path)
+
+    source = json.loads(source_path.read_text(encoding="utf-8"))
+
+    if not isinstance(source, list) or not source or not isinstance(source[0], dict):
+        raise AssertionError("private fixture shape is invalid")
+
+    source[0]["future_provider_field"] = "Private unknown provider value should not leak"
+
+    source_path.write_text(
+        json.dumps(
+            source,
+            ensure_ascii=False,
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+
     return source_path, selection_path
 
 
@@ -237,3 +263,45 @@ def test_private_manual_complete_requires_confirmations(tmp_path: Path) -> None:
     assert payload["error_stage"] == "private_manual_completion"
     assert payload["error_class"] == "RuntimeError"
     _assert_private_values_absent(result.stdout, tmp_path)
+
+
+def test_private_manual_complete_accepts_partial_publication(
+    tmp_path: Path,
+) -> None:
+    source_path, selection_path = _write_private_inputs_with_unknown_provider_field(tmp_path)
+
+    result = _run(
+        "complete",
+        source_path,
+        selection_path,
+        PARTIAL_COMPLETE_BATCH_ID,
+        confirmations=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+
+    payload: dict[str, Any] = json.loads(result.stdout)
+
+    assert payload["result"] == "pass"
+    assert payload["mode"] == "complete"
+
+    checks = payload["checks"]
+
+    assert checks["selected_history_published"] is True
+    assert all(checks.values())
+
+    evidence = payload["evidence"]
+
+    assert evidence["selected_conversation_count"] == 1
+    assert evidence["selected_message_count"] == 2
+    assert evidence["supported_message_count"] == 2
+    assert evidence["unsupported_message_count"] == 0
+    assert evidence["quarantine_count"] == 1
+    assert evidence["material_loss_count"] == 1
+
+    assert all(value is False for value in payload["privacy"].values())
+
+    _assert_private_values_absent(
+        result.stdout,
+        tmp_path,
+    )
