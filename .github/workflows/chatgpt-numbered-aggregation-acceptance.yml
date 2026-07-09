@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - .github/workflows/chatgpt-numbered-aggregation-acceptance.yml
+      - scripts/run_imp_059_private_manual.py
       - scripts/run_imp_060_private_manual.py
       - src/doll/chatgpt_numbered_aggregation.py
       - src/doll/chatgpt_numbered_projection.py
@@ -16,6 +17,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/chatgpt-numbered-aggregation-acceptance.yml
+      - scripts/run_imp_059_private_manual.py
       - scripts/run_imp_060_private_manual.py
       - src/doll/chatgpt_numbered_aggregation.py
       - src/doll/chatgpt_numbered_projection.py
