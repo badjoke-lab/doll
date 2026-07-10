@@ -30,6 +30,9 @@ const shutdownEscape = JSON.parse(
 const chatgptHistory = JSON.parse(
   read("docs/testing/phase-6-chatgpt-history-matrix.json"),
 );
+const chatgptPrivate = JSON.parse(
+  read("docs/testing/results/IMP-060-project-owner-chatgpt-2026-07-10.json"),
+);
 
 expect(status.schema_version === 2, "project-status.json must use schema_version 2");
 expect(
@@ -74,15 +77,44 @@ expect(
   "IMP-058 shutdown escape matrix must bind accepted primary-machine evidence",
 );
 expect(
-  chatgptHistory.implementation === "IMP-059" &&
+  chatgptHistory.implementation === "IMP-060" &&
     chatgptHistory.port014_foundation_complete === true &&
-    chatgptHistory.chatgpt_history_gate_complete === false &&
-    chatgptHistory.accepted_private_manual_result === null &&
+    chatgptHistory.chatgpt_history_gate_complete === true &&
+    chatgptHistory.accepted_private_manual_result ===
+      "docs/testing/results/IMP-060-project-owner-chatgpt-2026-07-10.json" &&
     chatgptHistory.portability_tests?.length === 1 &&
     chatgptHistory.portability_tests[0]?.id === "PORT-014" &&
-    chatgptHistory.portability_tests[0]?.status === "ci-pass" &&
-    chatgptHistory.private_manual_gate?.status === "pending",
-  "IMP-059 ChatGPT history matrix must keep private PORT-014 evidence pending",
+    chatgptHistory.portability_tests[0]?.status === "pass" &&
+    chatgptHistory.portability_tests[0]?.passed_evidence_levels?.includes("ci") &&
+    chatgptHistory.portability_tests[0]?.passed_evidence_levels?.includes(
+      "private-manual",
+    ) &&
+    chatgptHistory.private_manual_gate?.status === "pass" &&
+    chatgptHistory.private_manual_gate?.commit_sha ===
+      "7e93adcd059af8aebab880bd42bcddc96c50778f",
+  "IMP-060 ChatGPT history matrix must bind accepted PORT-014 private evidence",
+);
+
+expect(
+  chatgptPrivate.test_id ===
+    "IMP-060-CHATGPT-NUMBERED-PRIVATE-MANUAL" &&
+    chatgptPrivate.result === "pass" &&
+    chatgptPrivate.mode === "complete" &&
+    chatgptPrivate.evidence_level === "private-manual" &&
+    chatgptPrivate.commit_sha ===
+      "7e93adcd059af8aebab880bd42bcddc96c50778f" &&
+    chatgptPrivate.external_network_request_used === false &&
+    chatgptPrivate.cloud_credentials_used === false &&
+    chatgptPrivate.model_execution_used === false &&
+    chatgptPrivate.phase6_gate_complete === false &&
+    chatgptPrivate.stable_anti_lock_in_claim === false &&
+    Object.values(chatgptPrivate.checks || {}).every(
+      (value) => value === true,
+    ) &&
+    Object.values(chatgptPrivate.privacy || {}).every(
+      (value) => value === false,
+    ),
+  "accepted IMP-060 private evidence must remain bounded, offline, and privacy-safe",
 );
 
 const readme = read("README.md");
@@ -247,8 +279,10 @@ expect(
   "roadmap must bind the accepted IMP-058 primary Intel Mac evidence",
 );
 expect(
-  roadmap.includes("The required order after the fresh project-owner export exposed numbered conversation members is:"),
-  "roadmap must record the pending IMP-059 private-manual gate",
+  roadmap.includes(
+    "After accepted project-owner private ChatGPT evidence, the immediate order is:",
+  ),
+  "roadmap must record accepted PORT-014 evidence and remaining Phase 6 work",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),
