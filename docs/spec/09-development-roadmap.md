@@ -105,7 +105,8 @@ Current implementation point:
 - PORT-015 passes at both `ci` and `real-machine` evidence levels, completing the bounded IMP-058 shutdown-escape gate without claiming the complete Phase 6 gate, target-specific application round trips, or stable general anti-lock-in;
 - IMP-059 adds an offline selected-history adapter for one caller-extracted ChatGPT `conversations.json` file, reusing the accepted generic staging, reviewed publication, provenance, idempotency, conflict, loss, generic-export, and shutdown-escape boundaries;
 - IMP-060 adds deterministic offline aggregation for explicit numbered `conversations-*.json` members, preserving numeric order, rejecting conflicting duplicates, emitting content-free integrity evidence, and delegating the canonical aggregate to the unchanged IMP-059 review and publication path;
-- PORT-014 remains at `ci-pass` because project-owner private manual evidence is still required before a ChatGPT history migration claim;
+- PORT-014 passes at both `ci` and `private-manual` evidence levels; accepted privacy-safe project-owner evidence is stored at `docs/testing/results/IMP-060-project-owner-chatgpt-2026-07-10.json` and is bound to exact runner commit `7e93adcd059af8aebab880bd42bcddc96c50778f`;
+- the bounded ChatGPT selected-history migration claim is now supported within the documented IMP-059/IMP-060 limitations, while the complete Phase 6 gate and stable general anti-lock-in remain incomplete;
 - IMP-060 is assigned to Issue #190 after the fresh project-owner export exposed 12 numbered conversation members and no exact `conversations.json` file;
 - the next bounded implementation receives IMP-061 only when a new implementation issue is opened;
 - later local migration, cloud, and tool work must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts.
@@ -575,7 +576,7 @@ IMP-058 does not establish ChatGPT history migration, native Ollama history disc
 
 ### IMP-059 — Bounded ChatGPT conversations.json source adapter
 
-Status: implementation foundation complete with deterministic synthetic CI evidence; project-owner private manual evidence remains pending in Issue #186.
+Status: implementation foundation complete with deterministic synthetic CI evidence; the private PORT-014 gate is satisfied through accepted IMP-060 numbered-member completion evidence.
 
 Implemented an offline source adapter for one explicitly supplied caller-extracted ChatGPT `conversations.json` file. The adapter inventories all conversations without exposing content in its public summary and maps message content only for a non-empty explicit selected conversation-ID set. Supported text-only user, assistant, system, and tool messages preserve supported graph parents and source provenance through the accepted generic portability object model.
 
@@ -583,11 +584,11 @@ The adapter identifies the provider shape as `chatgpt-conversations-json` `obser
 
 Synthetic CI proves deterministic selected-only staging, reviewed publication, exact-source preservation, unchanged-source idempotency, changed-source conflict blocking, authority separation, generic export, and shutdown-escape recovery without network, credentials, provider account access, model execution, runtime installation, preferred UI, or private source data. Machine-readable evidence is bound through `docs/testing/phase-6-chatgpt-history-matrix.json`.
 
-PORT-014 remains `ci-pass`. IMP-059 does not parse the export ZIP, aggregate numbered conversation files, import attachment bytes, restore a ChatGPT account or sidebar, migrate memories, GPTs, settings, subscriptions, files, or workspaces, export back to ChatGPT, prove round-trip fidelity, complete the Phase 6 gate, or establish stable general anti-lock-in.
+PORT-014 now passes at both `ci` and `private-manual` evidence levels through the accepted IMP-060 project-owner drill. IMP-059 itself still does not parse the export ZIP, aggregate numbered conversation files, import attachment bytes, restore a ChatGPT account or sidebar, migrate memories, GPTs, settings, subscriptions, files, or workspaces, export back to ChatGPT, prove round-trip fidelity, complete the Phase 6 gate, or establish stable general anti-lock-in.
 
 ### IMP-060 — Bounded ChatGPT numbered conversation-file aggregation
 
-Status: implementation complete with deterministic synthetic cross-platform acceptance; project-owner private manual evidence remains pending.
+Status: implementation and bounded project-owner private manual evidence complete.
 
 Implemented a local offline aggregation layer for explicitly supplied numbered `conversations-*.json` members. The aggregator accepts no ZIP archive and performs no directory discovery. The caller supplies the member list explicitly outside the repository.
 
@@ -597,7 +598,11 @@ Cross-member duplicate conversation identities are handled explicitly. Canonical
 
 The aggregation result binds ordered member labels, exact member hashes, byte counts, conversation counts, aggregate counts, duplicate counts, aggregate canonical bytes, and deterministic hashes. Public bounded evidence excludes private paths, conversation IDs, titles, prompts, responses, model names, usernames, hostnames, credentials, and secret values.
 
-The IMP-060 private manual wrapper writes only the deterministic aggregate to a temporary local path and delegates selected-history review, reviewed publication, exact-source preservation of the aggregate representation, generic export, and shutdown-escape verification to the accepted IMP-059 path. Synthetic acceptance passes on Linux, macOS, and Windows.
+The IMP-060 private manual wrapper writes only the deterministic selected projection to a temporary local path and delegates selected-history review, reviewed publication, exact-source preservation of that projection, generic export, and shutdown-escape verification to the accepted IMP-059 path. Synthetic acceptance passes on Linux, macOS, and Windows.
+
+Accepted project-owner private-manual evidence is bound to exact runner commit `7e93adcd059af8aebab880bd42bcddc96c50778f` and stored at `docs/testing/results/IMP-060-project-owner-chatgpt-2026-07-10.json`. The fresh export contained 12 explicit numbered members and 1183 conversation records. The sequential path retained 1181 identity-valid records, quarantined 2 identityless records without synthetic identities, projected one explicitly selected conversation containing 2 supported messages, preserved imported content as external data only, and passed reviewed publication, exact selected-projection preservation, generic export, and shutdown-escape verification with networking operator-confirmed disabled.
+
+PORT-014 therefore passes at both `ci` and `private-manual` evidence levels. The accepted result is bounded and lossy: one auxiliary unknown-provider-field object is quarantined and reported as material loss, so no full-fidelity claim is made.
 
 IMP-060 does not establish ZIP ingestion, automatic directory discovery, attachment-byte recovery, account restoration, memory migration, GPT migration, settings migration, file restoration, provider round-trip fidelity, the complete Phase 6 gate, or stable general anti-lock-in.
 
@@ -718,15 +723,13 @@ An implementation PR is done when:
 
 ## 18. Immediate work
 
-The required order after the fresh project-owner export exposed numbered conversation members is:
+After accepted project-owner private ChatGPT evidence, the immediate order is:
 
-1. keep Issue #186 open and complete Issue #190 / IMP-060 without committing private export content;
-2. use the merged IMP-060 numbered-member aggregation path against the explicit 12-member project-owner export with no network, provider credential, or model execution;
-3. select a bounded conversation subset explicitly and review content-free inventory, aggregation, quarantine, mapping, duplicate, and loss results;
-4. verify reviewed canonical publication, generic export, and shutdown-escape preservation, then store only a privacy-safe bounded result in a separate completion pull request;
-5. change PORT-014 from `ci-pass` to `pass` and claim bounded ChatGPT history migration only after the private manual evidence is accepted;
-6. allocate IMP-061 only when a new bounded implementation issue is opened; ZIP ingestion, attachment bytes, target-specific export, cloud credentials, tools, and automatic cloud fallback remain separate work;
-7. keep the complete Phase 6 gate and stable general anti-lock-in incomplete until their independent remaining requirements pass.
+1. retain PORT-014 as `pass` only within the accepted bounded IMP-059/IMP-060 selected-history migration boundary and keep its material-loss limitations visible;
+2. close Issues #186 and #190 after this privacy-safe evidence completion pull request is accepted;
+3. allocate IMP-061 only when a new bounded implementation issue is opened; ZIP ingestion, attachment bytes, target-specific export, cloud credentials, tools, and automatic cloud fallback remain separate work;
+4. continue Phase 6 daily-use integration and any independently required portability work without weakening the Phase 3 safety boundary or Phase 4A/4B canonical state contracts;
+5. keep the complete Phase 6 gate and stable general anti-lock-in incomplete until their independent remaining requirements pass.
 
 ## 19. Roadmap change control
 

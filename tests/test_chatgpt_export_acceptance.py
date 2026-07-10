@@ -35,43 +35,36 @@ def _run(commit_sha: str | None = None) -> subprocess.CompletedProcess[str]:
     )
 
 
-def test_imp_059_matrix_keeps_port_014_private_gate_pending() -> None:
+def test_imp_060_matrix_binds_accepted_port_014_private_evidence() -> None:
     matrix = json.loads(MATRIX.read_text(encoding="utf-8"))
     assert matrix["schema_version"] == 1
     assert matrix["phase"] == "6"
-    assert matrix["implementation"] == "IMP-059"
+    assert matrix["implementation"] == "IMP-060"
     assert matrix["port014_foundation_complete"] is True
-    assert matrix["chatgpt_history_gate_complete"] is False
-    assert matrix["accepted_private_manual_result"] is None
-    assert matrix["portability_tests"] == [
-        {
-            "id": "PORT-014",
-            "status": "ci-pass",
-            "description": (
-                "A selected synthetic ChatGPT conversations.json history is parsed offline, "
-                "staged, reviewed, published as external data, exported generically, and retained "
-                "through the shutdown escape surface without provider credentials "
-                "or model execution."
-            ),
-            "pytest_files": [
-                "tests/test_chatgpt_export_import.py",
-                "tests/test_chatgpt_export_acceptance.py",
-            ],
-            "passed_evidence_levels": ["ci"],
-            "required_evidence_levels": ["ci", "private-manual"],
-        }
-    ]
-    assert matrix["private_manual_gate"] == {
+    assert matrix["chatgpt_history_gate_complete"] is True
+    assert matrix["accepted_private_manual_result"] == (
+        "docs/testing/results/IMP-060-project-owner-chatgpt-2026-07-10.json"
+    )
+
+    portability = matrix["portability_tests"]
+    assert len(portability) == 1
+    assert portability[0]["id"] == "PORT-014"
+    assert portability[0]["status"] == "pass"
+    assert portability[0]["passed_evidence_levels"] == ["ci", "private-manual"]
+    assert portability[0]["required_evidence_levels"] == ["ci", "private-manual"]
+
+    gate = matrix["private_manual_gate"]
+    assert gate == {
         "required": True,
-        "status": "pending",
-        "source_format": "chatgpt-conversations-json",
-        "source_format_version": "observed-v1",
-        "commit_sha": None,
-        "completed_at": None,
+        "status": "pass",
+        "source_format": "chatgpt-numbered-conversation-members",
+        "source_format_version": "1",
+        "commit_sha": "7e93adcd059af8aebab880bd42bcddc96c50778f",
+        "completed_at": "2026-07-10T14:01:28.614358Z",
     }
 
 
-def test_imp_059_ci_runner_is_bounded_and_keeps_claims_pending() -> None:
+def test_imp_059_ci_runner_is_bounded_and_reflects_accepted_gate() -> None:
     result = _run()
     payload = cast(dict[str, Any], json.loads(result.stdout))
 
@@ -84,7 +77,7 @@ def test_imp_059_ci_runner_is_bounded_and_keeps_claims_pending() -> None:
     assert payload["portability_test_ids"] == ["PORT-014"]
     assert payload["portability_test_count"] == 1
     assert payload["port014_foundation_complete"] is True
-    assert payload["chatgpt_history_gate_complete"] is False
+    assert payload["chatgpt_history_gate_complete"] is True
     assert payload["phase6_gate_complete"] is False
     assert payload["stable_anti_lock_in_claim"] is False
     assert payload["real_machine_used"] is False
