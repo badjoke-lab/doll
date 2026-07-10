@@ -19,7 +19,7 @@
   },
   "model_runtime": {
     "connected": true,
-    "message": "Phase 6 is in progress through IMP-060. Offline Ollama session import, explicit text-only loopback capture, the accepted bounded local-portability migration drill, the deterministic shutdown escape bundle, the bounded selected-history ChatGPT conversations.json source adapter, and deterministic numbered ChatGPT conversation-member aggregation are implemented. PORT-001, PORT-003, bounded PORT-013, and PORT-015 pass; PORT-014 still requires privacy-reviewed project-owner private manual acceptance. The complete Phase 6 gate, target-specific application replacement, and stable general anti-lock-in remain incomplete."
+    "message": "Phase 6 is in progress through IMP-060. Offline Ollama session import, explicit text-only loopback capture, the accepted bounded local-portability migration drill, the deterministic shutdown escape bundle, the bounded selected-history ChatGPT conversations.json source adapter, and deterministic numbered ChatGPT conversation-member aggregation are implemented. PORT-001, PORT-003, bounded PORT-013, PORT-014, and PORT-015 pass with their required evidence levels. The complete Phase 6 gate, target-specific application replacement, and stable general anti-lock-in remain incomplete."
   },
-  "last_reviewed": "2026-07-08"
+  "last_reviewed": "2026-07-10"
 }
