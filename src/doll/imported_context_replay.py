@@ -142,8 +142,8 @@ class ImportedContextReplayService:
                 content=item.text,
                 source=InstructionSource(
                     origin_class="imported_data",
-                    actor_type="retriever",
-                    acquisition_method="retrieval",
+                    actor_type="importer",
+                    acquisition_method="import",
                     source_identifier=item.source_identifier,
                     parent_operation_id=retrieval_operation_id,
                     session_id=source_conversation_id,
