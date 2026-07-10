@@ -1,21 +1,27 @@
 {
   "schema_version": 1,
   "phase": "6",
-  "implementation": "IMP-059",
+  "implementation": "IMP-060",
   "port014_foundation_complete": true,
-  "chatgpt_history_gate_complete": false,
-  "accepted_private_manual_result": null,
+  "chatgpt_history_gate_complete": true,
+  "accepted_private_manual_result": "docs/testing/results/IMP-060-project-owner-chatgpt-2026-07-10.json",
   "portability_tests": [
     {
       "id": "PORT-014",
-      "status": "ci-pass",
-      "description": "A selected synthetic ChatGPT conversations.json history is parsed offline, staged, reviewed, published as external data, exported generically, and retained through the shutdown escape surface without provider credentials or model execution.",
+      "status": "pass",
+      "description": "A fresh project-owner ChatGPT export with 12 explicit numbered conversation members is validated and cryptographically bound offline; one explicitly selected conversation is projected through the accepted IMP-059 mapping, reviewed publication, generic export, and shutdown-escape path while imported content remains external data only.",
       "pytest_files": [
         "tests/test_chatgpt_export_import.py",
-        "tests/test_chatgpt_export_acceptance.py"
+        "tests/test_chatgpt_export_acceptance.py",
+        "tests/test_chatgpt_private_manual_acceptance.py",
+        "tests/test_chatgpt_numbered_aggregation.py",
+        "tests/test_chatgpt_numbered_projection.py",
+        "tests/test_chatgpt_numbered_identity_quarantine.py",
+        "tests/test_chatgpt_numbered_private_manual_acceptance.py"
       ],
       "passed_evidence_levels": [
-        "ci"
+        "ci",
+        "private-manual"
       ],
       "required_evidence_levels": [
         "ci",
@@ -25,20 +31,17 @@
   ],
   "private_manual_gate": {
     "required": true,
-    "status": "pending",
-    "source_format": "chatgpt-conversations-json",
-    "source_format_version": "observed-v1",
-    "commit_sha": null,
-    "completed_at": null
+    "status": "pass",
+    "source_format": "chatgpt-numbered-conversation-members",
+    "source_format_version": "1",
+    "commit_sha": "7e93adcd059af8aebab880bd42bcddc96c50778f",
+    "completed_at": "2026-07-10T14:01:28.614358Z"
   },
   "limitations": [
-    "CI uses only synthetic non-private conversations.json bytes and proves the bounded source-adapter foundation, not the project-owner migration drill.",
-    "The adapter accepts one explicitly supplied conversations.json file only; ZIP extraction and numbered-file aggregation are not implemented.",
-    "Only explicitly selected conversations are mapped into staged content objects.",
-    "The observed provider JSON shape is versioned adapter behavior and is not claimed as a stable OpenAI public schema.",
-    "Non-text content, attachment references, unsupported roles, malformed nodes, missing parents, cycles, conflicting duplicates, and unknown provider fields are quarantined or reported through mapping and loss records.",
-    "No account merge, sidebar restoration, memory migration, GPT migration, settings migration, file restoration, target-specific export, or round-trip fidelity is claimed.",
-    "PORT-014 and the ChatGPT history migration claim remain pending until privacy-reviewed exact-commit private manual evidence is accepted.",
+    "Synthetic CI uses only non-private fixtures; the accepted project-owner result is stored separately as privacy-safe content-free evidence.",
+    "The complete numbered member set is sequentially validated and cryptographically bound, while only the explicitly selected bounded projection enters the IMP-059 mapping, publication, generic export, and shutdown-escape path.",
+    "Two identityless conversation records are quarantined by count without synthetic identities; one auxiliary unknown-provider-field object is quarantined in the selected projection and reported as material loss, so no full-fidelity claim is made.",
+    "ZIP ingestion, automatic directory discovery, attachment-byte recovery, account restoration, sidebar restoration, memory migration, GPT migration, settings migration, subscription migration, file restoration, workspace migration, target-specific export, and round-trip fidelity remain outside this evidence.",
     "The complete Phase 6 gate and stable general anti-lock-in remain incomplete."
   ]
 }
