@@ -77,5 +77,25 @@
     "Native Ollama history discovery, attachments, multimodal content, tools, streaming capture, and target-specific export remain outside this evidence.",
     "The alternate component is a fresh-process canonical-state reader and generic exporter; no second model or runtime adapter is claimed.",
     "ChatGPT migration, PORT-015, the complete Phase 6 gate, general application replacement, and a stable general anti-lock-in claim remain outside this implementation."
-  ]
+  ],
+  "context_replay_extension": {
+    "implementation": "IMP-061",
+    "portability_test_id": "PORT-013",
+    "status": "ci-pass",
+    "description": "Explicitly selected imported canonical text events are resolved through accepted source mappings, materialized as data-only untrusted context, and replayed through a distinct approved synthetic local target runtime.",
+    "pytest_files": [
+      "tests/test_imported_context_replay.py",
+      "tests/test_imported_context_replay_validation.py"
+    ],
+    "passed_evidence_levels": [
+      "ci"
+    ],
+    "required_evidence_levels": [
+      "ci",
+      "real-machine"
+    ],
+    "real_machine_gate_status": "pending",
+    "phase6_gate_complete": false,
+    "stable_anti_lock_in_claim": false
+  }
 }

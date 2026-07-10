@@ -24,6 +24,9 @@ function expect(condition, message) {
 }
 
 const status = JSON.parse(read("website/project-status.json"));
+const localPortability = JSON.parse(
+  read("docs/testing/phase-6-local-portability-matrix.json"),
+);
 const shutdownEscape = JSON.parse(
   read("docs/testing/phase-6-shutdown-escape-matrix.json"),
 );
@@ -48,8 +51,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 61,
-  "project-status.json must mark Phase 6 in progress through IMP-060 with IMP-061 next",
+    status.phase?.next_implementation === 62,
+  "project-status.json must mark Phase 6 in progress through IMP-061 with IMP-062 next",
 );
 expect(
   status.model_runtime &&
@@ -61,6 +64,25 @@ expect(
   /^\d{4}-\d{2}-\d{2}$/.test(status.last_reviewed || ""),
   "project-status.json last_reviewed must be YYYY-MM-DD",
 );
+expect(
+  localPortability.context_replay_extension?.implementation === "IMP-061" &&
+    localPortability.context_replay_extension?.portability_test_id ===
+      "PORT-013" &&
+    localPortability.context_replay_extension?.status === "ci-pass" &&
+    localPortability.context_replay_extension?.passed_evidence_levels?.length ===
+      1 &&
+    localPortability.context_replay_extension?.passed_evidence_levels?.[0] ===
+      "ci" &&
+    localPortability.context_replay_extension?.required_evidence_levels?.includes(
+      "real-machine",
+    ) &&
+    localPortability.context_replay_extension?.real_machine_gate_status ===
+      "pending" &&
+    localPortability.context_replay_extension?.phase6_gate_complete === false &&
+    localPortability.context_replay_extension?.stable_anti_lock_in_claim === false,
+  "IMP-061 context replay extension must remain CI-only until real-machine evidence",
+);
+
 expect(
   shutdownEscape.implementation === "IMP-058" &&
     shutdownEscape.shutdown_escape_gate_complete === true &&
@@ -267,8 +289,12 @@ expect(
   "roadmap must record the IMP-060 numbered conversation aggregation boundary",
 );
 expect(
-  roadmap.includes("the next bounded implementation receives IMP-061 only when a new implementation issue is opened"),
-  "roadmap must identify IMP-061 as the next unallocated implementation identifier",
+  roadmap.includes("### IMP-061 — Bounded imported conversation context replay"),
+  "roadmap must record the IMP-061 imported context replay boundary",
+);
+expect(
+  roadmap.includes("the next bounded implementation receives IMP-062 only when a new implementation issue is opened"),
+  "roadmap must identify IMP-062 as the next unallocated implementation identifier",
 );
 expect(
   roadmap.includes("docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json"),
@@ -280,9 +306,9 @@ expect(
 );
 expect(
   roadmap.includes(
-    "After accepted project-owner private ChatGPT evidence, the immediate order is:",
+    "After IMP-061 imported-context replay foundation, the immediate order is:",
   ),
-  "roadmap must record accepted PORT-014 evidence and remaining Phase 6 work",
+  "roadmap must record IMP-061 replay evidence boundary and remaining Phase 6 work",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),

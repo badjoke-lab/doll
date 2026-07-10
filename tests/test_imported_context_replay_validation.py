@@ -133,7 +133,7 @@ def test_conversation_and_selection_validation_fail_before_runtime(tmp_path: Pat
             with pytest.raises(ImportedContextReplayValidationError, match=pattern):
                 service.execute_turn(
                     source_conversation_id=source.conversation_id,
-                    selected_event_ids=selected,  # type: ignore[arg-type]
+                    selected_event_ids=selected,
                     target_conversation_id=target.conversation_id,
                     scope_type="conversation",
                     scope_key="unused",
@@ -239,8 +239,8 @@ def test_event_state_mapping_and_total_limit_fail_closed(tmp_path: Path) -> None
         limited = ImportedContextReplayService(
             repository,
             service.local_conversation,
-            max_item_chars=100,
-            max_total_chars=50,
+            max_item_chars=40,
+            max_total_chars=60,
         )
         with pytest.raises(ImportedContextReplayValidationError, match="total character limit"):
             limited.execute_turn(

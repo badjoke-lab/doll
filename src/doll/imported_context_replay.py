@@ -204,9 +204,7 @@ class ImportedContextReplayService:
 
     def _selected_event_ids(self, value: Sequence[str]) -> tuple[str, ...]:
         if isinstance(value, str | bytes):
-            raise ImportedContextReplayValidationError(
-                "selected event IDs must be a sequence"
-            )
+            raise ImportedContextReplayValidationError("selected event IDs must be a sequence")
         items = tuple(value)
         if not items:
             raise ImportedContextReplayValidationError(
@@ -250,9 +248,7 @@ class ImportedContextReplayService:
                     "selected event belongs to another conversation"
                 )
             if event.origin_class != "imported_data":
-                raise ImportedContextReplayValidationError(
-                    "selected event is not imported data"
-                )
+                raise ImportedContextReplayValidationError("selected event is not imported data")
             if event.event_kind not in _ALLOWED_EVENT_KINDS:
                 raise ImportedContextReplayValidationError(
                     "selected event kind is unsupported for replay"
