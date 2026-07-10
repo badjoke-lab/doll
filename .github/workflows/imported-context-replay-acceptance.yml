@@ -11,6 +11,7 @@ on:
       - src/doll/instruction_origin.py
       - src/doll/local_conversation.py
       - tests/test_imported_context_replay.py
+      - tests/test_imported_context_replay_validation.py
   pull_request:
     paths:
       - .github/workflows/imported-context-replay-acceptance.yml
@@ -19,6 +20,7 @@ on:
       - src/doll/instruction_origin.py
       - src/doll/local_conversation.py
       - tests/test_imported_context_replay.py
+      - tests/test_imported_context_replay_validation.py
 
 permissions:
   contents: read
@@ -46,6 +48,7 @@ jobs:
           set -o pipefail
           uv run pytest -q --no-cov \
             tests/test_imported_context_replay.py \
+            tests/test_imported_context_replay_validation.py \
             2>&1 | tee imp061-imported-context-replay-pytest.txt
       - uses: actions/upload-artifact@v4
         if: always()
