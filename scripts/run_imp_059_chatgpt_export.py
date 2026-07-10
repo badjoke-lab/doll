@@ -89,6 +89,8 @@ def _matrix_evidence() -> tuple[dict[str, bool], list[str]]:
     entries = matrix.get("portability_tests")
     gate = matrix.get("private_manual_gate")
     limitations = matrix.get("limitations")
+    accepted_result = matrix.get("accepted_private_manual_result")
+
     if not isinstance(entries, list) or len(entries) != 1:
         raise RuntimeError("invalid ChatGPT history matrix")
     ids = tuple(item.get("id") for item in entries if isinstance(item, dict))
@@ -97,12 +99,13 @@ def _matrix_evidence() -> tuple[dict[str, bool], list[str]]:
     item = entries[0]
     if not isinstance(item, dict):
         raise RuntimeError("invalid ChatGPT portability entry")
-    if item.get("status") != "ci-pass":
-        raise RuntimeError("PORT-014 must remain ci-pass before private manual evidence")
-    if item.get("passed_evidence_levels") != ["ci"]:
+    if item.get("status") != "pass":
+        raise RuntimeError("PORT-014 must pass after accepted private manual evidence")
+    if item.get("passed_evidence_levels") != ["ci", "private-manual"]:
         raise RuntimeError("invalid passed ChatGPT evidence levels")
     if item.get("required_evidence_levels") != ["ci", "private-manual"]:
         raise RuntimeError("invalid required ChatGPT evidence levels")
+
     files = item.get("pytest_files")
     if (
         not isinstance(files, list)
@@ -110,28 +113,38 @@ def _matrix_evidence() -> tuple[dict[str, bool], list[str]]:
         or not all(isinstance(value, str) and _has_test(value) for value in files)
     ):
         raise RuntimeError("invalid ChatGPT source-adapter test evidence")
+
     if not isinstance(gate, dict) or gate.get("required") is not True:
         raise RuntimeError("missing private manual gate")
-    if gate.get("status") != "pending":
-        raise RuntimeError("private manual gate must remain pending")
-    if gate.get("commit_sha") is not None or gate.get("completed_at") is not None:
-        raise RuntimeError("pending private gate cannot bind evidence")
-    if matrix.get("accepted_private_manual_result") is not None:
-        raise RuntimeError("pending private gate cannot name accepted evidence")
-    if matrix.get("chatgpt_history_gate_complete") is not False:
-        raise RuntimeError("ChatGPT history gate cannot be complete before private evidence")
+    if gate.get("status") != "pass":
+        raise RuntimeError("private manual gate must pass after accepted evidence")
+    gate_commit = gate.get("commit_sha")
+    if not isinstance(gate_commit, str) or not SHA.fullmatch(gate_commit):
+        raise RuntimeError("accepted private gate must bind an implementation commit")
+    completed_at = gate.get("completed_at")
+    if not isinstance(completed_at, str) or not completed_at.endswith("Z"):
+        raise RuntimeError("accepted private gate must bind a completion time")
+    if not isinstance(accepted_result, str) or not accepted_result:
+        raise RuntimeError("accepted private gate must name accepted evidence")
+    accepted_path = ROOT / accepted_result
+    if not accepted_path.is_file():
+        raise RuntimeError("accepted private evidence result is missing")
+    if matrix.get("chatgpt_history_gate_complete") is not True:
+        raise RuntimeError("ChatGPT history gate must be complete after accepted evidence")
     if not isinstance(limitations, list) or not all(
         isinstance(value, str) for value in limitations
     ):
         raise RuntimeError("invalid ChatGPT history limitations")
+
     checks = {
         "matrix_schema_valid": matrix.get("schema_version") == 1,
         "phase_identifier_valid": matrix.get("phase") == "6",
-        "implementation_identifier_valid": matrix.get("implementation") == "IMP-059",
+        "implementation_identifier_valid": matrix.get("implementation") == "IMP-060",
         "portability_identifier_mapped": ids == IDS,
         "port014_foundation_complete": matrix.get("port014_foundation_complete") is True,
-        "private_manual_gate_pending": gate.get("status") == "pending",
-        "chatgpt_history_gate_incomplete": matrix.get("chatgpt_history_gate_complete") is False,
+        "private_manual_gate_passed": gate.get("status") == "pass",
+        "accepted_private_result_present": accepted_path.is_file(),
+        "chatgpt_history_gate_complete": matrix.get("chatgpt_history_gate_complete") is True,
         "adapter_excludes_network_and_process_imports": (
             _adapter_excludes_network_and_process_imports()
         ),
@@ -207,7 +220,7 @@ def main() -> int:
             "preferred_interface_required": False,
             "private_source_used": False,
             "port014_foundation_complete": True,
-            "chatgpt_history_gate_complete": False,
+            "chatgpt_history_gate_complete": True,
             "phase6_gate_complete": False,
             "stable_anti_lock_in_claim": False,
             "evidence": evidence,
