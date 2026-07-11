@@ -80,12 +80,14 @@
   ],
   "context_replay_extension": {
     "implementation": "IMP-061",
+    "acceptance_implementation": "IMP-062",
     "portability_test_id": "PORT-013",
     "status": "ci-pass",
-    "description": "Explicitly selected imported canonical text events are resolved through accepted source mappings, materialized as data-only untrusted context, and replayed through a distinct approved synthetic local target runtime.",
+    "description": "Explicitly selected imported canonical text events are resolved through accepted source mappings, materialized as data-only untrusted context, and replayed through a distinct approved target runtime path.",
     "pytest_files": [
       "tests/test_imported_context_replay.py",
-      "tests/test_imported_context_replay_validation.py"
+      "tests/test_imported_context_replay_validation.py",
+      "tests/test_imp_062_imported_context_replay_acceptance.py"
     ],
     "passed_evidence_levels": [
       "ci"
@@ -94,7 +96,27 @@
       "ci",
       "real-machine"
     ],
-    "real_machine_gate_status": "pending",
+    "accepted_real_machine_result": null,
+    "real_machine_gate": {
+      "required": true,
+      "status": "pending",
+      "platform": "Darwin",
+      "architectures": [
+        "x86_64",
+        "amd64"
+      ],
+      "minimum_local_models": 1,
+      "network_mode": "offline-confirmed",
+      "commit_sha": null,
+      "completed_at": null
+    },
+    "limitations": [
+      "Synthetic CI uses an injected Ollama transport and is not real local-runtime evidence.",
+      "The real-machine drill uses a deterministic non-private synthetic ChatGPT-format source and one explicitly selected already-installed local Ollama model.",
+      "The report omits model names, source identifiers, prompts, responses, paths, usernames, hostnames, credentials, and secret values.",
+      "Native application history discovery, automatic retrieval, attachments, multimodal content, tools, target-specific export, and provider round-trip fidelity remain outside this extension.",
+      "The complete Phase 6 gate and stable general anti-lock-in remain incomplete."
+    ],
     "phase6_gate_complete": false,
     "stable_anti_lock_in_claim": false
   }
