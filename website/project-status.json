@@ -15,11 +15,11 @@
     "name": "Local AI portability and daily-use integration",
     "state": "in_progress",
     "started_by_implementation": 55,
-    "next_implementation": 61
+    "next_implementation": 62
   },
   "model_runtime": {
     "connected": true,
-    "message": "Phase 6 is in progress through IMP-060. Offline Ollama session import, explicit text-only loopback capture, the accepted bounded local-portability migration drill, the deterministic shutdown escape bundle, the bounded selected-history ChatGPT conversations.json source adapter, and deterministic numbered ChatGPT conversation-member aggregation are implemented. PORT-001, PORT-003, bounded PORT-013, PORT-014, and PORT-015 pass with their required evidence levels. The complete Phase 6 gate, target-specific application replacement, and stable general anti-lock-in remain incomplete."
+    "message": "Phase 6 is in progress through IMP-061. Offline Ollama session import, explicit text-only loopback capture, the accepted bounded local-portability migration drill, the deterministic shutdown escape bundle, the bounded selected-history ChatGPT source path, numbered ChatGPT conversation-member aggregation, and bounded imported conversation context replay through a distinct synthetic local target runtime are implemented. PORT-001, PORT-003, the bounded IMP-057 portion of PORT-013, PORT-014, and PORT-015 retain their accepted evidence. The IMP-061 cross-runtime replay extension remains CI-only until separate primary real-machine evidence is accepted. The complete Phase 6 gate, target-specific application replacement, and stable general anti-lock-in remain incomplete."
   },
-  "last_reviewed": "2026-07-10"
+  "last_reviewed": "2026-07-11"
 }

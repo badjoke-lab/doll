@@ -24,7 +24,7 @@
 - `docs/spec/08-acceptance-and-continuity-tests.md` — SHA-256 `1ae9b70cf28257b35a30238bdc46c2caea93dbd17fdf8b516ff708c9e208a698`
 - `docs/spec/08a-ai-environment-portability-acceptance.md` — SHA-256 `3a1876d8b506204254ccd54eb58cfabcf2ddc92e3edd446d90650b9ae22ff305`
 - `docs/spec/08b-project-continuity-acceptance.md` — SHA-256 `b58623f21bdd183a21e1904ebcec954ffb2b6976254b72ac52f13deae83306cc`
-- `docs/spec/09-development-roadmap.md` — SHA-256 `ef0e249f01654293435640220f8dbd2e80d75efff166c42c2cf16b421934a896`
+- `docs/spec/09-development-roadmap.md` — SHA-256 `257629a35cf519dc53989176d98ec739136d5843ead0594cec38c1adb4c504e7`
 
 ---
 
@@ -8564,8 +8564,8 @@ Completed:
 - Phase 4B project continuity foundation;
 - Phase 5 local runtime and model integration;
 - IMP-001 through IMP-023;
-- IMP-030 through IMP-060;
-- local workspace, SQLite state, migrations, managed artifacts, canonical conversation and project state, State Package v2, backup and restore, the model-independent safety boundary, AI-environment portability, project continuity, runtime-independent adapter contracts, a loopback-only Ollama adapter, authoritative runtime and model manifests, explicit bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, and accepted primary Intel Mac offline continuity evidence through IMP-054, the offline Ollama API session source adapter through IMP-055, explicit loopback Ollama chat capture through IMP-056, the deterministic local-portability migration harness through IMP-057, the deterministic shutdown escape bundle through IMP-058, and the bounded ChatGPT conversations.json source adapter through IMP-059, and the bounded ChatGPT numbered conversation-member aggregation through IMP-060.
+- IMP-030 through IMP-061;
+- local workspace, SQLite state, migrations, managed artifacts, canonical conversation and project state, State Package v2, backup and restore, the model-independent safety boundary, AI-environment portability, project continuity, runtime-independent adapter contracts, a loopback-only Ollama adapter, authoritative runtime and model manifests, explicit bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, and accepted primary Intel Mac offline continuity evidence through IMP-054, the offline Ollama API session source adapter through IMP-055, explicit loopback Ollama chat capture through IMP-056, the deterministic local-portability migration harness through IMP-057, the deterministic shutdown escape bundle through IMP-058, the bounded ChatGPT conversations.json source adapter through IMP-059, the bounded ChatGPT numbered conversation-member aggregation through IMP-060, and bounded imported conversation context replay through IMP-061.
 
 Current implementation point:
 
@@ -8577,7 +8577,7 @@ Current implementation point:
 - Phase 5 passed its local-runtime continuity gate on 2026-06-28;
 - accepted real-machine evidence is bound to commit `1a5b66b2417d6f3e1eafcd14d2769e9c15d7f96c` on the primary Intel Mac with networking disabled;
 - IMP-048 through IMP-054 establish the runtime contract, loopback-only Ollama adapter, authoritative manifests and bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, State Package v2 transfer, backup restore, and accepted LRUN-001 through LRUN-012 evidence;
-- Phase 6 local AI portability and daily-use integration is in progress through IMP-060;
+- Phase 6 local AI portability and daily-use integration is in progress through IMP-061;
 - IMP-055 adds an offline source adapter for a documented caller-retained Ollama API session bundle, with exact JSON validation, content-free inventory, original-source hashing, deterministic normalization, explicit attachment-metadata loss, and reuse of the accepted generic staging and reviewed-publication boundary;
 - IMP-056 adds an explicit non-streaming text-only capture path through fixed IPv4 loopback, resolves one opaque already-installed local model through the filtered inventory, and returns an IMP-055-valid session bundle without reading application databases, logs, shell history, or unrelated sessions;
 - IMP-057 merged at commit `7b63ff512e20d1d6ae65da8938486b093e14b6c6` and composes explicit capture, reviewed canonical import, idempotency and conflict checks, generic export, State Package v2 transfer, backup restore, and alternate fresh-process inspection without the capture component;
@@ -8591,7 +8591,10 @@ Current implementation point:
 - PORT-014 passes at both `ci` and `private-manual` evidence levels; accepted privacy-safe project-owner evidence is stored at `docs/testing/results/IMP-060-project-owner-chatgpt-2026-07-10.json` and is bound to exact runner commit `7e93adcd059af8aebab880bd42bcddc96c50778f`;
 - the bounded ChatGPT selected-history migration claim is now supported within the documented IMP-059/IMP-060 limitations, while the complete Phase 6 gate and stable general anti-lock-in remain incomplete;
 - IMP-060 is assigned to Issue #190 after the fresh project-owner export exposed 12 numbered conversation members and no exact `conversations.json` file;
-- the next bounded implementation receives IMP-061 only when a new implementation issue is opened;
+- IMP-061 adds bounded replay of explicitly selected imported canonical text events through accepted source mappings, data-only imported instruction origins, the existing prompt-defense boundary, and a distinct approved synthetic local target runtime;
+- IMP-061 is assigned to Issue #198;
+- the IMP-061 cross-runtime replay extension is `ci-pass`; separate exact-commit primary Intel Mac evidence remains required before any broader real-machine cross-runtime replay claim;
+- the next bounded implementation receives IMP-062 only when a new implementation issue is opened;
 - later local migration, cloud, and tool work must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts.
 
 Implementation identifier policy:
@@ -9089,6 +9092,20 @@ PORT-014 therefore passes at both `ci` and `private-manual` evidence levels. The
 
 IMP-060 does not establish ZIP ingestion, automatic directory discovery, attachment-byte recovery, account restoration, memory migration, GPT migration, settings migration, file restoration, provider round-trip fidelity, the complete Phase 6 gate, or stable general anti-lock-in.
 
+### IMP-061 — Bounded imported conversation context replay
+
+Status: implemented with deterministic synthetic CI evidence; separate exact-commit primary Intel Mac cross-runtime replay evidence remains pending.
+
+Implemented an explicit replay service that accepts one imported canonical source conversation, one distinct target conversation, and a bounded ordered selection of imported canonical text events. Each event must be active, belong to the selected source conversation, preserve imported provenance and `origin_class = imported_data`, use a supported text-bearing event kind, and reference an accepted `imported-source` mapping that points back to the same canonical event with `external_data` authority.
+
+The replay service resolves only the preserved bounded text payload, creates immutable data-only imported-data instruction origins through the existing IMP-019 contract, and sends those records through PromptDefenseService and LocalConversationService. Imported context therefore reaches the runtime only through `untrusted_content`; source-native model and runtime metadata cannot choose the target binding or gain task authority.
+
+Synthetic integration uses an accepted local source-session import path and a distinct synthetic local target runtime adapter. Successful execution persists through the unchanged canonical user/context/assistant graph. Runtime failure uses the unchanged user/context/error contract and creates no assistant event. Prompt-injection findings remain advisory, secret handling remains inside the accepted prompt-defense path, and imported context cannot create policy, permission, capability, credential, confirmed memory, trusted fact, project state, work completion, procedure approval, checkpoint confirmation, or model binding.
+
+The implementation adds explicit limits for selected event count, per-item text size, and aggregate context size, and fails closed on duplicate selections, wrong-conversation events, non-imported provenance, inactive records, unsupported event kinds, missing or mismatched source mappings, malformed payloads, and unsupported text shapes. Dedicated synthetic acceptance covers Ubuntu, macOS, and Windows.
+
+IMP-061 does not establish automatic or semantic retrieval, embeddings, vector search, model-selected context, attachment-byte or multimodal replay, tool or capability execution, native application history discovery, target-specific export, provider round-trip fidelity, cloud portability, automatic cloud fallback, runtime installation, model download, full application replacement, the complete Phase 6 gate, or stable general anti-lock-in.
+
 Daily-use work may then expand writing, editing, summarization, translation, planning, memory review, project and decision workflows, work-item proposals, portability review, accessibility, error clarity, Lite performance, and soak testing.
 
 ## 13. Phase 7 — Optional cloud and multiple models
@@ -9206,12 +9223,12 @@ An implementation PR is done when:
 
 ## 18. Immediate work
 
-After accepted project-owner private ChatGPT evidence, the immediate order is:
+After IMP-061 imported-context replay foundation, the immediate order is:
 
 1. retain PORT-014 as `pass` only within the accepted bounded IMP-059/IMP-060 selected-history migration boundary and keep its material-loss limitations visible;
-2. close Issues #186 and #190 after this privacy-safe evidence completion pull request is accepted;
-3. allocate IMP-061 only when a new bounded implementation issue is opened; ZIP ingestion, attachment bytes, target-specific export, cloud credentials, tools, and automatic cloud fallback remain separate work;
-4. continue Phase 6 daily-use integration and any independently required portability work without weakening the Phase 3 safety boundary or Phase 4A/4B canonical state contracts;
+2. retain the accepted IMP-057 bounded PORT-013 evidence while recording the IMP-061 cross-runtime replay extension as `ci-pass` until separate exact-commit primary Intel Mac evidence is accepted;
+3. allocate IMP-062 only when a new bounded implementation issue is opened; a primary Intel Mac cross-runtime replay drill, ZIP ingestion, attachment bytes, target-specific export, cloud credentials, tools, and automatic cloud fallback remain separate work;
+4. continue Phase 6 daily-use integration and independently required portability work without weakening the Phase 3 safety boundary or Phase 4A/4B canonical state contracts;
 5. keep the complete Phase 6 gate and stable general anti-lock-in incomplete until their independent remaining requirements pass.
 
 ## 19. Roadmap change control

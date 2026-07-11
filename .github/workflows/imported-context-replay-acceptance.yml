@@ -1,0 +1,57 @@
+name: Imported context replay acceptance
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/imported-context-replay-acceptance.yml
+      - src/doll/imported_context_replay.py
+      - src/doll/generic_import_publication.py
+      - src/doll/instruction_origin.py
+      - src/doll/local_conversation.py
+      - tests/test_imported_context_replay.py
+      - tests/test_imported_context_replay_validation.py
+  pull_request:
+    paths:
+      - .github/workflows/imported-context-replay-acceptance.yml
+      - src/doll/imported_context_replay.py
+      - src/doll/generic_import_publication.py
+      - src/doll/instruction_origin.py
+      - src/doll/local_conversation.py
+      - tests/test_imported_context_replay.py
+      - tests/test_imported_context_replay_validation.py
+
+permissions:
+  contents: read
+
+jobs:
+  acceptance:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked --all-extras
+      - name: Run imported context replay acceptance tests
+        shell: bash
+        run: |
+          set -o pipefail
+          uv run pytest -q --no-cov \
+            tests/test_imported_context_replay.py \
+            tests/test_imported_context_replay_validation.py \
+            2>&1 | tee imp061-imported-context-replay-pytest.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: imp061-imported-context-replay-${{ matrix.os }}
+          path: imp061-imported-context-replay-pytest.txt
