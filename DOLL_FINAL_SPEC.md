@@ -24,7 +24,7 @@
 - `docs/spec/08-acceptance-and-continuity-tests.md` — SHA-256 `1ae9b70cf28257b35a30238bdc46c2caea93dbd17fdf8b516ff708c9e208a698`
 - `docs/spec/08a-ai-environment-portability-acceptance.md` — SHA-256 `3a1876d8b506204254ccd54eb58cfabcf2ddc92e3edd446d90650b9ae22ff305`
 - `docs/spec/08b-project-continuity-acceptance.md` — SHA-256 `b58623f21bdd183a21e1904ebcec954ffb2b6976254b72ac52f13deae83306cc`
-- `docs/spec/09-development-roadmap.md` — SHA-256 `785df0cc74c7d65c95c298655aa4a8e22c8010678b47c00df79e30eccff5bae7`
+- `docs/spec/09-development-roadmap.md` — SHA-256 `9a58b53c332034590c5af1fa37cdabeaf01a0355e8a0d73a5f9e8f1dc091af0c`
 
 ---
 
@@ -8595,7 +8595,7 @@ Current implementation point:
 - IMP-061 is assigned to Issue #198;
 - IMP-062 adds an exact-commit primary Intel Mac acceptance runner, deterministic synthetic ChatGPT-format source, injected no-socket CI mode, fixed-loopback real Ollama mode, strict privacy-safe evidence schema, and a private-machine runbook for the IMP-061 replay extension;
 - IMP-062 is assigned to Issue #200;
-- the IMP-061/IMP-062 cross-runtime replay extension remains `ci-pass`; separate exact-commit privacy-reviewed primary Intel Mac evidence remains required before a real-machine cross-runtime replay claim;
+- the IMP-061/IMP-062 cross-runtime replay extension passes at both `ci` and `real-machine` evidence levels; accepted privacy-safe evidence is stored at `docs/testing/results/IMP-062-primary-intel-mac-2026-07-12.json` and is bound to exact implementation commit `65f3b5e9ac8c9961c7ec2a152dfdfbb637386e93`;
 - the next bounded implementation receives IMP-063 only when a new implementation issue is opened;
 - later local migration, cloud, and tool work must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts.
 
@@ -9096,7 +9096,7 @@ IMP-060 does not establish ZIP ingestion, automatic directory discovery, attachm
 
 ### IMP-061 — Bounded imported conversation context replay
 
-Status: implemented with deterministic synthetic CI evidence; IMP-062 provides the exact-commit primary Intel Mac acceptance path, and accepted real-machine evidence remains pending.
+Status: implemented with deterministic synthetic CI and accepted exact-commit primary Intel Mac real-machine evidence through IMP-062.
 
 Implemented an explicit replay service that accepts one imported canonical source conversation, one distinct target conversation, and a bounded ordered selection of imported canonical text events. Each event must be active, belong to the selected source conversation, preserve imported provenance and `origin_class = imported_data`, use a supported text-bearing event kind, and reference an accepted `imported-source` mapping that points back to the same canonical event with `external_data` authority.
 
@@ -9110,7 +9110,7 @@ IMP-061 does not establish automatic or semantic retrieval, embeddings, vector s
 
 ### IMP-062 — Primary Intel Mac imported-context replay acceptance
 
-Status: acceptance infrastructure implemented with deterministic synthetic CI evidence; separate exact-commit primary Intel Mac execution and privacy-safe evidence acceptance remain pending.
+Status: acceptance infrastructure and privacy-reviewed exact-commit primary Intel Mac real-machine evidence accepted.
 
 Implemented a bounded acceptance probe and runner for the IMP-061 imported-context replay path. The probe generates a deterministic non-private synthetic ChatGPT-format source, publishes it through the accepted ChatGPT and generic publication boundaries, explicitly selects two imported canonical text events, and replays them into a distinct explicitly bound Ollama target conversation.
 
@@ -9120,7 +9120,7 @@ CI mode uses an injected deterministic Ollama transport and performs no socket o
 
 The content-free result schema includes only bounded platform facts, booleans, counts, hashes, runtime request counts, socket-attempt counts, and non-claim flags. It excludes native model names, source-native identifiers, source text, prompt text, model response text, private paths, usernames, hostnames, credentials, and secret values. The real-machine runbook writes the raw result outside the repository and requires manual privacy review before a separate completion pull request may accept evidence.
 
-Dedicated synthetic acceptance passes on Ubuntu, macOS, and Windows. The context replay extension remains `ci-pass` until exact-commit primary Intel Mac evidence is executed and accepted separately.
+Dedicated synthetic acceptance passes on Ubuntu, macOS, and Windows. The accepted primary Intel Mac run used exact implementation commit `65f3b5e9ac8c9961c7ec2a152dfdfbb637386e93`, Darwin `x86_64`, Python 3.12.13, networking operator-confirmed disabled, fixed IPv4 loopback Ollama, and one explicitly selected already-installed local model. All 36 checks passed, five loopback socket attempts were allowed, no non-loopback attempt occurred, no authority record was created, and all privacy flags remained false. The privacy-safe result is stored at `docs/testing/results/IMP-062-primary-intel-mac-2026-07-12.json`. The context replay extension therefore passes at both `ci` and `real-machine` evidence levels.
 
 IMP-062 does not establish native history discovery, automatic or semantic retrieval, embeddings, vector search, model-selected context, attachment-byte or multimodal replay, tool or capability execution, target-specific export, provider round-trip fidelity, runtime or model installation, cloud portability, automatic cloud fallback, complete application replacement, the complete Phase 6 gate, or stable general anti-lock-in.
 
@@ -9241,12 +9241,12 @@ An implementation PR is done when:
 
 ## 18. Immediate work
 
-After IMP-062 imported-context replay real-machine acceptance infrastructure, the immediate order is:
+After accepted IMP-062 imported-context replay real-machine evidence, the immediate order is:
 
 1. retain PORT-014 as `pass` only within the accepted bounded IMP-059/IMP-060 selected-history migration boundary and keep its material-loss limitations visible;
-2. retain the accepted IMP-057 bounded PORT-013 evidence while recording the IMP-061/IMP-062 cross-runtime replay extension as `ci-pass` until separate exact-commit privacy-reviewed primary Intel Mac evidence is accepted;
-3. merge the IMP-062 implementation, execute its network-disabled primary Intel Mac run against the exact merged commit, and accept only a content-free privacy-reviewed result through a separate completion pull request;
-4. allocate IMP-063 only when a new bounded implementation issue is opened; ZIP ingestion, attachment bytes, target-specific export, cloud credentials, tools, automatic cloud fallback, and unrelated daily-use features remain separate work;
+2. retain PORT-013 as `pass` within both the accepted IMP-057 migration boundary and the accepted IMP-061/IMP-062 imported-context replay extension, without broadening either result beyond its documented limits;
+3. allocate IMP-063 only when a new bounded implementation issue is opened; ZIP ingestion, attachment bytes, target-specific export, cloud credentials, tools, automatic cloud fallback, and unrelated daily-use features remain separate work;
+4. continue Phase 6 daily-use integration and independently required portability work without weakening the Phase 3 safety boundary or Phase 4A/4B canonical state contracts;
 5. keep the complete Phase 6 gate and stable general anti-lock-in incomplete until their independent remaining requirements pass.
 
 ## 19. Roadmap change control

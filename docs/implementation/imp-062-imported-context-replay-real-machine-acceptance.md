@@ -2,11 +2,12 @@
 
 ## Status
 
-Implemented with deterministic synthetic CI evidence.
+Implemented with deterministic synthetic CI evidence and accepted primary Intel Mac real-machine evidence.
 
-Primary Intel Mac real-machine evidence remains pending until the merged implementation commit is executed with networking operator-confirmed disabled and a privacy-reviewed result is accepted through a separate completion pull request.
+The accepted privacy-safe result is bound to exact implementation commit `65f3b5e9ac8c9961c7ec2a152dfdfbb637386e93` and stored at `docs/testing/results/IMP-062-primary-intel-mac-2026-07-12.json`. The run passed on Darwin `x86_64` with networking operator-confirmed disabled and fixed IPv4 loopback Ollama only.
 
-Issue: #200
+Implementation issue: #200
+Evidence acceptance issue: #202
 
 ## Objective
 
@@ -94,7 +95,7 @@ It excludes:
 - credentials;
 - secret values.
 
-The raw real-machine result must first be written outside the repository and reviewed manually. A later separate completion pull request may store only a privacy-safe result accepted against the exact merged implementation commit.
+The raw real-machine result was written outside the repository and reviewed manually. The accepted repository result contains only the bounded privacy-safe schema and is tied to the exact merged implementation commit.
 
 ## Non-claims
 
