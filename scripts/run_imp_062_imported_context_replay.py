@@ -83,8 +83,7 @@ def _has_test(relative: str) -> bool:
     path = ROOT / relative
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     return any(
-        isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
-        and node.name.startswith("test_")
+        isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name.startswith("test_")
         for node in tree.body
     )
 
@@ -123,7 +122,6 @@ def _accepted_result(extension: dict[str, Any], gate: dict[str, Any]) -> bool:
         "result": "pass",
         "evidence_level": "real-machine",
         "operating_system": gate.get("platform"),
-        "architecture": gate.get("architecture"),
         "commit_sha": gate.get("commit_sha"),
         "completed_at": gate.get("completed_at"),
         "network_mode": gate.get("network_mode"),
@@ -134,6 +132,9 @@ def _accepted_result(extension: dict[str, Any], gate: dict[str, Any]) -> bool:
     }
     if any(result.get(key) != value for key, value in expected.items()):
         raise RuntimeError("accepted replay result does not match matrix")
+    architectures = gate.get("architectures")
+    if not isinstance(architectures, list) or result.get("architecture") not in architectures:
+        raise RuntimeError("accepted replay architecture is invalid")
     evidence = result.get("evidence")
     if not isinstance(evidence, dict) or set(evidence) != _EXPECTED_EVIDENCE_KEYS:
         raise RuntimeError("accepted replay evidence shape is invalid")
@@ -178,8 +179,7 @@ def _matrix_evidence() -> tuple[dict[str, bool], list[str], bool]:
         "matrix_schema_valid": matrix.get("schema_version") == 1,
         "phase_identifier_valid": matrix.get("phase") == "6",
         "imp061_extension_identified": extension.get("implementation") == "IMP-061",
-        "imp062_acceptance_identified": extension.get("acceptance_implementation")
-        == "IMP-062",
+        "imp062_acceptance_identified": extension.get("acceptance_implementation") == "IMP-062",
         "port013_extension_identified": extension.get("portability_test_id") == "PORT-013",
         "extension_status_matches_machine_gate": extension.get("status") == expected_status,
         "passed_evidence_levels_match_gate": extension.get("passed_evidence_levels")
@@ -189,9 +189,7 @@ def _matrix_evidence() -> tuple[dict[str, bool], list[str], bool]:
         "machine_gate_declared": status in {"pending", "pass"},
         "stored_machine_evidence_valid": status != "pass" or stored_complete,
         "phase6_nonclaim_preserved": extension.get("phase6_gate_complete") is False,
-        "stable_anti_lock_in_nonclaim_preserved": extension.get(
-            "stable_anti_lock_in_claim"
-        )
+        "stable_anti_lock_in_nonclaim_preserved": extension.get("stable_anti_lock_in_claim")
         is False,
     }
     return checks, cast(list[str], limitations), stored_complete

@@ -118,6 +118,7 @@
       "The complete Phase 6 gate and stable general anti-lock-in remain incomplete."
     ],
     "phase6_gate_complete": false,
-    "stable_anti_lock_in_claim": false
+    "stable_anti_lock_in_claim": false,
+    "real_machine_gate_status": "pending"
   }
 }

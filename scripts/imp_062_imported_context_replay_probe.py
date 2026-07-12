@@ -347,16 +347,15 @@ def _prompt_summary(body: bytes | None) -> PromptSummary:
     imported_elsewhere = any(
         isinstance(items, list)
         and any(
-            isinstance(item, dict) and item.get("origin_class") == "imported_data"
-            for item in items
+            isinstance(item, dict) and item.get("origin_class") == "imported_data" for item in items
         )
         for name, items in channels.items()
         if name != "untrusted_content"
     )
     findings = sum(
-        len(item.get("prompt_injection_findings", []))
+        len(item.get("findings", []))
         for item in imported_items
-        if isinstance(item.get("prompt_injection_findings", []), list)
+        if isinstance(item.get("findings", []), list)
     )
     return PromptSummary(
         untrusted_count=len(untrusted),
@@ -364,8 +363,7 @@ def _prompt_summary(body: bytes | None) -> PromptSummary:
         imported_only_in_untrusted=not imported_elsewhere and len(imported_items) == len(untrusted),
         imported_items_data_only=all(item.get("data_only") is True for item in imported_items),
         imported_items_untrusted=all(
-            item.get("effective_authority_class") == "untrusted_data"
-            for item in imported_items
+            item.get("effective_authority_class") == "untrusted_data" for item in imported_items
         ),
         imported_finding_count=findings,
     )
@@ -421,7 +419,7 @@ def _activate_binding(
     runtime_version: str | None,
 ) -> tuple[str, str, str]:
     health = adapter.health()
-    if health.status != "ready":
+    if health.state != "ready":
         raise RuntimeError("target Ollama runtime is unavailable")
     inventory = adapter.inventory(_context("imp062.inventory"))
     model_id = ollama_model_id(model_name)
