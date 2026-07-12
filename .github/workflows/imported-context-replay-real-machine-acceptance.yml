@@ -1,0 +1,66 @@
+name: Imported context replay real-machine acceptance
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/imported-context-replay-real-machine-acceptance.yml
+      - scripts/imp_062_imported_context_replay_probe.py
+      - scripts/run_imp_062_imported_context_replay.py
+      - src/doll/chatgpt_export_import.py
+      - src/doll/generic_import_publication.py
+      - src/doll/imported_context_replay.py
+      - src/doll/instruction_origin.py
+      - src/doll/local_conversation.py
+      - src/doll/model_manifest.py
+      - src/doll/ollama_adapter.py
+      - docs/testing/phase-6-local-portability-matrix.json
+      - tests/test_imp_062_imported_context_replay_acceptance.py
+  pull_request:
+    paths:
+      - .github/workflows/imported-context-replay-real-machine-acceptance.yml
+      - scripts/imp_062_imported_context_replay_probe.py
+      - scripts/run_imp_062_imported_context_replay.py
+      - src/doll/chatgpt_export_import.py
+      - src/doll/generic_import_publication.py
+      - src/doll/imported_context_replay.py
+      - src/doll/instruction_origin.py
+      - src/doll/local_conversation.py
+      - src/doll/model_manifest.py
+      - src/doll/ollama_adapter.py
+      - docs/testing/phase-6-local-portability-matrix.json
+      - tests/test_imp_062_imported_context_replay_acceptance.py
+
+permissions:
+  contents: read
+
+jobs:
+  acceptance:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked --all-extras
+      - name: Run IMP-062 synthetic acceptance
+        shell: bash
+        run: |
+          set -o pipefail
+          uv run pytest -q --no-cov \
+            tests/test_imp_062_imported_context_replay_acceptance.py \
+            2>&1 | tee imp062-imported-context-replay-pytest.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: imp062-imported-context-replay-${{ matrix.os }}
+          path: imp062-imported-context-replay-pytest.txt
