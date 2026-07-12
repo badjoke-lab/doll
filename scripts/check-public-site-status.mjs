@@ -51,8 +51,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 62,
-  "project-status.json must mark Phase 6 in progress through IMP-061 with IMP-062 next",
+    status.phase?.next_implementation === 63,
+  "project-status.json must mark Phase 6 in progress through IMP-062 with IMP-063 next",
 );
 expect(
   status.model_runtime &&
@@ -66,6 +66,8 @@ expect(
 );
 expect(
   localPortability.context_replay_extension?.implementation === "IMP-061" &&
+    localPortability.context_replay_extension?.acceptance_implementation ===
+      "IMP-062" &&
     localPortability.context_replay_extension?.portability_test_id ===
       "PORT-013" &&
     localPortability.context_replay_extension?.status === "ci-pass" &&
@@ -76,11 +78,25 @@ expect(
     localPortability.context_replay_extension?.required_evidence_levels?.includes(
       "real-machine",
     ) &&
+    localPortability.context_replay_extension?.accepted_real_machine_result ===
+      null &&
+    localPortability.context_replay_extension?.real_machine_gate?.required ===
+      true &&
+    localPortability.context_replay_extension?.real_machine_gate?.status ===
+      "pending" &&
+    localPortability.context_replay_extension?.real_machine_gate?.commit_sha ===
+      null &&
+    localPortability.context_replay_extension?.real_machine_gate?.completed_at ===
+      null &&
     localPortability.context_replay_extension?.real_machine_gate_status ===
       "pending" &&
+    localPortability.context_replay_extension?.implementation_doc ===
+      "docs/implementation/imp-062-imported-context-replay-real-machine-acceptance.md" &&
+    localPortability.context_replay_extension?.runbook ===
+      "docs/testing/imp-062-primary-intel-mac-runbook.md" &&
     localPortability.context_replay_extension?.phase6_gate_complete === false &&
     localPortability.context_replay_extension?.stable_anti_lock_in_claim === false,
-  "IMP-061 context replay extension must remain CI-only until real-machine evidence",
+  "IMP-061/IMP-062 context replay extension must remain CI-only until accepted real-machine evidence",
 );
 
 expect(
@@ -293,8 +309,12 @@ expect(
   "roadmap must record the IMP-061 imported context replay boundary",
 );
 expect(
-  roadmap.includes("the next bounded implementation receives IMP-062 only when a new implementation issue is opened"),
-  "roadmap must identify IMP-062 as the next unallocated implementation identifier",
+  roadmap.includes("### IMP-062 — Primary Intel Mac imported-context replay acceptance"),
+  "roadmap must record the IMP-062 real-machine acceptance boundary",
+);
+expect(
+  roadmap.includes("the next bounded implementation receives IMP-063 only when a new implementation issue is opened"),
+  "roadmap must identify IMP-063 as the next unallocated implementation identifier",
 );
 expect(
   roadmap.includes("docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json"),
@@ -306,9 +326,9 @@ expect(
 );
 expect(
   roadmap.includes(
-    "After IMP-061 imported-context replay foundation, the immediate order is:",
+    "After IMP-062 imported-context replay real-machine acceptance infrastructure, the immediate order is:",
   ),
-  "roadmap must record IMP-061 replay evidence boundary and remaining Phase 6 work",
+  "roadmap must record IMP-062 acceptance infrastructure and remaining Phase 6 work",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),

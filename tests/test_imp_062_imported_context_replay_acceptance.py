@@ -11,6 +11,10 @@ ROOT = Path(__file__).resolve().parents[1]
 RUNNER = ROOT / "scripts" / "run_imp_062_imported_context_replay.py"
 PROBE = ROOT / "scripts" / "imp_062_imported_context_replay_probe.py"
 MATRIX = ROOT / "docs" / "testing" / "phase-6-local-portability-matrix.json"
+IMPLEMENTATION_DOC = (
+    ROOT / "docs" / "implementation" / "imp-062-imported-context-replay-real-machine-acceptance.md"
+)
+RUNBOOK = ROOT / "docs" / "testing" / "imp-062-primary-intel-mac-runbook.md"
 PRIVATE_MARKERS = (
     "/Users/",
     "/home/",
@@ -166,6 +170,12 @@ def test_imp_062_matrix_keeps_real_machine_evidence_pending() -> None:
     assert extension["passed_evidence_levels"] == ["ci"]
     assert extension["required_evidence_levels"] == ["ci", "real-machine"]
     assert extension["accepted_real_machine_result"] is None
+    assert extension["implementation_doc"] == (
+        "docs/implementation/imp-062-imported-context-replay-real-machine-acceptance.md"
+    )
+    assert extension["runbook"] == ("docs/testing/imp-062-primary-intel-mac-runbook.md")
+    assert IMPLEMENTATION_DOC.is_file()
+    assert RUNBOOK.is_file()
     assert extension["real_machine_gate"] == {
         "required": True,
         "status": "pending",
@@ -178,3 +188,24 @@ def test_imp_062_matrix_keeps_real_machine_evidence_pending() -> None:
     }
     assert extension["phase6_gate_complete"] is False
     assert extension["stable_anti_lock_in_claim"] is False
+
+
+def test_imp_062_runbook_keeps_private_execution_bounded() -> None:
+    implementation = IMPLEMENTATION_DOC.read_text(encoding="utf-8")
+    runbook = RUNBOOK.read_text(encoding="utf-8")
+
+    assert "Primary Intel Mac imported-context replay acceptance" in implementation
+    assert "Synthetic CI mode" in implementation
+    assert "Real-machine mode" in implementation
+    assert "stable general anti-lock-in" in implementation
+
+    assert "--evidence-level real-machine" in runbook
+    assert "--offline-confirmed" in runbook
+    assert "--local-only-confirmed" in runbook
+    assert "IFS= read -r MODEL" in runbook
+    assert "mktemp -d" in runbook
+    assert "outside the repository" in runbook
+    assert "Manual privacy review" in runbook
+    assert "unset MODEL" in runbook
+    assert "phase6_gate_complete" in runbook
+    assert "stable_anti_lock_in_claim" in runbook

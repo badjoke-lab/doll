@@ -119,6 +119,8 @@
     ],
     "phase6_gate_complete": false,
     "stable_anti_lock_in_claim": false,
-    "real_machine_gate_status": "pending"
+    "real_machine_gate_status": "pending",
+    "implementation_doc": "docs/implementation/imp-062-imported-context-replay-real-machine-acceptance.md",
+    "runbook": "docs/testing/imp-062-primary-intel-mac-runbook.md"
   }
 }
