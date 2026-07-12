@@ -15,6 +15,7 @@ IMPLEMENTATION_DOC = (
     ROOT / "docs" / "implementation" / "imp-062-imported-context-replay-real-machine-acceptance.md"
 )
 RUNBOOK = ROOT / "docs" / "testing" / "imp-062-primary-intel-mac-runbook.md"
+EVIDENCE = ROOT / "docs" / "testing" / "results" / "IMP-062-primary-intel-mac-2026-07-12.json"
 PRIVATE_MARKERS = (
     "/Users/",
     "/home/",
@@ -72,8 +73,8 @@ def test_imp_062_ci_runner_is_content_free_and_complete() -> None:
     assert payload["process_launch_used"] is False
     assert payload["tool_execution_used"] is False
     assert payload["capability_execution_used"] is False
-    assert payload["context_replay_real_machine_gate"] == "pending"
-    assert payload["context_replay_extension_complete"] is False
+    assert payload["context_replay_real_machine_gate"] == "pass"
+    assert payload["context_replay_extension_complete"] is True
     assert payload["phase6_gate_complete"] is False
     assert payload["stable_anti_lock_in_claim"] is False
     assert payload["portability_test_id"] == "PORT-013"
@@ -159,35 +160,55 @@ def test_imp_062_runner_fails_closed_on_commit_or_mode_mismatch() -> None:
     assert "private-model-name" not in real_without_confirmations.stdout
 
 
-def test_imp_062_matrix_keeps_real_machine_evidence_pending() -> None:
+def test_imp_062_matrix_accepts_real_machine_evidence() -> None:
     matrix = json.loads(MATRIX.read_text(encoding="utf-8"))
     extension = matrix["context_replay_extension"]
+    evidence = json.loads(EVIDENCE.read_text(encoding="utf-8"))
 
     assert extension["implementation"] == "IMP-061"
     assert extension["acceptance_implementation"] == "IMP-062"
     assert extension["portability_test_id"] == "PORT-013"
-    assert extension["status"] == "ci-pass"
-    assert extension["passed_evidence_levels"] == ["ci"]
+    assert extension["status"] == "pass"
+    assert extension["passed_evidence_levels"] == ["ci", "real-machine"]
     assert extension["required_evidence_levels"] == ["ci", "real-machine"]
-    assert extension["accepted_real_machine_result"] is None
+    assert extension["accepted_real_machine_result"] == (
+        "docs/testing/results/IMP-062-primary-intel-mac-2026-07-12.json"
+    )
     assert extension["implementation_doc"] == (
         "docs/implementation/imp-062-imported-context-replay-real-machine-acceptance.md"
     )
     assert extension["runbook"] == ("docs/testing/imp-062-primary-intel-mac-runbook.md")
     assert IMPLEMENTATION_DOC.is_file()
     assert RUNBOOK.is_file()
+    assert EVIDENCE.is_file()
     assert extension["real_machine_gate"] == {
         "required": True,
-        "status": "pending",
+        "status": "pass",
         "platform": "Darwin",
         "architectures": ["x86_64", "amd64"],
         "minimum_local_models": 1,
         "network_mode": "offline-confirmed",
-        "commit_sha": None,
-        "completed_at": None,
+        "commit_sha": "65f3b5e9ac8c9961c7ec2a152dfdfbb637386e93",
+        "completed_at": "2026-07-12T14:48:39.025820Z",
     }
+    assert extension["real_machine_gate_status"] == "pass"
     assert extension["phase6_gate_complete"] is False
     assert extension["stable_anti_lock_in_claim"] is False
+
+    assert evidence["result"] == "pass"
+    assert evidence["evidence_level"] == "real-machine"
+    assert evidence["commit_sha"] == "65f3b5e9ac8c9961c7ec2a152dfdfbb637386e93"
+    assert evidence["operating_system"] == "Darwin"
+    assert evidence["architecture"] == "x86_64"
+    assert evidence["network_mode"] == "offline-confirmed"
+    assert evidence["real_runtime_used"] is True
+    assert all(evidence["checks"].values())
+    assert not any(evidence["privacy"].values())
+    assert evidence["evidence"]["allowed_loopback_socket_attempts"] == 5
+    assert evidence["evidence"]["rejected_socket_attempts"] == 0
+    assert evidence["evidence"]["authority_record_count"] == 0
+    assert evidence["phase6_gate_complete"] is False
+    assert evidence["stable_anti_lock_in_claim"] is False
 
 
 def test_imp_062_runbook_keeps_private_execution_bounded() -> None:

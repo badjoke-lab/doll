@@ -82,7 +82,7 @@
     "implementation": "IMP-061",
     "acceptance_implementation": "IMP-062",
     "portability_test_id": "PORT-013",
-    "status": "ci-pass",
+    "status": "pass",
     "description": "Explicitly selected imported canonical text events are resolved through accepted source mappings, materialized as data-only untrusted context, and replayed through a distinct approved target runtime path.",
     "pytest_files": [
       "tests/test_imported_context_replay.py",
@@ -90,16 +90,17 @@
       "tests/test_imp_062_imported_context_replay_acceptance.py"
     ],
     "passed_evidence_levels": [
-      "ci"
+      "ci",
+      "real-machine"
     ],
     "required_evidence_levels": [
       "ci",
       "real-machine"
     ],
-    "accepted_real_machine_result": null,
+    "accepted_real_machine_result": "docs/testing/results/IMP-062-primary-intel-mac-2026-07-12.json",
     "real_machine_gate": {
       "required": true,
-      "status": "pending",
+      "status": "pass",
       "platform": "Darwin",
       "architectures": [
         "x86_64",
@@ -107,8 +108,8 @@
       ],
       "minimum_local_models": 1,
       "network_mode": "offline-confirmed",
-      "commit_sha": null,
-      "completed_at": null
+      "commit_sha": "65f3b5e9ac8c9961c7ec2a152dfdfbb637386e93",
+      "completed_at": "2026-07-12T14:48:39.025820Z"
     },
     "limitations": [
       "Synthetic CI uses an injected Ollama transport and is not real local-runtime evidence.",
@@ -119,7 +120,7 @@
     ],
     "phase6_gate_complete": false,
     "stable_anti_lock_in_claim": false,
-    "real_machine_gate_status": "pending",
+    "real_machine_gate_status": "pass",
     "implementation_doc": "docs/implementation/imp-062-imported-context-replay-real-machine-acceptance.md",
     "runbook": "docs/testing/imp-062-primary-intel-mac-runbook.md"
   }

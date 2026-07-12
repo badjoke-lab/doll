@@ -36,6 +36,9 @@ const chatgptHistory = JSON.parse(
 const chatgptPrivate = JSON.parse(
   read("docs/testing/results/IMP-060-project-owner-chatgpt-2026-07-10.json"),
 );
+const importedReplayPrimary = JSON.parse(
+  read("docs/testing/results/IMP-062-primary-intel-mac-2026-07-12.json"),
+);
 
 expect(status.schema_version === 2, "project-status.json must use schema_version 2");
 expect(
@@ -70,33 +73,67 @@ expect(
       "IMP-062" &&
     localPortability.context_replay_extension?.portability_test_id ===
       "PORT-013" &&
-    localPortability.context_replay_extension?.status === "ci-pass" &&
+    localPortability.context_replay_extension?.status === "pass" &&
     localPortability.context_replay_extension?.passed_evidence_levels?.length ===
-      1 &&
-    localPortability.context_replay_extension?.passed_evidence_levels?.[0] ===
-      "ci" &&
+      2 &&
+    localPortability.context_replay_extension?.passed_evidence_levels?.includes(
+      "ci",
+    ) &&
+    localPortability.context_replay_extension?.passed_evidence_levels?.includes(
+      "real-machine",
+    ) &&
     localPortability.context_replay_extension?.required_evidence_levels?.includes(
       "real-machine",
     ) &&
     localPortability.context_replay_extension?.accepted_real_machine_result ===
-      null &&
+      "docs/testing/results/IMP-062-primary-intel-mac-2026-07-12.json" &&
     localPortability.context_replay_extension?.real_machine_gate?.required ===
       true &&
     localPortability.context_replay_extension?.real_machine_gate?.status ===
-      "pending" &&
+      "pass" &&
     localPortability.context_replay_extension?.real_machine_gate?.commit_sha ===
-      null &&
+      "65f3b5e9ac8c9961c7ec2a152dfdfbb637386e93" &&
     localPortability.context_replay_extension?.real_machine_gate?.completed_at ===
-      null &&
+      "2026-07-12T14:48:39.025820Z" &&
     localPortability.context_replay_extension?.real_machine_gate_status ===
-      "pending" &&
+      "pass" &&
     localPortability.context_replay_extension?.implementation_doc ===
       "docs/implementation/imp-062-imported-context-replay-real-machine-acceptance.md" &&
     localPortability.context_replay_extension?.runbook ===
       "docs/testing/imp-062-primary-intel-mac-runbook.md" &&
     localPortability.context_replay_extension?.phase6_gate_complete === false &&
     localPortability.context_replay_extension?.stable_anti_lock_in_claim === false,
-  "IMP-061/IMP-062 context replay extension must remain CI-only until accepted real-machine evidence",
+  "IMP-061/IMP-062 context replay extension must bind accepted real-machine evidence",
+);
+
+expect(
+  importedReplayPrimary.test_id ===
+    "IMP-062-IMPORTED-CONTEXT-REPLAY-PRIMARY" &&
+    importedReplayPrimary.result === "pass" &&
+    importedReplayPrimary.evidence_level === "real-machine" &&
+    importedReplayPrimary.commit_sha ===
+      "65f3b5e9ac8c9961c7ec2a152dfdfbb637386e93" &&
+    importedReplayPrimary.operating_system === "Darwin" &&
+    importedReplayPrimary.architecture === "x86_64" &&
+    importedReplayPrimary.network_mode === "offline-confirmed" &&
+    importedReplayPrimary.real_runtime_used === true &&
+    importedReplayPrimary.external_network_request_used === false &&
+    importedReplayPrimary.cloud_credentials_used === false &&
+    importedReplayPrimary.model_download_used === false &&
+    importedReplayPrimary.runtime_installation_used === false &&
+    importedReplayPrimary.process_launch_used === false &&
+    importedReplayPrimary.tool_execution_used === false &&
+    importedReplayPrimary.capability_execution_used === false &&
+    importedReplayPrimary.context_replay_extension_complete === true &&
+    importedReplayPrimary.phase6_gate_complete === false &&
+    importedReplayPrimary.stable_anti_lock_in_claim === false &&
+    Object.values(importedReplayPrimary.checks || {}).every(
+      (value) => value === true,
+    ) &&
+    Object.values(importedReplayPrimary.privacy || {}).every(
+      (value) => value === false,
+    ),
+  "accepted IMP-062 primary evidence must remain bounded, offline, and privacy-safe",
 );
 
 expect(
@@ -326,9 +363,9 @@ expect(
 );
 expect(
   roadmap.includes(
-    "After IMP-062 imported-context replay real-machine acceptance infrastructure, the immediate order is:",
+    "After accepted IMP-062 imported-context replay real-machine evidence, the immediate order is:",
   ),
-  "roadmap must record IMP-062 acceptance infrastructure and remaining Phase 6 work",
+  "roadmap must record accepted IMP-062 evidence and remaining Phase 6 work",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),
