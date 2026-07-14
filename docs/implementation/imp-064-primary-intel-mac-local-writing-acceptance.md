@@ -2,9 +2,7 @@
 
 ## Status
 
-Implementation in progress.
-
-Synthetic CI evidence and the exact-commit primary Intel Mac acceptance path are being added on Issue #206.
+Acceptance infrastructure implemented with deterministic synthetic CI evidence.
 
 Primary Intel Mac real-machine evidence remains pending until the merged implementation commit is executed with networking operator-confirmed disabled and a privacy-reviewed content-free result is accepted through a separate completion pull request.
 

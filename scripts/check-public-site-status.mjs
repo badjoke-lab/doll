@@ -27,6 +27,9 @@ const status = JSON.parse(read("website/project-status.json"));
 const localPortability = JSON.parse(
   read("docs/testing/phase-6-local-portability-matrix.json"),
 );
+const dailyUse = JSON.parse(
+  read("docs/testing/phase-6-daily-use-matrix.json"),
+);
 const shutdownEscape = JSON.parse(
   read("docs/testing/phase-6-shutdown-escape-matrix.json"),
 );
@@ -54,14 +57,19 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 64,
-  "project-status.json must mark Phase 6 in progress through IMP-063 with IMP-064 next",
+    status.phase?.next_implementation === 65,
+  "project-status.json must mark Phase 6 in progress through IMP-064 with IMP-065 next",
 );
 expect(
   status.model_runtime &&
     typeof status.model_runtime.connected === "boolean" &&
     typeof status.model_runtime.message === "string",
   "project-status.json requires model_runtime.connected and model_runtime.message",
+);
+expect(
+  status.model_runtime.message.includes("through IMP-064") &&
+    status.model_runtime.message.includes("real-machine evidence remains pending"),
+  "project-status.json must describe the bounded IMP-064 pending machine gate",
 );
 expect(
   /^\d{4}-\d{2}-\d{2}$/.test(status.last_reviewed || ""),
@@ -104,6 +112,31 @@ expect(
     localPortability.context_replay_extension?.phase6_gate_complete === false &&
     localPortability.context_replay_extension?.stable_anti_lock_in_claim === false,
   "IMP-061/IMP-062 context replay extension must bind accepted real-machine evidence",
+);
+
+expect(
+  dailyUse.schema_version === 1 &&
+    dailyUse.phase === "6" &&
+    dailyUse.local_writing_workflow?.implementation === "IMP-063" &&
+    dailyUse.local_writing_workflow?.acceptance_implementation === "IMP-064" &&
+    dailyUse.local_writing_workflow?.status === "ci-pass" &&
+    JSON.stringify(dailyUse.local_writing_workflow?.passed_evidence_levels) ===
+      JSON.stringify(["ci"]) &&
+    JSON.stringify(dailyUse.local_writing_workflow?.required_evidence_levels) ===
+      JSON.stringify(["ci", "real-machine"]) &&
+    dailyUse.local_writing_workflow?.accepted_real_machine_result === null &&
+    dailyUse.local_writing_workflow?.real_machine_gate?.required === true &&
+    dailyUse.local_writing_workflow?.real_machine_gate?.status === "pending" &&
+    dailyUse.local_writing_workflow?.real_machine_gate?.commit_sha === null &&
+    dailyUse.local_writing_workflow?.real_machine_gate?.completed_at === null &&
+    dailyUse.local_writing_workflow?.real_machine_gate_status === "pending" &&
+    dailyUse.local_writing_workflow?.implementation_doc ===
+      "docs/implementation/imp-064-primary-intel-mac-local-writing-acceptance.md" &&
+    dailyUse.local_writing_workflow?.runbook ===
+      "docs/testing/imp-064-primary-intel-mac-runbook.md" &&
+    dailyUse.local_writing_workflow?.phase6_gate_complete === false &&
+    dailyUse.local_writing_workflow?.stable_anti_lock_in_claim === false,
+  "IMP-063/IMP-064 writing workflow must remain ci-pass pending machine evidence",
 );
 
 expect(
@@ -354,8 +387,12 @@ expect(
   "roadmap must record the IMP-063 local writing workflow boundary",
 );
 expect(
-  roadmap.includes("the next bounded implementation receives IMP-064 only when a new implementation issue is opened"),
-  "roadmap must identify IMP-064 as the next unallocated implementation identifier",
+  roadmap.includes("### IMP-064 — Primary Intel Mac local-writing acceptance"),
+  "roadmap must record the IMP-064 local writing acceptance boundary",
+);
+expect(
+  roadmap.includes("the next bounded implementation receives IMP-065 only when a new implementation issue is opened"),
+  "roadmap must identify IMP-065 as the next unallocated implementation identifier",
 );
 expect(
   roadmap.includes("docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json"),
@@ -367,9 +404,9 @@ expect(
 );
 expect(
   roadmap.includes(
-    "After IMP-063 bounded local writing workflow, the immediate order is:",
+    "After IMP-064 local-writing real-machine acceptance infrastructure, the immediate order is:",
   ),
-  "roadmap must record IMP-063 and remaining Phase 6 work",
+  "roadmap must record IMP-064 infrastructure and remaining Phase 6 work",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),

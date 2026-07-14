@@ -319,8 +319,7 @@ def _prompt_summary(body: bytes | None) -> WritingPromptSummary:
         ),
         external_items_data_only=all(item.get("data_only") is True for item in external_items),
         external_items_untrusted=all(
-            item.get("effective_authority_class") == "untrusted_data"
-            for item in external_items
+            item.get("effective_authority_class") == "untrusted_data" for item in external_items
         ),
         source_absent_from_current=(
             expected_source is None or expected_source not in current_content
@@ -576,18 +575,13 @@ def run(
                 "external_content_only_in_untrusted": all(
                     item.external_only_in_untrusted for item in prompts
                 ),
-                "external_items_data_only": all(
-                    item.external_items_data_only for item in prompts
-                ),
-                "external_items_untrusted": all(
-                    item.external_items_untrusted for item in prompts
-                ),
+                "external_items_data_only": all(item.external_items_data_only for item in prompts),
+                "external_items_untrusted": all(item.external_items_untrusted for item in prompts),
                 "source_absent_from_current_instruction": all(
                     item.source_absent_from_current for item in prompts
                 ),
                 "hostile_source_reported": (
-                    summarize.prompt_injection_finding_count >= 1
-                    and prompts[2].finding_count >= 1
+                    summarize.prompt_injection_finding_count >= 1 and prompts[2].finding_count >= 1
                 ),
                 "secret_redaction_count_zero": all(
                     item.secret_redaction_count == 0 for item in results
@@ -629,9 +623,7 @@ def run(
                 "runtime_mode": "synthetic" if mode == "ci" else "real-local",
                 "target_adapter_id": OLLAMA_ADAPTER_ID,
                 "workflow_mode_count": len(results),
-                "completed_workflow_count": sum(
-                    item.outcome == "completed" for item in results
-                ),
+                "completed_workflow_count": sum(item.outcome == "completed" for item in results),
                 "source_instruction_count_total": sum(
                     item.source_instruction_count for item in results
                 ),

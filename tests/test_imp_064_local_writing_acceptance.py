@@ -11,10 +11,7 @@ RUNNER = ROOT / "scripts" / "run_imp_064_local_writing.py"
 MATRIX = ROOT / "docs" / "testing" / "phase-6-daily-use-matrix.json"
 RUNBOOK = ROOT / "docs" / "testing" / "imp-064-primary-intel-mac-runbook.md"
 IMPLEMENTATION = (
-    ROOT
-    / "docs"
-    / "implementation"
-    / "imp-064-primary-intel-mac-local-writing-acceptance.md"
+    ROOT / "docs" / "implementation" / "imp-064-primary-intel-mac-local-writing-acceptance.md"
 )
 TEST_ID = "IMP-064-LOCAL-WRITING-PRIMARY"
 

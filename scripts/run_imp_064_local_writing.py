@@ -83,8 +83,7 @@ def _has_test(relative: str) -> bool:
     path = ROOT / relative
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     return any(
-        isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
-        and node.name.startswith("test_")
+        isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name.startswith("test_")
         for node in tree.body
     )
 
@@ -182,8 +181,7 @@ def _matrix_evidence() -> tuple[dict[str, bool], list[str], bool]:
         "matrix_schema_valid": matrix.get("schema_version") == 1,
         "phase_identifier_valid": matrix.get("phase") == "6",
         "imp063_workflow_identified": workflow.get("implementation") == "IMP-063",
-        "imp064_acceptance_identified": workflow.get("acceptance_implementation")
-        == "IMP-064",
+        "imp064_acceptance_identified": workflow.get("acceptance_implementation") == "IMP-064",
         "workflow_status_matches_machine_gate": workflow.get("status") == expected_status,
         "passed_evidence_levels_match_gate": workflow.get("passed_evidence_levels")
         == expected_levels,
@@ -193,12 +191,9 @@ def _matrix_evidence() -> tuple[dict[str, bool], list[str], bool]:
         "stored_machine_evidence_valid": status != "pass" or stored_complete,
         "implementation_document_present": isinstance(implementation_doc, str)
         and (ROOT / implementation_doc).is_file(),
-        "private_machine_runbook_present": isinstance(runbook, str)
-        and (ROOT / runbook).is_file(),
+        "private_machine_runbook_present": isinstance(runbook, str) and (ROOT / runbook).is_file(),
         "phase6_nonclaim_preserved": workflow.get("phase6_gate_complete") is False,
-        "stable_anti_lock_in_nonclaim_preserved": workflow.get(
-            "stable_anti_lock_in_claim"
-        )
+        "stable_anti_lock_in_nonclaim_preserved": workflow.get("stable_anti_lock_in_claim")
         is False,
     }
     return checks, cast(list[str], limitations), stored_complete
