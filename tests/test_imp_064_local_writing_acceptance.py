@@ -109,8 +109,8 @@ def test_imp_064_matrix_remains_pending_before_machine_evidence() -> None:
         "commit_sha": None,
         "completed_at": None,
     }
-    assert workflow["implementation_doc"] == str(IMPLEMENTATION.relative_to(ROOT))
-    assert workflow["runbook"] == str(RUNBOOK.relative_to(ROOT))
+    assert workflow["implementation_doc"] == IMPLEMENTATION.relative_to(ROOT).as_posix()
+    assert workflow["runbook"] == RUNBOOK.relative_to(ROOT).as_posix()
     assert IMPLEMENTATION.is_file()
     assert RUNBOOK.is_file()
 
