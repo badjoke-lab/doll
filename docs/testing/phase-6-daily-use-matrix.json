@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "phase": "6",
+  "local_writing_workflow": {
+    "implementation": "IMP-063",
+    "acceptance_implementation": "IMP-064",
+    "status": "ci-pass",
+    "description": "Explicit draft, revise, and summarize workflows execute through the accepted canonical local conversation path while supplied writing material remains data-only untrusted content.",
+    "pytest_files": [
+      "tests/test_local_writing_workflow.py",
+      "tests/test_imp_064_local_writing_acceptance.py"
+    ],
+    "passed_evidence_levels": [
+      "ci"
+    ],
+    "required_evidence_levels": [
+      "ci",
+      "real-machine"
+    ],
+    "accepted_real_machine_result": null,
+    "real_machine_gate": {
+      "required": true,
+      "status": "pending",
+      "platform": "Darwin",
+      "architectures": [
+        "x86_64",
+        "amd64"
+      ],
+      "minimum_local_models": 1,
+      "network_mode": "offline-confirmed",
+      "commit_sha": null,
+      "completed_at": null
+    },
+    "limitations": [
+      "Synthetic CI uses an injected Ollama transport and is not real local-runtime evidence.",
+      "The real-machine drill uses deterministic non-private writing requests and source material with one explicitly selected already-installed local Ollama model.",
+      "The report omits model names, request text, source text, prompt text, response text, paths, usernames, hostnames, credentials, and secret values.",
+      "Automatic or semantic retrieval, memory and project context, translation, attachments, multimodal input, streaming workflow output, tools, cloud fallback, and target-specific export remain outside this acceptance.",
+      "The complete Phase 6 gate and stable general anti-lock-in remain incomplete."
+    ],
+    "phase6_gate_complete": false,
+    "stable_anti_lock_in_claim": false,
+    "real_machine_gate_status": "pending",
+    "implementation_doc": "docs/implementation/imp-064-primary-intel-mac-local-writing-acceptance.md",
+    "runbook": "docs/testing/imp-064-primary-intel-mac-runbook.md"
+  }
+}
