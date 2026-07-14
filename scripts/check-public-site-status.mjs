@@ -54,8 +54,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 63,
-  "project-status.json must mark Phase 6 in progress through IMP-062 with IMP-063 next",
+    status.phase?.next_implementation === 64,
+  "project-status.json must mark Phase 6 in progress through IMP-063 with IMP-064 next",
 );
 expect(
   status.model_runtime &&
@@ -350,8 +350,12 @@ expect(
   "roadmap must record the IMP-062 real-machine acceptance boundary",
 );
 expect(
-  roadmap.includes("the next bounded implementation receives IMP-063 only when a new implementation issue is opened"),
-  "roadmap must identify IMP-063 as the next unallocated implementation identifier",
+  roadmap.includes("### IMP-063 — Bounded local writing workflow"),
+  "roadmap must record the IMP-063 local writing workflow boundary",
+);
+expect(
+  roadmap.includes("the next bounded implementation receives IMP-064 only when a new implementation issue is opened"),
+  "roadmap must identify IMP-064 as the next unallocated implementation identifier",
 );
 expect(
   roadmap.includes("docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json"),
@@ -363,9 +367,9 @@ expect(
 );
 expect(
   roadmap.includes(
-    "After accepted IMP-062 imported-context replay real-machine evidence, the immediate order is:",
+    "After IMP-063 bounded local writing workflow, the immediate order is:",
   ),
-  "roadmap must record accepted IMP-062 evidence and remaining Phase 6 work",
+  "roadmap must record IMP-063 and remaining Phase 6 work",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),

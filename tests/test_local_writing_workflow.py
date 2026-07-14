@@ -265,17 +265,13 @@ def test_hostile_revision_source_remains_data_only_and_reports_finding(
         assert result.prompt_injection_finding_count >= 1
         assert result.source_instruction_id is not None
         origins = InstructionOriginService(repository).list(limit=20)
-        source = next(
-            item for item in origins if item.record_id == result.source_instruction_id
-        )
+        source = next(item for item in origins if item.record_id == result.source_instruction_id)
         assert source.origin_class == "external_content"
         assert source.authority_class == "untrusted_data"
         assert source.data_only is True
 
         prompt = json.loads(adapter.prompts[0])
-        assert source_text not in prompt["channels"]["current_user_instruction"][0][
-            "content"
-        ]
+        assert source_text not in prompt["channels"]["current_user_instruction"][0]["content"]
         assert prompt["channels"]["untrusted_content"][0]["content"] == source_text
 
         after = _record_type_counts(repository)
@@ -399,8 +395,8 @@ def test_duplicate_turn_and_source_preparation_fail_closed(tmp_path: Path) -> No
             content="Existing source preparation",
             source=InstructionSource(
                 origin_class="external_content",
-                actor_type="user",
-                acquisition_method="user_entry",
+                actor_type="extractor",
+                acquisition_method="extraction",
                 source_identifier=source_operation_id,
                 parent_operation_id=source_operation_id,
                 session_id=conversation_id,
@@ -444,8 +440,7 @@ def test_runtime_failure_uses_canonical_error_turn_without_assistant_content(
         assert result.assistant_event_id is None
         assert result.error_event_id is not None
         assert [
-            event.event_kind
-            for event in repository.list_conversation_events(conversation_id)
+            event.event_kind for event in repository.list_conversation_events(conversation_id)
         ] == ["user_message", "system_context_snapshot", "error"]
 
 

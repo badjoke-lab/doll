@@ -112,8 +112,8 @@ class LocalWritingWorkflowService:
                 content=safe_source,
                 source=InstructionSource(
                     origin_class="external_content",
-                    actor_type="user",
-                    acquisition_method="user_entry",
+                    actor_type="extractor",
+                    acquisition_method="extraction",
                     source_identifier=source_operation_id,
                     parent_operation_id=source_operation_id,
                     session_id=conversation_id,
@@ -201,9 +201,7 @@ def _request_text(value: object) -> str:
 def _source_for_mode(mode: WritingMode, value: object) -> str | None:
     if mode == "draft":
         if value is not None:
-            raise LocalWritingWorkflowValidationError(
-                "draft mode does not accept source text"
-            )
+            raise LocalWritingWorkflowValidationError("draft mode does not accept source text")
         return None
     if not isinstance(value, str):
         raise LocalWritingWorkflowValidationError(f"{mode} mode requires source text")
