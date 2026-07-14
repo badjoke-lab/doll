@@ -42,6 +42,9 @@ const chatgptPrivate = JSON.parse(
 const importedReplayPrimary = JSON.parse(
   read("docs/testing/results/IMP-062-primary-intel-mac-2026-07-12.json"),
 );
+const localWritingPrimary = JSON.parse(
+  read("docs/testing/results/IMP-064-primary-intel-mac-2026-07-15.json"),
+);
 
 expect(status.schema_version === 2, "project-status.json must use schema_version 2");
 expect(
@@ -68,8 +71,8 @@ expect(
 );
 expect(
   status.model_runtime.message.includes("through IMP-064") &&
-    status.model_runtime.message.includes("real-machine evidence remains pending"),
-  "project-status.json must describe the bounded IMP-064 pending machine gate",
+    status.model_runtime.message.includes("passes at both CI and real-machine evidence levels"),
+  "project-status.json must describe the accepted bounded IMP-064 machine evidence",
 );
 expect(
   /^\d{4}-\d{2}-\d{2}$/.test(status.last_reviewed || ""),
@@ -119,24 +122,64 @@ expect(
     dailyUse.phase === "6" &&
     dailyUse.local_writing_workflow?.implementation === "IMP-063" &&
     dailyUse.local_writing_workflow?.acceptance_implementation === "IMP-064" &&
-    dailyUse.local_writing_workflow?.status === "ci-pass" &&
+    dailyUse.local_writing_workflow?.status === "pass" &&
     JSON.stringify(dailyUse.local_writing_workflow?.passed_evidence_levels) ===
-      JSON.stringify(["ci"]) &&
+      JSON.stringify(["ci", "real-machine"]) &&
     JSON.stringify(dailyUse.local_writing_workflow?.required_evidence_levels) ===
       JSON.stringify(["ci", "real-machine"]) &&
-    dailyUse.local_writing_workflow?.accepted_real_machine_result === null &&
+    dailyUse.local_writing_workflow?.accepted_real_machine_result ===
+      "docs/testing/results/IMP-064-primary-intel-mac-2026-07-15.json" &&
     dailyUse.local_writing_workflow?.real_machine_gate?.required === true &&
-    dailyUse.local_writing_workflow?.real_machine_gate?.status === "pending" &&
-    dailyUse.local_writing_workflow?.real_machine_gate?.commit_sha === null &&
-    dailyUse.local_writing_workflow?.real_machine_gate?.completed_at === null &&
-    dailyUse.local_writing_workflow?.real_machine_gate_status === "pending" &&
+    dailyUse.local_writing_workflow?.real_machine_gate?.status === "pass" &&
+    dailyUse.local_writing_workflow?.real_machine_gate?.commit_sha ===
+      "d40ba32e87f6d211b05e9da1e1f51974ec6fc369" &&
+    dailyUse.local_writing_workflow?.real_machine_gate?.completed_at ===
+      "2026-07-14T16:17:03.751999Z" &&
+    dailyUse.local_writing_workflow?.real_machine_gate_status === "pass" &&
     dailyUse.local_writing_workflow?.implementation_doc ===
       "docs/implementation/imp-064-primary-intel-mac-local-writing-acceptance.md" &&
     dailyUse.local_writing_workflow?.runbook ===
       "docs/testing/imp-064-primary-intel-mac-runbook.md" &&
     dailyUse.local_writing_workflow?.phase6_gate_complete === false &&
     dailyUse.local_writing_workflow?.stable_anti_lock_in_claim === false,
-  "IMP-063/IMP-064 writing workflow must remain ci-pass pending machine evidence",
+  "IMP-063/IMP-064 writing workflow must bind accepted real-machine evidence",
+);
+
+expect(
+  localWritingPrimary.test_id === "IMP-064-LOCAL-WRITING-PRIMARY" &&
+    localWritingPrimary.result === "pass" &&
+    localWritingPrimary.evidence_level === "real-machine" &&
+    localWritingPrimary.commit_sha ===
+      "d40ba32e87f6d211b05e9da1e1f51974ec6fc369" &&
+    localWritingPrimary.operating_system === "Darwin" &&
+    localWritingPrimary.architecture === "x86_64" &&
+    localWritingPrimary.network_mode === "offline-confirmed" &&
+    localWritingPrimary.real_runtime_used === true &&
+    localWritingPrimary.external_network_request_used === false &&
+    localWritingPrimary.cloud_credentials_used === false &&
+    localWritingPrimary.model_download_used === false &&
+    localWritingPrimary.runtime_installation_used === false &&
+    localWritingPrimary.process_launch_used === false &&
+    localWritingPrimary.tool_execution_used === false &&
+    localWritingPrimary.capability_execution_used === false &&
+    localWritingPrimary.writing_workflow_real_machine_gate === "pass" &&
+    localWritingPrimary.local_writing_workflow_complete === true &&
+    localWritingPrimary.phase6_gate_complete === false &&
+    localWritingPrimary.stable_anti_lock_in_claim === false &&
+    localWritingPrimary.evidence?.workflow_mode_count === 3 &&
+    localWritingPrimary.evidence?.completed_workflow_count === 3 &&
+    localWritingPrimary.evidence?.target_event_count === 9 &&
+    localWritingPrimary.evidence?.runtime_request_count === 11 &&
+    localWritingPrimary.evidence?.allowed_loopback_socket_attempts === 11 &&
+    localWritingPrimary.evidence?.rejected_socket_attempts === 0 &&
+    localWritingPrimary.evidence?.authority_record_count === 0 &&
+    Object.values(localWritingPrimary.checks || {}).every(
+      (value) => value === true,
+    ) &&
+    Object.values(localWritingPrimary.privacy || {}).every(
+      (value) => value === false,
+    ),
+  "accepted IMP-064 primary evidence must remain bounded, offline, and privacy-safe",
 );
 
 expect(
@@ -404,9 +447,9 @@ expect(
 );
 expect(
   roadmap.includes(
-    "After IMP-064 local-writing real-machine acceptance infrastructure, the immediate order is:",
+    "After accepted IMP-064 local-writing real-machine evidence, the immediate order is:",
   ),
-  "roadmap must record IMP-064 infrastructure and remaining Phase 6 work",
+  "roadmap must record accepted IMP-064 evidence and remaining Phase 6 work",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),

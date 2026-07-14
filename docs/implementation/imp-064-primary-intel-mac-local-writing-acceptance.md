@@ -2,9 +2,9 @@
 
 ## Status
 
-Acceptance infrastructure implemented with deterministic synthetic CI evidence.
+Acceptance infrastructure and privacy-reviewed exact-commit primary Intel Mac real-machine evidence accepted.
 
-Primary Intel Mac real-machine evidence remains pending until the merged implementation commit is executed with networking operator-confirmed disabled and a privacy-reviewed content-free result is accepted through a separate completion pull request.
+The accepted run is bound to implementation commit `d40ba32e87f6d211b05e9da1e1f51974ec6fc369` and stored at `docs/testing/results/IMP-064-primary-intel-mac-2026-07-15.json`. It used Darwin `x86_64`, Python 3.12.13, networking operator-confirmed disabled, fixed IPv4 loopback Ollama, and one explicitly selected already-installed local model. All 48 checks passed, all three workflow modes completed, 11 loopback socket attempts were allowed, no non-loopback attempt occurred, no authority record was created, and every privacy flag remained false.
 
 ## Objective
 

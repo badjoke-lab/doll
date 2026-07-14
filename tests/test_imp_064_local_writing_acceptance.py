@@ -10,10 +10,12 @@ ROOT = Path(__file__).resolve().parents[1]
 RUNNER = ROOT / "scripts" / "run_imp_064_local_writing.py"
 MATRIX = ROOT / "docs" / "testing" / "phase-6-daily-use-matrix.json"
 RUNBOOK = ROOT / "docs" / "testing" / "imp-064-primary-intel-mac-runbook.md"
+RESULT = ROOT / "docs" / "testing" / "results" / "IMP-064-primary-intel-mac-2026-07-15.json"
 IMPLEMENTATION = (
     ROOT / "docs" / "implementation" / "imp-064-primary-intel-mac-local-writing-acceptance.md"
 )
 TEST_ID = "IMP-064-LOCAL-WRITING-PRIMARY"
+COMMIT = "d40ba32e87f6d211b05e9da1e1f51974ec6fc369"
 
 
 def _head() -> str:
@@ -50,8 +52,8 @@ def test_imp_064_ci_acceptance_is_content_free() -> None:
     assert payload["evidence_level"] == "ci"
     assert payload["network_mode"] == "synthetic-no-network"
     assert payload["real_runtime_used"] is False
-    assert payload["writing_workflow_real_machine_gate"] == "pending"
-    assert payload["local_writing_workflow_complete"] is False
+    assert payload["writing_workflow_real_machine_gate"] == "pass"
+    assert payload["local_writing_workflow_complete"] is True
     assert payload["phase6_gate_complete"] is False
     assert payload["stable_anti_lock_in_claim"] is False
     assert all(payload["checks"].values())
@@ -83,7 +85,7 @@ def test_imp_064_ci_acceptance_is_content_free() -> None:
         assert forbidden not in result.stdout
 
 
-def test_imp_064_matrix_remains_pending_before_machine_evidence() -> None:
+def test_imp_064_matrix_binds_accepted_machine_evidence() -> None:
     matrix = json.loads(MATRIX.read_text(encoding="utf-8"))
     workflow = matrix["local_writing_workflow"]
     gate = workflow["real_machine_gate"]
@@ -92,27 +94,32 @@ def test_imp_064_matrix_remains_pending_before_machine_evidence() -> None:
     assert matrix["phase"] == "6"
     assert workflow["implementation"] == "IMP-063"
     assert workflow["acceptance_implementation"] == "IMP-064"
-    assert workflow["status"] == "ci-pass"
-    assert workflow["passed_evidence_levels"] == ["ci"]
+    assert workflow["status"] == "pass"
+    assert workflow["passed_evidence_levels"] == ["ci", "real-machine"]
     assert workflow["required_evidence_levels"] == ["ci", "real-machine"]
-    assert workflow["accepted_real_machine_result"] is None
+    assert workflow["accepted_real_machine_result"] == str(RESULT.relative_to(ROOT).as_posix())
     assert workflow["phase6_gate_complete"] is False
     assert workflow["stable_anti_lock_in_claim"] is False
-    assert workflow["real_machine_gate_status"] == "pending"
+    assert workflow["real_machine_gate_status"] == "pass"
     assert gate == {
         "required": True,
-        "status": "pending",
+        "status": "pass",
         "platform": "Darwin",
         "architectures": ["x86_64", "amd64"],
         "minimum_local_models": 1,
         "network_mode": "offline-confirmed",
-        "commit_sha": None,
-        "completed_at": None,
+        "commit_sha": COMMIT,
+        "completed_at": "2026-07-14T16:17:03.751999Z",
     }
     assert workflow["implementation_doc"] == IMPLEMENTATION.relative_to(ROOT).as_posix()
     assert workflow["runbook"] == RUNBOOK.relative_to(ROOT).as_posix()
     assert IMPLEMENTATION.is_file()
     assert RUNBOOK.is_file()
+    result = json.loads(RESULT.read_text(encoding="utf-8"))
+    assert result["result"] == "pass"
+    assert result["commit_sha"] == COMMIT
+    assert all(result["checks"].values())
+    assert not any(result["privacy"].values())
 
 
 def test_imp_064_real_machine_requires_exact_confirmations() -> None:
