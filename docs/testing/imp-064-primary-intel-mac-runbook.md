@@ -6,6 +6,8 @@ Run the bounded IMP-063 local-writing workflow through one already-installed loc
 
 This runbook does not accept evidence by itself. The result must be reviewed and committed through a separate completion pull request.
 
+The drill requires networking operator-confirmed disabled. The runner writes the result outside the repository and requires manual privacy review before acceptance.
+
 ## Required conditions
 
 Before starting:
