@@ -24,7 +24,7 @@
 - `docs/spec/08-acceptance-and-continuity-tests.md` — SHA-256 `1ae9b70cf28257b35a30238bdc46c2caea93dbd17fdf8b516ff708c9e208a698`
 - `docs/spec/08a-ai-environment-portability-acceptance.md` — SHA-256 `3a1876d8b506204254ccd54eb58cfabcf2ddc92e3edd446d90650b9ae22ff305`
 - `docs/spec/08b-project-continuity-acceptance.md` — SHA-256 `b58623f21bdd183a21e1904ebcec954ffb2b6976254b72ac52f13deae83306cc`
-- `docs/spec/09-development-roadmap.md` — SHA-256 `cedb1523a96f7e1a5c10079b22a59439b327f4aa061dd2e02dd55f5772cf4198`
+- `docs/spec/09-development-roadmap.md` — SHA-256 `e8055dd68dddf70349b9c35419d212a8464d431ee909b979c099976cd5968e46`
 
 ---
 
@@ -8565,7 +8565,7 @@ Completed:
 - Phase 5 local runtime and model integration;
 - IMP-001 through IMP-023;
 - IMP-030 through IMP-064;
-- local workspace, SQLite state, migrations, managed artifacts, canonical conversation and project state, State Package v2, backup and restore, the model-independent safety boundary, AI-environment portability, project continuity, runtime-independent adapter contracts, a loopback-only Ollama adapter, authoritative runtime and model manifests, explicit bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, and accepted primary Intel Mac offline continuity evidence through IMP-054, the offline Ollama API session source adapter through IMP-055, explicit loopback Ollama chat capture through IMP-056, the deterministic local-portability migration harness through IMP-057, the deterministic shutdown escape bundle through IMP-058, the bounded ChatGPT conversations.json source adapter through IMP-059, the bounded ChatGPT numbered conversation-member aggregation through IMP-060, bounded imported conversation context replay through IMP-061, the exact-commit imported-context replay real-machine acceptance harness through IMP-062, and the bounded local writing workflow through IMP-063, and the exact-commit primary Intel Mac local-writing acceptance infrastructure through IMP-064.
+- local workspace, SQLite state, migrations, managed artifacts, canonical conversation and project state, State Package v2, backup and restore, the model-independent safety boundary, AI-environment portability, project continuity, runtime-independent adapter contracts, a loopback-only Ollama adapter, authoritative runtime and model manifests, explicit bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, and accepted primary Intel Mac offline continuity evidence through IMP-054, the offline Ollama API session source adapter through IMP-055, explicit loopback Ollama chat capture through IMP-056, the deterministic local-portability migration harness through IMP-057, the deterministic shutdown escape bundle through IMP-058, the bounded ChatGPT conversations.json source adapter through IMP-059, the bounded ChatGPT numbered conversation-member aggregation through IMP-060, bounded imported conversation context replay through IMP-061, the exact-commit imported-context replay real-machine acceptance harness through IMP-062, and the bounded local writing workflow through IMP-063, and the accepted exact-commit primary Intel Mac local-writing evidence through IMP-064.
 
 Current implementation point:
 
@@ -8600,7 +8600,7 @@ Current implementation point:
 - IMP-063 is assigned to Issue #204;
 - IMP-064 adds an exact-commit primary Intel Mac acceptance probe and runner for the IMP-063 `draft`, `revise`, and `summarize` workflow, with injected no-socket CI mode, fixed-loopback real Ollama mode, strict content-free evidence, and a private-machine runbook;
 - IMP-064 is assigned to Issue #206;
-- the IMP-063/IMP-064 local-writing workflow remains `ci-pass`; separate exact-commit privacy-reviewed primary Intel Mac evidence remains required before a real-machine daily-use claim;
+- the IMP-063/IMP-064 local-writing workflow passes at both `ci` and `real-machine` evidence levels; accepted privacy-safe evidence is stored at `docs/testing/results/IMP-064-primary-intel-mac-2026-07-15.json` and bound to exact implementation commit `d40ba32e87f6d211b05e9da1e1f51974ec6fc369`;
 - the next bounded implementation receives IMP-065 only when a new implementation issue is opened;
 - later local migration, cloud, and tool work must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts.
 
@@ -9131,7 +9131,7 @@ IMP-062 does not establish native history discovery, automatic or semantic retri
 
 ### IMP-063 — Bounded local writing workflow
 
-Status: implemented with deterministic synthetic CI evidence; IMP-064 provides the exact-commit primary Intel Mac acceptance path, and accepted real-machine evidence remains pending.
+Status: implemented with deterministic synthetic CI and accepted exact-commit primary Intel Mac real-machine evidence through IMP-064.
 
 Implemented the first bounded Phase 6 daily-use workflow above the accepted non-streaming local conversation path. The workflow supports exactly three explicit modes: `draft`, `revise`, and `summarize`.
 
@@ -9147,7 +9147,7 @@ IMP-063 does not establish translation, automatic or semantic retrieval, embeddi
 
 ### IMP-064 — Primary Intel Mac local-writing acceptance
 
-Status: acceptance infrastructure implemented with deterministic synthetic CI evidence; separate exact-commit primary Intel Mac execution and privacy-safe evidence acceptance remain pending.
+Status: acceptance infrastructure and privacy-reviewed exact-commit primary Intel Mac real-machine evidence accepted.
 
 Implemented a bounded acceptance probe and runner for the IMP-063 local-writing path. The probe creates one deterministic non-private target conversation and executes one `draft`, one `revise`, and one `summarize` turn through an explicitly bound Ollama adapter.
 
@@ -9155,7 +9155,7 @@ The current user request remains the only task-authority instruction. Revision a
 
 CI mode uses an injected deterministic Ollama-compatible transport and performs no socket operation. Real-machine mode requires the exact checked-out commit, Darwin on Intel, operator-confirmed networking disabled, explicit local-only confirmation, one caller-selected already-installed local model, and fixed IPv4 loopback. The socket guard rejects every undeclared destination, and the runner does not install or start a runtime, download a model, access a provider account, retrieve credentials, execute tools, or enable cloud fallback.
 
-The content-free result schema contains only bounded platform facts, booleans, counts, hashes, event counts, runtime request counts, socket-attempt counts, and explicit non-claim flags. It excludes model names, requests, source material, prompts, responses, paths, usernames, hostnames, credentials, and secret values. Dedicated synthetic acceptance covers Ubuntu, macOS, and Windows. The local-writing workflow remains `ci-pass` until exact-commit primary Intel Mac evidence is executed and accepted separately.
+The content-free result schema contains only bounded platform facts, booleans, counts, hashes, event counts, runtime request counts, socket-attempt counts, and explicit non-claim flags. It excludes model names, requests, source material, prompts, responses, paths, usernames, hostnames, credentials, and secret values. Dedicated synthetic acceptance covers Ubuntu, macOS, and Windows. The accepted primary Intel Mac run used exact implementation commit `d40ba32e87f6d211b05e9da1e1f51974ec6fc369`, Darwin `x86_64`, Python 3.12.13, networking operator-confirmed disabled, fixed IPv4 loopback Ollama, and one explicitly selected already-installed local model. All 48 checks passed, all three modes completed, 11 loopback attempts were allowed, no non-loopback attempt occurred, no authority record was created, and all privacy flags remained false. The privacy-safe result is stored at `docs/testing/results/IMP-064-primary-intel-mac-2026-07-15.json`. The bounded local-writing workflow therefore passes at both `ci` and `real-machine` evidence levels.
 
 IMP-064 does not establish personal writing quality, automatic or semantic retrieval, memory or project context selection, translation, attachments, multimodal input, streaming workflow output, tools, cloud portability or fallback, target-specific export, complete Phase 6, or stable general anti-lock-in.
 
@@ -9276,12 +9276,12 @@ An implementation PR is done when:
 
 ## 18. Immediate work
 
-After IMP-064 local-writing real-machine acceptance infrastructure, the immediate order is:
+After accepted IMP-064 local-writing real-machine evidence, the immediate order is:
 
 1. retain PORT-014 as `pass` only within the accepted bounded IMP-059/IMP-060 selected-history migration boundary and keep its material-loss limitations visible;
 2. retain PORT-013 as `pass` within both the accepted IMP-057 migration boundary and the accepted IMP-061/IMP-062 imported-context replay extension, without broadening either result beyond its documented limits;
 3. retain the IMP-063 task-versus-material separation as the required boundary for later explicit memory, project, decision, and Resume Bundle context selection;
-4. merge the IMP-064 acceptance infrastructure, execute its network-disabled primary Intel Mac run against the exact merged commit, and accept only a content-free privacy-reviewed result through a separate completion pull request;
+4. retain the accepted IMP-063/IMP-064 local-writing result only within its documented draft/revise/summarize boundary and keep personal writing quality, translation, retrieval, attachments, tools, and cloud claims excluded;
 5. allocate IMP-065 only when a new bounded implementation issue is opened; translation, automatic retrieval, attachments, target-specific export, cloud credentials, tools, and automatic cloud fallback remain separate work;
 6. continue Phase 6 daily-use integration and independently required portability work without weakening the Phase 3 safety boundary or Phase 4A/4B canonical state contracts;
 7. keep the complete Phase 6 gate and stable general anti-lock-in incomplete until their independent remaining requirements pass.
