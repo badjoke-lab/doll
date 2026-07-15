@@ -3,6 +3,8 @@ import fs from "node:fs";
 const IMPLEMENTATION_TITLE = /^IMP-(\d+)\s*:/i;
 const RETIRED = new Set([24, 25, 26, 27, 28, 29]);
 const BASELINE = 31;
+const PAGE_SIZE = 100;
+const MAX_PAGES = 10;
 
 function implementationNumber(title) {
   const match = IMPLEMENTATION_TITLE.exec(title || "");
@@ -44,27 +46,58 @@ if (token) {
   headers.Authorization = `Bearer ${token}`;
 }
 
-const response = await fetch(
-  `https://api.github.com/repos/${repository}/pulls?state=closed&per_page=100&sort=updated&direction=desc`,
-  { headers },
-);
-if (!response.ok) {
-  fail(`GitHub API returned ${response.status}`);
+async function fetchPages(path) {
+  const items = [];
+  for (let page = 1; page <= MAX_PAGES; page += 1) {
+    const separator = path.includes("?") ? "&" : "?";
+    const response = await fetch(
+      `https://api.github.com/repos/${repository}/${path}${separator}per_page=${PAGE_SIZE}&page=${page}`,
+      { headers },
+    );
+    if (!response.ok) {
+      fail(`GitHub API returned ${response.status} for ${path}`);
+    }
+    const pageItems = await response.json();
+    if (!Array.isArray(pageItems)) {
+      fail(`GitHub API returned an invalid collection for ${path}`);
+    }
+    items.push(...pageItems);
+    if (pageItems.length < PAGE_SIZE) {
+      return items;
+    }
+  }
+  fail(`GitHub API pagination exceeded ${MAX_PAGES} pages for ${path}`);
 }
 
-const pulls = await response.json();
-const latestMerged = pulls.reduce((latest, pull) => {
-  if (!pull.merged_at) {
-    return latest;
-  }
-  const number = implementationNumber(pull.title);
-  return number === null ? latest : Math.max(latest, number);
-}, BASELINE);
+const [pulls, issues] = await Promise.all([
+  fetchPages("pulls?state=closed&sort=updated&direction=desc"),
+  fetchPages("issues?state=closed&sort=updated&direction=desc"),
+]);
 
-const expected = latestMerged + 1;
+const mergedNumbers = pulls
+  .filter((pull) => Boolean(pull.merged_at))
+  .map((pull) => implementationNumber(pull.title))
+  .filter((number) => number !== null);
+
+const completedIssueNumbers = issues
+  .filter(
+    (issue) =>
+      !issue.pull_request &&
+      Boolean(issue.closed_at) &&
+      issue.state_reason !== "not_planned",
+  )
+  .map((issue) => implementationNumber(issue.title))
+  .filter((number) => number !== null);
+
+const latestCompleted = Math.max(
+  BASELINE,
+  ...mergedNumbers,
+  ...completedIssueNumbers,
+);
+const expected = latestCompleted + 1;
 if (requested !== expected) {
   fail(
-    `next implementation must be IMP-${String(expected).padStart(3, "0")} after merged IMP-${String(latestMerged).padStart(3, "0")}; received IMP-${String(requested).padStart(3, "0")}`,
+    `next implementation must be IMP-${String(expected).padStart(3, "0")} after completed IMP-${String(latestCompleted).padStart(3, "0")}; received IMP-${String(requested).padStart(3, "0")}`,
   );
 }
 
