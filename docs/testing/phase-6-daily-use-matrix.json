@@ -44,5 +44,31 @@
     "real_machine_gate_status": "pass",
     "implementation_doc": "docs/implementation/imp-064-primary-intel-mac-local-writing-acceptance.md",
     "runbook": "docs/testing/imp-064-primary-intel-mac-runbook.md"
+  },
+  "explicit_context_extension": {
+    "implementation": "IMP-065",
+    "status": "ci-pass",
+    "description": "Explicit ordered confirmed-memory and ProjectRecord snapshots can be selected for local writing while remaining data-only untrusted context.",
+    "pytest_files": [
+      "tests/test_explicit_writing_context.py"
+    ],
+    "passed_evidence_levels": [
+      "ci"
+    ],
+    "required_evidence_levels": [
+      "ci"
+    ],
+    "selection_mode": "explicit-only",
+    "automatic_retrieval": false,
+    "semantic_retrieval": false,
+    "model_selected_context": false,
+    "secret_records_allowed": false,
+    "context_origin_class": "external_content",
+    "context_actor_type": "retriever",
+    "context_acquisition_method": "retrieval",
+    "context_authority_class": "untrusted_data",
+    "phase6_gate_complete": false,
+    "stable_anti_lock_in_claim": false,
+    "implementation_doc": "docs/implementation/imp-065-explicit-writing-context.md"
   }
 }
