@@ -6,7 +6,7 @@ import hashlib
 import json
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Literal, cast
+from typing import Literal
 
 from doll.instruction_origin import InstructionOriginService, InstructionSource
 from doll.memory import ConfirmedMemoryError, ConfirmedMemoryInfo, ConfirmedMemoryService
@@ -195,9 +195,7 @@ class SelectedWritingContextService:
                 "selected confirmed memory is unavailable"
             ) from exc
         if memory.status != "active":
-            raise SelectedWritingContextValidationError(
-                "selected confirmed memory is not active"
-            )
+            raise SelectedWritingContextValidationError("selected confirmed memory is not active")
         if memory.sensitivity == "secret":
             raise SelectedWritingContextValidationError(
                 "secret confirmed memory cannot enter writing context"
@@ -208,9 +206,7 @@ class SelectedWritingContextService:
         try:
             project = ProjectService(self.repository).get(record_id)
         except (KeyError, ProjectDecisionError) as exc:
-            raise SelectedWritingContextValidationError(
-                "selected project is unavailable"
-            ) from exc
+            raise SelectedWritingContextValidationError("selected project is unavailable") from exc
         if project.lifecycle_status != "active":
             raise SelectedWritingContextValidationError("selected project is not active")
         if project.sensitivity == "secret":
@@ -314,9 +310,7 @@ def _context_operation_id(
     snapshot: SelectedWritingContextSnapshot,
 ) -> str:
     digest = hashlib.sha256(
-        f"{operation_id}\0{snapshot.kind}\0{snapshot.record_id}\0{snapshot.revision}".encode(
-            "utf-8"
-        )
+        f"{operation_id}\0{snapshot.kind}\0{snapshot.record_id}\0{snapshot.revision}".encode()
     ).hexdigest()[:32]
     return f"imp065.context.{snapshot.kind}.{digest}"
 

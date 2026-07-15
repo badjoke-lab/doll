@@ -15,9 +15,9 @@ from doll.local_writing import (
     LocalWritingWorkflowService,
     LocalWritingWorkflowValidationError,
 )
-from doll.memory import ConfirmedMemoryService
+from doll.memory import ConfirmedMemoryInfo, ConfirmedMemoryService
 from doll.model_manifest import ModelManifestService
-from doll.project_state import ProjectService
+from doll.project_state import ProjectInfo, ProjectService
 from doll.runtime_adapter import (
     LocalRuntimeBoundary,
     RuntimeAdapterContext,
@@ -164,7 +164,7 @@ def _instruction_origin_count(repository: state.StateRepository) -> int:
 
 def _create_context_records(
     repository: state.StateRepository,
-) -> tuple[object, object]:
+) -> tuple[ConfirmedMemoryInfo, ProjectInfo]:
     memory = ConfirmedMemoryService(repository).create(
         subject="Writing preference",
         content=(
@@ -301,16 +301,12 @@ def test_invalid_selected_context_fails_before_runtime_or_origin_creation(
         service = _service(repository, adapter)
         before = _instruction_origin_count(repository)
 
-        invalid_calls = (
-            {"memory_ids": (archived.record_id,)},
-            {"memory_ids": (secret.record_id,)},
-            {"project_ids": (archived_project.project_id,)},
-            {"memory_ids": (str(uuid4()),)},
-            {"memory_ids": (archived_project.project_id,)},
-            {"memory_ids": (active.record_id, active.record_id)},
-            {"memory_ids": tuple(str(uuid4()) for _ in range(9))},
-        )
-        for index, selected in enumerate(invalid_calls):
+        def assert_invalid(
+            index: int,
+            *,
+            memory_ids: tuple[str, ...] = (),
+            project_ids: tuple[str, ...] = (),
+        ) -> None:
             with pytest.raises(LocalWritingWorkflowValidationError):
                 service.execute(
                     mode="draft",
@@ -319,8 +315,17 @@ def test_invalid_selected_context_fails_before_runtime_or_origin_creation(
                     scope_key="writing-context",
                     request_text="This must not execute.",
                     operation_id=f"imp065.invalid.selection.{index}",
-                    **selected,
+                    memory_ids=memory_ids,
+                    project_ids=project_ids,
                 )
+
+        assert_invalid(0, memory_ids=(archived.record_id,))
+        assert_invalid(1, memory_ids=(secret.record_id,))
+        assert_invalid(2, project_ids=(archived_project.project_id,))
+        assert_invalid(3, memory_ids=(str(uuid4()),))
+        assert_invalid(4, memory_ids=(archived_project.project_id,))
+        assert_invalid(5, memory_ids=(active.record_id, active.record_id))
+        assert_invalid(6, memory_ids=tuple(str(uuid4()) for _ in range(9)))
 
         assert adapter.prompts == []
         assert _instruction_origin_count(repository) == before
@@ -388,6 +393,7 @@ def test_selected_context_result_remains_content_free(tmp_path: Path) -> None:
         assert memory.content not in encoded
         assert project.name not in encoded
         assert project.description not in encoded
+        assert project.objective is not None
         assert project.objective not in encoded
         assert adapter.output_text not in encoded
         assert "fake.context-writing.model.1" not in encoded
