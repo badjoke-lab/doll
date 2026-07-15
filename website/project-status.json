@@ -15,11 +15,11 @@
     "name": "Local AI portability and daily-use integration",
     "state": "in_progress",
     "started_by_implementation": 55,
-    "next_implementation": 65
+    "next_implementation": 66
   },
   "model_runtime": {
     "connected": true,
-    "message": "Phase 6 is in progress through IMP-064. Offline Ollama session import, explicit text-only loopback capture, the accepted bounded local-portability migration drill, the deterministic shutdown escape bundle, bounded ChatGPT selected-history import, imported-context replay with accepted primary Intel Mac evidence, and the bounded local draft/revise/summarize workflow are implemented. The IMP-063/IMP-064 writing workflow now passes at both CI and real-machine evidence levels with privacy-reviewed exact-commit primary Intel Mac evidence. Translation, automatic retrieval, explicit memory/project context selection, attachments, tools, the complete Phase 6 gate, target-specific application replacement, and stable general anti-lock-in remain incomplete."
+    "message": "Phase 6 is in progress through IMP-065. Offline Ollama session import, explicit text-only loopback capture, the accepted bounded local-portability migration drill, the deterministic shutdown escape bundle, bounded ChatGPT selected-history import, imported-context replay with accepted primary Intel Mac evidence, and the bounded local draft/revise/summarize workflow are implemented. The IMP-063/IMP-064 writing workflow passes at both CI and real-machine evidence levels. IMP-065 adds explicit confirmed-memory and ProjectRecord context selection as data-only untrusted context with CI evidence. Translation, automatic or semantic retrieval, decision and Resume Bundle context, attachments, tools, the complete Phase 6 gate, target-specific application replacement, and stable general anti-lock-in remain incomplete."
   },
-  "last_reviewed": "2026-07-15"
+  "last_reviewed": "2026-07-16"
 }

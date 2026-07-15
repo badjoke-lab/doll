@@ -60,8 +60,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 65,
-  "project-status.json must mark Phase 6 in progress through IMP-064 with IMP-065 next",
+    status.phase?.next_implementation === 66,
+  "project-status.json must mark Phase 6 in progress through IMP-065 with IMP-066 next",
 );
 expect(
   status.model_runtime &&
@@ -70,9 +70,10 @@ expect(
   "project-status.json requires model_runtime.connected and model_runtime.message",
 );
 expect(
-  status.model_runtime.message.includes("through IMP-064") &&
+  status.model_runtime.message.includes("through IMP-065") &&
+    status.model_runtime.message.includes("IMP-065 adds explicit") &&
     status.model_runtime.message.includes("passes at both CI and real-machine evidence levels"),
-  "project-status.json must describe the accepted bounded IMP-064 machine evidence",
+  "project-status.json must describe IMP-065 without broadening IMP-064 evidence",
 );
 expect(
   /^\d{4}-\d{2}-\d{2}$/.test(status.last_reviewed || ""),
@@ -143,6 +144,32 @@ expect(
     dailyUse.local_writing_workflow?.phase6_gate_complete === false &&
     dailyUse.local_writing_workflow?.stable_anti_lock_in_claim === false,
   "IMP-063/IMP-064 writing workflow must bind accepted real-machine evidence",
+);
+
+expect(
+  dailyUse.explicit_context_extension?.implementation === "IMP-065" &&
+    dailyUse.explicit_context_extension?.status === "ci-pass" &&
+    JSON.stringify(dailyUse.explicit_context_extension?.passed_evidence_levels) ===
+      JSON.stringify(["ci"]) &&
+    JSON.stringify(dailyUse.explicit_context_extension?.required_evidence_levels) ===
+      JSON.stringify(["ci"]) &&
+    dailyUse.explicit_context_extension?.selection_mode === "explicit-only" &&
+    dailyUse.explicit_context_extension?.automatic_retrieval === false &&
+    dailyUse.explicit_context_extension?.semantic_retrieval === false &&
+    dailyUse.explicit_context_extension?.model_selected_context === false &&
+    dailyUse.explicit_context_extension?.secret_records_allowed === false &&
+    dailyUse.explicit_context_extension?.context_origin_class ===
+      "external_content" &&
+    dailyUse.explicit_context_extension?.context_actor_type === "retriever" &&
+    dailyUse.explicit_context_extension?.context_acquisition_method ===
+      "retrieval" &&
+    dailyUse.explicit_context_extension?.context_authority_class ===
+      "untrusted_data" &&
+    dailyUse.explicit_context_extension?.phase6_gate_complete === false &&
+    dailyUse.explicit_context_extension?.stable_anti_lock_in_claim === false &&
+    dailyUse.explicit_context_extension?.implementation_doc ===
+      "docs/implementation/imp-065-explicit-writing-context.md",
+  "IMP-065 explicit writing context must remain bounded and CI-only",
 );
 
 expect(
@@ -434,8 +461,12 @@ expect(
   "roadmap must record the IMP-064 local writing acceptance boundary",
 );
 expect(
-  roadmap.includes("the next bounded implementation receives IMP-065 only when a new implementation issue is opened"),
-  "roadmap must identify IMP-065 as the next unallocated implementation identifier",
+  roadmap.includes("### IMP-065 — Explicit memory and project context selection"),
+  "roadmap must record the IMP-065 explicit writing context boundary",
+);
+expect(
+  roadmap.includes("the next bounded implementation receives IMP-066 only when a new implementation issue is opened"),
+  "roadmap must identify IMP-066 as the next unallocated implementation identifier",
 );
 expect(
   roadmap.includes("docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json"),
@@ -447,9 +478,9 @@ expect(
 );
 expect(
   roadmap.includes(
-    "After accepted IMP-064 local-writing real-machine evidence, the immediate order is:",
+    "After IMP-065 explicit memory and project context selection, the immediate order is:",
   ),
-  "roadmap must record accepted IMP-064 evidence and remaining Phase 6 work",
+  "roadmap must record IMP-065 and remaining Phase 6 work",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),
