@@ -1,5 +1,16 @@
 export const OFFICIAL_NOTES = Object.freeze([
   Object.freeze({
+    id: "frontier-ai-infrastructure",
+    kind: "official",
+    title: "Frontier AI Is Becoming Infrastructure. Your Memory Should Not Live Inside It.",
+    path: "/notes/frontier-ai-infrastructure/",
+    description: "Frontier AI is entering critical-infrastructure cybersecurity operations. Why capability can be rented, but continuity should remain under the user's control.",
+    summary: "What the new US AI cybersecurity clearinghouse suggests about infrastructure, user-owned state, and doll's local-complete, cloud-optional design.",
+    published: "2026-07-16",
+    related: Object.freeze(["ai-access-national-policy", "access-is-not-continuity", "permissioned-ai-access", "ai-permission-divide", "ai-will-remain"]),
+    externalVersions: Object.freeze([]),
+  }),
+  Object.freeze({
     id: "ai-access-national-policy",
     kind: "official",
     title: "The Best AI in the World Is Useless If You Can't Access It",
@@ -89,11 +100,9 @@ export function normalizeWritingPath(pathname) {
   if (!pathname || pathname === "/") {
     return pathname || "/";
   }
-
   const withoutIndex = pathname.endsWith("/index.html")
     ? pathname.slice(0, -"index.html".length)
     : pathname;
-
   return withoutIndex.endsWith("/") ? withoutIndex : `${withoutIndex}/`;
 }
 
