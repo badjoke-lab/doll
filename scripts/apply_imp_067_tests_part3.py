@@ -37,13 +37,16 @@ def test_resume_bundle_context_obeys_aggregate_item_and_character_limits(
         char_project_id = _resume_context_project(
             repository,
             operation_id="imp067.limit.character.bundle-project",
-            description="x" * 15_000,
+            description="x" * 3_500,
         )
-        large_decision_id = _decision(
-            repository,
-            operation_id="imp067.limit.character.decision",
-            reason="y" * 9_000,
-        ).decision_id
+        large_decision_ids = tuple(
+            _decision(
+                repository,
+                operation_id=f"imp067.limit.character.decision.{index}",
+                reason="y" * 4_500,
+            ).decision_id
+            for index in range(4)
+        )
     _export_resume_context_bundle(initialized, item_project_id, item_bundle)
     _export_resume_context_bundle(initialized, char_project_id, char_bundle)
 
@@ -69,7 +72,7 @@ def test_resume_bundle_context_obeys_aggregate_item_and_character_limits(
                 scope_type="conversation",
                 scope_key="imp066-acceptance",
                 request_text="Reject aggregate selected context characters.",
-                decision_ids=(large_decision_id,),
+                decision_ids=large_decision_ids,
                 resume_bundle_path=char_bundle,
                 operation_id="imp067.limit.character.execute",
             )
