@@ -2,7 +2,7 @@
 
 ## Status
 
-Implemented with deterministic synthetic acceptance; merge and cross-platform CI remain required.
+Completed and merged at `e72a56b426ed629cc1c94f478e3a54025c3e3ad1` from implementation head `4d70018be0935adcde593de7d5d14cff00c46800` after deterministic synthetic acceptance and standard CI passed on Ubuntu, macOS, and Windows. This remains a CI-only extension and does not broaden the accepted IMP-064 primary Intel Mac real-machine evidence.
 
 ## Objective
 
@@ -90,7 +90,7 @@ It does not expose decision text, reason, alternatives, constraints, generated t
 
 ## Acceptance
 
-Dedicated synthetic acceptance must cover:
+Dedicated synthetic acceptance covers:
 
 - explicit DecisionRecord selection in the local writing path;
 - deterministic snapshot fields;
