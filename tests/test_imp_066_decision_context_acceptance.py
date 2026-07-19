@@ -193,9 +193,7 @@ def test_explicit_decision_context_works_in_all_writing_modes(
     conversation_id = str(uuid4())
 
     with state.open_state_repository(initialized.root) as repository:
-        repository.save_conversation(
-            ConversationRecord(conversation_id=conversation_id)
-        )
+        repository.save_conversation(ConversationRecord(conversation_id=conversation_id))
         _active_binding(repository, adapter)
         decision = _decision(
             repository,
@@ -223,12 +221,10 @@ def test_explicit_decision_context_works_in_all_writing_modes(
         assert task["mode"] == mode
         assert task["selected_decision_count"] == 1
 
-        snapshots = [
+        decision_snapshots = [
             json.loads(item["content"])
             for item in prompt["channels"]["untrusted_content"]
-        ]
-        decision_snapshots = [
-            item for item in snapshots if item.get("context_kind") == "decision"
+            if item["title"] == "Selected decision context"
         ]
         assert len(decision_snapshots) == 1
         assert decision_snapshots[0]["record_id"] == decision.decision_id
@@ -243,9 +239,7 @@ def test_oversized_decision_context_fails_before_runtime_or_origin_creation(
     conversation_id = str(uuid4())
 
     with state.open_state_repository(initialized.root) as repository:
-        repository.save_conversation(
-            ConversationRecord(conversation_id=conversation_id)
-        )
+        repository.save_conversation(ConversationRecord(conversation_id=conversation_id))
         _active_binding(repository, adapter)
         decision_ids = tuple(
             _decision(
