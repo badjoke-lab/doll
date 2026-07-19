@@ -37,13 +37,13 @@ def test_resume_bundle_context_obeys_aggregate_item_and_character_limits(
         char_project_id = _resume_context_project(
             repository,
             operation_id="imp067.limit.character.bundle-project",
-            description="x" * 3_500,
+            description="x" * 5_500,
         )
         large_decision_ids = tuple(
             _decision(
                 repository,
                 operation_id=f"imp067.limit.character.decision.{index}",
-                reason="y" * 4_500,
+                reason="y" * 4_700,
             ).decision_id
             for index in range(4)
         )
