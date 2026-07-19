@@ -46,9 +46,9 @@
     "runbook": "docs/testing/imp-064-primary-intel-mac-runbook.md"
   },
   "explicit_context_extension": {
-    "implementation": "IMP-065",
+    "implementation": "IMP-066",
     "status": "ci-pass",
-    "description": "Explicit ordered confirmed-memory and ProjectRecord snapshots can be selected for local writing while remaining data-only untrusted context.",
+    "description": "Explicit ordered confirmed-memory, ProjectRecord, and DecisionRecord snapshots can be selected for local writing while remaining data-only untrusted context.",
     "pytest_files": [
       "tests/test_explicit_writing_context.py"
     ],
@@ -69,6 +69,11 @@
     "context_authority_class": "untrusted_data",
     "phase6_gate_complete": false,
     "stable_anti_lock_in_claim": false,
-    "implementation_doc": "docs/implementation/imp-065-explicit-writing-context.md"
+    "implementation_doc": "docs/implementation/imp-066-explicit-decision-context.md",
+    "selected_record_types": [
+      "confirmed_memory",
+      "project",
+      "decision"
+    ]
   }
 }

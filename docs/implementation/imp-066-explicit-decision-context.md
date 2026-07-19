@@ -2,7 +2,7 @@
 
 ## Status
 
-Implementation in progress with deterministic synthetic acceptance required before merge.
+Implemented with deterministic synthetic acceptance; merge and cross-platform CI remain required.
 
 ## Objective
 

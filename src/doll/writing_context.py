@@ -1,4 +1,4 @@
-"""Explicit data-only memory and project context for local writing workflows."""
+"""Explicit data-only memory, project, and decision context for local writing."""
 
 from __future__ import annotations
 
@@ -10,14 +10,21 @@ from typing import Literal
 
 from doll.instruction_origin import InstructionOriginService, InstructionSource
 from doll.memory import ConfirmedMemoryError, ConfirmedMemoryInfo, ConfirmedMemoryService
-from doll.project_state import ProjectDecisionError, ProjectInfo, ProjectService
+from doll.project_state import (
+    DecisionInfo,
+    DecisionService,
+    ProjectDecisionError,
+    ProjectInfo,
+    ProjectService,
+)
 from doll.state import RecordSensitivity, StateError
 from doll.state_repository import StateRepository
 
-SelectedWritingContextKind = Literal["memory", "project"]
+SelectedWritingContextKind = Literal["memory", "project", "decision"]
 
 MAX_SELECTED_MEMORIES = 8
 MAX_SELECTED_PROJECTS = 4
+MAX_SELECTED_DECISIONS = 8
 MAX_SELECTED_CONTEXT_ITEMS = 10
 MAX_SELECTED_CONTEXT_CHARS = 24_000
 
@@ -45,8 +52,10 @@ class SelectedWritingContextPlan:
     snapshots: tuple[SelectedWritingContextSnapshot, ...]
     memory_ids: tuple[str, ...]
     project_ids: tuple[str, ...]
+    decision_ids: tuple[str, ...]
     memory_revisions: tuple[int, ...]
     project_revisions: tuple[int, ...]
+    decision_revisions: tuple[int, ...]
     character_count: int
     required_sensitivity: RecordSensitivity
 
@@ -69,8 +78,10 @@ class SelectedWritingContextResult:
     instruction_ids: tuple[str, ...]
     memory_ids: tuple[str, ...]
     project_ids: tuple[str, ...]
+    decision_ids: tuple[str, ...]
     memory_revisions: tuple[int, ...]
     project_revisions: tuple[int, ...]
+    decision_revisions: tuple[int, ...]
     character_count: int
     required_sensitivity: RecordSensitivity
 
@@ -86,6 +97,7 @@ class SelectedWritingContextService:
         *,
         memory_ids: Sequence[str] = (),
         project_ids: Sequence[str] = (),
+        decision_ids: Sequence[str] = (),
     ) -> SelectedWritingContextPlan:
         """Validate all selections before creating any instruction-origin record."""
 
@@ -99,15 +111,26 @@ class SelectedWritingContextService:
             project_ids,
             maximum=MAX_SELECTED_PROJECTS,
         )
-        if len(safe_memory_ids) + len(safe_project_ids) > MAX_SELECTED_CONTEXT_ITEMS:
+        safe_decision_ids = _selected_ids(
+            "decision IDs",
+            decision_ids,
+            maximum=MAX_SELECTED_DECISIONS,
+        )
+        if (
+            len(safe_memory_ids) + len(safe_project_ids) + len(safe_decision_ids)
+            > MAX_SELECTED_CONTEXT_ITEMS
+        ):
             raise SelectedWritingContextValidationError(
                 "selected writing context exceeds the configured item limit"
             )
 
         memories = tuple(self._memory(record_id) for record_id in safe_memory_ids)
         projects = tuple(self._project(record_id) for record_id in safe_project_ids)
-        snapshots = tuple(_memory_snapshot(memory) for memory in memories) + tuple(
-            _project_snapshot(project) for project in projects
+        decisions = tuple(self._decision(record_id) for record_id in safe_decision_ids)
+        snapshots = (
+            tuple(_memory_snapshot(memory) for memory in memories)
+            + tuple(_project_snapshot(project) for project in projects)
+            + tuple(_decision_snapshot(decision) for decision in decisions)
         )
         character_count = sum(len(snapshot.content) for snapshot in snapshots)
         if character_count > MAX_SELECTED_CONTEXT_CHARS:
@@ -121,8 +144,10 @@ class SelectedWritingContextService:
             snapshots=snapshots,
             memory_ids=safe_memory_ids,
             project_ids=safe_project_ids,
+            decision_ids=safe_decision_ids,
             memory_revisions=tuple(memory.revision for memory in memories),
             project_revisions=tuple(project.revision for project in projects),
+            decision_revisions=tuple(decision.revision for decision in decisions),
             character_count=character_count,
             required_sensitivity=required_sensitivity,
         )
@@ -156,11 +181,11 @@ class SelectedWritingContextService:
         for snapshot in plan.snapshots:
             source_operation_id = _context_operation_id(operation_id, snapshot)
             origin = origins.create(
-                title=(
-                    "Selected confirmed-memory context"
-                    if snapshot.kind == "memory"
-                    else "Selected project context"
-                ),
+                title={
+                    "memory": "Selected confirmed-memory context",
+                    "project": "Selected project context",
+                    "decision": "Selected decision context",
+                }[snapshot.kind],
                 content=snapshot.content,
                 source=InstructionSource(
                     origin_class="external_content",
@@ -181,8 +206,10 @@ class SelectedWritingContextService:
             instruction_ids=tuple(instruction_ids),
             memory_ids=plan.memory_ids,
             project_ids=plan.project_ids,
+            decision_ids=plan.decision_ids,
             memory_revisions=plan.memory_revisions,
             project_revisions=plan.project_revisions,
+            decision_revisions=plan.decision_revisions,
             character_count=plan.character_count,
             required_sensitivity=plan.required_sensitivity,
         )
@@ -214,6 +241,19 @@ class SelectedWritingContextService:
                 "secret project cannot enter writing context"
             )
         return project
+
+    def _decision(self, record_id: str) -> DecisionInfo:
+        try:
+            decision = DecisionService(self.repository).get(record_id)
+        except (KeyError, ProjectDecisionError) as exc:
+            raise SelectedWritingContextValidationError("selected decision is unavailable") from exc
+        if decision.lifecycle_status != "active":
+            raise SelectedWritingContextValidationError("selected decision is not active")
+        if decision.sensitivity == "secret":
+            raise SelectedWritingContextValidationError(
+                "secret decision cannot enter writing context"
+            )
+        return decision
 
 
 def maximum_writing_sensitivity(
@@ -296,6 +336,30 @@ def _project_snapshot(project: ProjectInfo) -> SelectedWritingContextSnapshot:
         revision=project.revision,
         content=_deterministic_json(payload),
         sensitivity=project.sensitivity,
+    )
+
+
+def _decision_snapshot(decision: DecisionInfo) -> SelectedWritingContextSnapshot:
+    payload: dict[str, object] = {
+        "context_kind": "decision",
+        "record_id": decision.decision_id,
+        "revision": decision.revision,
+        "decision": decision.decision,
+        "reason": decision.reason,
+        "decision_status": decision.decision_status,
+        "decided_at": decision.decided_at,
+        "alternatives": list(decision.alternatives),
+        "constraints": list(decision.constraints),
+        "review_after": decision.review_after,
+        "supersedes_id": decision.supersedes_id,
+        "project_id": decision.project_id,
+    }
+    return SelectedWritingContextSnapshot(
+        kind="decision",
+        record_id=decision.decision_id,
+        revision=decision.revision,
+        content=_deterministic_json(payload),
+        sensitivity=decision.sensitivity,
     )
 
 
