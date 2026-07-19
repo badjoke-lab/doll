@@ -219,9 +219,7 @@ def test_explicit_decision_context_works_in_all_writing_modes(
         assert result.selected_decision_revisions == (decision.revision,)
 
         prompt = json.loads(adapter.prompts[0])
-        task = json.loads(
-            prompt["channels"]["current_user_instruction"][0]["content"]
-        )
+        task = json.loads(prompt["channels"]["current_user_instruction"][0]["content"])
         assert task["mode"] == mode
         assert task["selected_decision_count"] == 1
 
