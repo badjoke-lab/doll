@@ -81,8 +81,8 @@ Completed:
 - Phase 4B project continuity foundation;
 - Phase 5 local runtime and model integration;
 - IMP-001 through IMP-023;
-- IMP-030 through IMP-067;
-- local workspace, SQLite state, migrations, managed artifacts, canonical conversation and project state, State Package v2, backup and restore, the model-independent safety boundary, AI-environment portability, project continuity, runtime-independent adapter contracts, a loopback-only Ollama adapter, authoritative runtime and model manifests, explicit bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, and accepted primary Intel Mac offline continuity evidence through IMP-054, the offline Ollama API session source adapter through IMP-055, explicit loopback Ollama chat capture through IMP-056, the deterministic local-portability migration harness through IMP-057, the deterministic shutdown escape bundle through IMP-058, the bounded ChatGPT conversations.json source adapter through IMP-059, the bounded ChatGPT numbered conversation-member aggregation through IMP-060, bounded imported conversation context replay through IMP-061, the exact-commit imported-context replay real-machine acceptance harness through IMP-062, and the bounded local writing workflow through IMP-063, the accepted exact-commit primary Intel Mac local-writing evidence through IMP-064, explicit data-only confirmed-memory and ProjectRecord context selection through IMP-065, explicit data-only DecisionRecord context selection through IMP-066, and explicit verified Resume Bundle writing context through IMP-067.
+- IMP-030 through IMP-068;
+- local workspace, SQLite state, migrations, managed artifacts, canonical conversation and project state, State Package v2, backup and restore, the model-independent safety boundary, AI-environment portability, project continuity, runtime-independent adapter contracts, a loopback-only Ollama adapter, authoritative runtime and model manifests, explicit bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, and accepted primary Intel Mac offline continuity evidence through IMP-054, the offline Ollama API session source adapter through IMP-055, explicit loopback Ollama chat capture through IMP-056, the deterministic local-portability migration harness through IMP-057, the deterministic shutdown escape bundle through IMP-058, the bounded ChatGPT conversations.json source adapter through IMP-059, the bounded ChatGPT numbered conversation-member aggregation through IMP-060, bounded imported conversation context replay through IMP-061, the exact-commit imported-context replay real-machine acceptance harness through IMP-062, and the bounded local writing workflow through IMP-063, the accepted exact-commit primary Intel Mac local-writing evidence through IMP-064, explicit data-only confirmed-memory and ProjectRecord context selection through IMP-065, explicit data-only DecisionRecord context selection through IMP-066, explicit verified Resume Bundle writing context through IMP-067, and explicit local translation through IMP-068.
 
 Current implementation point:
 
@@ -94,7 +94,7 @@ Current implementation point:
 - Phase 5 passed its local-runtime continuity gate on 2026-06-28;
 - accepted real-machine evidence is bound to commit `1a5b66b2417d6f3e1eafcd14d2769e9c15d7f96c` on the primary Intel Mac with networking disabled;
 - IMP-048 through IMP-054 establish the runtime contract, loopback-only Ollama adapter, authoritative manifests and bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, State Package v2 transfer, backup restore, and accepted LRUN-001 through LRUN-012 evidence;
-- Phase 6 local AI portability and daily-use integration is in progress through IMP-067;
+- Phase 6 local AI portability and daily-use integration is in progress through IMP-068;
 - IMP-055 adds an offline source adapter for a documented caller-retained Ollama API session bundle, with exact JSON validation, content-free inventory, original-source hashing, deterministic normalization, explicit attachment-metadata loss, and reuse of the accepted generic staging and reviewed-publication boundary;
 - IMP-056 adds an explicit non-streaming text-only capture path through fixed IPv4 loopback, resolves one opaque already-installed local model through the filtered inventory, and returns an IMP-055-valid session bundle without reading application databases, logs, shell history, or unrelated sessions;
 - IMP-057 merged at commit `7b63ff512e20d1d6ae65da8938486b093e14b6c6` and composes explicit capture, reviewed canonical import, idempotency and conflict checks, generic export, State Package v2 transfer, backup restore, and alternate fresh-process inspection without the capture component;
@@ -127,7 +127,10 @@ Current implementation point:
 - IMP-067 adds one explicitly selected verified external Resume Bundle as a bounded core-continuity snapshot for local writing, with no canonical-state import, native-path disclosure, automatic search, or excluded-member expansion;
 - IMP-067 is assigned to Issue #217;
 - the IMP-067 Resume Bundle context extension passes at the `ci` evidence level and does not broaden the accepted IMP-064 real-machine result;
-- the next bounded implementation receives IMP-068 only when a new implementation issue is opened;
+- IMP-068 adds one explicit `translate` mode with caller-controlled target-language metadata while source text remains data-only `external_content` through the accepted extractor/extraction path;
+- IMP-068 is assigned to Issue #219;
+- the IMP-068 translation extension passes at the `ci` evidence level and does not broaden the accepted IMP-064 real-machine result;
+- the next bounded implementation receives IMP-069 only when a new implementation issue is opened;
 - later local migration, cloud, and tool work must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts.
 
 Implementation identifier policy:
@@ -731,7 +734,19 @@ The content-free result exposes only project ID, source state revision, bundle S
 
 IMP-067 does not establish Resume Bundle import into canonical state, shutdown escape import, automatic or semantic retrieval, embeddings, ranking, translation, attachments, multimodal input, streaming workflow output, tools, cloud fallback, target-specific export, complete Phase 6, or stable general anti-lock-in.
 
-Subsequent daily-use work may expand translation, planning, work-item proposals, portability review, accessibility, error clarity, Lite performance, and soak testing.
+### IMP-068 — Explicit local translation workflow
+
+Status: implemented with deterministic synthetic CI evidence.
+
+Implemented one explicit `translate` mode for the accepted bounded local writing workflow. The caller supplies one non-blank source text and one bounded target-language label. Draft, revise, and summarize callers remain compatible and reject target-language metadata.
+
+The target language is normalized and validated before runtime or source-origin creation, then placed only in the deterministic current task-authority payload and content-free result metadata. Source text remains separate immutable `external_content` through `extractor` / `extraction`, reaches the runtime only through `untrusted_content`, and cannot override the caller-selected language or authorize another task.
+
+Dedicated acceptance covers successful translation, source/task channel separation, target-language validation, hostile source authority denial, failure before runtime and origin creation, canonical runtime-error persistence, and content-free results. Existing IMP-063 through IMP-067 regression coverage remains active. Standard CI covers Ubuntu, macOS, and Windows.
+
+IMP-068 does not establish automatic source-language detection, translation memory, glossary management, locale-specific formatting, document or attachment translation, PDF or OCR translation, multimodal input, streaming workflow output, semantic retrieval, model-selected context, tools, cloud translation, provider routing, target-specific export, personal translation-quality claims, complete Phase 6, Lite v1.0 completion, or stable general anti-lock-in.
+
+Subsequent daily-use work may expand planning, work-item proposals, portability review, accessibility, error clarity, Lite performance, and soak testing.
 
 ## 13. Phase 7 — Optional cloud and multiple models
 
