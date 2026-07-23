@@ -25,7 +25,17 @@ jobs:
       - run: uv run ruff format scripts/apply_imp_068_status.py
       - run: uv run python scripts/apply_imp_068_status.py
       - run: uv run python scripts/build_final_spec.py
-      - run: node scripts/check-public-site-status.mjs
+      - name: Capture public status checker
+        run: node scripts/check-public-site-status.mjs > imp-068-checker.log 2>&1 || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: imp-068-checker-log
+          path: imp-068-checker.log
+          if-no-files-found: error
+      - name: Require public status checker
+        run: |
+          cat imp-068-checker.log
+          grep -q '^public-site-status check passed$' imp-068-checker.log
       - run: uv run ruff check scripts/apply_imp_068_status.py
       - run: uv run ruff format --check scripts/apply_imp_068_status.py
       - name: Commit status updates
