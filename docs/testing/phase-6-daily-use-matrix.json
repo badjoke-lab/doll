@@ -75,5 +75,42 @@
       "project",
       "decision"
     ]
+  },
+  "resume_bundle_context_extension": {
+    "implementation": "IMP-067",
+    "status": "ci-pass",
+    "description": "One explicitly selected verified Resume Bundle can provide bounded core continuity material to local writing as data-only untrusted context without canonical-state import or native-path disclosure.",
+    "pytest_files": [
+      "tests/test_imp_066_decision_context_acceptance.py",
+      "tests/test_resume_bundle_context_coverage.py"
+    ],
+    "passed_evidence_levels": [
+      "ci"
+    ],
+    "required_evidence_levels": [
+      "ci"
+    ],
+    "selection_mode": "explicit-only",
+    "maximum_selected_bundles": 1,
+    "automatic_file_search": false,
+    "semantic_retrieval": false,
+    "model_selected_context": false,
+    "canonical_state_import": false,
+    "secret_content_allowed": false,
+    "context_origin_class": "external_content",
+    "context_actor_type": "extractor",
+    "context_acquisition_method": "extraction",
+    "context_authority_class": "untrusted_data",
+    "excluded_member_groups": [
+      "HANDOFF.md",
+      "checksums",
+      "artifact_references",
+      "source_references",
+      "artifact_bytes",
+      "external_source_content"
+    ],
+    "phase6_gate_complete": false,
+    "stable_anti_lock_in_claim": false,
+    "implementation_doc": "docs/implementation/imp-067-resume-bundle-writing-context.md"
   }
 }

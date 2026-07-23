@@ -81,8 +81,8 @@ Completed:
 - Phase 4B project continuity foundation;
 - Phase 5 local runtime and model integration;
 - IMP-001 through IMP-023;
-- IMP-030 through IMP-066;
-- local workspace, SQLite state, migrations, managed artifacts, canonical conversation and project state, State Package v2, backup and restore, the model-independent safety boundary, AI-environment portability, project continuity, runtime-independent adapter contracts, a loopback-only Ollama adapter, authoritative runtime and model manifests, explicit bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, and accepted primary Intel Mac offline continuity evidence through IMP-054, the offline Ollama API session source adapter through IMP-055, explicit loopback Ollama chat capture through IMP-056, the deterministic local-portability migration harness through IMP-057, the deterministic shutdown escape bundle through IMP-058, the bounded ChatGPT conversations.json source adapter through IMP-059, the bounded ChatGPT numbered conversation-member aggregation through IMP-060, bounded imported conversation context replay through IMP-061, the exact-commit imported-context replay real-machine acceptance harness through IMP-062, and the bounded local writing workflow through IMP-063, the accepted exact-commit primary Intel Mac local-writing evidence through IMP-064, explicit data-only confirmed-memory and ProjectRecord context selection through IMP-065, and explicit data-only DecisionRecord context selection through IMP-066.
+- IMP-030 through IMP-067;
+- local workspace, SQLite state, migrations, managed artifacts, canonical conversation and project state, State Package v2, backup and restore, the model-independent safety boundary, AI-environment portability, project continuity, runtime-independent adapter contracts, a loopback-only Ollama adapter, authoritative runtime and model manifests, explicit bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, and accepted primary Intel Mac offline continuity evidence through IMP-054, the offline Ollama API session source adapter through IMP-055, explicit loopback Ollama chat capture through IMP-056, the deterministic local-portability migration harness through IMP-057, the deterministic shutdown escape bundle through IMP-058, the bounded ChatGPT conversations.json source adapter through IMP-059, the bounded ChatGPT numbered conversation-member aggregation through IMP-060, bounded imported conversation context replay through IMP-061, the exact-commit imported-context replay real-machine acceptance harness through IMP-062, and the bounded local writing workflow through IMP-063, the accepted exact-commit primary Intel Mac local-writing evidence through IMP-064, explicit data-only confirmed-memory and ProjectRecord context selection through IMP-065, explicit data-only DecisionRecord context selection through IMP-066, and explicit verified Resume Bundle writing context through IMP-067.
 
 Current implementation point:
 
@@ -94,7 +94,7 @@ Current implementation point:
 - Phase 5 passed its local-runtime continuity gate on 2026-06-28;
 - accepted real-machine evidence is bound to commit `1a5b66b2417d6f3e1eafcd14d2769e9c15d7f96c` on the primary Intel Mac with networking disabled;
 - IMP-048 through IMP-054 establish the runtime contract, loopback-only Ollama adapter, authoritative manifests and bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, State Package v2 transfer, backup restore, and accepted LRUN-001 through LRUN-012 evidence;
-- Phase 6 local AI portability and daily-use integration is in progress through IMP-066;
+- Phase 6 local AI portability and daily-use integration is in progress through IMP-067;
 - IMP-055 adds an offline source adapter for a documented caller-retained Ollama API session bundle, with exact JSON validation, content-free inventory, original-source hashing, deterministic normalization, explicit attachment-metadata loss, and reuse of the accepted generic staging and reviewed-publication boundary;
 - IMP-056 adds an explicit non-streaming text-only capture path through fixed IPv4 loopback, resolves one opaque already-installed local model through the filtered inventory, and returns an IMP-055-valid session bundle without reading application databases, logs, shell history, or unrelated sessions;
 - IMP-057 merged at commit `7b63ff512e20d1d6ae65da8938486b093e14b6c6` and composes explicit capture, reviewed canonical import, idempotency and conflict checks, generic export, State Package v2 transfer, backup restore, and alternate fresh-process inspection without the capture component;
@@ -124,7 +124,10 @@ Current implementation point:
 - IMP-066 extends the explicit context boundary to active non-secret DecisionRecords with deterministic revision-pinned snapshots and no linked-record expansion;
 - IMP-066 is assigned to Issue #213;
 - the IMP-066 decision-context extension passes at the `ci` evidence level and does not broaden the accepted IMP-064 real-machine result;
-- the next bounded implementation receives IMP-067 only when a new implementation issue is opened;
+- IMP-067 adds one explicitly selected verified external Resume Bundle as a bounded core-continuity snapshot for local writing, with no canonical-state import, native-path disclosure, automatic search, or excluded-member expansion;
+- IMP-067 is assigned to Issue #217;
+- the IMP-067 Resume Bundle context extension passes at the `ci` evidence level and does not broaden the accepted IMP-064 real-machine result;
+- the next bounded implementation receives IMP-068 only when a new implementation issue is opened;
 - later local migration, cloud, and tool work must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts.
 
 Implementation identifier policy:
@@ -714,7 +717,21 @@ The content-free result adds only selected DecisionRecord IDs and revisions. Ded
 
 IMP-066 does not establish Resume Bundle context, automatic or semantic retrieval, embeddings, vector search, ranking, model-selected context, translation, attachments, multimodal input, streaming workflow output, tools, capability execution, cloud portability or fallback, target-specific export, complete Phase 6, or stable general anti-lock-in.
 
-Subsequent daily-use work may expand translation, planning, explicit Resume Bundle context selection, work-item proposals, portability review, accessibility, error clarity, Lite performance, and soak testing.
+### IMP-067 — Explicit Resume Bundle writing context
+
+Status: implemented with deterministic synthetic CI evidence.
+
+Implemented at most one caller-selected external Resume Bundle path for the accepted local `draft`, `revise`, and `summarize` workflow. The existing Resume Bundle v1 verifier runs before any origin or runtime request, and the selected file is bound to a content-free SHA-256 identity without exposing its native path.
+
+Only the bounded core continuity groups enter one deterministic snapshot: project, checkpoint, active/next/blocked work, decisions, procedures, policies, and pending validation. HANDOFF text, checksum rows, artifact/source reference rows, artifact bytes, external source content, and linked-record expansion remain excluded.
+
+The snapshot is secret-scanned, shares the existing ten-item and 24,000-character limits, persists at no lower than sensitive classification, and enters only as data-only external content through extractor/extraction. Missing, unreadable, tampered, symlinked, unsupported, oversized, secret-bearing, changed-during-read, or over-limit bundles fail before runtime and before context-origin creation.
+
+The content-free result exposes only project ID, source state revision, bundle SHA-256, member-group count, and character counts. Dedicated acceptance covers all three writing modes, authority denial, excluded-member proof, failure preservation, aggregate limits, path privacy, malformed input, and coverage of fail-closed branches. Standard CI covers Ubuntu, macOS, and Windows.
+
+IMP-067 does not establish Resume Bundle import into canonical state, shutdown escape import, automatic or semantic retrieval, embeddings, ranking, translation, attachments, multimodal input, streaming workflow output, tools, cloud fallback, target-specific export, complete Phase 6, or stable general anti-lock-in.
+
+Subsequent daily-use work may expand translation, planning, work-item proposals, portability review, accessibility, error clarity, Lite performance, and soak testing.
 
 ## 13. Phase 7 — Optional cloud and multiple models
 
@@ -831,13 +848,13 @@ An implementation PR is done when:
 
 ## 18. Immediate work
 
-After IMP-066 explicit decision context selection, the immediate order is:
+After IMP-067 explicit Resume Bundle writing context, the immediate order is:
 
 1. retain PORT-014 as `pass` only within the accepted bounded IMP-059/IMP-060 selected-history migration boundary and keep its material-loss limitations visible;
 2. retain PORT-013 as `pass` within both the accepted IMP-057 migration boundary and the accepted IMP-061/IMP-062 imported-context replay extension, without broadening either result beyond its documented limits;
-3. retain the IMP-063 task-versus-material separation and the IMP-065/IMP-066 explicit-selection boundary for all later Resume Bundle, document, and retrieval context;
-4. retain the accepted IMP-063/IMP-064 local-writing result only within its documented real-machine draft/revise/summarize boundary, and treat IMP-065/IMP-066 as separate CI-only context-selection extensions;
-5. allocate IMP-067 only when a new bounded implementation issue is opened; translation, automatic retrieval, Resume Bundle context, attachments, target-specific export, cloud credentials, tools, and automatic cloud fallback remain separate work;
+3. retain the IMP-063 task-versus-material separation and the IMP-065/IMP-066/IMP-067 explicit-selection and extraction boundaries for all later document and retrieval context;
+4. retain the accepted IMP-063/IMP-064 local-writing result only within its documented real-machine draft/revise/summarize boundary, and treat IMP-065/IMP-066/IMP-067 as separate CI-only context extensions;
+5. allocate IMP-068 only when a new bounded implementation issue is opened; translation, automatic retrieval, attachments, target-specific export, cloud credentials, tools, and automatic cloud fallback remain separate work;
 6. continue Phase 6 daily-use integration and independently required portability work without weakening the Phase 3 safety boundary or Phase 4A/4B canonical state contracts;
 7. keep the complete Phase 6 gate and stable general anti-lock-in incomplete until their independent remaining requirements pass.
 
