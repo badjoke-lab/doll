@@ -24,6 +24,21 @@ jobs:
       - run: uv sync --frozen
       - run: uv run ruff format scripts/apply_imp_068_status.py
       - run: uv run python scripts/apply_imp_068_status.py
+      - name: Advance remaining implementation checker
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("scripts/check-public-site-status.mjs")
+          text = path.read_text(encoding="utf-8")
+          old = '''  roadmap.includes("the next bounded implementation receives IMP-068 only when a new implementation issue is opened"),
+            "roadmap must identify IMP-068 as the next unallocated implementation identifier",'''
+          new = '''  roadmap.includes("the next bounded implementation receives IMP-069 only when a new implementation issue is opened"),
+            "roadmap must identify IMP-069 as the next unallocated implementation identifier",'''
+          if text.count(old) != 1:
+              raise SystemExit("unexpected remaining implementation checker shape")
+          path.write_text(text.replace(old, new), encoding="utf-8")
+          PY
       - run: uv run python scripts/build_final_spec.py
       - name: Capture public status checker
         run: node scripts/check-public-site-status.mjs > imp-068-checker.log 2>&1 || true
