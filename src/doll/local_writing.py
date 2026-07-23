@@ -229,9 +229,7 @@ class LocalWritingWorkflowService:
             bundle_result.required_sensitivity,
         )
         context_instruction_ids = (
-            source_instruction_ids
-            + selected_result.instruction_ids
-            + bundle_result.instruction_ids
+            source_instruction_ids + selected_result.instruction_ids + bundle_result.instruction_ids
         )
         local_result = self.local_conversation.execute_turn(
             conversation_id=conversation_id,
@@ -325,9 +323,7 @@ def _request_text(value: object) -> str:
 def _source_for_mode(mode: WritingMode, value: object) -> str | None:
     if mode == "draft":
         if value is not None:
-            raise LocalWritingWorkflowValidationError(
-                "draft mode does not accept source text"
-            )
+            raise LocalWritingWorkflowValidationError("draft mode does not accept source text")
         return None
     if not isinstance(value, str):
         raise LocalWritingWorkflowValidationError(f"{mode} mode requires source text")
@@ -350,22 +346,17 @@ def _target_language_for_mode(mode: WritingMode, value: object) -> str | None:
             )
         return None
     if not isinstance(value, str):
-        raise LocalWritingWorkflowValidationError(
-            "translate mode requires a target language"
-        )
+        raise LocalWritingWorkflowValidationError("translate mode requires a target language")
     try:
         safe = _message_text("translation target language", value)
     except LocalConversationValidationError as exc:
-        raise LocalWritingWorkflowValidationError(
-            "translation target language is invalid"
-        ) from exc
+        raise LocalWritingWorkflowValidationError("translation target language is invalid") from exc
     if len(safe) > _MAX_TARGET_LANGUAGE_CHARS:
         raise LocalWritingWorkflowValidationError(
             "translation target language exceeds the configured character limit"
         )
     if not all(
-        character.isalnum() or character in _TARGET_LANGUAGE_PUNCTUATION
-        for character in safe
+        character.isalnum() or character in _TARGET_LANGUAGE_PUNCTUATION for character in safe
     ):
         raise LocalWritingWorkflowValidationError(
             "translation target language contains unsupported characters"
@@ -385,12 +376,9 @@ def _render_task(
 ) -> str:
     mode_instruction = {
         "draft": "Create original text that follows the user request.",
-        "revise": (
-            "Revise the supplied untrusted source text according to the user request."
-        ),
+        "revise": ("Revise the supplied untrusted source text according to the user request."),
         "summarize": (
-            "Summarize the supplied untrusted source text according to the user "
-            "request."
+            "Summarize the supplied untrusted source text according to the user request."
         ),
         "translate": (
             "Translate the supplied untrusted source text into the explicit target "

@@ -189,8 +189,7 @@ def test_translate_uses_explicit_target_and_untrusted_source(tmp_path: Path) -> 
         assert result.source_instruction_count == 1
         assert result.source_character_count == len(source_text)
         assert [
-            event.event_kind
-            for event in repository.list_conversation_events(conversation_id)
+            event.event_kind for event in repository.list_conversation_events(conversation_id)
         ] == ["user_message", "system_context_snapshot", "assistant_message"]
 
         prompt = json.loads(adapter.prompts[0])
@@ -219,9 +218,7 @@ def test_translation_validation_fails_before_runtime_and_source_origin(
     conversation_id = str(uuid4())
 
     with state.open_state_repository(initialized.root) as repository:
-        repository.save_conversation(
-            ConversationRecord(conversation_id=conversation_id)
-        )
+        repository.save_conversation(ConversationRecord(conversation_id=conversation_id))
         _active_binding(repository, adapter)
         service = _service(repository, adapter)
         before = _origin_count(repository)
@@ -286,9 +283,7 @@ def test_hostile_translation_source_remains_data_only(tmp_path: Path) -> None:
     )
 
     with state.open_state_repository(initialized.root) as repository:
-        repository.save_conversation(
-            ConversationRecord(conversation_id=conversation_id)
-        )
+        repository.save_conversation(ConversationRecord(conversation_id=conversation_id))
         _active_binding(repository, adapter)
 
         result = _service(repository, adapter).execute(
@@ -306,17 +301,13 @@ def test_hostile_translation_source_remains_data_only(tmp_path: Path) -> None:
         assert result.target_language == "日本語"
         assert result.source_instruction_id is not None
         origins = InstructionOriginService(repository).list(limit=20)
-        origin = next(
-            item for item in origins if item.record_id == result.source_instruction_id
-        )
+        origin = next(item for item in origins if item.record_id == result.source_instruction_id)
         assert origin.origin_class == "external_content"
         assert origin.authority_class == "untrusted_data"
         assert origin.data_only is True
 
         prompt = json.loads(adapter.prompts[0])
-        task = json.loads(
-            prompt["channels"]["current_user_instruction"][0]["content"]
-        )
+        task = json.loads(prompt["channels"]["current_user_instruction"][0]["content"])
         assert task["target_language"] == "日本語"
         assert source_text not in json.dumps(task, ensure_ascii=False)
         assert prompt["channels"]["untrusted_content"][0]["content"] == source_text
@@ -328,9 +319,7 @@ def test_translation_runtime_failure_uses_canonical_error_graph(tmp_path: Path) 
     conversation_id = str(uuid4())
 
     with state.open_state_repository(initialized.root) as repository:
-        repository.save_conversation(
-            ConversationRecord(conversation_id=conversation_id)
-        )
+        repository.save_conversation(ConversationRecord(conversation_id=conversation_id))
         _active_binding(repository, adapter)
 
         result = _service(repository, adapter).execute(
@@ -350,8 +339,7 @@ def test_translation_runtime_failure_uses_canonical_error_graph(tmp_path: Path) 
         assert result.assistant_event_id is None
         assert result.error_event_id is not None
         assert [
-            event.event_kind
-            for event in repository.list_conversation_events(conversation_id)
+            event.event_kind for event in repository.list_conversation_events(conversation_id)
         ] == ["user_message", "system_context_snapshot", "error"]
 
 
@@ -363,9 +351,7 @@ def test_translation_result_is_content_free(tmp_path: Path) -> None:
     conversation_id = str(uuid4())
 
     with state.open_state_repository(initialized.root) as repository:
-        repository.save_conversation(
-            ConversationRecord(conversation_id=conversation_id)
-        )
+        repository.save_conversation(ConversationRecord(conversation_id=conversation_id))
         _active_binding(repository, adapter)
 
         result = _service(repository, adapter).execute(
