@@ -51,8 +51,6 @@ jobs:
         run: |
           cat imp-068-checker.log
           grep -q '^public-site-status check passed$' imp-068-checker.log
-      - run: uv run ruff check scripts/apply_imp_068_status.py
-      - run: uv run ruff format --check scripts/apply_imp_068_status.py
       - name: Commit status updates
         run: |
           git config user.name "github-actions[bot]"
