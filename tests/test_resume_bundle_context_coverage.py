@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 from typing import cast
 
@@ -9,6 +10,7 @@ from doll import resume_bundle_context as context
 from doll import state, workspace
 from doll.instruction_origin import InstructionOriginService, InstructionSource
 from doll.resume_bundle import ResumeBundleInspection
+from doll.writing_context import MAX_SELECTED_CONTEXT_CHARS
 
 
 def _workspace(tmp_path: Path) -> workspace.InitializedWorkspace:
@@ -43,6 +45,22 @@ def _inspection() -> ResumeBundleInspection:
     )
 
 
+def _stable_identity(path: Path) -> context._FileIdentity:
+    return _identity()
+
+
+def _valid_inspection(path: Path) -> ResumeBundleInspection:
+    return _inspection()
+
+
+def _small_snapshot(path: Path, inspection: ResumeBundleInspection) -> str:
+    return "{}"
+
+
+def _oversized_snapshot(path: Path, inspection: ResumeBundleInspection) -> str:
+    return "x" * (MAX_SELECTED_CONTEXT_CHARS + 1)
+
+
 def test_plan_rejects_invalid_path_type_and_oversized_file(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -72,7 +90,7 @@ def test_plan_rejects_unreadable_changed_and_oversized_snapshot(
     with state.open_state_repository(initialized.root) as repository:
         service = context.ResumeBundleWritingContextService(repository)
 
-        monkeypatch.setattr(context, "_file_identity", lambda path: _identity())
+        monkeypatch.setattr(context, "_file_identity", _stable_identity)
 
         def unreadable(path: Path) -> ResumeBundleInspection:
             raise RuntimeError("synthetic unreadable bundle")
@@ -82,18 +100,18 @@ def test_plan_rejects_unreadable_changed_and_oversized_snapshot(
             service.plan(bundle)
 
         identities = iter((_identity("a"), _identity("b")))
-        monkeypatch.setattr(context, "_file_identity", lambda path: next(identities))
-        monkeypatch.setattr(context, "verify_resume_bundle", lambda path: _inspection())
-        monkeypatch.setattr(context, "_snapshot_content", lambda path, inspection: "{}")
+
+        def changed_identity(path: Path) -> context._FileIdentity:
+            return next(identities)
+
+        monkeypatch.setattr(context, "_file_identity", changed_identity)
+        monkeypatch.setattr(context, "verify_resume_bundle", _valid_inspection)
+        monkeypatch.setattr(context, "_snapshot_content", _small_snapshot)
         with pytest.raises(context.ResumeBundleWritingContextValidationError):
             service.plan(bundle)
 
-        monkeypatch.setattr(context, "_file_identity", lambda path: _identity())
-        monkeypatch.setattr(
-            context,
-            "_snapshot_content",
-            lambda path, inspection: "x" * (context.MAX_SELECTED_CONTEXT_CHARS + 1),
-        )
+        monkeypatch.setattr(context, "_file_identity", _stable_identity)
+        monkeypatch.setattr(context, "_snapshot_content", _oversized_snapshot)
         with pytest.raises(context.ResumeBundleWritingContextValidationError):
             service.plan(bundle)
 
@@ -134,9 +152,10 @@ def test_materialization_rejects_incomplete_and_duplicate_preparation(
 
         operation_id = "imp067.coverage.duplicate"
         parent_operation_id = context._context_operation_id(operation_id, complete)
+        content = "{}"
         InstructionOriginService(repository).create(
             title="Existing Resume Bundle context",
-            content="{}",
+            content=content,
             source=InstructionSource(
                 origin_class="external_content",
                 actor_type="extractor",
@@ -144,7 +163,7 @@ def test_materialization_rejects_incomplete_and_duplicate_preparation(
                 source_identifier="resume_bundle:coverage",
                 parent_operation_id=parent_operation_id,
                 session_id="coverage-conversation",
-                content_hash="sha256:" + ("0" * 64),
+                content_hash=f"sha256:{hashlib.sha256(content.encode()).hexdigest()}",
             ),
             operation_id=parent_operation_id,
             sensitivity="sensitive",
