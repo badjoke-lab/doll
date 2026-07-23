@@ -60,8 +60,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 67,
-  "project-status.json must mark Phase 6 in progress through IMP-066 with IMP-067 next",
+    status.phase?.next_implementation === 68,
+  "project-status.json must mark Phase 6 in progress through IMP-067 with IMP-068 next",
 );
 expect(
   status.model_runtime &&
@@ -70,11 +70,12 @@ expect(
   "project-status.json requires model_runtime.connected and model_runtime.message",
 );
 expect(
-  status.model_runtime.message.includes("through IMP-066") &&
+  status.model_runtime.message.includes("through IMP-067") &&
     status.model_runtime.message.includes("IMP-065 adds explicit") &&
     status.model_runtime.message.includes("IMP-066 adds explicit DecisionRecord") &&
+    status.model_runtime.message.includes("IMP-067 adds one explicit verified Resume Bundle") &&
     status.model_runtime.message.includes("passes at both CI and real-machine evidence levels"),
-  "project-status.json must describe IMP-066 without broadening IMP-064 evidence",
+  "project-status.json must describe IMP-067 without broadening IMP-064 evidence",
 );
 expect(
   /^\d{4}-\d{2}-\d{2}$/.test(status.last_reviewed || ""),
@@ -173,6 +174,34 @@ expect(
     dailyUse.explicit_context_extension?.implementation_doc ===
       "docs/implementation/imp-066-explicit-decision-context.md",
   "IMP-066 explicit decision context must remain bounded and CI-only",
+);
+
+expect(
+  dailyUse.resume_bundle_context_extension?.implementation === "IMP-067" &&
+    dailyUse.resume_bundle_context_extension?.status === "ci-pass" &&
+    JSON.stringify(
+      dailyUse.resume_bundle_context_extension?.passed_evidence_levels,
+    ) === JSON.stringify(["ci"]) &&
+    dailyUse.resume_bundle_context_extension?.selection_mode ===
+      "explicit-only" &&
+    dailyUse.resume_bundle_context_extension?.maximum_selected_bundles === 1 &&
+    dailyUse.resume_bundle_context_extension?.automatic_file_search === false &&
+    dailyUse.resume_bundle_context_extension?.semantic_retrieval === false &&
+    dailyUse.resume_bundle_context_extension?.model_selected_context === false &&
+    dailyUse.resume_bundle_context_extension?.canonical_state_import === false &&
+    dailyUse.resume_bundle_context_extension?.secret_content_allowed === false &&
+    dailyUse.resume_bundle_context_extension?.context_actor_type ===
+      "extractor" &&
+    dailyUse.resume_bundle_context_extension?.context_acquisition_method ===
+      "extraction" &&
+    dailyUse.resume_bundle_context_extension?.context_authority_class ===
+      "untrusted_data" &&
+    dailyUse.resume_bundle_context_extension?.phase6_gate_complete === false &&
+    dailyUse.resume_bundle_context_extension?.stable_anti_lock_in_claim ===
+      false &&
+    dailyUse.resume_bundle_context_extension?.implementation_doc ===
+      "docs/implementation/imp-067-resume-bundle-writing-context.md",
+  "IMP-067 Resume Bundle context must remain explicit, bounded, and CI-only",
 );
 
 expect(
@@ -472,8 +501,12 @@ expect(
   "roadmap must record the IMP-066 explicit decision context boundary",
 );
 expect(
-  roadmap.includes("the next bounded implementation receives IMP-067 only when a new implementation issue is opened"),
-  "roadmap must identify IMP-067 as the next unallocated implementation identifier",
+  roadmap.includes("### IMP-067 — Explicit Resume Bundle writing context"),
+  "roadmap must record the IMP-067 Resume Bundle writing context boundary",
+);
+expect(
+  roadmap.includes("the next bounded implementation receives IMP-068 only when a new implementation issue is opened"),
+  "roadmap must identify IMP-068 as the next unallocated implementation identifier",
 );
 expect(
   roadmap.includes("docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json"),
@@ -485,9 +518,9 @@ expect(
 );
 expect(
   roadmap.includes(
-    "After IMP-066 explicit decision context selection, the immediate order is:",
+    "After IMP-067 explicit Resume Bundle writing context, the immediate order is:",
   ),
-  "roadmap must record IMP-066 and remaining Phase 6 work",
+  "roadmap must record IMP-067 and remaining Phase 6 work",
 );
 expect(
   !roadmap.includes("### IMP-024 —") && !roadmap.includes("### IMP-029 —"),

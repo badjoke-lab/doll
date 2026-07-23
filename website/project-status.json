@@ -15,11 +15,11 @@
     "name": "Local AI portability and daily-use integration",
     "state": "in_progress",
     "started_by_implementation": 55,
-    "next_implementation": 67
+    "next_implementation": 68
   },
   "model_runtime": {
     "connected": true,
-    "message": "Phase 6 is in progress through IMP-066. Offline Ollama session import, explicit text-only loopback capture, the accepted bounded local-portability migration drill, the deterministic shutdown escape bundle, bounded ChatGPT selected-history import, imported-context replay with accepted primary Intel Mac evidence, and the bounded local draft/revise/summarize workflow are implemented. The IMP-063/IMP-064 writing workflow passes at both CI and real-machine evidence levels. IMP-065 adds explicit confirmed-memory and ProjectRecord context selection, and IMP-066 adds explicit DecisionRecord context selection through the same data-only untrusted boundary with CI evidence. Translation, automatic or semantic retrieval, Resume Bundle context, attachments, tools, the complete Phase 6 gate, target-specific application replacement, and stable general anti-lock-in remain incomplete."
+    "message": "Phase 6 is in progress through IMP-067. Offline Ollama session import, explicit text-only loopback capture, the accepted bounded local-portability migration drill, the deterministic shutdown escape bundle, bounded ChatGPT selected-history import, imported-context replay with accepted primary Intel Mac evidence, and the bounded local draft/revise/summarize workflow are implemented. The IMP-063/IMP-064 writing workflow passes at both CI and real-machine evidence levels. IMP-065 adds explicit confirmed-memory and ProjectRecord context selection, IMP-066 adds explicit DecisionRecord context selection, and IMP-067 adds one explicit verified Resume Bundle through a bounded data-only untrusted boundary with CI evidence. Translation, automatic or semantic retrieval, attachments, tools, the complete Phase 6 gate, target-specific application replacement, and stable general anti-lock-in remain incomplete."
   },
-  "last_reviewed": "2026-07-18"
+  "last_reviewed": "2026-07-23"
 }
