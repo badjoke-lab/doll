@@ -112,5 +112,32 @@
     "phase6_gate_complete": false,
     "stable_anti_lock_in_claim": false,
     "implementation_doc": "docs/implementation/imp-067-resume-bundle-writing-context.md"
+  },
+  "translation_extension": {
+    "implementation": "IMP-068",
+    "status": "ci-pass",
+    "description": "One explicit local translation mode accepts caller-controlled target-language metadata while source material remains data-only untrusted external content.",
+    "pytest_files": [
+      "tests/test_imp_068_local_translation.py"
+    ],
+    "passed_evidence_levels": [
+      "ci"
+    ],
+    "required_evidence_levels": [
+      "ci"
+    ],
+    "mode": "translate",
+    "source_required": true,
+    "target_language_required": true,
+    "automatic_language_detection": false,
+    "source_origin_class": "external_content",
+    "source_actor_type": "extractor",
+    "source_acquisition_method": "extraction",
+    "source_authority_class": "untrusted_data",
+    "selected_context_compatible": true,
+    "phase6_gate_complete": false,
+    "lite_v1_complete": false,
+    "stable_anti_lock_in_claim": false,
+    "implementation_doc": "docs/implementation/imp-068-explicit-local-translation.md"
   }
 }

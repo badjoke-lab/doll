@@ -1,7 +1,7 @@
 # IMP-068 — Explicit local translation workflow
 
-**Status:** In progress  
-**Issue:** #219  
+**Status:** Implemented with deterministic synthetic CI evidence
+**Issue:** #219
 **Phase:** 6 — Local AI portability and daily-use integration
 
 ## Objective

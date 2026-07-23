@@ -75,9 +75,7 @@ def update_daily_use_matrix() -> None:
         "phase6_gate_complete": False,
         "lite_v1_complete": False,
         "stable_anti_lock_in_claim": False,
-        "implementation_doc": (
-            "docs/implementation/imp-068-explicit-local-translation.md"
-        ),
+        "implementation_doc": ("docs/implementation/imp-068-explicit-local-translation.md"),
     }
     target.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
@@ -108,13 +106,13 @@ def update_public_checker() -> None:
     path = "scripts/check-public-site-status.mjs"
     replace_once(
         path,
-        "status.phase?.next_implementation === 68,\n  \"project-status.json must mark Phase 6 in progress through IMP-067 with IMP-068 next\",",
-        "status.phase?.next_implementation === 69,\n  \"project-status.json must mark Phase 6 in progress through IMP-068 with IMP-069 next\",",
+        'status.phase?.next_implementation === 68,\n  "project-status.json must mark Phase 6 in progress through IMP-067 with IMP-068 next",',
+        'status.phase?.next_implementation === 69,\n  "project-status.json must mark Phase 6 in progress through IMP-068 with IMP-069 next",',
     )
     replace_once(
         path,
-        "status.model_runtime.message.includes(\"through IMP-067\") &&\n    status.model_runtime.message.includes(\"IMP-065 adds explicit\") &&\n    status.model_runtime.message.includes(\"IMP-066 adds explicit DecisionRecord\") &&\n    status.model_runtime.message.includes(\"IMP-067 adds one explicit verified Resume Bundle\") &&\n    status.model_runtime.message.includes(\"passes at both CI and real-machine evidence levels\"),\n  \"project-status.json must describe IMP-067 without broadening IMP-064 evidence\",",
-        "status.model_runtime.message.includes(\"through IMP-068\") &&\n    status.model_runtime.message.includes(\"IMP-065 adds explicit\") &&\n    status.model_runtime.message.includes(\"IMP-066 adds explicit DecisionRecord\") &&\n    status.model_runtime.message.includes(\"IMP-067 adds one explicit verified Resume Bundle\") &&\n    status.model_runtime.message.includes(\"IMP-068 adds explicit local translation\") &&\n    status.model_runtime.message.includes(\"passes at both CI and real-machine evidence levels\"),\n  \"project-status.json must describe IMP-068 without broadening IMP-064 evidence\",",
+        'status.model_runtime.message.includes("through IMP-067") &&\n    status.model_runtime.message.includes("IMP-065 adds explicit") &&\n    status.model_runtime.message.includes("IMP-066 adds explicit DecisionRecord") &&\n    status.model_runtime.message.includes("IMP-067 adds one explicit verified Resume Bundle") &&\n    status.model_runtime.message.includes("passes at both CI and real-machine evidence levels"),\n  "project-status.json must describe IMP-067 without broadening IMP-064 evidence",',
+        'status.model_runtime.message.includes("through IMP-068") &&\n    status.model_runtime.message.includes("IMP-065 adds explicit") &&\n    status.model_runtime.message.includes("IMP-066 adds explicit DecisionRecord") &&\n    status.model_runtime.message.includes("IMP-067 adds one explicit verified Resume Bundle") &&\n    status.model_runtime.message.includes("IMP-068 adds explicit local translation") &&\n    status.model_runtime.message.includes("passes at both CI and real-machine evidence levels"),\n  "project-status.json must describe IMP-068 without broadening IMP-064 evidence",',
     )
     marker = """  \"IMP-067 Resume Bundle context must remain explicit, bounded, and CI-only\",\n);\n\nexpect(\n  localWritingPrimary.test_id ==="""
     insertion = """  \"IMP-067 Resume Bundle context must remain explicit, bounded, and CI-only\",\n);\n\nexpect(\n  dailyUse.translation_extension?.implementation === \"IMP-068\" &&\n    dailyUse.translation_extension?.status === \"ci-pass\" &&\n    JSON.stringify(dailyUse.translation_extension?.passed_evidence_levels) ===\n      JSON.stringify([\"ci\"]) &&\n    JSON.stringify(dailyUse.translation_extension?.required_evidence_levels) ===\n      JSON.stringify([\"ci\"]) &&\n    dailyUse.translation_extension?.mode === \"translate\" &&\n    dailyUse.translation_extension?.source_required === true &&\n    dailyUse.translation_extension?.target_language_required === true &&\n    dailyUse.translation_extension?.automatic_language_detection === false &&\n    dailyUse.translation_extension?.source_origin_class === \"external_content\" &&\n    dailyUse.translation_extension?.source_actor_type === \"extractor\" &&\n    dailyUse.translation_extension?.source_acquisition_method === \"extraction\" &&\n    dailyUse.translation_extension?.source_authority_class === \"untrusted_data\" &&\n    dailyUse.translation_extension?.selected_context_compatible === true &&\n    dailyUse.translation_extension?.phase6_gate_complete === false &&\n    dailyUse.translation_extension?.lite_v1_complete === false &&\n    dailyUse.translation_extension?.stable_anti_lock_in_claim === false &&\n    dailyUse.translation_extension?.implementation_doc ===\n      \"docs/implementation/imp-068-explicit-local-translation.md\",\n  \"IMP-068 translation must remain explicit, data-only, bounded, and CI-only\",\n);\n\nexpect(\n  localWritingPrimary.test_id ==="""

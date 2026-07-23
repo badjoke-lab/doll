@@ -60,8 +60,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 68,
-  "project-status.json must mark Phase 6 in progress through IMP-067 with IMP-068 next",
+    status.phase?.next_implementation === 69,
+  "project-status.json must mark Phase 6 in progress through IMP-068 with IMP-069 next",
 );
 expect(
   status.model_runtime &&
@@ -70,12 +70,13 @@ expect(
   "project-status.json requires model_runtime.connected and model_runtime.message",
 );
 expect(
-  status.model_runtime.message.includes("through IMP-067") &&
+  status.model_runtime.message.includes("through IMP-068") &&
     status.model_runtime.message.includes("IMP-065 adds explicit") &&
     status.model_runtime.message.includes("IMP-066 adds explicit DecisionRecord") &&
     status.model_runtime.message.includes("IMP-067 adds one explicit verified Resume Bundle") &&
+    status.model_runtime.message.includes("IMP-068 adds explicit local translation") &&
     status.model_runtime.message.includes("passes at both CI and real-machine evidence levels"),
-  "project-status.json must describe IMP-067 without broadening IMP-064 evidence",
+  "project-status.json must describe IMP-068 without broadening IMP-064 evidence",
 );
 expect(
   /^\d{4}-\d{2}-\d{2}$/.test(status.last_reviewed || ""),
@@ -202,6 +203,30 @@ expect(
     dailyUse.resume_bundle_context_extension?.implementation_doc ===
       "docs/implementation/imp-067-resume-bundle-writing-context.md",
   "IMP-067 Resume Bundle context must remain explicit, bounded, and CI-only",
+);
+
+expect(
+  dailyUse.translation_extension?.implementation === "IMP-068" &&
+    dailyUse.translation_extension?.status === "ci-pass" &&
+    JSON.stringify(dailyUse.translation_extension?.passed_evidence_levels) ===
+      JSON.stringify(["ci"]) &&
+    JSON.stringify(dailyUse.translation_extension?.required_evidence_levels) ===
+      JSON.stringify(["ci"]) &&
+    dailyUse.translation_extension?.mode === "translate" &&
+    dailyUse.translation_extension?.source_required === true &&
+    dailyUse.translation_extension?.target_language_required === true &&
+    dailyUse.translation_extension?.automatic_language_detection === false &&
+    dailyUse.translation_extension?.source_origin_class === "external_content" &&
+    dailyUse.translation_extension?.source_actor_type === "extractor" &&
+    dailyUse.translation_extension?.source_acquisition_method === "extraction" &&
+    dailyUse.translation_extension?.source_authority_class === "untrusted_data" &&
+    dailyUse.translation_extension?.selected_context_compatible === true &&
+    dailyUse.translation_extension?.phase6_gate_complete === false &&
+    dailyUse.translation_extension?.lite_v1_complete === false &&
+    dailyUse.translation_extension?.stable_anti_lock_in_claim === false &&
+    dailyUse.translation_extension?.implementation_doc ===
+      "docs/implementation/imp-068-explicit-local-translation.md",
+  "IMP-068 translation must remain explicit, data-only, bounded, and CI-only",
 );
 
 expect(
@@ -505,8 +530,8 @@ expect(
   "roadmap must record the IMP-067 Resume Bundle writing context boundary",
 );
 expect(
-  roadmap.includes("the next bounded implementation receives IMP-068 only when a new implementation issue is opened"),
-  "roadmap must identify IMP-068 as the next unallocated implementation identifier",
+  roadmap.includes("the next bounded implementation receives IMP-069 only when a new implementation issue is opened"),
+  "roadmap must identify IMP-069 as the next unallocated implementation identifier",
 );
 expect(
   roadmap.includes("docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json"),
