@@ -10,7 +10,12 @@ from pathlib import Path
 from typing import cast
 
 from doll.instruction_origin import InstructionOriginService, InstructionSource
-from doll.resume_bundle import BUNDLE_ROOT, ResumeBundleError, ResumeBundleInspection, verify_resume_bundle
+from doll.resume_bundle import (
+    BUNDLE_ROOT,
+    ResumeBundleError,
+    ResumeBundleInspection,
+    verify_resume_bundle,
+)
 from doll.secret_detection import MAX_CONFIGURED_SCAN_CHARS, scan_secrets
 from doll.state import RecordSensitivity, StateError
 from doll.state_repository import StateRepository
@@ -417,10 +422,7 @@ def _context_operation_id(
             "selected Resume Bundle context plan is incomplete"
         )
     digest = hashlib.sha256(
-        (
-            f"{operation_id}\0{plan.project_id}\0{plan.state_revision}\0"
-            f"{plan.bundle_sha256}"
-        ).encode("utf-8")
+        (f"{operation_id}\0{plan.project_id}\0{plan.state_revision}\0{plan.bundle_sha256}").encode()
     ).hexdigest()[:32]
     return f"imp067.context.resume_bundle.{digest}"
 
