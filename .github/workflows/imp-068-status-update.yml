@@ -24,20 +24,27 @@ jobs:
       - run: uv sync --frozen
       - run: uv run ruff format scripts/apply_imp_068_status.py
       - run: uv run python scripts/apply_imp_068_status.py
-      - name: Advance remaining implementation checker
+      - name: Normalize generated status text
         run: |
           python - <<'PY'
           from pathlib import Path
 
-          path = Path("scripts/check-public-site-status.mjs")
-          text = path.read_text(encoding="utf-8")
+          implementation = Path("docs/implementation/imp-068-explicit-local-translation.md")
+          text = implementation.read_text(encoding="utf-8")
+          implementation.write_text(
+              "\n".join(line.rstrip() for line in text.splitlines()) + "\n",
+              encoding="utf-8",
+          )
+
+          checker = Path("scripts/check-public-site-status.mjs")
+          text = checker.read_text(encoding="utf-8")
           old = '''  roadmap.includes("the next bounded implementation receives IMP-068 only when a new implementation issue is opened"),
             "roadmap must identify IMP-068 as the next unallocated implementation identifier",'''
           new = '''  roadmap.includes("the next bounded implementation receives IMP-069 only when a new implementation issue is opened"),
             "roadmap must identify IMP-069 as the next unallocated implementation identifier",'''
           if text.count(old) != 1:
               raise SystemExit("unexpected remaining implementation checker shape")
-          path.write_text(text.replace(old, new), encoding="utf-8")
+          checker.write_text(text.replace(old, new), encoding="utf-8")
           PY
       - run: uv run python scripts/build_final_spec.py
       - name: Capture public status checker
@@ -53,6 +60,7 @@ jobs:
           grep -q '^public-site-status check passed$' imp-068-checker.log
       - name: Commit status updates
         run: |
+          rm -f imp-068-checker.log
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
