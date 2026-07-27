@@ -139,5 +139,41 @@
     "lite_v1_complete": false,
     "stable_anti_lock_in_claim": false,
     "implementation_doc": "docs/implementation/imp-068-explicit-local-translation.md"
+  },
+  "work_item_proposal_extension": {
+    "implementation": "IMP-069",
+    "status": "ci-pass",
+    "description": "One bounded local-model planning turn can create exactly one model-proposed WorkItemRecord while all accepted-work and execution authority remains on the user path.",
+    "pytest_files": [
+      "tests/test_imp_069_local_work_proposal.py"
+    ],
+    "passed_evidence_levels": [
+      "ci"
+    ],
+    "required_evidence_levels": [
+      "ci"
+    ],
+    "project_selection_mode": "explicit-only",
+    "maximum_proposals_per_turn": 1,
+    "model_provenance": "model-proposed",
+    "forced_work_status": "proposed",
+    "forced_verification_state": "not_verified",
+    "automatic_acceptance": false,
+    "automatic_start": false,
+    "automatic_completion": false,
+    "capability_execution": false,
+    "tool_execution": false,
+    "semantic_retrieval": false,
+    "selected_context_types": [
+      "project",
+      "confirmed_memory",
+      "decision"
+    ],
+    "context_origin_class": "external_content",
+    "context_authority_class": "untrusted_data",
+    "phase6_gate_complete": false,
+    "lite_v1_complete": false,
+    "stable_anti_lock_in_claim": false,
+    "implementation_doc": "docs/implementation/imp-069-local-work-item-proposal.md"
   }
 }

@@ -10,7 +10,6 @@ from pathlib import PurePosixPath
 from typing import Literal, cast
 
 from doll.artifact import ArtifactError, WorkspaceFileService
-from doll.audit import AuditService
 from doll.local_conversation import (
     LocalConversationResult,
     LocalConversationService,
@@ -171,11 +170,16 @@ class LocalWorkProposalService:
                 "local work proposal context is invalid"
             ) from exc
 
-        selected_result = selected_service.materialize(
-            conversation_id=conversation_id,
-            operation_id=safe_operation_id,
-            plan=selected_plan,
-        )
+        try:
+            selected_result = selected_service.materialize(
+                conversation_id=conversation_id,
+                operation_id=safe_operation_id,
+                plan=selected_plan,
+            )
+        except SelectedWritingContextValidationError as exc:
+            raise LocalWorkProposalValidationError(
+                "local work proposal context could not be prepared"
+            ) from exc
         effective_sensitivity = maximum_writing_sensitivity(
             sensitivity,
             selected_result.required_sensitivity,
@@ -230,15 +234,6 @@ class LocalWorkProposalService:
                 actor_type="model",
             )
         except (LocalWorkProposalError, WorkItemError, ArtifactError, WorkspaceFileError):
-            AuditService(self.repository).append(
-                action="local_work_proposal.reject",
-                result="failed",
-                actor_type="system",
-                operation_id=_proposal_audit_operation_id(safe_operation_id),
-                target_type="project",
-                target_id=selected_result.project_ids[0],
-                metadata={"rejection_code": "invalid_model_proposal"},
-            )
             return _result(
                 project_id=selected_result.project_ids[0],
                 project_revision=selected_result.project_revisions[0],
@@ -250,20 +245,6 @@ class LocalWorkProposalService:
                 rejection_code="invalid_model_proposal",
             )
 
-        AuditService(self.repository).append(
-            action="local_work_proposal.create",
-            result="success",
-            actor_type="system",
-            operation_id=_proposal_audit_operation_id(safe_operation_id),
-            target_type="work_item",
-            target_id=work_item.work_item_id,
-            metadata={
-                "project_id": work_item.project_id,
-                "work_status": work_item.work_status,
-                "verification_state": work_item.verification_state,
-                "criterion_count": len(work_item.acceptance_criteria),
-            },
-        )
         return _result(
             project_id=selected_result.project_ids[0],
             project_revision=selected_result.project_revisions[0],
@@ -476,11 +457,6 @@ def _reject_constant(value: str) -> object:
 def _proposal_operation_id(operation_id: str) -> str:
     digest = hashlib.sha256(operation_id.encode("utf-8")).hexdigest()[:32]
     return f"imp069.proposal.{digest}"
-
-
-def _proposal_audit_operation_id(operation_id: str) -> str:
-    digest = hashlib.sha256(f"audit\0{operation_id}".encode()).hexdigest()[:32]
-    return f"imp069.audit.{digest}"
 
 
 def _result(

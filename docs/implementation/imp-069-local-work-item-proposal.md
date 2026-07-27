@@ -1,6 +1,7 @@
 # IMP-069 — Local work-item proposal workflow
 
-**Status:** In progress
+**Status:** Implemented with deterministic synthetic CI evidence
+**Issue:** #221
 **Phase:** 6 — Local AI portability and daily-use integration
 
 ## Objective

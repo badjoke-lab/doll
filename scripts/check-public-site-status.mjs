@@ -60,8 +60,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 69,
-  "project-status.json must mark Phase 6 in progress through IMP-068 with IMP-069 next",
+    status.phase?.next_implementation === 70,
+  "project-status.json must mark Phase 6 in progress through IMP-069 with IMP-070 next",
 );
 expect(
   status.model_runtime &&
@@ -70,13 +70,11 @@ expect(
   "project-status.json requires model_runtime.connected and model_runtime.message",
 );
 expect(
-  status.model_runtime.message.includes("through IMP-068") &&
-    status.model_runtime.message.includes("IMP-065 adds explicit") &&
-    status.model_runtime.message.includes("IMP-066 adds explicit DecisionRecord") &&
-    status.model_runtime.message.includes("IMP-067 adds one explicit verified Resume Bundle") &&
-    status.model_runtime.message.includes("IMP-068 adds explicit local translation") &&
+  status.model_runtime.message.includes("through IMP-069") &&
+    status.model_runtime.message.includes("IMP-069 adds exactly one model-proposed WorkItemRecord") &&
+    status.model_runtime.message.includes("acceptance and execution remain user-controlled") &&
     status.model_runtime.message.includes("passes at both CI and real-machine evidence levels"),
-  "project-status.json must describe IMP-068 without broadening IMP-064 evidence",
+  "project-status.json must describe IMP-069 without broadening IMP-064 evidence",
 );
 expect(
   /^\d{4}-\d{2}-\d{2}$/.test(status.last_reviewed || ""),
@@ -227,6 +225,36 @@ expect(
     dailyUse.translation_extension?.implementation_doc ===
       "docs/implementation/imp-068-explicit-local-translation.md",
   "IMP-068 translation must remain explicit, data-only, bounded, and CI-only",
+);
+
+expect(
+  dailyUse.work_item_proposal_extension?.implementation === "IMP-069" &&
+    dailyUse.work_item_proposal_extension?.status === "ci-pass" &&
+    JSON.stringify(dailyUse.work_item_proposal_extension?.passed_evidence_levels) ===
+      JSON.stringify(["ci"]) &&
+    JSON.stringify(dailyUse.work_item_proposal_extension?.required_evidence_levels) ===
+      JSON.stringify(["ci"]) &&
+    dailyUse.work_item_proposal_extension?.project_selection_mode === "explicit-only" &&
+    dailyUse.work_item_proposal_extension?.maximum_proposals_per_turn === 1 &&
+    dailyUse.work_item_proposal_extension?.model_provenance === "model-proposed" &&
+    dailyUse.work_item_proposal_extension?.forced_work_status === "proposed" &&
+    dailyUse.work_item_proposal_extension?.forced_verification_state === "not_verified" &&
+    dailyUse.work_item_proposal_extension?.automatic_acceptance === false &&
+    dailyUse.work_item_proposal_extension?.automatic_start === false &&
+    dailyUse.work_item_proposal_extension?.automatic_completion === false &&
+    dailyUse.work_item_proposal_extension?.capability_execution === false &&
+    dailyUse.work_item_proposal_extension?.tool_execution === false &&
+    dailyUse.work_item_proposal_extension?.semantic_retrieval === false &&
+    JSON.stringify(dailyUse.work_item_proposal_extension?.selected_context_types) ===
+      JSON.stringify(["project", "confirmed_memory", "decision"]) &&
+    dailyUse.work_item_proposal_extension?.context_origin_class === "external_content" &&
+    dailyUse.work_item_proposal_extension?.context_authority_class === "untrusted_data" &&
+    dailyUse.work_item_proposal_extension?.phase6_gate_complete === false &&
+    dailyUse.work_item_proposal_extension?.lite_v1_complete === false &&
+    dailyUse.work_item_proposal_extension?.stable_anti_lock_in_claim === false &&
+    dailyUse.work_item_proposal_extension?.implementation_doc ===
+      "docs/implementation/imp-069-local-work-item-proposal.md",
+  "IMP-069 work-item proposals must remain explicit, proposed-only, and CI-only",
 );
 
 expect(
@@ -530,8 +558,12 @@ expect(
   "roadmap must record the IMP-067 Resume Bundle writing context boundary",
 );
 expect(
-  roadmap.includes("the next bounded implementation receives IMP-069 only when a new implementation issue is opened"),
-  "roadmap must identify IMP-069 as the next unallocated implementation identifier",
+  roadmap.includes("### IMP-069 — Local work-item proposal workflow"),
+  "roadmap must record the IMP-069 work-item proposal boundary",
+);
+expect(
+  roadmap.includes("the next bounded implementation receives IMP-070 only when a new implementation issue is opened"),
+  "roadmap must identify IMP-070 as the next unallocated implementation identifier",
 );
 expect(
   roadmap.includes("docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json"),
