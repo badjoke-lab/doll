@@ -25,13 +25,24 @@ jobs:
       - run: uv run ruff format scripts/apply_imp_069_completion.py
       - run: uv run python scripts/apply_imp_069_completion.py
       - run: uv run ruff format src/doll/local_work_proposal.py tests/test_imp_069_local_work_proposal.py
-      - run: uv run ruff check src/doll/local_work_proposal.py tests/test_imp_069_local_work_proposal.py scripts/apply_imp_069_completion.py
+      - name: Capture Ruff
+        run: uv run ruff check src/doll/local_work_proposal.py tests/test_imp_069_local_work_proposal.py scripts/apply_imp_069_completion.py > imp-069-completion-ruff.log 2>&1 || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: imp-069-completion-ruff
+          path: imp-069-completion-ruff.log
+          if-no-files-found: error
+      - name: Require Ruff
+        run: |
+          cat imp-069-completion-ruff.log
+          grep -q '^All checks passed!$' imp-069-completion-ruff.log
       - run: uv run mypy src/doll/local_work_proposal.py tests/test_imp_069_local_work_proposal.py scripts/apply_imp_069_completion.py
       - run: uv run pytest --no-cov tests/test_imp_069_local_work_proposal.py
       - run: uv run python scripts/build_final_spec.py
       - run: node scripts/check-public-site-status.mjs
       - name: Commit completion
         run: |
+          rm -f imp-069-completion-ruff.log
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add \
