@@ -1,0 +1,36 @@
+name: IMP-070 final format
+
+on:
+  pull_request:
+    paths:
+      - tests/test_imp_070_local_portability_review.py
+      - .github/workflows/imp-070-final-format.yml
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.event.pull_request.number == 224
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - run: uv run ruff format tests/test_imp_070_local_portability_review.py
+      - run: uv run ruff check tests/test_imp_070_local_portability_review.py
+      - run: uv run mypy src tests
+      - run: uv run pytest -q tests/test_imp_070_local_portability_review.py
+      - name: Commit formatted test
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/test_imp_070_local_portability_review.py
+          git diff --cached --check
+          git commit -m "Format IMP-070 acceptance tests"
+          git push origin HEAD:${GITHUB_HEAD_REF}
