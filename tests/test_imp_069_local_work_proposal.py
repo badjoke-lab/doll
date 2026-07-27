@@ -13,10 +13,15 @@ from doll.local_conversation import (
     DuplicateConversationOperationError,
     LocalConversationService,
 )
-from doll.local_work_proposal import LocalWorkProposalService
+from doll.local_work_proposal import (
+    LocalWorkProposalService,
+    LocalWorkProposalValidationError,
+    _parse_proposal,
+    _request_text,
+)
 from doll.memory import ConfirmedMemoryService
 from doll.model_manifest import ModelManifestService
-from doll.project_state import DecisionService, ProjectService
+from doll.project_state import DecisionService, ProjectInfo, ProjectService
 from doll.runtime_adapter import (
     LocalRuntimeBoundary,
     RuntimeAdapterContext,
@@ -184,7 +189,7 @@ def _service(
     return LocalWorkProposalService(repository, local)
 
 
-def _project(repository: state.StateRepository):
+def _project(repository: state.StateRepository) -> ProjectInfo:
     return ProjectService(repository).create_v2(
         name="Local planning project",
         description="Prove bounded daily-use planning without autonomous mutation.",
@@ -250,8 +255,7 @@ def test_valid_local_output_creates_only_one_proposed_work_item(tmp_path: Path) 
         assert repository.get_record(item.source_ids[0]).record_type == "instruction_origin"
         assert ProjectService(repository).get(project.project_id).revision == project.revision
         assert [
-            event.event_kind
-            for event in repository.list_conversation_events(conversation_id)
+            event.event_kind for event in repository.list_conversation_events(conversation_id)
         ] == ["user_message", "system_context_snapshot", "assistant_message"]
 
         prompt = json.loads(adapter.prompts[0])
@@ -337,8 +341,7 @@ def test_invalid_model_output_creates_no_work_item(
         assert result.work_item_id is None
         assert _work_item_count(repository) == 0
         assert [
-            event.event_kind
-            for event in repository.list_conversation_events(conversation_id)
+            event.event_kind for event in repository.list_conversation_events(conversation_id)
         ] == ["user_message", "system_context_snapshot", "assistant_message"]
 
 
@@ -368,8 +371,7 @@ def test_runtime_failure_creates_no_work_item_and_uses_error_graph(tmp_path: Pat
         assert result.error_event_id is not None
         assert _work_item_count(repository) == 0
         assert [
-            event.event_kind
-            for event in repository.list_conversation_events(conversation_id)
+            event.event_kind for event in repository.list_conversation_events(conversation_id)
         ] == ["user_message", "system_context_snapshot", "error"]
 
 
@@ -423,9 +425,7 @@ def test_selected_memory_and_decision_remain_data_only(tmp_path: Path) -> None:
         assert ProjectService(repository).get(project.project_id).revision == project.revision
 
         prompt = json.loads(adapter.prompts[0])
-        task = json.loads(
-            prompt["channels"]["current_user_instruction"][0]["content"]
-        )
+        task = json.loads(prompt["channels"]["current_user_instruction"][0]["content"])
         assert task["selected_memory_count"] == 1
         assert task["selected_decision_count"] == 1
         assert memory.content not in json.dumps(task, ensure_ascii=False)
@@ -493,3 +493,153 @@ def test_result_is_content_free(tmp_path: Path) -> None:
         assert "fake.planning.model.1" not in encoded
         assert "/Users/" not in encoded
         assert "/home/" not in encoded
+
+
+def test_service_requires_one_shared_repository(tmp_path: Path) -> None:
+    first = workspace.initialize_workspace(tmp_path / "first")
+    second = workspace.initialize_workspace(tmp_path / "second")
+    with state.initialize_state_repository(first.root):
+        pass
+    with state.initialize_state_repository(second.root):
+        pass
+    adapter = FakePlanningAdapter()
+    with (
+        state.open_state_repository(first.root) as first_repository,
+        state.open_state_repository(second.root) as second_repository,
+    ):
+        local = LocalConversationService(
+            first_repository,
+            LocalRuntimeBoundary(RuntimeAdapterRegistry((adapter,))),
+        )
+        with pytest.raises(LocalWorkProposalValidationError, match="same repository"):
+            LocalWorkProposalService(second_repository, local)
+
+
+def test_request_validation_fails_closed() -> None:
+    with pytest.raises(LocalWorkProposalValidationError, match="must be text"):
+        _request_text(None)
+    with pytest.raises(LocalWorkProposalValidationError, match="invalid"):
+        _request_text("   ")
+    with pytest.raises(LocalWorkProposalValidationError, match="character limit"):
+        _request_text("x" * 12_001)
+
+
+@pytest.mark.parametrize(
+    "output_text",
+    (
+        "[]",
+        json.dumps(
+            {
+                "schema_version": 2,
+                "kind": "task",
+                "title": "Title",
+                "description": "Description",
+                "priority": 50,
+                "acceptance_criteria": [],
+            }
+        ),
+        json.dumps(
+            {
+                "schema_version": 1,
+                "kind": "task",
+                "title": 1,
+                "description": "Description",
+                "priority": 50,
+                "acceptance_criteria": [],
+            }
+        ),
+        json.dumps(
+            {
+                "schema_version": 1,
+                "kind": "task",
+                "title": "Title",
+                "description": "Description",
+                "priority": 50,
+                "acceptance_criteria": {},
+            }
+        ),
+        json.dumps(
+            {
+                "schema_version": 1,
+                "kind": "task",
+                "title": "Title",
+                "description": "Description",
+                "priority": 50,
+                "acceptance_criteria": [
+                    {
+                        "criterion_id": "criterion",
+                        "description": "Description",
+                        "required_evidence_kind": None,
+                        "blocking": True,
+                        "status": "passed",
+                    }
+                ],
+            }
+        ),
+        json.dumps(
+            {
+                "schema_version": 1,
+                "kind": "task",
+                "title": "Title",
+                "description": "Description",
+                "priority": 50,
+                "acceptance_criteria": [
+                    {
+                        "criterion_id": "criterion",
+                        "description": 1,
+                        "required_evidence_kind": None,
+                        "blocking": True,
+                    }
+                ],
+            }
+        ),
+        '{"schema_version":1,"kind":"task","title":"Title",'
+        '"description":"Description","priority":NaN,"acceptance_criteria":[]}',
+    ),
+)
+def test_strict_parser_rejects_unsupported_shapes(output_text: str) -> None:
+    with pytest.raises(LocalWorkProposalValidationError):
+        _parse_proposal(output_text)
+
+
+def test_missing_project_fails_before_runtime_or_context_creation(tmp_path: Path) -> None:
+    initialized = _workspace(tmp_path)
+    adapter = FakePlanningAdapter()
+    conversation_id = str(uuid4())
+    with state.open_state_repository(initialized.root) as repository:
+        repository.save_conversation(ConversationRecord(conversation_id=conversation_id))
+        _active_binding(repository, adapter)
+        with pytest.raises(LocalWorkProposalValidationError, match="context is invalid"):
+            _service(repository, adapter).execute(
+                conversation_id=conversation_id,
+                scope_type="conversation",
+                scope_key="planning",
+                project_id=str(uuid4()),
+                request_text="Propose one work item.",
+                operation_id="imp069.missing-project",
+            )
+        assert adapter.prompts == []
+        assert repository.list_conversation_events(conversation_id) == ()
+        assert _work_item_count(repository) == 0
+
+
+def test_secret_bearing_runtime_output_creates_no_work_item(tmp_path: Path) -> None:
+    initialized = _workspace(tmp_path)
+    adapter = FakePlanningAdapter(output_text="Authorization: Bearer abcdefghijklmnopqrstuvwxyz")
+    conversation_id = str(uuid4())
+    with state.open_state_repository(initialized.root) as repository:
+        repository.save_conversation(ConversationRecord(conversation_id=conversation_id))
+        _active_binding(repository, adapter)
+        project = _project(repository)
+        result = _service(repository, adapter).execute(
+            conversation_id=conversation_id,
+            scope_type="conversation",
+            scope_key="planning",
+            project_id=project.project_id,
+            request_text="Propose one work item.",
+            operation_id="imp069.secret-output",
+        )
+        assert result.outcome == "failed"
+        assert result.runtime_failure_code == "invalid_response"
+        assert result.proposal_created is False
+        assert _work_item_count(repository) == 0

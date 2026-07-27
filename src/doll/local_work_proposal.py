@@ -53,9 +53,7 @@ _PROPOSAL_KEYS = frozenset(
         "acceptance_criteria",
     }
 )
-_CRITERION_KEYS = frozenset(
-    {"criterion_id", "description", "required_evidence_kind", "blocking"}
-)
+_CRITERION_KEYS = frozenset({"criterion_id", "description", "required_evidence_kind", "blocking"})
 
 
 class LocalWorkProposalError(StateError):
@@ -376,7 +374,7 @@ def _assistant_output(
         or not event.content_reference.startswith("artifact:")
     ):
         raise LocalWorkProposalPersistenceError("proposal assistant event is invalid")
-    runtime_origin_id = event.extensions.get("instruction_origin_id")
+    runtime_origin_id = (event.extensions or {}).get("instruction_origin_id")
     if not isinstance(runtime_origin_id, str) or not runtime_origin_id:
         raise LocalWorkProposalPersistenceError("proposal runtime origin is unavailable")
 
@@ -481,7 +479,7 @@ def _proposal_operation_id(operation_id: str) -> str:
 
 
 def _proposal_audit_operation_id(operation_id: str) -> str:
-    digest = hashlib.sha256(f"audit\0{operation_id}".encode("utf-8")).hexdigest()[:32]
+    digest = hashlib.sha256(f"audit\0{operation_id}".encode()).hexdigest()[:32]
     return f"imp069.audit.{digest}"
 
 
