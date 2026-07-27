@@ -1,0 +1,33 @@
+name: IMP-070 mypy log
+
+on:
+  pull_request:
+    paths:
+      - src/doll/local_portability_review.py
+      - tests/test_imp_070_local_portability_review.py
+      - .github/workflows/imp-070-mypy-log.yml
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    if: github.event.pull_request.number == 224
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --frozen
+      - name: Capture mypy findings
+        run: |
+          uv run mypy --strict src tests > imp-070-mypy.log 2>&1 || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: imp-070-mypy-log
+          path: imp-070-mypy.log
+          if-no-files-found: error
