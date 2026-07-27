@@ -374,8 +374,7 @@ def test_explicit_portability_review_uses_only_linked_data_only_records(
         assert result.review_snapshot_character_count > 0
         assert _review_context_count(repository) == 1
         assert [
-            event.event_kind
-            for event in repository.list_conversation_events(conversation_id)
+            event.event_kind for event in repository.list_conversation_events(conversation_id)
         ] == ["user_message", "system_context_snapshot", "assistant_message"]
 
         prompt = json.loads(adapter.prompts[0])
@@ -389,7 +388,9 @@ def test_explicit_portability_review_uses_only_linked_data_only_records(
         assert task["selected_mapping_report_id"] == fixture.mapping_report_id
         assert task["selected_loss_record_count"] == 2
         assert task["user_request"] == request_text
-        assert all(description not in current[0]["content"] for description in fixture.linked_descriptions)
+        assert all(
+            description not in current[0]["content"] for description in fixture.linked_descriptions
+        )
         assert "a" * 64 not in current[0]["content"]
 
         context_item = untrusted[0]
@@ -539,8 +540,7 @@ def test_runtime_failure_preserves_selected_revisions_and_error_graph(
         assert result.assistant_event_id is None
         assert result.error_event_id is not None
         assert [
-            event.event_kind
-            for event in repository.list_conversation_events(conversation_id)
+            event.event_kind for event in repository.list_conversation_events(conversation_id)
         ] == ["user_message", "system_context_snapshot", "error"]
         for record_id, revision in fixture.record_revisions.items():
             assert repository.get_record(record_id).revision == revision
