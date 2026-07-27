@@ -31,26 +31,25 @@ jobs:
           module = Path("src/doll/local_portability_review.py")
           text = module.read_text(encoding="utf-8")
           old = "outcome=cast(LocalPortabilityReviewOutcome, local_result.outcome),"
-          new = "outcome=local_result.outcome,"
           if text.count(old) != 1:
               raise SystemExit("unexpected IMP-070 result typing shape")
-          module.write_text(text.replace(old, new), encoding="utf-8")
+          module.write_text(
+              text.replace(old, "outcome=local_result.outcome,"),
+              encoding="utf-8",
+          )
 
           tests = Path("tests/test_imp_070_local_portability_review.py")
           text = tests.read_text(encoding="utf-8")
-          old = '''        values = {
-              "conversation_id": conversation_id,
-              "scope_type": "conversation",
-              "scope_key": "portability-review",
-              "import_batch_id": fixture.import_batch_id,
-              "request_text": "Review the import.",
-              "operation_id": "imp070.duplicate.operation",
-          }
-
-          service.execute(**values)
-          with pytest.raises(DuplicateConversationOperationError):
-              service.execute(**values)'''
-          new = '''        service.execute(
+          function_start = text.index(
+              "def test_duplicate_operation_creates_no_second_review_context"
+          )
+          block_start = text.index("        values = {\n", function_start)
+          second_call = text.index(
+              "            service.execute(**values)\n",
+              block_start,
+          )
+          block_end = second_call + len("            service.execute(**values)\n")
+          replacement = '''        service.execute(
               conversation_id=conversation_id,
               scope_type="conversation",
               scope_key="portability-review",
@@ -66,10 +65,12 @@ jobs:
                   import_batch_id=fixture.import_batch_id,
                   request_text="Review the import.",
                   operation_id="imp070.duplicate.operation",
-              )'''
-          if text.count(old) != 1:
-              raise SystemExit("unexpected IMP-070 duplicate test shape")
-          tests.write_text(text.replace(old, new), encoding="utf-8")
+              )
+'''
+          tests.write_text(
+              text[:block_start] + replacement + text[block_end:],
+              encoding="utf-8",
+          )
           PY
       - run: >-
           uv run ruff format
