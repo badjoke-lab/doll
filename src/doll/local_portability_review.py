@@ -323,9 +323,7 @@ class LocalPortabilityReviewService:
 
 def _request_text(value: object) -> str:
     if not isinstance(value, str):
-        raise LocalPortabilityReviewValidationError(
-            "portability review request must be text"
-        )
+        raise LocalPortabilityReviewValidationError("portability review request must be text")
     try:
         text = _message_text("portability review request", value)
     except LocalConversationValidationError as exc:
