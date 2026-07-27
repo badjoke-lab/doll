@@ -1,0 +1,37 @@
+name: IMP-069 diagnostics
+
+on:
+  pull_request:
+    paths:
+      - src/doll/local_work_proposal.py
+      - tests/test_imp_069_local_work_proposal.py
+      - .github/workflows/imp-069-diagnostics.yml
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostics:
+    if: github.event.pull_request.number == 222
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --frozen
+      - name: Capture Ruff
+        run: uv run ruff check src/doll/local_work_proposal.py tests/test_imp_069_local_work_proposal.py > imp-069-ruff.log 2>&1 || true
+      - name: Capture format diff
+        run: uv run ruff format --diff src/doll/local_work_proposal.py tests/test_imp_069_local_work_proposal.py > imp-069-format.log 2>&1 || true
+      - name: Capture mypy
+        run: uv run mypy src/doll/local_work_proposal.py tests/test_imp_069_local_work_proposal.py > imp-069-mypy.log 2>&1 || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: imp-069-diagnostics
+          path: |
+            imp-069-ruff.log
+            imp-069-format.log
+            imp-069-mypy.log
+          if-no-files-found: error
