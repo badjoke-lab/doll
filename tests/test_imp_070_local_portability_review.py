@@ -368,8 +368,7 @@ def test_review_uses_only_linked_data_only_records(tmp_path: Path) -> None:
         assert result.material_loss_count == 1
         assert result.full_fidelity_possible is False
         assert [
-            item.event_kind
-            for item in repository.list_conversation_events(conversation_id)
+            item.event_kind for item in repository.list_conversation_events(conversation_id)
         ] == ["user_message", "system_context_snapshot", "assistant_message"]
 
         prompt = json.loads(adapter.prompts[0])
@@ -378,8 +377,7 @@ def test_review_uses_only_linked_data_only_records(tmp_path: Path) -> None:
         assert task["workflow"] == "local_portability_review"
         assert task["user_request"] == request
         assert all(
-            description not in current["content"]
-            for description in selected.linked_descriptions
+            description not in current["content"] for description in selected.linked_descriptions
         )
         assert "a" * 64 not in current["content"]
 
@@ -508,8 +506,7 @@ def test_runtime_failure_preserves_revisions_and_error_graph(tmp_path: Path) -> 
         assert result.assistant_event_id is None
         assert result.error_event_id is not None
         assert [
-            item.event_kind
-            for item in repository.list_conversation_events(conversation_id)
+            item.event_kind for item in repository.list_conversation_events(conversation_id)
         ] == ["user_message", "system_context_snapshot", "error"]
         for record_id, revision in selected.revisions.items():
             assert repository.get_record(record_id).revision == revision
