@@ -175,5 +175,42 @@
     "lite_v1_complete": false,
     "stable_anti_lock_in_claim": false,
     "implementation_doc": "docs/implementation/imp-069-local-work-item-proposal.md"
+  },
+  "portability_review_extension": {
+    "implementation": "IMP-070",
+    "status": "ci-pass",
+    "description": "One caller-selected import batch, its exact linked mapping report, and only linked portability losses can be explained locally as bounded data-only untrusted context without original-source reads or record mutation.",
+    "pytest_files": [
+      "tests/test_imp_070_local_portability_review.py"
+    ],
+    "passed_evidence_levels": [
+      "ci"
+    ],
+    "required_evidence_levels": [
+      "ci"
+    ],
+    "selection_mode": "explicit-only",
+    "selected_record_types": [
+      "portability_import_batch",
+      "portability_mapping_report",
+      "portability_loss"
+    ],
+    "exact_link_resolution": true,
+    "original_source_read": false,
+    "source_payload_read": false,
+    "automatic_retrieval": false,
+    "semantic_retrieval": false,
+    "model_selected_context": false,
+    "context_origin_class": "external_content",
+    "context_actor_type": "retriever",
+    "context_acquisition_method": "retrieval",
+    "context_authority_class": "untrusted_data",
+    "record_mutation": false,
+    "tool_execution": false,
+    "capability_execution": false,
+    "phase6_gate_complete": false,
+    "lite_v1_complete": false,
+    "stable_anti_lock_in_claim": false,
+    "implementation_doc": "docs/implementation/imp-070-explicit-local-portability-review.md"
   }
 }

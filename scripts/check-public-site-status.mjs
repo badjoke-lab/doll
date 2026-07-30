@@ -60,8 +60,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 70,
-  "project-status.json must mark Phase 6 in progress through IMP-069 with IMP-070 next",
+    status.phase?.next_implementation === 71,
+  "project-status.json must mark Phase 6 in progress through IMP-070 with IMP-071 next",
 );
 expect(
   status.model_runtime &&
@@ -70,11 +70,12 @@ expect(
   "project-status.json requires model_runtime.connected and model_runtime.message",
 );
 expect(
-  status.model_runtime.message.includes("through IMP-069") &&
-    status.model_runtime.message.includes("IMP-069 adds exactly one model-proposed WorkItemRecord") &&
-    status.model_runtime.message.includes("acceptance and execution remain user-controlled") &&
+  status.model_runtime.message.includes("through IMP-070") &&
+    status.model_runtime.message.includes("IMP-069 keeps work-item acceptance and execution user-controlled") &&
+    status.model_runtime.message.includes("IMP-070 reviews one explicitly selected import batch") &&
+    status.model_runtime.message.includes("without original-source reads or record mutation") &&
     status.model_runtime.message.includes("passes at both CI and real-machine evidence levels"),
-  "project-status.json must describe IMP-069 without broadening IMP-064 evidence",
+  "project-status.json must describe IMP-070 without broadening accepted real-machine evidence",
 );
 expect(
   /^\d{4}-\d{2}-\d{2}$/.test(status.last_reviewed || ""),
@@ -255,6 +256,44 @@ expect(
     dailyUse.work_item_proposal_extension?.implementation_doc ===
       "docs/implementation/imp-069-local-work-item-proposal.md",
   "IMP-069 work-item proposals must remain explicit, proposed-only, and CI-only",
+);
+
+expect(
+  dailyUse.portability_review_extension?.implementation === "IMP-070" &&
+    dailyUse.portability_review_extension?.status === "ci-pass" &&
+    JSON.stringify(dailyUse.portability_review_extension?.passed_evidence_levels) ===
+      JSON.stringify(["ci"]) &&
+    JSON.stringify(dailyUse.portability_review_extension?.required_evidence_levels) ===
+      JSON.stringify(["ci"]) &&
+    dailyUse.portability_review_extension?.selection_mode === "explicit-only" &&
+    JSON.stringify(dailyUse.portability_review_extension?.selected_record_types) ===
+      JSON.stringify([
+        "portability_import_batch",
+        "portability_mapping_report",
+        "portability_loss",
+      ]) &&
+    dailyUse.portability_review_extension?.exact_link_resolution === true &&
+    dailyUse.portability_review_extension?.original_source_read === false &&
+    dailyUse.portability_review_extension?.source_payload_read === false &&
+    dailyUse.portability_review_extension?.automatic_retrieval === false &&
+    dailyUse.portability_review_extension?.semantic_retrieval === false &&
+    dailyUse.portability_review_extension?.model_selected_context === false &&
+    dailyUse.portability_review_extension?.context_origin_class ===
+      "external_content" &&
+    dailyUse.portability_review_extension?.context_actor_type === "retriever" &&
+    dailyUse.portability_review_extension?.context_acquisition_method ===
+      "retrieval" &&
+    dailyUse.portability_review_extension?.context_authority_class ===
+      "untrusted_data" &&
+    dailyUse.portability_review_extension?.record_mutation === false &&
+    dailyUse.portability_review_extension?.tool_execution === false &&
+    dailyUse.portability_review_extension?.capability_execution === false &&
+    dailyUse.portability_review_extension?.phase6_gate_complete === false &&
+    dailyUse.portability_review_extension?.lite_v1_complete === false &&
+    dailyUse.portability_review_extension?.stable_anti_lock_in_claim === false &&
+    dailyUse.portability_review_extension?.implementation_doc ===
+      "docs/implementation/imp-070-explicit-local-portability-review.md",
+  "IMP-070 portability review must remain explicit, linked-only, data-only, and CI-only",
 );
 
 expect(
@@ -562,8 +601,12 @@ expect(
   "roadmap must record the IMP-069 work-item proposal boundary",
 );
 expect(
-  roadmap.includes("the next bounded implementation receives IMP-070 only when a new implementation issue is opened"),
-  "roadmap must identify IMP-070 as the next unallocated implementation identifier",
+  roadmap.includes("### IMP-070 — Explicit local portability review workflow"),
+  "roadmap must record the IMP-070 portability review boundary",
+);
+expect(
+  roadmap.includes("the next bounded implementation receives IMP-071 only when a new implementation issue is opened"),
+  "roadmap must identify IMP-071 as the next unallocated implementation identifier",
 );
 expect(
   roadmap.includes("docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json"),
