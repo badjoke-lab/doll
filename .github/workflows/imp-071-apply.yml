@@ -26,6 +26,12 @@ jobs:
       - run: uv sync --dev --locked
       - run: uv run python scripts/apply_imp_071_runtime_guidance.py
       - run: >-
+          uv run ruff check --fix
+          src/doll/local_failure_guidance.py
+          src/doll/local_conversation.py
+          tests/test_imp_071_local_failure_guidance.py
+          tests/test_local_conversation.py
+      - run: >-
           uv run ruff format
           src/doll/local_failure_guidance.py
           src/doll/local_conversation.py
