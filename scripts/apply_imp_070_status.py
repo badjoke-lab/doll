@@ -87,9 +87,7 @@ def update_daily_use_matrix() -> None:
         "phase6_gate_complete": False,
         "lite_v1_complete": False,
         "stable_anti_lock_in_claim": False,
-        "implementation_doc": (
-            "docs/implementation/imp-070-explicit-local-portability-review.md"
-        ),
+        "implementation_doc": ("docs/implementation/imp-070-explicit-local-portability-review.md"),
     }
     target.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
@@ -122,26 +120,26 @@ def update_public_checker() -> None:
     path = "scripts/check-public-site-status.mjs"
     replace_once(
         path,
-        "status.phase?.next_implementation === 70,\n  \"project-status.json must mark Phase 6 in progress through IMP-069 with IMP-070 next\",",
-        "status.phase?.next_implementation === 71,\n  \"project-status.json must mark Phase 6 in progress through IMP-070 with IMP-071 next\",",
+        'status.phase?.next_implementation === 70,\n  "project-status.json must mark Phase 6 in progress through IMP-069 with IMP-070 next",',
+        'status.phase?.next_implementation === 71,\n  "project-status.json must mark Phase 6 in progress through IMP-070 with IMP-071 next",',
     )
     replace_once(
         path,
-        "status.model_runtime.message.includes(\"through IMP-069\") &&\n    status.model_runtime.message.includes(\"IMP-069 adds exactly one model-proposed WorkItemRecord\") &&\n    status.model_runtime.message.includes(\"acceptance and execution remain user-controlled\") &&\n    status.model_runtime.message.includes(\"passes at both CI and real-machine evidence levels\"),\n  \"project-status.json must describe IMP-069 without broadening IMP-064 evidence\",",
-        "status.model_runtime.message.includes(\"through IMP-070\") &&\n    status.model_runtime.message.includes(\"IMP-069 keeps work-item acceptance and execution user-controlled\") &&\n    status.model_runtime.message.includes(\"IMP-070 reviews one explicitly selected import batch\") &&\n    status.model_runtime.message.includes(\"without original-source reads or record mutation\") &&\n    status.model_runtime.message.includes(\"passes at both CI and real-machine evidence levels\"),\n  \"project-status.json must describe IMP-070 without broadening accepted real-machine evidence\",",
+        'status.model_runtime.message.includes("through IMP-069") &&\n    status.model_runtime.message.includes("IMP-069 adds exactly one model-proposed WorkItemRecord") &&\n    status.model_runtime.message.includes("acceptance and execution remain user-controlled") &&\n    status.model_runtime.message.includes("passes at both CI and real-machine evidence levels"),\n  "project-status.json must describe IMP-069 without broadening IMP-064 evidence",',
+        'status.model_runtime.message.includes("through IMP-070") &&\n    status.model_runtime.message.includes("IMP-069 keeps work-item acceptance and execution user-controlled") &&\n    status.model_runtime.message.includes("IMP-070 reviews one explicitly selected import batch") &&\n    status.model_runtime.message.includes("without original-source reads or record mutation") &&\n    status.model_runtime.message.includes("passes at both CI and real-machine evidence levels"),\n  "project-status.json must describe IMP-070 without broadening accepted real-machine evidence",',
     )
     marker = """  \"IMP-069 work-item proposals must remain explicit, proposed-only, and CI-only\",\n);\n\nexpect(\n  localWritingPrimary.test_id ==="""
     insertion = """  \"IMP-069 work-item proposals must remain explicit, proposed-only, and CI-only\",\n);\n\nexpect(\n  dailyUse.portability_review_extension?.implementation === \"IMP-070\" &&\n    dailyUse.portability_review_extension?.status === \"ci-pass\" &&\n    JSON.stringify(dailyUse.portability_review_extension?.passed_evidence_levels) ===\n      JSON.stringify([\"ci\"]) &&\n    JSON.stringify(dailyUse.portability_review_extension?.required_evidence_levels) ===\n      JSON.stringify([\"ci\"]) &&\n    dailyUse.portability_review_extension?.selection_mode === \"explicit-only\" &&\n    JSON.stringify(dailyUse.portability_review_extension?.selected_record_types) ===\n      JSON.stringify([\n        \"portability_import_batch\",\n        \"portability_mapping_report\",\n        \"portability_loss\",\n      ]) &&\n    dailyUse.portability_review_extension?.exact_link_resolution === true &&\n    dailyUse.portability_review_extension?.original_source_read === false &&\n    dailyUse.portability_review_extension?.source_payload_read === false &&\n    dailyUse.portability_review_extension?.automatic_retrieval === false &&\n    dailyUse.portability_review_extension?.semantic_retrieval === false &&\n    dailyUse.portability_review_extension?.model_selected_context === false &&\n    dailyUse.portability_review_extension?.context_origin_class ===\n      \"external_content\" &&\n    dailyUse.portability_review_extension?.context_actor_type === \"retriever\" &&\n    dailyUse.portability_review_extension?.context_acquisition_method ===\n      \"retrieval\" &&\n    dailyUse.portability_review_extension?.context_authority_class ===\n      \"untrusted_data\" &&\n    dailyUse.portability_review_extension?.record_mutation === false &&\n    dailyUse.portability_review_extension?.tool_execution === false &&\n    dailyUse.portability_review_extension?.capability_execution === false &&\n    dailyUse.portability_review_extension?.phase6_gate_complete === false &&\n    dailyUse.portability_review_extension?.lite_v1_complete === false &&\n    dailyUse.portability_review_extension?.stable_anti_lock_in_claim === false &&\n    dailyUse.portability_review_extension?.implementation_doc ===\n      \"docs/implementation/imp-070-explicit-local-portability-review.md\",\n  \"IMP-070 portability review must remain explicit, linked-only, data-only, and CI-only\",\n);\n\nexpect(\n  localWritingPrimary.test_id ==="""
     replace_once(path, marker, insertion)
     replace_once(
         path,
-        "roadmap.includes(\"### IMP-069 — Local work-item proposal workflow\"),\n  \"roadmap must record the IMP-069 work-item proposal boundary\",\n);",
-        "roadmap.includes(\"### IMP-069 — Local work-item proposal workflow\"),\n  \"roadmap must record the IMP-069 work-item proposal boundary\",\n);\nexpect(\n  roadmap.includes(\"### IMP-070 — Explicit local portability review workflow\"),\n  \"roadmap must record the IMP-070 portability review boundary\",\n);",
+        'roadmap.includes("### IMP-069 — Local work-item proposal workflow"),\n  "roadmap must record the IMP-069 work-item proposal boundary",\n);',
+        'roadmap.includes("### IMP-069 — Local work-item proposal workflow"),\n  "roadmap must record the IMP-069 work-item proposal boundary",\n);\nexpect(\n  roadmap.includes("### IMP-070 — Explicit local portability review workflow"),\n  "roadmap must record the IMP-070 portability review boundary",\n);',
     )
     replace_once(
         path,
-        "roadmap.includes(\"the next bounded implementation receives IMP-070 only when a new implementation issue is opened\"),\n  \"roadmap must identify IMP-070 as the next unallocated implementation identifier\",",
-        "roadmap.includes(\"the next bounded implementation receives IMP-071 only when a new implementation issue is opened\"),\n  \"roadmap must identify IMP-071 as the next unallocated implementation identifier\",",
+        'roadmap.includes("the next bounded implementation receives IMP-070 only when a new implementation issue is opened"),\n  "roadmap must identify IMP-070 as the next unallocated implementation identifier",',
+        'roadmap.includes("the next bounded implementation receives IMP-071 only when a new implementation issue is opened"),\n  "roadmap must identify IMP-071 as the next unallocated implementation identifier",',
     )
 
 

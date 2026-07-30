@@ -81,8 +81,8 @@ Completed:
 - Phase 4B project continuity foundation;
 - Phase 5 local runtime and model integration;
 - IMP-001 through IMP-023;
-- IMP-030 through IMP-069;
-- local workspace, SQLite state, migrations, managed artifacts, canonical conversation and project state, State Package v2, backup and restore, the model-independent safety boundary, AI-environment portability, project continuity, runtime-independent adapter contracts, a loopback-only Ollama adapter, authoritative runtime and model manifests, explicit bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, and accepted primary Intel Mac offline continuity evidence through IMP-054, the offline Ollama API session source adapter through IMP-055, explicit loopback Ollama chat capture through IMP-056, the deterministic local-portability migration harness through IMP-057, the deterministic shutdown escape bundle through IMP-058, the bounded ChatGPT conversations.json source adapter through IMP-059, the bounded ChatGPT numbered conversation-member aggregation through IMP-060, bounded imported conversation context replay through IMP-061, the exact-commit imported-context replay real-machine acceptance harness through IMP-062, and the bounded local writing workflow through IMP-063, the accepted exact-commit primary Intel Mac local-writing evidence through IMP-064, explicit data-only confirmed-memory and ProjectRecord context selection through IMP-065, explicit data-only DecisionRecord context selection through IMP-066, explicit verified Resume Bundle writing context through IMP-067, explicit local translation through IMP-068, and bounded local work-item proposals through IMP-069.
+- IMP-030 through IMP-070;
+- local workspace, SQLite state, migrations, managed artifacts, canonical conversation and project state, State Package v2, backup and restore, the model-independent safety boundary, AI-environment portability, project continuity, runtime-independent adapter contracts, a loopback-only Ollama adapter, authoritative runtime and model manifests, explicit bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, and accepted primary Intel Mac offline continuity evidence through IMP-054, the offline Ollama API session source adapter through IMP-055, explicit loopback Ollama chat capture through IMP-056, the deterministic local-portability migration harness through IMP-057, the deterministic shutdown escape bundle through IMP-058, the bounded ChatGPT conversations.json source adapter through IMP-059, the bounded ChatGPT numbered conversation-member aggregation through IMP-060, bounded imported conversation context replay through IMP-061, the exact-commit imported-context replay real-machine acceptance harness through IMP-062, and the bounded local writing workflow through IMP-063, the accepted exact-commit primary Intel Mac local-writing evidence through IMP-064, explicit data-only confirmed-memory and ProjectRecord context selection through IMP-065, explicit data-only DecisionRecord context selection through IMP-066, explicit verified Resume Bundle writing context through IMP-067, explicit local translation through IMP-068, bounded local work-item proposals through IMP-069, and explicit local portability review through IMP-070.
 
 Current implementation point:
 
@@ -94,7 +94,7 @@ Current implementation point:
 - Phase 5 passed its local-runtime continuity gate on 2026-06-28;
 - accepted real-machine evidence is bound to commit `1a5b66b2417d6f3e1eafcd14d2769e9c15d7f96c` on the primary Intel Mac with networking disabled;
 - IMP-048 through IMP-054 establish the runtime contract, loopback-only Ollama adapter, authoritative manifests and bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, State Package v2 transfer, backup restore, and accepted LRUN-001 through LRUN-012 evidence;
-- Phase 6 local AI portability and daily-use integration is in progress through IMP-069;
+- Phase 6 local AI portability and daily-use integration is in progress through IMP-070;
 - IMP-055 adds an offline source adapter for a documented caller-retained Ollama API session bundle, with exact JSON validation, content-free inventory, original-source hashing, deterministic normalization, explicit attachment-metadata loss, and reuse of the accepted generic staging and reviewed-publication boundary;
 - IMP-056 adds an explicit non-streaming text-only capture path through fixed IPv4 loopback, resolves one opaque already-installed local model through the filtered inventory, and returns an IMP-055-valid session bundle without reading application databases, logs, shell history, or unrelated sessions;
 - IMP-057 merged at commit `7b63ff512e20d1d6ae65da8938486b093e14b6c6` and composes explicit capture, reviewed canonical import, idempotency and conflict checks, generic export, State Package v2 transfer, backup restore, and alternate fresh-process inspection without the capture component;
@@ -133,7 +133,10 @@ Current implementation point:
 - IMP-069 adds one bounded local-model planning turn that may create exactly one model-proposed WorkItemRecord while acceptance, start, blocking, verification, completion, cancellation, and capability authority remain outside the model path;
 - IMP-069 is assigned to Issue #221;
 - the IMP-069 work-item proposal extension passes at the `ci` evidence level and does not broaden the accepted IMP-064 real-machine result;
-- the next bounded implementation receives IMP-070 only when a new implementation issue is opened;
+- IMP-070 adds one explicit local portability review turn over one caller-selected import batch, its exact linked mapping report, and only the linked portability-loss records, with no original-source read or record mutation;
+- IMP-070 is assigned to Issue #223;
+- the IMP-070 portability review extension passes at the `ci` evidence level and does not broaden the accepted IMP-057, IMP-062, or IMP-064 real-machine results;
+- the next bounded implementation receives IMP-071 only when a new implementation issue is opened;
 - later local migration, cloud, and tool work must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts.
 
 Implementation identifier policy:
@@ -763,7 +766,19 @@ Dedicated acceptance covers strict parsing, hostile selected context, invalid pr
 
 IMP-069 does not establish multiple proposals per turn, dependency graphs, automatic acceptance, automatic execution, blocker mutation, procedure or checkpoint generation, semantic retrieval, attachments, tools, cloud planning, external issue trackers, complete Phase 6, Lite v1.0 completion, or stable general anti-lock-in.
 
-Subsequent daily-use work may expand portability review, accessibility, error clarity, Lite performance, and soak testing.
+### IMP-070 — Explicit local portability review workflow
+
+Status: implemented with deterministic synthetic CI evidence.
+
+Implemented one bounded local-model review turn over one caller-selected active ImportBatchRecord, its exact linked import-direction MappingReportRecord, and only the PortabilityLossRecords explicitly named by that report. Missing, wrong-type, archived, secret, mismatched, excessive, oversized, secret-like, duplicate, unavailable, or changed-during-read selections fail before runtime execution and before context-origin creation.
+
+The deterministic review snapshot contains only revision-pinned batch counts, mapping counts, fidelity status, and bounded loss category, severity, description, preservation, recoverability, materiality, and required-user-action fields. Original source bytes, source payloads, canonical conversation content, source root hashes, source-object IDs, quarantine details, managed paths, native model names, credentials, and secret values remain excluded. The snapshot enters only as data-only `external_content` through `retriever` / `retrieval`; the current user request remains the only task authority.
+
+The workflow cannot approve publication, retry or roll back imports, mutate portability or project records, claim remediation completion, select another binding, execute tools or capabilities, or access network or cloud paths. Runtime failure preserves selected revisions and uses the unchanged canonical user/context/error graph. The public result remains content-free. Dedicated acceptance covers linked-only selection, task/material separation, hostile selected text, invalid records and requests, secret rejection, runtime failure, duplicate denial, immutability, and result privacy. Standard CI covers Ubuntu, macOS, and Windows.
+
+IMP-070 does not establish automatic batch discovery, ranking, semantic retrieval, model-selected records, original-source inspection, source-payload inspection, canonical replay, quarantine-detail review, automatic remediation, retry or rollback execution, publication approval, target-specific export, provider round-trip verification, attachments, PDF/OCR, tools, cloud review, external issue trackers, complete Phase 6, Lite v1.0 completion, or stable general anti-lock-in.
+
+Subsequent daily-use work may expand accessibility, error clarity, Lite performance, and soak testing.
 
 ## 13. Phase 7 — Optional cloud and multiple models
 

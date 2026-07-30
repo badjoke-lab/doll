@@ -1,6 +1,6 @@
 # IMP-070 — Explicit local portability review workflow
 
-**Status:** In progress
+**Status:** Implemented with deterministic synthetic CI evidence
 **Issue:** #223
 **Phase:** 6 — Local AI portability and daily-use integration
 

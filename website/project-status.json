@@ -15,11 +15,11 @@
     "name": "Local AI portability and daily-use integration",
     "state": "in_progress",
     "started_by_implementation": 55,
-    "next_implementation": 70
+    "next_implementation": 71
   },
   "model_runtime": {
     "connected": true,
-    "message": "Phase 6 is in progress through IMP-069. Offline Ollama session import, explicit text-only loopback capture, the accepted bounded local-portability migration drill, the deterministic shutdown escape bundle, bounded ChatGPT selected-history import, imported-context replay with accepted primary Intel Mac evidence, bounded local draft/revise/summarize/translate workflows, explicit data-only context, and bounded local work-item proposals are implemented. The IMP-063/IMP-064 writing workflow passes at both CI and real-machine evidence levels. IMP-065 through IMP-068 add explicit memory, project, decision, Resume Bundle, and translation boundaries; IMP-069 adds exactly one model-proposed WorkItemRecord while acceptance and execution remain user-controlled. Automatic acceptance, automatic execution, automatic or semantic retrieval, attachments, tools, the complete Phase 6 gate, Lite v1.0, target-specific application replacement, and stable general anti-lock-in remain incomplete."
+    "message": "Phase 6 is in progress through IMP-070. Offline Ollama session import, explicit text-only loopback capture, the accepted bounded local-portability migration drill, the deterministic shutdown escape bundle, bounded ChatGPT selected-history import, imported-context replay with accepted primary Intel Mac evidence, bounded local draft/revise/summarize/translate workflows, explicit data-only context, bounded local work-item proposals, and explicit local portability review are implemented. The IMP-063/IMP-064 writing workflow passes at both CI and real-machine evidence levels. IMP-065 through IMP-068 add explicit memory, project, decision, Resume Bundle, and translation boundaries; IMP-069 keeps work-item acceptance and execution user-controlled; IMP-070 reviews one explicitly selected import batch and exact linked mapping and loss records without original-source reads or record mutation. Automatic remediation, automatic acceptance or execution, automatic or semantic retrieval, attachments, tools, the complete Phase 6 gate, Lite v1.0, target-specific application replacement, and stable general anti-lock-in remain incomplete."
   },
   "last_reviewed": "2026-07-27"
 }
