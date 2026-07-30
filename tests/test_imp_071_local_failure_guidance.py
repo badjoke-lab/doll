@@ -9,7 +9,6 @@ from doll.local_failure_guidance import (
     guidance_for_runtime_failure,
 )
 
-
 _FORBIDDEN_GUIDANCE_TEXT = (
     "api key",
     "automatic download",

@@ -70,10 +70,7 @@ _GUIDANCE = MappingProxyType(
             "cancelled",
             "The local runtime request was cancelled before completion.",
             "Submit the request again when ready.",
-            (
-                "Continue with local state inspection or recovery without model "
-                "execution."
-            ),
+            ("Continue with local state inspection or recovery without model execution."),
         ),
         "invalid_response": _guidance(
             "invalid_response",
