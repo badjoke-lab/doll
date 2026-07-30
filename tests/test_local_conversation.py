@@ -192,6 +192,7 @@ def test_completed_local_turn_persists_canonical_graph_and_artifacts(tmp_path: P
 
         assert result.outcome == "completed"
         assert result.failure_code is None
+        assert result.failure_guidance is None
         assert result.runtime_manifest_id == runtime_id
         assert result.model_manifest_id == model_id
         assert result.assistant_event_id is not None
@@ -287,6 +288,11 @@ def test_runtime_failure_persists_error_without_assistant_content(tmp_path: Path
         )
         assert result.outcome == "failed"
         assert result.failure_code == "adapter_failure"
+        assert result.failure_guidance is not None
+        assert result.failure_guidance.failure_code == "adapter_failure"
+        assert result.failure_guidance.state_preserved is True
+        assert result.failure_guidance.automatic_action_taken is False
+        assert result.failure_guidance.cloud_fallback_used is False
         assert result.assistant_event_id is None
         assert result.error_event_id is not None
         events = repository.list_conversation_events(conversation_id)
@@ -299,6 +305,18 @@ def test_runtime_failure_persists_error_without_assistant_content(tmp_path: Path
         assert events[-1].extensions == {
             "failure_code": "adapter_failure",
             "outcome": "failed",
+            "guidance_id": "doll.local-runtime.adapter-failure.v1",
+            "guidance_summary": (
+                "The selected local runtime adapter failed without returning usable output."
+            ),
+            "available_options": [
+                "Retry the request locally.",
+                "Inspect local runtime health.",
+                "Manually switch to an approved local fallback binding.",
+            ],
+            "state_preserved": True,
+            "automatic_action_taken": False,
+            "cloud_fallback_used": False,
         }
 
 
@@ -389,6 +407,11 @@ def test_closed_runtime_outcomes_and_empty_output_become_error_events(tmp_path: 
             )
             assert result.outcome == expected_outcome
             assert result.failure_code == expected_code
+            assert result.failure_guidance is not None
+            assert result.failure_guidance.failure_code == expected_code
+            assert result.failure_guidance.state_preserved is True
+            assert result.failure_guidance.automatic_action_taken is False
+            assert result.failure_guidance.cloud_fallback_used is False
             assert (
                 repository.get_conversation_event(result.error_event_id or "").event_kind == "error"
             )
@@ -410,6 +433,8 @@ def test_closed_runtime_outcomes_and_empty_output_become_error_events(tmp_path: 
         )
         assert result.outcome == "failed"
         assert result.failure_code == "invalid_response"
+        assert result.failure_guidance is not None
+        assert result.failure_guidance.failure_code == "invalid_response"
 
 
 def test_adapter_declaration_mismatch_and_invalid_locator_fail_before_call(tmp_path: Path) -> None:

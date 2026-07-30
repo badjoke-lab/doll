@@ -18,6 +18,10 @@ from doll.instruction_origin import (
     InstructionOriginService,
     InstructionSource,
 )
+from doll.local_failure_guidance import (
+    LocalFailureGuidance,
+    guidance_for_runtime_failure,
+)
 from doll.model_manifest import (
     ModelBindingInfo,
     ModelManifestInfo,
@@ -111,6 +115,7 @@ class LocalConversationResult:
     prompt_injection_finding_count: int
     secret_redaction_count: int
     runtime_id: str | None = None
+    failure_guidance: LocalFailureGuidance | None = None
 
 
 @dataclass(slots=True)
@@ -287,6 +292,16 @@ class LocalConversationService:
                     "binding_id": binding.binding_id,
                     "outcome": result.outcome,
                     "failure_code": result.failure_code,
+                    "guidance_id": (
+                        result.failure_guidance.guidance_id
+                        if result.failure_guidance is not None
+                        else None
+                    ),
+                    "available_option_count": (
+                        len(result.failure_guidance.available_options)
+                        if result.failure_guidance is not None
+                        else 0
+                    ),
                     "finding_count": result.prompt_injection_finding_count,
                     "redaction_count": result.secret_redaction_count,
                 },
@@ -498,6 +513,9 @@ class LocalConversationService:
                 package=package,
             )
 
+        failure_guidance = _failure_guidance(runtime_result)
+        if failure_guidance is None:  # pragma: no cover - completed returned above
+            raise LocalConversationPersistenceError("failed local runtime result has no guidance")
         error_event = ConversationEventRecord(
             event_id=str(uuid4()),
             conversation_id=conversation_id,
@@ -512,6 +530,12 @@ class LocalConversationService:
             extensions={
                 "failure_code": runtime_result.failure_code,
                 "outcome": runtime_result.outcome,
+                "guidance_id": failure_guidance.guidance_id,
+                "guidance_summary": failure_guidance.summary,
+                "available_options": list(failure_guidance.available_options),
+                "state_preserved": failure_guidance.state_preserved,
+                "automatic_action_taken": failure_guidance.automatic_action_taken,
+                "cloud_fallback_used": failure_guidance.cloud_fallback_used,
             },
         )
         self.repository.save_conversation_event(
@@ -707,6 +731,16 @@ def _context_snapshot(
     return json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
 
 
+def _failure_guidance(
+    runtime_result: RuntimeGenerationResult,
+) -> LocalFailureGuidance | None:
+    if runtime_result.outcome == "completed":
+        return None
+    if runtime_result.failure_code is None:
+        raise LocalConversationPersistenceError("failed local runtime result has no failure code")
+    return guidance_for_runtime_failure(runtime_result.failure_code)
+
+
 def _result(
     *,
     conversation_id: str,
@@ -736,6 +770,7 @@ def _result(
         error_event_id=error_event_id,
         outcome=runtime_result.outcome,
         failure_code=runtime_result.failure_code,
+        failure_guidance=_failure_guidance(runtime_result),
         prompt_injection_finding_count=package.prompt_injection_finding_count,
         secret_redaction_count=package.secret_redaction_count,
         runtime_id=runtime_result.runtime_id,

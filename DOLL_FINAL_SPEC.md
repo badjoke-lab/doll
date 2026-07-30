@@ -24,7 +24,7 @@
 - `docs/spec/08-acceptance-and-continuity-tests.md` — SHA-256 `1ae9b70cf28257b35a30238bdc46c2caea93dbd17fdf8b516ff708c9e208a698`
 - `docs/spec/08a-ai-environment-portability-acceptance.md` — SHA-256 `3a1876d8b506204254ccd54eb58cfabcf2ddc92e3edd446d90650b9ae22ff305`
 - `docs/spec/08b-project-continuity-acceptance.md` — SHA-256 `b58623f21bdd183a21e1904ebcec954ffb2b6976254b72ac52f13deae83306cc`
-- `docs/spec/09-development-roadmap.md` — SHA-256 `a2ab42ac8af21170dc4cf738be9968deae7df4af02d5951ef84adde5e2bc21db`
+- `docs/spec/09-development-roadmap.md` — SHA-256 `e2f9e6769ce30c24b45ad55b024948d37b3b4eddcf5c50a5cd612a84aada1cde`
 
 ---
 
@@ -8564,8 +8564,8 @@ Completed:
 - Phase 4B project continuity foundation;
 - Phase 5 local runtime and model integration;
 - IMP-001 through IMP-023;
-- IMP-030 through IMP-070;
-- local workspace, SQLite state, migrations, managed artifacts, canonical conversation and project state, State Package v2, backup and restore, the model-independent safety boundary, AI-environment portability, project continuity, runtime-independent adapter contracts, a loopback-only Ollama adapter, authoritative runtime and model manifests, explicit bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, and accepted primary Intel Mac offline continuity evidence through IMP-054, the offline Ollama API session source adapter through IMP-055, explicit loopback Ollama chat capture through IMP-056, the deterministic local-portability migration harness through IMP-057, the deterministic shutdown escape bundle through IMP-058, the bounded ChatGPT conversations.json source adapter through IMP-059, the bounded ChatGPT numbered conversation-member aggregation through IMP-060, bounded imported conversation context replay through IMP-061, the exact-commit imported-context replay real-machine acceptance harness through IMP-062, and the bounded local writing workflow through IMP-063, the accepted exact-commit primary Intel Mac local-writing evidence through IMP-064, explicit data-only confirmed-memory and ProjectRecord context selection through IMP-065, explicit data-only DecisionRecord context selection through IMP-066, explicit verified Resume Bundle writing context through IMP-067, explicit local translation through IMP-068, bounded local work-item proposals through IMP-069, and explicit local portability review through IMP-070.
+- IMP-030 through IMP-071;
+- local workspace, SQLite state, migrations, managed artifacts, canonical conversation and project state, State Package v2, backup and restore, the model-independent safety boundary, AI-environment portability, project continuity, runtime-independent adapter contracts, a loopback-only Ollama adapter, authoritative runtime and model manifests, explicit bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, and accepted primary Intel Mac offline continuity evidence through IMP-054, the offline Ollama API session source adapter through IMP-055, explicit loopback Ollama chat capture through IMP-056, the deterministic local-portability migration harness through IMP-057, the deterministic shutdown escape bundle through IMP-058, the bounded ChatGPT conversations.json source adapter through IMP-059, the bounded ChatGPT numbered conversation-member aggregation through IMP-060, bounded imported conversation context replay through IMP-061, the exact-commit imported-context replay real-machine acceptance harness through IMP-062, and the bounded local writing workflow through IMP-063, the accepted exact-commit primary Intel Mac local-writing evidence through IMP-064, explicit data-only confirmed-memory and ProjectRecord context selection through IMP-065, explicit data-only DecisionRecord context selection through IMP-066, explicit verified Resume Bundle writing context through IMP-067, explicit local translation through IMP-068, bounded local work-item proposals through IMP-069, explicit local portability review through IMP-070, and structured local runtime failure guidance through IMP-071.
 
 Current implementation point:
 
@@ -8577,7 +8577,7 @@ Current implementation point:
 - Phase 5 passed its local-runtime continuity gate on 2026-06-28;
 - accepted real-machine evidence is bound to commit `1a5b66b2417d6f3e1eafcd14d2769e9c15d7f96c` on the primary Intel Mac with networking disabled;
 - IMP-048 through IMP-054 establish the runtime contract, loopback-only Ollama adapter, authoritative manifests and bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, State Package v2 transfer, backup restore, and accepted LRUN-001 through LRUN-012 evidence;
-- Phase 6 local AI portability and daily-use integration is in progress through IMP-070;
+- Phase 6 local AI portability and daily-use integration is in progress through IMP-071;
 - IMP-055 adds an offline source adapter for a documented caller-retained Ollama API session bundle, with exact JSON validation, content-free inventory, original-source hashing, deterministic normalization, explicit attachment-metadata loss, and reuse of the accepted generic staging and reviewed-publication boundary;
 - IMP-056 adds an explicit non-streaming text-only capture path through fixed IPv4 loopback, resolves one opaque already-installed local model through the filtered inventory, and returns an IMP-055-valid session bundle without reading application databases, logs, shell history, or unrelated sessions;
 - IMP-057 merged at commit `7b63ff512e20d1d6ae65da8938486b093e14b6c6` and composes explicit capture, reviewed canonical import, idempotency and conflict checks, generic export, State Package v2 transfer, backup restore, and alternate fresh-process inspection without the capture component;
@@ -8619,7 +8619,10 @@ Current implementation point:
 - IMP-070 adds one explicit local portability review turn over one caller-selected import batch, its exact linked mapping report, and only the linked portability-loss records, with no original-source read or record mutation;
 - IMP-070 is assigned to Issue #223;
 - the IMP-070 portability review extension passes at the `ci` evidence level and does not broaden the accepted IMP-057, IMP-062, or IMP-064 real-machine results;
-- the next bounded implementation receives IMP-071 only when a new implementation issue is opened;
+- IMP-071 adds one deterministic provider-neutral local failure-guidance payload for every accepted runtime failure code and persists the same bounded local-only options in canonical error events;
+- IMP-071 is assigned to Issue #225;
+- the IMP-071 failure-guidance extension passes at the `ci` evidence level and does not broaden accepted real-machine evidence;
+- the next bounded implementation receives IMP-072 only when a new implementation issue is opened;
 - later local migration, cloud, and tool work must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts.
 
 Implementation identifier policy:
@@ -9261,7 +9264,21 @@ The workflow cannot approve publication, retry or roll back imports, mutate port
 
 IMP-070 does not establish automatic batch discovery, ranking, semantic retrieval, model-selected records, original-source inspection, source-payload inspection, canonical replay, quarantine-detail review, automatic remediation, retry or rollback execution, publication approval, target-specific export, provider round-trip verification, attachments, PDF/OCR, tools, cloud review, external issue trackers, complete Phase 6, Lite v1.0 completion, or stable general anti-lock-in.
 
-Subsequent daily-use work may expand accessibility, error clarity, Lite performance, and soak testing.
+### IMP-071 — Structured local runtime failure guidance
+
+Status: implemented with deterministic synthetic CI evidence.
+
+Implemented one immutable provider-neutral LocalFailureGuidance payload for each of the nine accepted RuntimeFailureCode values. Every payload contains one versioned guidance identifier, the exact failure code, one bounded plain-language summary, an ordered bounded list of local-only available options, and explicit state-preserved, no-automatic-action, and no-cloud-fallback flags.
+
+Failed, cancelled, and timed-out canonical local turns expose the matching guidance through the content-free LocalConversationResult and persist the same guidance identifier, summary, options, and flags in the canonical error-event extensions. Completed turns contain no failure guidance. Audit metadata stores only the guidance identifier and available-option count.
+
+Guidance may describe local retry, smaller requests or context, local runtime-health or model-inventory inspection, manual repair of the configured local runtime, manual activation of an already approved installed local model or fallback binding, bounded local timeout adjustment, or continued state inspection, export, backup, restore, and recovery without model execution. It never performs or recommends automatic cloud fallback, provider login, API-key entry, remote upload, automatic model download or installation, automatic binding changes, process or shell execution, tools, capabilities, or destructive state mutation.
+
+Dedicated acceptance covers all nine failure codes, deterministic identity, immutability, bounded provider-neutral text, completed-turn absence, failed/cancelled/timeout integration, canonical error-event parity, fixed safety flags, and prohibited-action wording. Existing local conversation, imported-context, writing, translation, work-item proposal, and portability-review regressions remain active. Standard CI covers Ubuntu, macOS, and Windows.
+
+IMP-071 does not establish preflight exception redesign, UI rendering, localization, accessibility presentation, telemetry, provider-specific troubleshooting, automatic repair, automatic fallback, automatic model acquisition, Lite performance measurements, the release soak gate, complete Phase 6, Lite v1.0 completion, or stable general anti-lock-in.
+
+Subsequent daily-use work may expand accessibility, Lite performance measurements, and soak testing.
 
 ## 13. Phase 7 — Optional cloud and multiple models
 

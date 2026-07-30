@@ -60,8 +60,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 71,
-  "project-status.json must mark Phase 6 in progress through IMP-070 with IMP-071 next",
+    status.phase?.next_implementation === 72,
+  "project-status.json must mark Phase 6 in progress through IMP-071 with IMP-072 next",
 );
 expect(
   status.model_runtime &&
@@ -70,12 +70,13 @@ expect(
   "project-status.json requires model_runtime.connected and model_runtime.message",
 );
 expect(
-  status.model_runtime.message.includes("through IMP-070") &&
+  status.model_runtime.message.includes("through IMP-071") &&
     status.model_runtime.message.includes("IMP-069 keeps work-item acceptance and execution user-controlled") &&
     status.model_runtime.message.includes("IMP-070 reviews one explicitly selected import batch") &&
-    status.model_runtime.message.includes("without original-source reads or record mutation") &&
+    status.model_runtime.message.includes("IMP-071 gives every accepted local runtime failure code") &&
+    status.model_runtime.message.includes("no automatic action and no cloud fallback") &&
     status.model_runtime.message.includes("passes at both CI and real-machine evidence levels"),
-  "project-status.json must describe IMP-070 without broadening accepted real-machine evidence",
+  "project-status.json must describe IMP-071 without broadening accepted real-machine evidence",
 );
 expect(
   /^\d{4}-\d{2}-\d{2}$/.test(status.last_reviewed || ""),
@@ -294,6 +295,36 @@ expect(
     dailyUse.portability_review_extension?.implementation_doc ===
       "docs/implementation/imp-070-explicit-local-portability-review.md",
   "IMP-070 portability review must remain explicit, linked-only, data-only, and CI-only",
+);
+
+expect(
+  dailyUse.failure_guidance_extension?.implementation === "IMP-071" &&
+    dailyUse.failure_guidance_extension?.status === "ci-pass" &&
+    JSON.stringify(dailyUse.failure_guidance_extension?.passed_evidence_levels) ===
+      JSON.stringify(["ci"]) &&
+    JSON.stringify(dailyUse.failure_guidance_extension?.required_evidence_levels) ===
+      JSON.stringify(["ci"]) &&
+    dailyUse.failure_guidance_extension?.failure_code_count === 9 &&
+    dailyUse.failure_guidance_extension?.guidance_version === 1 &&
+    dailyUse.failure_guidance_extension?.canonical_error_event_persistence === true &&
+    dailyUse.failure_guidance_extension?.completed_turn_guidance === false &&
+    dailyUse.failure_guidance_extension?.state_preserved === true &&
+    dailyUse.failure_guidance_extension?.automatic_action_taken === false &&
+    dailyUse.failure_guidance_extension?.cloud_fallback_used === false &&
+    dailyUse.failure_guidance_extension?.automatic_model_download === false &&
+    dailyUse.failure_guidance_extension?.automatic_model_installation === false &&
+    dailyUse.failure_guidance_extension?.automatic_binding_change === false &&
+    dailyUse.failure_guidance_extension?.process_launch === false &&
+    dailyUse.failure_guidance_extension?.shell_execution === false &&
+    dailyUse.failure_guidance_extension?.tool_execution === false &&
+    dailyUse.failure_guidance_extension?.capability_execution === false &&
+    dailyUse.failure_guidance_extension?.destructive_state_mutation === false &&
+    dailyUse.failure_guidance_extension?.phase6_gate_complete === false &&
+    dailyUse.failure_guidance_extension?.lite_v1_complete === false &&
+    dailyUse.failure_guidance_extension?.stable_anti_lock_in_claim === false &&
+    dailyUse.failure_guidance_extension?.implementation_doc ===
+      "docs/implementation/imp-071-structured-local-failure-guidance.md",
+  "IMP-071 failure guidance must remain deterministic, local-only, and CI-only",
 );
 
 expect(
@@ -605,8 +636,12 @@ expect(
   "roadmap must record the IMP-070 portability review boundary",
 );
 expect(
-  roadmap.includes("the next bounded implementation receives IMP-071 only when a new implementation issue is opened"),
-  "roadmap must identify IMP-071 as the next unallocated implementation identifier",
+  roadmap.includes("### IMP-071 — Structured local runtime failure guidance"),
+  "roadmap must record the IMP-071 failure-guidance boundary",
+);
+expect(
+  roadmap.includes("the next bounded implementation receives IMP-072 only when a new implementation issue is opened"),
+  "roadmap must identify IMP-072 as the next unallocated implementation identifier",
 );
 expect(
   roadmap.includes("docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json"),
