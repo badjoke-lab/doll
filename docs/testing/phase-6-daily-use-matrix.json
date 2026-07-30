@@ -212,5 +212,39 @@
     "lite_v1_complete": false,
     "stable_anti_lock_in_claim": false,
     "implementation_doc": "docs/implementation/imp-070-explicit-local-portability-review.md"
+  },
+  "failure_guidance_extension": {
+    "implementation": "IMP-071",
+    "status": "ci-pass",
+    "description": "Every accepted local runtime failure code has one deterministic provider-neutral guidance payload with bounded local-only options and explicit no-automatic-action and no-cloud-fallback flags.",
+    "pytest_files": [
+      "tests/test_imp_071_local_failure_guidance.py",
+      "tests/test_local_conversation.py"
+    ],
+    "passed_evidence_levels": [
+      "ci"
+    ],
+    "required_evidence_levels": [
+      "ci"
+    ],
+    "failure_code_count": 9,
+    "guidance_version": 1,
+    "canonical_error_event_persistence": true,
+    "completed_turn_guidance": false,
+    "state_preserved": true,
+    "automatic_action_taken": false,
+    "cloud_fallback_used": false,
+    "automatic_model_download": false,
+    "automatic_model_installation": false,
+    "automatic_binding_change": false,
+    "process_launch": false,
+    "shell_execution": false,
+    "tool_execution": false,
+    "capability_execution": false,
+    "destructive_state_mutation": false,
+    "phase6_gate_complete": false,
+    "lite_v1_complete": false,
+    "stable_anti_lock_in_claim": false,
+    "implementation_doc": "docs/implementation/imp-071-structured-local-failure-guidance.md"
   }
 }

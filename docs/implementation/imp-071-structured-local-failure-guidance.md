@@ -1,7 +1,7 @@
 # IMP-071 — Structured local runtime failure guidance
 
-**Status:** In progress  
-**Issue:** #225  
+**Status:** Implemented with deterministic synthetic CI evidence
+**Issue:** #225
 **Phase:** 6 — Local AI portability and daily-use integration
 
 ## Objective
