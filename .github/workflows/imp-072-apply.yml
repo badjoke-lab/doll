@@ -50,10 +50,25 @@ jobs:
           tests/test_imp_072_doctor.py
           tests/test_cli.py
       - run: uv run mypy src
-      - run: >-
-          uv run pytest --no-cov
+      - name: Run focused tests
+        id: focused
+        continue-on-error: true
+        run: >-
+          uv run pytest --no-cov -vv --tb=short
           tests/test_imp_072_doctor.py
           tests/test_cli.py
+          > docs/testing/imp-072-debug.txt 2>&1
+      - name: Commit focused failure report
+        if: steps.focused.outcome == 'failure'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/testing/imp-072-debug.txt
+          git commit -m "Capture IMP-072 focused test failures"
+          git push origin HEAD:${GITHUB_HEAD_REF}
+      - name: Stop after focused failure
+        if: steps.focused.outcome == 'failure'
+        run: exit 1
       - run: uv run python scripts/build_final_spec.py
       - run: node scripts/check-public-site-status.mjs
       - name: Normalize generated text
