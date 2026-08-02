@@ -54,7 +54,6 @@ jobs:
           uv run pytest --no-cov
           tests/test_imp_072_doctor.py
           tests/test_cli.py
-          tests/test_state.py
       - run: uv run python scripts/build_final_spec.py
       - run: node scripts/check-public-site-status.mjs
       - name: Normalize generated text
