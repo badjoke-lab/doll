@@ -14,7 +14,7 @@ from doll import doctor as doctor_module
 from doll.cli import app
 from doll.doctor import DOCTOR_REPORT_SCHEMA_VERSION, run_doctor
 from doll.state import initialize_state_repository
-from doll.workspace import WORKSPACE_RECORD_NAME, initialize_workspace
+from doll.workspace import WORKSPACE_RECORD_NAME, initialize_workspace, load_workspace
 
 runner = CliRunner()
 
@@ -62,6 +62,7 @@ def test_healthy_workspace_passes_read_only_doctor_without_mutation(tmp_path: Pa
 
 def test_json_report_is_deterministic_content_free_and_machine_readable(tmp_path: Path) -> None:
     root = _workspace(tmp_path)
+    workspace_identifier = str(load_workspace(root).record.workspace_id)
 
     first = run_doctor(root).to_dict()
     second = run_doctor(root).to_dict()
@@ -72,7 +73,7 @@ def test_json_report_is_deterministic_content_free_and_machine_readable(tmp_path
     assert first["overall_status"] == "pass"
     assert str(root) not in encoded
     assert str(tmp_path) not in encoded
-    assert "workspace_id" not in encoded
+    assert workspace_identifier not in encoded
     assert "database_path" not in encoded
 
 
