@@ -24,6 +24,7 @@ def test_cli_help() -> None:
     assert "personal AI continuity system" in result.stdout
     assert "init" in result.stdout
     assert "version" in result.stdout
+    assert "doctor" in result.stdout
 
 
 def test_cli_version() -> None:

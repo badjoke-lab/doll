@@ -155,7 +155,9 @@ def test_revision_mismatch_fails_without_rewriting_workspace_record(tmp_path: Pa
     record_path = root / WORKSPACE_RECORD_NAME
     payload = json.loads(record_path.read_text(encoding="utf-8"))
     payload["state_revision"] = 9
-    record_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    record_path.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
     before = record_path.read_bytes()
 
     report = run_doctor(root)

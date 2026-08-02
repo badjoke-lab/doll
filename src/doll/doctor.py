@@ -77,7 +77,8 @@ def run_doctor(path: Path | None = None) -> DoctorReport:
                 summary="Workspace identity could not be validated.",
                 guidance=(
                     "Select an initialized doll workspace.",
-                    "Use a verified backup in an empty compatible target when the workspace identity cannot be recovered.",
+                    "Use a verified backup in an empty compatible target when the "
+                    "workspace identity cannot be recovered.",
                 ),
             )
         )
@@ -92,7 +93,9 @@ def run_doctor(path: Path | None = None) -> DoctorReport:
     )
 
     unsafe_directories = tuple(
-        name for name in WORKSPACE_DIRECTORIES if not _safe_workspace_directory(workspace.root, name)
+        name
+        for name in WORKSPACE_DIRECTORIES
+        if not _safe_workspace_directory(workspace.root, name)
     )
     if unsafe_directories:
         checks.append(
@@ -102,7 +105,8 @@ def run_doctor(path: Path | None = None) -> DoctorReport:
                 summary="One or more required workspace directories are missing or unsafe.",
                 guidance=(
                     "Do not follow or replace workspace directory links automatically.",
-                    "Restore a verified workspace backup into an empty compatible target when required directories are unavailable.",
+                    "Restore a verified workspace backup into an empty compatible target "
+                    "when required directories are unavailable.",
                 ),
             )
         )
@@ -132,7 +136,8 @@ def run_doctor(path: Path | None = None) -> DoctorReport:
                     pass_summary="State repository is read-only.",
                     fail_summary="State repository did not report read-only mode.",
                     guidance=(
-                        "Stop the diagnostic run and reopen the workspace through the read-only recovery path.",
+                        "Stop the diagnostic run and reopen the workspace through the "
+                        "read-only recovery path.",
                     ),
                 )
             )
@@ -155,7 +160,8 @@ def run_doctor(path: Path | None = None) -> DoctorReport:
                     pass_summary="State schema matches the current supported version.",
                     fail_summary="State schema does not match the current supported version.",
                     guidance=(
-                        "Use a compatible doll version or perform the documented migration outside doctor mode.",
+                        "Use a compatible doll version or perform the documented migration "
+                        "outside doctor mode.",
                         "Keep the current workspace unchanged until compatibility is confirmed.",
                     ),
                 )
@@ -189,7 +195,8 @@ def run_doctor(path: Path | None = None) -> DoctorReport:
                 summary="Authoritative state could not be opened safely in read-only mode.",
                 guidance=(
                     "Keep the workspace unchanged and use the documented read-only recovery path.",
-                    "Verify the most recent backup before attempting restore into an empty compatible target.",
+                    "Verify the most recent backup before attempting restore into an empty "
+                    "compatible target.",
                 ),
             )
         )

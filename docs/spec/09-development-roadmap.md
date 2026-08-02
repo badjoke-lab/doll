@@ -81,8 +81,8 @@ Completed:
 - Phase 4B project continuity foundation;
 - Phase 5 local runtime and model integration;
 - IMP-001 through IMP-023;
-- IMP-030 through IMP-071;
-- local workspace, SQLite state, migrations, managed artifacts, canonical conversation and project state, State Package v2, backup and restore, the model-independent safety boundary, AI-environment portability, project continuity, runtime-independent adapter contracts, a loopback-only Ollama adapter, authoritative runtime and model manifests, explicit bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, and accepted primary Intel Mac offline continuity evidence through IMP-054, the offline Ollama API session source adapter through IMP-055, explicit loopback Ollama chat capture through IMP-056, the deterministic local-portability migration harness through IMP-057, the deterministic shutdown escape bundle through IMP-058, the bounded ChatGPT conversations.json source adapter through IMP-059, the bounded ChatGPT numbered conversation-member aggregation through IMP-060, bounded imported conversation context replay through IMP-061, the exact-commit imported-context replay real-machine acceptance harness through IMP-062, and the bounded local writing workflow through IMP-063, the accepted exact-commit primary Intel Mac local-writing evidence through IMP-064, explicit data-only confirmed-memory and ProjectRecord context selection through IMP-065, explicit data-only DecisionRecord context selection through IMP-066, explicit verified Resume Bundle writing context through IMP-067, explicit local translation through IMP-068, bounded local work-item proposals through IMP-069, explicit local portability review through IMP-070, and structured local runtime failure guidance through IMP-071.
+- IMP-030 through IMP-072;
+- local workspace, SQLite state, migrations, managed artifacts, canonical conversation and project state, State Package v2, backup and restore, the model-independent safety boundary, AI-environment portability, project continuity, runtime-independent adapter contracts, a loopback-only Ollama adapter, authoritative runtime and model manifests, explicit bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, and accepted primary Intel Mac offline continuity evidence through IMP-054, the offline Ollama API session source adapter through IMP-055, explicit loopback Ollama chat capture through IMP-056, the deterministic local-portability migration harness through IMP-057, the deterministic shutdown escape bundle through IMP-058, the bounded ChatGPT conversations.json source adapter through IMP-059, the bounded ChatGPT numbered conversation-member aggregation through IMP-060, bounded imported conversation context replay through IMP-061, the exact-commit imported-context replay real-machine acceptance harness through IMP-062, and the bounded local writing workflow through IMP-063, the accepted exact-commit primary Intel Mac local-writing evidence through IMP-064, explicit data-only confirmed-memory and ProjectRecord context selection through IMP-065, explicit data-only DecisionRecord context selection through IMP-066, explicit verified Resume Bundle writing context through IMP-067, explicit local translation through IMP-068, bounded local work-item proposals through IMP-069, explicit local portability review through IMP-070, and structured local runtime failure guidance through IMP-071, and read-only local doctor diagnostics through IMP-072.
 
 Current implementation point:
 
@@ -94,7 +94,7 @@ Current implementation point:
 - Phase 5 passed its local-runtime continuity gate on 2026-06-28;
 - accepted real-machine evidence is bound to commit `1a5b66b2417d6f3e1eafcd14d2769e9c15d7f96c` on the primary Intel Mac with networking disabled;
 - IMP-048 through IMP-054 establish the runtime contract, loopback-only Ollama adapter, authoritative manifests and bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, State Package v2 transfer, backup restore, and accepted LRUN-001 through LRUN-012 evidence;
-- Phase 6 local AI portability and daily-use integration is in progress through IMP-071;
+- Phase 6 local AI portability and daily-use integration is in progress through IMP-072;
 - IMP-055 adds an offline source adapter for a documented caller-retained Ollama API session bundle, with exact JSON validation, content-free inventory, original-source hashing, deterministic normalization, explicit attachment-metadata loss, and reuse of the accepted generic staging and reviewed-publication boundary;
 - IMP-056 adds an explicit non-streaming text-only capture path through fixed IPv4 loopback, resolves one opaque already-installed local model through the filtered inventory, and returns an IMP-055-valid session bundle without reading application databases, logs, shell history, or unrelated sessions;
 - IMP-057 merged at commit `7b63ff512e20d1d6ae65da8938486b093e14b6c6` and composes explicit capture, reviewed canonical import, idempotency and conflict checks, generic export, State Package v2 transfer, backup restore, and alternate fresh-process inspection without the capture component;
@@ -139,7 +139,10 @@ Current implementation point:
 - IMP-071 adds one deterministic provider-neutral local failure-guidance payload for every accepted runtime failure code and persists the same bounded local-only options in canonical error events;
 - IMP-071 is assigned to Issue #225;
 - the IMP-071 failure-guidance extension passes at the `ci` evidence level and does not broaden accepted real-machine evidence;
-- the next bounded implementation receives IMP-072 only when a new implementation issue is opened;
+- IMP-072 adds one deterministic `doll doctor` command that validates workspace structure and authoritative SQLite state through the read-only recovery path without migration, repair, model execution, or native-path disclosure;
+- IMP-072 is assigned to Issue #227;
+- the IMP-072 doctor extension passes at the `ci` evidence level and does not broaden accepted real-machine evidence;
+- the next bounded implementation receives IMP-073 only when a new implementation issue is opened;
 - later local migration, cloud, and tool work must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts.
 
 Implementation identifier policy:
@@ -795,7 +798,19 @@ Dedicated acceptance covers all nine failure codes, deterministic identity, immu
 
 IMP-071 does not establish preflight exception redesign, UI rendering, localization, accessibility presentation, telemetry, provider-specific troubleshooting, automatic repair, automatic fallback, automatic model acquisition, Lite performance measurements, the release soak gate, complete Phase 6, Lite v1.0 completion, or stable general anti-lock-in.
 
-Subsequent daily-use work may expand accessibility, Lite performance measurements, and soak testing.
+### IMP-072 — Read-only doll doctor diagnostics
+
+Status: implemented with deterministic synthetic CI evidence.
+
+Implemented one deterministic top-level `doll doctor` command over one explicitly selected local workspace. The service validates workspace identity, every required workspace directory, authoritative state identity and current schema, workspace/database revision agreement, read-only opening, and SQLite `PRAGMA quick_check`.
+
+Every check returns a stable `pass`, `warn`, or `fail` result with a bounded summary and fixed local-only guidance. Human-readable and deterministic JSON outputs exclude native paths, workspace identifiers, database paths, usernames, hostnames, record content, model output, credentials, and secret values. Invalid workspace input does not initialize a workspace.
+
+The doctor path performs no migration, repair, deletion, state write, audit write, backup creation, restore, model execution, runtime start, process launch, shell command, tool, capability, network request, cloud fallback, login, credential access, model download, installation, or binding change. Dedicated acceptance covers healthy state, no-write preservation, invalid workspace handling, required-directory absence and symlink rejection, corrupt SQLite state, revision mismatch, injected quick-check failure, deterministic JSON, stable exit codes, and path privacy. Standard CI covers Ubuntu, macOS, and Windows.
+
+IMP-072 does not establish automatic repair, runtime or model health calls, provider-specific troubleshooting, performance benchmarking, installer diagnostics, accessibility presentation, the release-candidate soak, complete Phase 6, Lite v1.0 completion, or stable general anti-lock-in.
+
+Subsequent daily-use work may expand accessibility presentation, Lite performance measurements, and soak testing.
 
 ## 13. Phase 7 — Optional cloud and multiple models
 
