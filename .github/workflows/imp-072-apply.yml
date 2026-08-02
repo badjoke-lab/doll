@@ -3,81 +3,37 @@ name: IMP-072 apply integration
 on:
   pull_request:
     paths:
-      - src/doll/doctor.py
-      - src/doll/doctor_cli.py
-      - tests/test_imp_072_doctor.py
-      - scripts/apply_imp_072.py
-      - scripts/fix_imp_072_style.py
       - .github/workflows/imp-072-apply.yml
 
 permissions:
   contents: write
 
 jobs:
-  apply:
+  summarize:
     if: github.event.pull_request.number == 228
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - uses: astral-sh/setup-uv@v6
-      - run: uv sync --dev --locked
-      - run: uv run python scripts/apply_imp_072.py
-      - run: uv run python scripts/fix_imp_072_style.py
-      - run: >-
-          uv run ruff check --fix
-          src/doll/doctor.py
-          src/doll/doctor_cli.py
-          src/doll/cli.py
-          tests/test_imp_072_doctor.py
-          tests/test_cli.py
-      - run: >-
-          uv run ruff format
-          src/doll/doctor.py
-          src/doll/doctor_cli.py
-          src/doll/cli.py
-          tests/test_imp_072_doctor.py
-          tests/test_cli.py
-      - run: >-
-          uv run ruff check
-          src/doll/doctor.py
-          src/doll/doctor_cli.py
-          src/doll/cli.py
-          tests/test_imp_072_doctor.py
-          tests/test_cli.py
-      - run: uv run mypy src
-      - name: Run focused tests
-        id: focused
-        continue-on-error: true
-        run: >-
-          uv run pytest --no-cov -vv --tb=short
-          tests/test_imp_072_doctor.py
-          tests/test_cli.py
-          > docs/testing/imp-072-debug.txt 2>&1
-      - name: Commit focused failure report
-        if: steps.focused.outcome == 'failure'
+      - name: Extract bounded failure summary
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/testing/imp-072-debug.txt
-          git commit -m "Capture IMP-072 focused test failures"
-          git push origin HEAD:${GITHUB_HEAD_REF}
-      - name: Stop after focused failure
-        if: steps.focused.outcome == 'failure'
-        run: exit 1
-      - run: uv run python scripts/build_final_spec.py
-      - run: node scripts/check-public-site-status.mjs
-      - name: Normalize generated text
-        run: sed -i 's/[[:space:]]\+$//' docs/implementation/imp-072-read-only-doll-doctor.md
-      - name: Commit integrated implementation
+          python - <<'PY'
+          from pathlib import Path
+
+          source = Path("docs/testing/imp-072-debug.txt")
+          lines = source.read_text(encoding="utf-8", errors="replace").splitlines()
+          selected = lines[-500:]
+          Path("docs/testing/imp-072-debug-summary.txt").write_text(
+              "\n".join(selected) + "\n", encoding="utf-8"
+          )
+          source.unlink()
+          PY
+      - name: Commit bounded failure summary
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git diff --cached --check
-          git commit -m "Integrate IMP-072 read-only doll doctor"
+          git commit -m "Bound IMP-072 focused failure report"
           git push origin HEAD:${GITHUB_HEAD_REF}
