@@ -7,7 +7,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
-from doll.state import CURRENT_SCHEMA_VERSION, StateError, open_state_repository
+from doll.state import (
+    CURRENT_SCHEMA_VERSION,
+    STATE_DATABASE_NAME,
+    StateError,
+    open_state_repository,
+)
 from doll.workspace import WORKSPACE_DIRECTORIES, WorkspaceError, load_workspace
 
 DoctorCheckStatus = Literal["pass", "warn", "fail"]
@@ -119,8 +124,30 @@ def run_doctor(path: Path | None = None) -> DoctorReport:
             )
         )
 
+    database_path = workspace.root / "state" / STATE_DATABASE_NAME
+    if _has_pending_sqlite_journal(database_path):
+        checks.append(
+            DoctorCheck(
+                check_id="state_repository",
+                status="fail",
+                summary="Authoritative state has an active SQLite journal.",
+                guidance=(
+                    "Close active doll processes and retry the read-only diagnostic.",
+                    "Do not delete SQLite journal files manually.",
+                ),
+            )
+        )
+        return _report(
+            checks,
+            profile_preference=workspace.record.profile_preference,
+        )
+
     try:
-        with open_state_repository(workspace.root, read_only=True) as repository:
+        with open_state_repository(
+            workspace.root,
+            read_only=True,
+            immutable=True,
+        ) as repository:
             status = repository.status()
             checks.append(
                 DoctorCheck(
@@ -204,6 +231,17 @@ def run_doctor(path: Path | None = None) -> DoctorReport:
             checks,
             profile_preference=workspace.record.profile_preference,
         )
+
+
+def _has_pending_sqlite_journal(database_path: Path) -> bool:
+    for suffix in ("-wal", "-journal"):
+        candidate = Path(f"{database_path}{suffix}")
+        try:
+            if candidate.is_file() and candidate.stat().st_size > 0:
+                return True
+        except OSError:
+            return True
+    return False
 
 
 def _safe_workspace_directory(root: Path, name: str) -> bool:

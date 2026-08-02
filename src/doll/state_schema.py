@@ -89,6 +89,7 @@ def open_state_repository(
     path: Path | None = None,
     *,
     read_only: bool = False,
+    immutable: bool = False,
     migrations: Iterable[Migration] = MIGRATIONS,
 ) -> StateRepository:
     """Open an existing state repository, optionally without any write capability."""
@@ -100,7 +101,13 @@ def open_state_repository(
     if not database_path.is_file():
         raise StateNotInitializedError(f"state database does not exist: {database_path}")
 
-    connection = _connect(database_path, read_only=read_only)
+    if immutable and not read_only:
+        raise ValueError("immutable state access requires read-only mode")
+    connection = _connect(
+        database_path,
+        read_only=read_only,
+        immutable=immutable,
+    )
     try:
         schema_version, state_revision = _validate_database_identity(connection, workspace)
         if not read_only:

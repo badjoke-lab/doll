@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Iterator
 
 import pytest
 from pytest import MonkeyPatch
@@ -195,7 +195,7 @@ def test_quick_check_failure_is_reported_without_automatic_action(
 
     @contextmanager
     def fake_open(*args: object, **kwargs: object) -> Iterator[FakeRepository]:
-        assert kwargs == {"read_only": True}
+        assert kwargs == {"read_only": True, "immutable": True}
         yield FakeRepository()
 
     monkeypatch.setattr(doctor_module, "open_state_repository", fake_open)

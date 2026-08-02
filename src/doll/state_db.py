@@ -34,10 +34,18 @@ def _configure_write_journal(connection: sqlite3.Connection) -> None:
     connection.execute("PRAGMA synchronous = FULL")
 
 
-def _connect(path: Path, *, read_only: bool) -> sqlite3.Connection:
+def _connect(
+    path: Path,
+    *,
+    read_only: bool,
+    immutable: bool = False,
+) -> sqlite3.Connection:
+    if immutable and not read_only:
+        raise ValueError("immutable SQLite access requires read-only mode")
     if read_only:
+        immutable_query = "&immutable=1" if immutable else ""
         connection = sqlite3.connect(
-            f"{path.resolve().as_uri()}?mode=ro",
+            f"{path.resolve().as_uri()}?mode=ro{immutable_query}",
             uri=True,
             isolation_level=None,
         )
