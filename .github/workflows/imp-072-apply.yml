@@ -23,7 +23,7 @@ jobs:
 
           source = Path("docs/testing/imp-072-debug.txt")
           lines = source.read_text(encoding="utf-8", errors="replace").splitlines()
-          selected = lines[-500:]
+          selected = [line.rstrip() for line in lines[-500:]]
           Path("docs/testing/imp-072-debug-summary.txt").write_text(
               "\n".join(selected) + "\n", encoding="utf-8"
           )
