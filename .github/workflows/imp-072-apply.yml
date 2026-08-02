@@ -7,6 +7,7 @@ on:
       - src/doll/doctor_cli.py
       - tests/test_imp_072_doctor.py
       - scripts/apply_imp_072.py
+      - scripts/fix_imp_072_style.py
       - .github/workflows/imp-072-apply.yml
 
 permissions:
@@ -26,6 +27,7 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --dev --locked
       - run: uv run python scripts/apply_imp_072.py
+      - run: uv run python scripts/fix_imp_072_style.py
       - run: >-
           uv run ruff check --fix
           src/doll/doctor.py
