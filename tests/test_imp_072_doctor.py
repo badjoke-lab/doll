@@ -13,7 +13,7 @@ from typer.testing import CliRunner
 from doll import doctor as doctor_module
 from doll.cli import app
 from doll.doctor import DOCTOR_REPORT_SCHEMA_VERSION, run_doctor
-from doll.state import initialize_state_repository
+from doll.state import CURRENT_SCHEMA_VERSION, initialize_state_repository
 from doll.workspace import WORKSPACE_RECORD_NAME, initialize_workspace, load_workspace
 
 runner = CliRunner()
@@ -170,7 +170,7 @@ def test_quick_check_failure_is_reported_without_automatic_action(
     tmp_path: Path, monkeypatch: MonkeyPatch
 ) -> None:
     root = _workspace(tmp_path)
-    workspace = doctor_module.load_workspace(root)
+    workspace = load_workspace(root)
 
     class FakeCursor:
         def fetchall(self) -> list[tuple[str]]:
@@ -187,7 +187,7 @@ def test_quick_check_failure_is_reported_without_automatic_action(
         def status(self) -> SimpleNamespace:
             return SimpleNamespace(
                 workspace_id=str(workspace.record.workspace_id),
-                schema_version=doctor_module.CURRENT_SCHEMA_VERSION,
+                schema_version=CURRENT_SCHEMA_VERSION,
                 state_revision=workspace.record.state_revision,
                 record_count=0,
                 read_only=True,
