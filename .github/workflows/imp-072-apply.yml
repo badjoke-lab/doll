@@ -3,14 +3,14 @@ name: IMP-072 apply integration
 on:
   pull_request:
     paths:
-      - tests/test_imp_072_doctor.py
+      - scripts/apply_imp_072_immutable.py
       - .github/workflows/imp-072-apply.yml
 
 permissions:
   contents: write
 
 jobs:
-  diagnose:
+  apply:
     if: github.event.pull_request.number == 228
     runs-on: ubuntu-latest
     steps:
@@ -22,47 +22,50 @@ jobs:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --dev --locked
-      - run: uv run python scripts/apply_imp_072.py
-      - run: uv run python scripts/fix_imp_072_style.py
-      - name: Run focused tests with JUnit
-        id: focused
-        continue-on-error: true
-        run: >-
-          uv run pytest --no-cov -q
+      - run: uv run python scripts/apply_imp_072_immutable.py
+      - run: >-
+          uv run ruff check --fix
+          src/doll/state_db.py
+          src/doll/state_schema.py
+          src/doll/doctor.py
+          src/doll/doctor_cli.py
+          src/doll/cli.py
           tests/test_imp_072_doctor.py
           tests/test_cli.py
-          --junitxml=/tmp/imp-072.xml
-      - name: Write bounded failure summary
+      - run: >-
+          uv run ruff format
+          src/doll/state_db.py
+          src/doll/state_schema.py
+          src/doll/doctor.py
+          src/doll/doctor_cli.py
+          src/doll/cli.py
+          tests/test_imp_072_doctor.py
+          tests/test_cli.py
+      - run: >-
+          uv run ruff check
+          src/doll/state_db.py
+          src/doll/state_schema.py
+          src/doll/doctor.py
+          src/doll/doctor_cli.py
+          src/doll/cli.py
+          tests/test_imp_072_doctor.py
+          tests/test_cli.py
+      - run: uv run mypy src
+      - run: >-
+          uv run pytest --no-cov
+          tests/test_imp_072_doctor.py
+          tests/test_cli.py
+      - run: uv run python scripts/build_final_spec.py
+      - run: node scripts/check-public-site-status.mjs
+      - name: Remove temporary diagnostic files
         run: |
-          python - <<'PY'
-          import json
-          import xml.etree.ElementTree as ET
-          from pathlib import Path
-
-          root = ET.parse("/tmp/imp-072.xml").getroot()
-          failures = []
-          for case in root.iter("testcase"):
-              problem = case.find("failure")
-              if problem is None:
-                  problem = case.find("error")
-              if problem is None:
-                  continue
-              failures.append({
-                  "classname": case.attrib.get("classname", ""),
-                  "name": case.attrib.get("name", ""),
-                  "message": problem.attrib.get("message", "")[:1000],
-              })
-          Path("docs/testing/imp-072-junit-summary.json").write_text(
-              json.dumps({"failure_count": len(failures), "failures": failures}, indent=2) + "\n",
-              encoding="utf-8",
-          )
-          Path("docs/testing/imp-072-debug-summary.txt").unlink(missing_ok=True)
-          PY
-      - name: Commit bounded JUnit summary
+          rm -f docs/testing/imp-072-junit-summary.json
+          rm -f docs/testing/imp-072-debug-summary.txt
+      - name: Commit integrated implementation
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git diff --cached --check
-          git commit -m "Capture bounded IMP-072 JUnit failures"
+          git commit -m "Use immutable read-only state for IMP-072 doctor"
           git push origin HEAD:${GITHUB_HEAD_REF}
