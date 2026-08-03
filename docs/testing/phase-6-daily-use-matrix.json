@@ -280,5 +280,51 @@
     "lite_v1_complete": false,
     "stable_anti_lock_in_claim": false,
     "implementation_doc": "docs/implementation/imp-072-read-only-doll-doctor.md"
+  },
+  "local_full_text_search_extension": {
+    "implementation": "IMP-073",
+    "status": "ci-pass",
+    "description": "One explicit deterministic read-only local full-text search scans active non-secret authoritative record titles and textual metadata without models, network access, persistent indexes, or automatic context injection.",
+    "pytest_files": [
+      "tests/test_imp_073_local_search.py",
+      "tests/test_cli.py"
+    ],
+    "passed_evidence_levels": [
+      "ci"
+    ],
+    "required_evidence_levels": [
+      "ci"
+    ],
+    "report_schema_version": 1,
+    "search_mode": "unicode-nfkc-casefold-substring-and",
+    "query_mode": "explicit-only",
+    "record_status_scope": [
+      "active"
+    ],
+    "secret_records_allowed": false,
+    "maximum_scanned_records": 10000,
+    "maximum_results": 100,
+    "persistent_index": false,
+    "schema_migration": false,
+    "state_mutation": false,
+    "workspace_mutation": false,
+    "artifact_mutation": false,
+    "audit_mutation": false,
+    "automatic_retrieval": false,
+    "semantic_retrieval": false,
+    "model_selected_context": false,
+    "context_injection": false,
+    "model_execution": false,
+    "runtime_start": false,
+    "process_launch": false,
+    "shell_execution": false,
+    "tool_execution": false,
+    "capability_execution": false,
+    "network_access": false,
+    "cloud_fallback": false,
+    "phase6_gate_complete": false,
+    "lite_v1_complete": false,
+    "stable_anti_lock_in_claim": false,
+    "implementation_doc": "docs/implementation/imp-073-explicit-local-full-text-search.md"
   }
 }

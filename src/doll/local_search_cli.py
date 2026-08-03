@@ -84,9 +84,7 @@ def _render_human(report: LocalSearchReport) -> None:
     typer.echo(f"Local search results: {report.result_count}")
     for hit in report.hits:
         title = hit.title or "(untitled)"
-        typer.echo(
-            f"[{hit.record_type}] {title} id={hit.record_id} sensitivity={hit.sensitivity}"
-        )
+        typer.echo(f"[{hit.record_type}] {title} id={hit.record_id} sensitivity={hit.sensitivity}")
         for match in hit.matches:
             typer.echo(f"  {match.field_path}: {match.snippet}")
     if report.scan_truncated:

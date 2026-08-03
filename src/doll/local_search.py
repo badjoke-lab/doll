@@ -321,7 +321,10 @@ def _make_snippet(value: str, terms: tuple[str, ...]) -> str:
 
 def _safe_field_component(value: str) -> str:
     normalized = _normalize_display_text(
-        "".join("?" if ord(character) < 32 or ord(character) == 127 else character for character in value)
+        "".join(
+            "?" if ord(character) < 32 or ord(character) == 127 else character
+            for character in value
+        )
     )
     if not normalized:
         return "?"
@@ -333,7 +336,7 @@ def _safe_field_component(value: str) -> str:
 def _bound_field_path(value: str) -> str:
     if len(value) <= _MAX_FIELD_PATH_CHARS:
         return value
-    return f"…{value[-(_MAX_FIELD_PATH_CHARS - 1):]}"
+    return f"…{value[-(_MAX_FIELD_PATH_CHARS - 1) :]}"
 
 
 def _has_pending_sqlite_journal(database_path: Path) -> bool:

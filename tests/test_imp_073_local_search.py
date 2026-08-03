@@ -65,7 +65,7 @@ def test_explicit_search_matches_title_nested_metadata_japanese_and_unicode(
         root,
         record_id="00000000-0000-0000-0000-000000000101",
         record_type="project_note",
-        title="Straße ＡＩ 計画",
+        title="Straße \uff21\uff29 計画",
         metadata={
             "summary": "ローカル全文検索の試験です",
             "nested": {"note": "Alpha Beta"},
@@ -82,8 +82,7 @@ def test_explicit_search_matches_title_nested_metadata_japanese_and_unicode(
     assert unicode_report.hits[0].record_type == "project_note"
     assert unicode_report.hits[0].matches[0].field_path == "title"
     assert any(
-        match.field_path == "metadata.nested.note"
-        for match in cross_field_report.hits[0].matches
+        match.field_path == "metadata.nested.note" for match in cross_field_report.hits[0].matches
     )
 
 
