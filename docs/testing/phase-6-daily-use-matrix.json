@@ -246,5 +246,39 @@
     "lite_v1_complete": false,
     "stable_anti_lock_in_claim": false,
     "implementation_doc": "docs/implementation/imp-071-structured-local-failure-guidance.md"
+  },
+  "doctor_extension": {
+    "implementation": "IMP-072",
+    "status": "ci-pass",
+    "description": "One deterministic read-only doll doctor command validates workspace structure and authoritative SQLite state without repair, mutation, model execution, network access, or native-path disclosure.",
+    "pytest_files": [
+      "tests/test_imp_072_doctor.py",
+      "tests/test_cli.py"
+    ],
+    "passed_evidence_levels": [
+      "ci"
+    ],
+    "required_evidence_levels": [
+      "ci"
+    ],
+    "report_schema_version": 1,
+    "read_only": true,
+    "workspace_mutation": false,
+    "state_mutation": false,
+    "schema_migration": false,
+    "automatic_repair": false,
+    "model_execution": false,
+    "runtime_start": false,
+    "process_launch": false,
+    "shell_execution": false,
+    "tool_execution": false,
+    "capability_execution": false,
+    "network_access": false,
+    "cloud_fallback": false,
+    "native_path_disclosure": false,
+    "phase6_gate_complete": false,
+    "lite_v1_complete": false,
+    "stable_anti_lock_in_claim": false,
+    "implementation_doc": "docs/implementation/imp-072-read-only-doll-doctor.md"
   }
 }
