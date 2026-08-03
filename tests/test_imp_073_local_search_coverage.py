@@ -20,7 +20,12 @@ from doll.local_search import (
     search_local_state,
     search_workspace,
 )
-from doll.state import StateCorruptError, StateRepository, initialize_state_repository
+from doll.state import (
+    StateCorruptError,
+    StateRepository,
+    initialize_state_repository,
+    open_state_repository,
+)
 from doll.workspace import initialize_workspace
 
 runner = CliRunner()
@@ -50,7 +55,7 @@ def test_search_wraps_sqlite_query_failure() -> None:
 
 def test_search_handles_untitled_blank_and_unmatched_fields(tmp_path: Path) -> None:
     root = _workspace(tmp_path)
-    with local_search_module.open_state_repository(root) as repository:
+    with open_state_repository(root) as repository:
         repository.create_record(
             record_id="00000000-0000-0000-0000-000000000201",
             record_type="note",
@@ -85,7 +90,7 @@ def test_query_and_record_type_validation_edges(tmp_path: Path) -> None:
 
 def test_corrupt_metadata_fails_closed(tmp_path: Path) -> None:
     root = _workspace(tmp_path)
-    with local_search_module.open_state_repository(root) as repository:
+    with open_state_repository(root) as repository:
         created = repository.create_record(
             record_id="00000000-0000-0000-0000-000000000202",
             record_type="note",
@@ -100,7 +105,7 @@ def test_corrupt_metadata_fails_closed(tmp_path: Path) -> None:
     with pytest.raises(StateCorruptError, match="metadata is unreadable"):
         search_workspace(root, "needle")
 
-    with local_search_module.open_state_repository(root) as repository:
+    with open_state_repository(root) as repository:
         repository.connection.execute(
             "UPDATE records SET metadata_json = ? WHERE id = ?",
             ("[]", created.id),
@@ -138,7 +143,7 @@ def test_private_text_helpers_cover_bounded_failure_edges(monkeypatch: MonkeyPat
 
 def test_snippet_marks_truncated_suffix(tmp_path: Path) -> None:
     root = _workspace(tmp_path)
-    with local_search_module.open_state_repository(root) as repository:
+    with open_state_repository(root) as repository:
         repository.create_record(
             record_id="00000000-0000-0000-0000-000000000203",
             record_type="note",
