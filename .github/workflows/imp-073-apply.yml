@@ -7,6 +7,7 @@ on:
       - src/doll/local_search_cli.py
       - tests/test_imp_073_local_search.py
       - scripts/apply_imp_073.py
+      - scripts/fix_imp_073_style.py
       - .github/workflows/imp-073-apply.yml
 
 permissions:
@@ -26,6 +27,7 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --dev --locked
       - run: uv run python scripts/apply_imp_073.py
+      - run: uv run python scripts/fix_imp_073_style.py
       - run: >-
           uv run ruff check --fix
           src/doll/local_search.py
