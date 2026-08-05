@@ -60,8 +60,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 74,
-  "project-status.json must mark Phase 6 in progress through IMP-073 with IMP-074 next",
+    status.phase?.next_implementation === 75,
+  "project-status.json must mark Phase 6 in progress through IMP-074 with IMP-075 next",
 );
 expect(
   status.model_runtime &&
@@ -70,12 +70,13 @@ expect(
   "project-status.json requires model_runtime.connected and model_runtime.message",
 );
 expect(
-  status.model_runtime.message.includes("through IMP-073") &&
-    status.model_runtime.message.includes("explicit local full-text state search") &&
-    status.model_runtime.message.includes("searches only active non-secret authoritative titles and textual metadata") &&
-    status.model_runtime.message.includes("creates no persistent index") &&
+  status.model_runtime.message.includes("through IMP-074") &&
+    status.model_runtime.message.includes("explicit local UTF-8 text and Markdown reading") &&
+    status.model_runtime.message.includes("one caller-selected regular non-symlink") &&
+    status.model_runtime.message.includes("external_content/untrusted_data") &&
+    status.model_runtime.message.includes("without copying, persistence, model execution") &&
     status.model_runtime.message.includes("passes at both CI and real-machine evidence levels"),
-  "project-status.json must describe IMP-073 without broadening accepted real-machine evidence",
+  "project-status.json must describe IMP-074 without broadening accepted real-machine evidence",
 );
 expect(
   /^\d{4}-\d{2}-\d{2}$/.test(status.last_reviewed || ""),
@@ -399,6 +400,53 @@ expect(
 );
 
 expect(
+  dailyUse.local_text_markdown_extension?.implementation === "IMP-074" &&
+    dailyUse.local_text_markdown_extension?.status === "ci-pass" &&
+    JSON.stringify(
+      dailyUse.local_text_markdown_extension?.passed_evidence_levels,
+    ) === JSON.stringify(["ci"]) &&
+    JSON.stringify(
+      dailyUse.local_text_markdown_extension?.required_evidence_levels,
+    ) === JSON.stringify(["ci"]) &&
+    dailyUse.local_text_markdown_extension?.report_schema_version === 1 &&
+    dailyUse.local_text_markdown_extension?.selection_mode ===
+      "explicit-single-file" &&
+    JSON.stringify(dailyUse.local_text_markdown_extension?.allowed_extensions) ===
+      JSON.stringify([".txt", ".md", ".markdown"]) &&
+    dailyUse.local_text_markdown_extension?.strict_utf8 === true &&
+    dailyUse.local_text_markdown_extension?.utf8_bom_handling ===
+      "remove-and-report" &&
+    dailyUse.local_text_markdown_extension?.maximum_source_bytes === 1048576 &&
+    dailyUse.local_text_markdown_extension?.maximum_text_characters === 1000000 &&
+    dailyUse.local_text_markdown_extension?.symlinks_allowed === false &&
+    dailyUse.local_text_markdown_extension?.source_persisted === false &&
+    dailyUse.local_text_markdown_extension?.artifact_created === false &&
+    dailyUse.local_text_markdown_extension?.index_created === false &&
+    dailyUse.local_text_markdown_extension?.workspace_mutation === false &&
+    dailyUse.local_text_markdown_extension?.state_mutation === false &&
+    dailyUse.local_text_markdown_extension?.audit_mutation === false &&
+    dailyUse.local_text_markdown_extension?.context_injection === false &&
+    dailyUse.local_text_markdown_extension?.model_execution === false &&
+    dailyUse.local_text_markdown_extension?.runtime_start === false &&
+    dailyUse.local_text_markdown_extension?.process_launch === false &&
+    dailyUse.local_text_markdown_extension?.shell_execution === false &&
+    dailyUse.local_text_markdown_extension?.tool_execution === false &&
+    dailyUse.local_text_markdown_extension?.capability_execution === false &&
+    dailyUse.local_text_markdown_extension?.network_access === false &&
+    dailyUse.local_text_markdown_extension?.cloud_fallback === false &&
+    dailyUse.local_text_markdown_extension?.origin_class === "external_content" &&
+    dailyUse.local_text_markdown_extension?.actor_type === "extractor" &&
+    dailyUse.local_text_markdown_extension?.acquisition_method === "extraction" &&
+    dailyUse.local_text_markdown_extension?.authority_class === "untrusted_data" &&
+    dailyUse.local_text_markdown_extension?.phase6_gate_complete === false &&
+    dailyUse.local_text_markdown_extension?.lite_v1_complete === false &&
+    dailyUse.local_text_markdown_extension?.stable_anti_lock_in_claim === false &&
+    dailyUse.local_text_markdown_extension?.implementation_doc ===
+      "docs/implementation/imp-074-explicit-local-text-markdown-read.md",
+  "IMP-074 local text and Markdown reading must remain explicit, untrusted, local-only, and CI-only",
+);
+
+expect(
   localWritingPrimary.test_id === "IMP-064-LOCAL-WRITING-PRIMARY" &&
     localWritingPrimary.result === "pass" &&
     localWritingPrimary.evidence_level === "real-machine" &&
@@ -719,8 +767,12 @@ expect(
   "roadmap must record the IMP-073 local-search boundary",
 );
 expect(
-  roadmap.includes("the next bounded implementation receives IMP-074 only when a new implementation issue is opened"),
-  "roadmap must identify IMP-074 as the next unallocated implementation identifier",
+  roadmap.includes("### IMP-074 — Explicit local text and Markdown reading"),
+  "roadmap must record the IMP-074 local-document boundary",
+);
+expect(
+  roadmap.includes("the next bounded implementation receives IMP-075 only when a new implementation issue is opened"),
+  "roadmap must identify IMP-075 as the next unallocated implementation identifier",
 );
 expect(
   roadmap.includes("docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json"),

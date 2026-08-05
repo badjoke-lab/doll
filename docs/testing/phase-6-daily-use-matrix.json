@@ -326,5 +326,55 @@
     "lite_v1_complete": false,
     "stable_anti_lock_in_claim": false,
     "implementation_doc": "docs/implementation/imp-073-explicit-local-full-text-search.md"
+  },
+  "local_text_markdown_extension": {
+    "implementation": "IMP-074",
+    "status": "ci-pass",
+    "description": "One caller-selected local UTF-8 text or Markdown file can be read exactly through a bounded path-free external-content boundary without copying, persistence, model execution, or network access.",
+    "pytest_files": [
+      "tests/test_imp_074_local_document.py",
+      "tests/test_cli.py"
+    ],
+    "passed_evidence_levels": [
+      "ci"
+    ],
+    "required_evidence_levels": [
+      "ci"
+    ],
+    "report_schema_version": 1,
+    "selection_mode": "explicit-single-file",
+    "allowed_extensions": [
+      ".txt",
+      ".md",
+      ".markdown"
+    ],
+    "strict_utf8": true,
+    "utf8_bom_handling": "remove-and-report",
+    "maximum_source_bytes": 1048576,
+    "maximum_text_characters": 1000000,
+    "symlinks_allowed": false,
+    "source_persisted": false,
+    "artifact_created": false,
+    "index_created": false,
+    "workspace_mutation": false,
+    "state_mutation": false,
+    "audit_mutation": false,
+    "context_injection": false,
+    "model_execution": false,
+    "runtime_start": false,
+    "process_launch": false,
+    "shell_execution": false,
+    "tool_execution": false,
+    "capability_execution": false,
+    "network_access": false,
+    "cloud_fallback": false,
+    "origin_class": "external_content",
+    "actor_type": "extractor",
+    "acquisition_method": "extraction",
+    "authority_class": "untrusted_data",
+    "phase6_gate_complete": false,
+    "lite_v1_complete": false,
+    "stable_anti_lock_in_claim": false,
+    "implementation_doc": "docs/implementation/imp-074-explicit-local-text-markdown-read.md"
   }
 }
