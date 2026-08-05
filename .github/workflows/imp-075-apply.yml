@@ -7,6 +7,7 @@ on:
       - src/doll/local_csv_cli.py
       - tests/test_imp_075_local_csv.py
       - scripts/apply_imp_075.py
+      - scripts/fix_imp_075_style.py
       - .github/workflows/imp-075-apply.yml
 
 permissions:
@@ -26,6 +27,7 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --dev --locked
       - run: uv run python scripts/apply_imp_075.py
+      - run: uv run python scripts/fix_imp_075_style.py
       - run: >-
           uv run ruff check --fix
           src/doll/local_csv.py
