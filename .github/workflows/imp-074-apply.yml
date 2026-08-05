@@ -33,7 +33,6 @@ jobs:
           src/doll/cli.py
           tests/test_imp_074_local_document.py
           tests/test_cli.py
-          scripts/apply_imp_074.py
       - run: >-
           uv run ruff format
           src/doll/local_document.py
@@ -41,7 +40,6 @@ jobs:
           src/doll/cli.py
           tests/test_imp_074_local_document.py
           tests/test_cli.py
-          scripts/apply_imp_074.py
       - run: >-
           uv run ruff check
           src/doll/local_document.py
@@ -49,7 +47,6 @@ jobs:
           src/doll/cli.py
           tests/test_imp_074_local_document.py
           tests/test_cli.py
-          scripts/apply_imp_074.py
       - run: uv run mypy src tests
       - run: >-
           uv run pytest --no-cov
