@@ -79,7 +79,7 @@ def test_inspects_utf8_csv_with_quotes_newlines_bom_and_fixed_origin(tmp_path: P
 
 def test_supports_explicit_delimiter_profiles(tmp_path: Path) -> None:
     source = tmp_path / "data.csv"
-    source.write_bytes("a\tb\n1\t2\n".encode())
+    source.write_bytes(b"a\tb\n1\t2\n")
 
     table = read_local_csv(source, delimiter_profile="TAB")
 
@@ -101,7 +101,7 @@ def test_semicolon_and_pipe_profiles(tmp_path: Path, profile: str) -> None:
 
 def test_transform_selects_reorders_and_renames_without_rewriting_cells(tmp_path: Path) -> None:
     source = tmp_path / "data.csv"
-    source.write_bytes('name,age,note\nAlice,20,"a,b"\nBob,30,=SUM(A1)\n'.encode())
+    source.write_bytes(b'name,age,note\nAlice,20,"a,b"\nBob,30,=SUM(A1)\n')
 
     result = transform_local_csv(
         source,

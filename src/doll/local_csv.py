@@ -7,9 +7,10 @@ import hashlib
 import io
 import os
 import stat
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final, Mapping
+from typing import Final
 
 LOCAL_CSV_REPORT_SCHEMA_VERSION: Final = 1
 LOCAL_CSV_ORIGIN_CLASS: Final = "external_content"
@@ -295,7 +296,10 @@ def parse_header_renames(values: tuple[str, ...]) -> dict[str, str]:
     return result
 
 
-def _parse_csv(text: str, delimiter: str) -> tuple[tuple[str, ...], tuple[tuple[str, ...], ...], int]:
+def _parse_csv(
+    text: str,
+    delimiter: str,
+) -> tuple[tuple[str, ...], tuple[tuple[str, ...], ...], int]:
     try:
         reader = csv.reader(
             io.StringIO(text, newline=""),

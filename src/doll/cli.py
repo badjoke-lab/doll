@@ -13,6 +13,7 @@ from doll.audit import AuditActorType, AuditResult, AuditService
 from doll.backup_cli import backup_app
 from doll.diagnostics import redact_exception_text
 from doll.doctor_cli import doctor_command
+from doll.local_csv_cli import csv_app
 from doll.local_document_cli import document_app
 from doll.local_search_cli import search_command
 from doll.memory_cli import memory_app
@@ -52,6 +53,7 @@ app.add_typer(project_app, name="project")
 app.add_typer(decision_app, name="decision")
 app.add_typer(state_package_app, name="state-package")
 app.add_typer(backup_app, name="backup")
+app.add_typer(csv_app, name="csv")
 app.add_typer(document_app, name="document")
 app.command("doctor")(doctor_command)
 app.command("search")(search_command)
