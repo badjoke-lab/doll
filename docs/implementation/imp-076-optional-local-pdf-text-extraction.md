@@ -12,6 +12,8 @@ Add the Lite v1.0-required PDF text extraction path without making PDF support a
 
 IMP-076 adds one explicit `doll pdf extract SOURCE` command and one replaceable `PdfTextAdapter` contract. The default implementation loads `pypdf` only when extraction is invoked. Importing doll, showing root or PDF help, and using every non-PDF command do not load or require the adapter.
 
+The optional `pdf` project extra and development environment use the locked compatible range `pypdf>=6.14.2,<7`; the core dependency set remains unchanged when that extra is not installed.
+
 The caller selects exactly one `.pdf` source. The source must be a regular non-symlink file, remain within the eight-megabyte source limit, preserve path/open-handle identity, size, and modification time throughout the read, and begin with a PDF signature. Native paths and filenames are excluded from result metadata and failures.
 
 The in-process adapter opens source bytes through `PdfReader(..., strict=True)`. Encrypted or password-protected documents are rejected before page inventory or extraction. Documents are bounded to 200 pages. The caller may extract all pages or repeat exact one-based page selections in caller order, with at most 100 selected pages. Duplicate, non-positive, boolean, and unavailable selections fail closed.
