@@ -24,8 +24,18 @@ tests = tests.replace(internal_import, "importlib")
 old = '            reader = _FakeReader(("text",))\n'
 if tests.count(old) != 1:
     raise RuntimeError("expected one unused synthetic reader fixture")
+tests = tests.replace(old, "", 1)
+help_assertion = '    assert "optional adapter" in help_result.stdout\n'
+if tests.count(help_assertion) != 1:
+    raise RuntimeError("expected one wrapping-sensitive PDF help assertion")
+tests = tests.replace(
+    help_assertion,
+    '    assert "Extract text" in help_result.stdout\n'
+    '    assert "PDF" in help_result.stdout\n',
+    1,
+)
 test_path.write_text(
-    tests.replace(old, "", 1),
+    tests,
     encoding="utf-8",
     newline="\n",
 )
