@@ -60,8 +60,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 73,
-  "project-status.json must mark Phase 6 in progress through IMP-072 with IMP-073 next",
+    status.phase?.next_implementation === 74,
+  "project-status.json must mark Phase 6 in progress through IMP-073 with IMP-074 next",
 );
 expect(
   status.model_runtime &&
@@ -70,12 +70,12 @@ expect(
   "project-status.json requires model_runtime.connected and model_runtime.message",
 );
 expect(
-  status.model_runtime.message.includes("through IMP-072") &&
-    status.model_runtime.message.includes("IMP-071 gives every accepted local runtime failure code") &&
-    status.model_runtime.message.includes("IMP-072 validates workspace structure") &&
-    status.model_runtime.message.includes("without repair, mutation, model execution, network access, or native-path disclosure") &&
+  status.model_runtime.message.includes("through IMP-073") &&
+    status.model_runtime.message.includes("explicit local full-text state search") &&
+    status.model_runtime.message.includes("searches only active non-secret authoritative titles and textual metadata") &&
+    status.model_runtime.message.includes("creates no persistent index") &&
     status.model_runtime.message.includes("passes at both CI and real-machine evidence levels"),
-  "project-status.json must describe IMP-072 without broadening accepted real-machine evidence",
+  "project-status.json must describe IMP-073 without broadening accepted real-machine evidence",
 );
 expect(
   /^\d{4}-\d{2}-\d{2}$/.test(status.last_reviewed || ""),
@@ -354,6 +354,48 @@ expect(
     dailyUse.doctor_extension?.implementation_doc ===
       "docs/implementation/imp-072-read-only-doll-doctor.md",
   "IMP-072 doctor must remain deterministic, read-only, local-only, and CI-only",
+);
+
+expect(
+  dailyUse.local_full_text_search_extension?.implementation === "IMP-073" &&
+    dailyUse.local_full_text_search_extension?.status === "ci-pass" &&
+    JSON.stringify(
+      dailyUse.local_full_text_search_extension?.passed_evidence_levels,
+    ) === JSON.stringify(["ci"]) &&
+    JSON.stringify(
+      dailyUse.local_full_text_search_extension?.required_evidence_levels,
+    ) === JSON.stringify(["ci"]) &&
+    dailyUse.local_full_text_search_extension?.report_schema_version === 1 &&
+    dailyUse.local_full_text_search_extension?.search_mode ===
+      "unicode-nfkc-casefold-substring-and" &&
+    dailyUse.local_full_text_search_extension?.query_mode === "explicit-only" &&
+    JSON.stringify(
+      dailyUse.local_full_text_search_extension?.record_status_scope,
+    ) === JSON.stringify(["active"]) &&
+    dailyUse.local_full_text_search_extension?.secret_records_allowed === false &&
+    dailyUse.local_full_text_search_extension?.maximum_scanned_records === 10000 &&
+    dailyUse.local_full_text_search_extension?.maximum_results === 100 &&
+    dailyUse.local_full_text_search_extension?.persistent_index === false &&
+    dailyUse.local_full_text_search_extension?.schema_migration === false &&
+    dailyUse.local_full_text_search_extension?.state_mutation === false &&
+    dailyUse.local_full_text_search_extension?.workspace_mutation === false &&
+    dailyUse.local_full_text_search_extension?.automatic_retrieval === false &&
+    dailyUse.local_full_text_search_extension?.semantic_retrieval === false &&
+    dailyUse.local_full_text_search_extension?.model_selected_context === false &&
+    dailyUse.local_full_text_search_extension?.context_injection === false &&
+    dailyUse.local_full_text_search_extension?.model_execution === false &&
+    dailyUse.local_full_text_search_extension?.process_launch === false &&
+    dailyUse.local_full_text_search_extension?.shell_execution === false &&
+    dailyUse.local_full_text_search_extension?.tool_execution === false &&
+    dailyUse.local_full_text_search_extension?.capability_execution === false &&
+    dailyUse.local_full_text_search_extension?.network_access === false &&
+    dailyUse.local_full_text_search_extension?.cloud_fallback === false &&
+    dailyUse.local_full_text_search_extension?.phase6_gate_complete === false &&
+    dailyUse.local_full_text_search_extension?.lite_v1_complete === false &&
+    dailyUse.local_full_text_search_extension?.stable_anti_lock_in_claim === false &&
+    dailyUse.local_full_text_search_extension?.implementation_doc ===
+      "docs/implementation/imp-073-explicit-local-full-text-search.md",
+  "IMP-073 local full-text search must remain explicit, read-only, local-only, and CI-only",
 );
 
 expect(
@@ -673,8 +715,12 @@ expect(
   "roadmap must record the IMP-072 doctor boundary",
 );
 expect(
-  roadmap.includes("the next bounded implementation receives IMP-073 only when a new implementation issue is opened"),
-  "roadmap must identify IMP-073 as the next unallocated implementation identifier",
+  roadmap.includes("### IMP-073 — Explicit local full-text state search"),
+  "roadmap must record the IMP-073 local-search boundary",
+);
+expect(
+  roadmap.includes("the next bounded implementation receives IMP-074 only when a new implementation issue is opened"),
+  "roadmap must identify IMP-074 as the next unallocated implementation identifier",
 );
 expect(
   roadmap.includes("docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json"),
