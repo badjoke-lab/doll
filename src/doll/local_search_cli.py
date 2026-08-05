@@ -8,7 +8,6 @@ from typing import Annotated
 
 import typer
 
-from doll.diagnostics import redact_exception_text
 from doll.local_search import LocalSearchError, LocalSearchReport, search_workspace
 from doll.state import StateError
 from doll.workspace import WorkspaceError
@@ -64,8 +63,7 @@ def search_command(
                 )
             )
         else:
-            detail = redact_exception_text(exc)
-            typer.echo(f"local search failed: {detail}", err=True)
+            typer.echo(f"local search failed: {type(exc).__name__}", err=True)
         raise typer.Exit(code=2) from exc
 
     if json_output:
