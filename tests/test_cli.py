@@ -27,6 +27,7 @@ def test_cli_help() -> None:
     assert "doctor" in result.stdout
     assert "search" in result.stdout
     assert "document" in result.stdout
+    assert "csv" in result.stdout
 
 
 def test_cli_version() -> None:

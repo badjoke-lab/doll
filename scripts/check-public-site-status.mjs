@@ -60,8 +60,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 75,
-  "project-status.json must mark Phase 6 in progress through IMP-074 with IMP-075 next",
+    status.phase?.next_implementation === 76,
+  "project-status.json must mark Phase 6 in progress through IMP-075 with IMP-076 next",
 );
 expect(
   status.model_runtime &&
@@ -70,13 +70,13 @@ expect(
   "project-status.json requires model_runtime.connected and model_runtime.message",
 );
 expect(
-  status.model_runtime.message.includes("through IMP-074") &&
-    status.model_runtime.message.includes("explicit local UTF-8 text and Markdown reading") &&
-    status.model_runtime.message.includes("one caller-selected regular non-symlink") &&
-    status.model_runtime.message.includes("external_content/untrusted_data") &&
-    status.model_runtime.message.includes("without copying, persistence, model execution") &&
+  status.model_runtime.message.includes("through IMP-075") &&
+    status.model_runtime.message.includes("explicit local CSV inspection and transformation") &&
+    status.model_runtime.message.includes("column selection, reordering, and header renaming") &&
+    status.model_runtime.message.includes("never evaluated or rewritten") &&
+    status.model_runtime.message.includes("no source overwrite, output file, persistence") &&
     status.model_runtime.message.includes("passes at both CI and real-machine evidence levels"),
-  "project-status.json must describe IMP-074 without broadening accepted real-machine evidence",
+  "project-status.json must describe IMP-075 without broadening accepted real-machine evidence",
 );
 expect(
   /^\d{4}-\d{2}-\d{2}$/.test(status.last_reviewed || ""),
@@ -447,6 +447,61 @@ expect(
 );
 
 expect(
+  dailyUse.local_csv_extension?.implementation === "IMP-075" &&
+    dailyUse.local_csv_extension?.status === "ci-pass" &&
+    JSON.stringify(dailyUse.local_csv_extension?.passed_evidence_levels) ===
+      JSON.stringify(["ci"]) &&
+    JSON.stringify(dailyUse.local_csv_extension?.required_evidence_levels) ===
+      JSON.stringify(["ci"]) &&
+    dailyUse.local_csv_extension?.report_schema_version === 1 &&
+    dailyUse.local_csv_extension?.selection_mode === "explicit-single-file" &&
+    JSON.stringify(dailyUse.local_csv_extension?.allowed_extensions) ===
+      JSON.stringify([".csv"]) &&
+    JSON.stringify(dailyUse.local_csv_extension?.delimiter_profiles) ===
+      JSON.stringify(["comma", "tab", "semicolon", "pipe"]) &&
+    dailyUse.local_csv_extension?.strict_utf8 === true &&
+    dailyUse.local_csv_extension?.utf8_bom_handling === "remove-and-report" &&
+    dailyUse.local_csv_extension?.maximum_source_bytes === 2097152 &&
+    dailyUse.local_csv_extension?.maximum_rows === 10000 &&
+    dailyUse.local_csv_extension?.maximum_columns === 200 &&
+    dailyUse.local_csv_extension?.maximum_cell_characters === 16384 &&
+    dailyUse.local_csv_extension?.maximum_aggregate_characters === 4000000 &&
+    dailyUse.local_csv_extension?.maximum_preview_rows === 100 &&
+    dailyUse.local_csv_extension?.symlinks_allowed === false &&
+    JSON.stringify(dailyUse.local_csv_extension?.transformation_operations) ===
+      JSON.stringify(["column_selection", "column_reordering", "header_renaming"]) &&
+    dailyUse.local_csv_extension?.type_inference === false &&
+    dailyUse.local_csv_extension?.formula_evaluation === false &&
+    dailyUse.local_csv_extension?.source_overwrite === false &&
+    dailyUse.local_csv_extension?.source_persisted === false &&
+    dailyUse.local_csv_extension?.output_persisted === false &&
+    dailyUse.local_csv_extension?.artifact_created === false &&
+    dailyUse.local_csv_extension?.index_created === false &&
+    dailyUse.local_csv_extension?.workspace_mutation === false &&
+    dailyUse.local_csv_extension?.state_mutation === false &&
+    dailyUse.local_csv_extension?.audit_mutation === false &&
+    dailyUse.local_csv_extension?.context_injection === false &&
+    dailyUse.local_csv_extension?.model_execution === false &&
+    dailyUse.local_csv_extension?.runtime_start === false &&
+    dailyUse.local_csv_extension?.process_launch === false &&
+    dailyUse.local_csv_extension?.shell_execution === false &&
+    dailyUse.local_csv_extension?.tool_execution === false &&
+    dailyUse.local_csv_extension?.capability_execution === false &&
+    dailyUse.local_csv_extension?.network_access === false &&
+    dailyUse.local_csv_extension?.cloud_fallback === false &&
+    dailyUse.local_csv_extension?.origin_class === "external_content" &&
+    dailyUse.local_csv_extension?.actor_type === "extractor" &&
+    dailyUse.local_csv_extension?.acquisition_method === "extraction" &&
+    dailyUse.local_csv_extension?.authority_class === "untrusted_data" &&
+    dailyUse.local_csv_extension?.phase6_gate_complete === false &&
+    dailyUse.local_csv_extension?.lite_v1_complete === false &&
+    dailyUse.local_csv_extension?.stable_anti_lock_in_claim === false &&
+    dailyUse.local_csv_extension?.implementation_doc ===
+      "docs/implementation/imp-075-explicit-local-csv.md",
+  "IMP-075 local CSV must remain explicit, non-persistent, non-evaluating, and CI-only",
+);
+
+expect(
   localWritingPrimary.test_id === "IMP-064-LOCAL-WRITING-PRIMARY" &&
     localWritingPrimary.result === "pass" &&
     localWritingPrimary.evidence_level === "real-machine" &&
@@ -771,8 +826,12 @@ expect(
   "roadmap must record the IMP-074 local-document boundary",
 );
 expect(
-  roadmap.includes("the next bounded implementation receives IMP-075 only when a new implementation issue is opened"),
-  "roadmap must identify IMP-075 as the next unallocated implementation identifier",
+  roadmap.includes("### IMP-075 — Explicit local CSV inspection and transformation"),
+  "roadmap must record the IMP-075 local-CSV boundary",
+);
+expect(
+  roadmap.includes("the next bounded implementation receives IMP-076 only when a new implementation issue is opened"),
+  "roadmap must identify IMP-076 as the next unallocated implementation identifier",
 );
 expect(
   roadmap.includes("docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json"),

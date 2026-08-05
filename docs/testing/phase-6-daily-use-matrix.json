@@ -376,5 +376,72 @@
     "lite_v1_complete": false,
     "stable_anti_lock_in_claim": false,
     "implementation_doc": "docs/implementation/imp-074-explicit-local-text-markdown-read.md"
+  },
+  "local_csv_extension": {
+    "implementation": "IMP-075",
+    "status": "ci-pass",
+    "description": "One caller-selected UTF-8 CSV file can be inspected or transformed by explicit column selection, reordering, and header renaming without formula evaluation, persistence, model execution, or network access.",
+    "pytest_files": [
+      "tests/test_imp_075_local_csv.py",
+      "tests/test_cli.py"
+    ],
+    "passed_evidence_levels": [
+      "ci"
+    ],
+    "required_evidence_levels": [
+      "ci"
+    ],
+    "report_schema_version": 1,
+    "selection_mode": "explicit-single-file",
+    "allowed_extensions": [
+      ".csv"
+    ],
+    "delimiter_profiles": [
+      "comma",
+      "tab",
+      "semicolon",
+      "pipe"
+    ],
+    "strict_utf8": true,
+    "utf8_bom_handling": "remove-and-report",
+    "maximum_source_bytes": 2097152,
+    "maximum_rows": 10000,
+    "maximum_columns": 200,
+    "maximum_cell_characters": 16384,
+    "maximum_aggregate_characters": 4000000,
+    "maximum_preview_rows": 100,
+    "symlinks_allowed": false,
+    "transformation_operations": [
+      "column_selection",
+      "column_reordering",
+      "header_renaming"
+    ],
+    "type_inference": false,
+    "formula_evaluation": false,
+    "source_overwrite": false,
+    "source_persisted": false,
+    "output_persisted": false,
+    "artifact_created": false,
+    "index_created": false,
+    "workspace_mutation": false,
+    "state_mutation": false,
+    "audit_mutation": false,
+    "context_injection": false,
+    "model_execution": false,
+    "runtime_start": false,
+    "process_launch": false,
+    "shell_execution": false,
+    "tool_execution": false,
+    "capability_execution": false,
+    "network_access": false,
+    "cloud_fallback": false,
+    "origin_class": "external_content",
+    "actor_type": "extractor",
+    "acquisition_method": "extraction",
+    "authority_class": "untrusted_data",
+    "phase6_gate_complete": false,
+    "lite_v1_complete": false,
+    "stable_anti_lock_in_claim": false,
+    "implementation_doc": "docs/implementation/imp-075-explicit-local-csv.md"
   }
 }
