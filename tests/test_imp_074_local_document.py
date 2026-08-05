@@ -116,7 +116,7 @@ def test_read_does_not_modify_initialized_workspace_or_state(tmp_path: Path) -> 
     with initialize_state_repository(initialized.root):
         pass
     source = tmp_path / "outside.md"
-    source.write_text("# External\n", encoding="utf-8")
+    source.write_bytes(b"# External\n")
     before = _workspace_snapshot(initialized.root)
 
     result = read_local_document(source)
@@ -202,7 +202,7 @@ def test_rejects_character_limit_and_handle_identity_failures(
 
 def test_cli_human_json_metadata_only_and_path_safe_failures(tmp_path: Path) -> None:
     source = tmp_path / "document.md"
-    source.write_text("# Heading\n本文", encoding="utf-8")
+    source.write_bytes("# Heading\n本文".encode())
 
     human = runner.invoke(app, ["document", "read", str(source)])
     machine = runner.invoke(app, ["document", "read", str(source), "--json"])
