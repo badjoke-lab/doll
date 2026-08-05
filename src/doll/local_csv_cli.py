@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Never
 
 import typer
 
@@ -136,7 +136,7 @@ def transform_csv_command(
         typer.echo(result.output_csv, nl=False)
 
 
-def _fail(exc: BaseException, *, json_output: bool) -> None:
+def _fail(exc: BaseException, *, json_output: bool) -> Never:
     if json_output:
         typer.echo(
             json.dumps(
