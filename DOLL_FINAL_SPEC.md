@@ -24,7 +24,7 @@
 - `docs/spec/08-acceptance-and-continuity-tests.md` — SHA-256 `1ae9b70cf28257b35a30238bdc46c2caea93dbd17fdf8b516ff708c9e208a698`
 - `docs/spec/08a-ai-environment-portability-acceptance.md` — SHA-256 `3a1876d8b506204254ccd54eb58cfabcf2ddc92e3edd446d90650b9ae22ff305`
 - `docs/spec/08b-project-continuity-acceptance.md` — SHA-256 `b58623f21bdd183a21e1904ebcec954ffb2b6976254b72ac52f13deae83306cc`
-- `docs/spec/09-development-roadmap.md` — SHA-256 `5b87854472253de5e3b0e605693a8ce86db2fdc1c4a3f183b34e8854adaa06b4`
+- `docs/spec/09-development-roadmap.md` — SHA-256 `b8fb4998b44d3b3e2613ab1b6254bd8c8c990e3fe0ae5ef55b88a2c2c59f8ed7`
 
 ---
 
@@ -8564,8 +8564,8 @@ Completed:
 - Phase 4B project continuity foundation;
 - Phase 5 local runtime and model integration;
 - IMP-001 through IMP-023;
-- IMP-030 through IMP-073;
-- local workspace, SQLite state, migrations, managed artifacts, canonical conversation and project state, State Package v2, backup and restore, the model-independent safety boundary, AI-environment portability, project continuity, runtime-independent adapter contracts, a loopback-only Ollama adapter, authoritative runtime and model manifests, explicit bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, and accepted primary Intel Mac offline continuity evidence through IMP-054, the offline Ollama API session source adapter through IMP-055, explicit loopback Ollama chat capture through IMP-056, the deterministic local-portability migration harness through IMP-057, the deterministic shutdown escape bundle through IMP-058, the bounded ChatGPT conversations.json source adapter through IMP-059, the bounded ChatGPT numbered conversation-member aggregation through IMP-060, bounded imported conversation context replay through IMP-061, the exact-commit imported-context replay real-machine acceptance harness through IMP-062, and the bounded local writing workflow through IMP-063, the accepted exact-commit primary Intel Mac local-writing evidence through IMP-064, explicit data-only confirmed-memory and ProjectRecord context selection through IMP-065, explicit data-only DecisionRecord context selection through IMP-066, explicit verified Resume Bundle writing context through IMP-067, explicit local translation through IMP-068, bounded local work-item proposals through IMP-069, explicit local portability review through IMP-070, and structured local runtime failure guidance through IMP-071, read-only local doctor diagnostics through IMP-072, and explicit local full-text state search through IMP-073.
+- IMP-030 through IMP-074;
+- local workspace, SQLite state, migrations, managed artifacts, canonical conversation and project state, State Package v2, backup and restore, the model-independent safety boundary, AI-environment portability, project continuity, runtime-independent adapter contracts, a loopback-only Ollama adapter, authoritative runtime and model manifests, explicit bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, and accepted primary Intel Mac offline continuity evidence through IMP-054, the offline Ollama API session source adapter through IMP-055, explicit loopback Ollama chat capture through IMP-056, the deterministic local-portability migration harness through IMP-057, the deterministic shutdown escape bundle through IMP-058, the bounded ChatGPT conversations.json source adapter through IMP-059, the bounded ChatGPT numbered conversation-member aggregation through IMP-060, bounded imported conversation context replay through IMP-061, the exact-commit imported-context replay real-machine acceptance harness through IMP-062, and the bounded local writing workflow through IMP-063, the accepted exact-commit primary Intel Mac local-writing evidence through IMP-064, explicit data-only confirmed-memory and ProjectRecord context selection through IMP-065, explicit data-only DecisionRecord context selection through IMP-066, explicit verified Resume Bundle writing context through IMP-067, explicit local translation through IMP-068, bounded local work-item proposals through IMP-069, explicit local portability review through IMP-070, and structured local runtime failure guidance through IMP-071, read-only local doctor diagnostics through IMP-072, explicit local full-text state search through IMP-073, and explicit local text and Markdown reading through IMP-074.
 
 Current implementation point:
 
@@ -8577,7 +8577,7 @@ Current implementation point:
 - Phase 5 passed its local-runtime continuity gate on 2026-06-28;
 - accepted real-machine evidence is bound to commit `1a5b66b2417d6f3e1eafcd14d2769e9c15d7f96c` on the primary Intel Mac with networking disabled;
 - IMP-048 through IMP-054 establish the runtime contract, loopback-only Ollama adapter, authoritative manifests and bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, State Package v2 transfer, backup restore, and accepted LRUN-001 through LRUN-012 evidence;
-- Phase 6 local AI portability and daily-use integration is in progress through IMP-073;
+- Phase 6 local AI portability and daily-use integration is in progress through IMP-074;
 - IMP-055 adds an offline source adapter for a documented caller-retained Ollama API session bundle, with exact JSON validation, content-free inventory, original-source hashing, deterministic normalization, explicit attachment-metadata loss, and reuse of the accepted generic staging and reviewed-publication boundary;
 - IMP-056 adds an explicit non-streaming text-only capture path through fixed IPv4 loopback, resolves one opaque already-installed local model through the filtered inventory, and returns an IMP-055-valid session bundle without reading application databases, logs, shell history, or unrelated sessions;
 - IMP-057 merged at commit `7b63ff512e20d1d6ae65da8938486b093e14b6c6` and composes explicit capture, reviewed canonical import, idempotency and conflict checks, generic export, State Package v2 transfer, backup restore, and alternate fresh-process inspection without the capture component;
@@ -8628,7 +8628,10 @@ Current implementation point:
 - IMP-073 adds one explicit deterministic read-only local full-text search over active non-secret authoritative record titles and textual metadata values, with bounded Unicode matching and no model, network, persistent index, or automatic context injection;
 - IMP-073 is assigned to Issue #229;
 - the IMP-073 local-search extension passes at the `ci` evidence level and does not broaden accepted real-machine evidence;
-- the next bounded implementation receives IMP-074 only when a new implementation issue is opened;
+- IMP-074 adds one explicit bounded read of a caller-selected regular non-symlink UTF-8 text or Markdown file, with deterministic BOM handling, exact hashes, fixed external-content origin, and no persistence, model execution, or network access;
+- IMP-074 is assigned to Issue #231;
+- the IMP-074 local-document extension passes at the `ci` evidence level and does not broaden accepted real-machine evidence;
+- the next bounded implementation receives IMP-075 only when a new implementation issue is opened;
 - later local migration, cloud, and tool work must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts.
 
 Implementation identifier policy:
@@ -9310,7 +9313,21 @@ Dedicated acceptance covers title and nested metadata matching, Japanese and Uni
 
 IMP-073 does not establish semantic search, embeddings, vector databases, automatic retrieval, model-selected context, persistent search indexes, inactive or secret search, artifact-byte extraction, attachments, PDF/OCR/CSV processing, Web search, performance acceptance, the release-candidate soak, complete Phase 6, Lite v1.0 completion, or stable general anti-lock-in.
 
-Subsequent daily-use work may expand approved local document and data adapters, accessibility presentation, Lite performance measurements, and soak testing.
+### IMP-074 — Explicit local text and Markdown reading
+
+Status: implemented with deterministic synthetic CI evidence.
+
+Implemented one `doll document read` command and one explicit local-document reader for a caller-selected `.txt`, `.md`, or `.markdown` file. The selected source must be a regular non-symlink file, remain within the one-megabyte byte limit, stay unchanged across path and open-handle verification, and decode as strict UTF-8 after deterministic optional BOM removal.
+
+Returned text preserves Unicode, Japanese content, and existing line endings after BOM handling. Content-free metadata records only document kind, media type, normalized extension, bounded byte, character, and line counts, exact source and returned-content SHA-256 values, BOM handling, and fixed instruction-origin classification. Native paths, filenames, usernames, hostnames, credentials, and secret values are omitted from metadata and failures.
+
+Every selected document remains `external_content`, `extractor`, `extraction`, and `untrusted_data`. Reading cannot grant task authority, approval, permission, confirmation, capability authority, credential scope, memory, fact, project, work-completion, procedure, checkpoint, or binding authority. IMP-074 does not inject content into a model context.
+
+The path performs no workspace, state, artifact, audit, index, memory, project, permission, confirmation, capability, model, runtime, process, shell, network, cloud, credential, or binding mutation. Dedicated acceptance covers exact text and Markdown reads, Unicode and CRLF preservation, BOM behavior, hashes, path-free output, workspace and state preservation, unsupported and binary-like input, missing files, directories, symlinks, size and character limits, changed files, CLI output, and help without initialization. Standard CI covers Ubuntu, macOS, and Windows.
+
+IMP-074 does not establish file copying, artifact publication, automatic discovery, directory traversal, globbing, file-content indexing, semantic retrieval, model-selected context, writing-workflow attachment integration, PDF/OCR/CSV processing, office or Web formats, encoding detection beyond UTF-8, Markdown rendering, model execution, tools, cloud services, performance acceptance, the release-candidate soak, complete Phase 6, Lite v1.0 completion, or stable general anti-lock-in.
+
+Subsequent daily-use work may expand approved local data adapters, attachment integration, accessibility presentation, Lite performance measurements, and soak testing.
 
 ## 13. Phase 7 — Optional cloud and multiple models
 
@@ -9433,7 +9450,7 @@ After IMP-067 explicit Resume Bundle writing context, the immediate order is:
 2. retain PORT-013 as `pass` within both the accepted IMP-057 migration boundary and the accepted IMP-061/IMP-062 imported-context replay extension, without broadening either result beyond its documented limits;
 3. retain the IMP-063 task-versus-material separation and the IMP-065/IMP-066/IMP-067 explicit-selection and extraction boundaries for all later document and retrieval context;
 4. retain the accepted IMP-063/IMP-064 local-writing result only within its documented real-machine draft/revise/summarize boundary, and treat IMP-065/IMP-066/IMP-067 as separate CI-only context extensions;
-5. retain the explicit-only, data-only, and no-automatic-authority boundaries through IMP-068 to IMP-073; semantic retrieval, attachments, target-specific export, cloud credentials, tools, and automatic cloud fallback remain separate work;
+5. retain the explicit-only, data-only, and no-automatic-authority boundaries through IMP-068 to IMP-074; semantic retrieval, attachment integration, target-specific export, cloud credentials, tools, and automatic cloud fallback remain separate work;
 6. continue Phase 6 daily-use integration and independently required portability work without weakening the Phase 3 safety boundary or Phase 4A/4B canonical state contracts;
 7. keep the complete Phase 6 gate and stable general anti-lock-in incomplete until their independent remaining requirements pass.
 
