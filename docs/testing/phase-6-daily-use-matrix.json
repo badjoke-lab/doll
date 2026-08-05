@@ -443,5 +443,67 @@
     "lite_v1_complete": false,
     "stable_anti_lock_in_claim": false,
     "implementation_doc": "docs/implementation/imp-075-explicit-local-csv.md"
+  },
+  "local_pdf_extension": {
+    "implementation": "IMP-076",
+    "status": "ci-pass",
+    "description": "One caller-selected PDF can be text-extracted through an optional in-process pypdf adapter with explicit page selection and no OCR, persistence, model execution, process launch, or network access.",
+    "pytest_files": [
+      "tests/test_imp_076_local_pdf.py",
+      "tests/test_cli.py"
+    ],
+    "passed_evidence_levels": [
+      "ci"
+    ],
+    "required_evidence_levels": [
+      "ci"
+    ],
+    "report_schema_version": 1,
+    "selection_mode": "explicit-single-file",
+    "allowed_extensions": [
+      ".pdf"
+    ],
+    "adapter_optional": true,
+    "adapter_id": "pypdf",
+    "adapter_version_range": ">=6.14.2,<7",
+    "adapter_loading": "invocation-only",
+    "strict_parsing": true,
+    "maximum_source_bytes": 8388608,
+    "maximum_document_pages": 200,
+    "maximum_selected_pages": 100,
+    "maximum_page_characters": 100000,
+    "maximum_aggregate_characters": 1000000,
+    "page_numbering": "one-based",
+    "caller_order_preserved": true,
+    "symlinks_allowed": false,
+    "encrypted_pdf_allowed": false,
+    "password_entry": false,
+    "ocr_used": false,
+    "image_extraction_used": false,
+    "source_overwrite": false,
+    "source_persisted": false,
+    "output_persisted": false,
+    "artifact_created": false,
+    "index_created": false,
+    "workspace_mutation": false,
+    "state_mutation": false,
+    "audit_mutation": false,
+    "context_injection": false,
+    "model_execution": false,
+    "runtime_start": false,
+    "process_launch": false,
+    "shell_execution": false,
+    "tool_execution": false,
+    "capability_execution": false,
+    "network_access": false,
+    "cloud_fallback": false,
+    "origin_class": "external_content",
+    "actor_type": "extractor",
+    "acquisition_method": "extraction",
+    "authority_class": "untrusted_data",
+    "phase6_gate_complete": false,
+    "lite_v1_complete": false,
+    "stable_anti_lock_in_claim": false,
+    "implementation_doc": "docs/implementation/imp-076-optional-local-pdf-text-extraction.md"
   }
 }

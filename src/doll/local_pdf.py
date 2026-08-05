@@ -170,9 +170,7 @@ class LocalPdfExtraction:
 
     @property
     def empty_text_page_numbers(self) -> tuple[int, ...]:
-        return tuple(
-            page.page_number for page in self.pages if not page.has_extractable_text
-        )
+        return tuple(page.page_number for page in self.pages if not page.has_extractable_text)
 
     def to_dict(self, *, include_text: bool = True) -> dict[str, object]:
         return {
@@ -228,11 +226,14 @@ def extract_local_pdf_text(
 
     try:
         encrypted = bool(reader.is_encrypted)
+    except Exception as exc:
+        raise LocalPdfValidationError("local PDF encryption state is unavailable") from exc
+    if encrypted:
+        raise LocalPdfValidationError("encrypted local PDFs are not supported")
+    try:
         document_page_count = len(reader.pages)
     except Exception as exc:
         raise LocalPdfValidationError("local PDF page inventory is unavailable") from exc
-    if encrypted:
-        raise LocalPdfValidationError("encrypted local PDFs are not supported")
     if document_page_count < 1:
         raise LocalPdfValidationError("local PDF must contain at least one page")
     if document_page_count > _MAX_DOCUMENT_PAGES:

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib
 import json
 from dataclasses import dataclass
 from pathlib import Path
@@ -23,7 +24,6 @@ from doll.local_pdf import (
     LocalPdfAdapterUnavailableError,
     LocalPdfReadError,
     LocalPdfValidationError,
-    PdfTextAdapter,
     PypdfTextAdapter,
     extract_local_pdf_text,
 )
@@ -114,9 +114,7 @@ def _pdf_bytes(page_texts: tuple[str | None, ...]) -> bytes:
         else:
             stream = b"BT\n/F1 12 Tf\n72 720 Td\n(" + _escape_pdf_text(text) + b") Tj\nET"
         object_bodies.append(
-            f"<< /Length {len(stream)} >>\nstream\n".encode()
-            + stream
-            + b"\nendstream"
+            f"<< /Length {len(stream)} >>\nstream\n".encode() + stream + b"\nendstream"
         )
     object_bodies.append(
         b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>"
@@ -208,20 +206,21 @@ def test_optional_adapter_absence_is_clean_and_cli_help_does_not_load_it(
     monkeypatch: MonkeyPatch,
 ) -> None:
     source = _source(tmp_path)
-    original_import = local_pdf_module.importlib.import_module
+    original_import = importlib.import_module
 
     def missing(name: str) -> object:
         if name == "pypdf":
             raise ModuleNotFoundError(name)
         return original_import(name)
 
-    monkeypatch.setattr(local_pdf_module.importlib, "import_module", missing)
+    monkeypatch.setattr(importlib, "import_module", missing)
 
     help_result = runner.invoke(app, ["pdf", "--help"])
     command_result = runner.invoke(app, ["pdf", "extract", str(source), "--json"])
 
     assert help_result.exit_code == 0
-    assert "optional adapter" in help_result.stdout
+    assert "Extract text" in help_result.stdout
+    assert "PDF" in help_result.stdout
     assert command_result.exit_code == 2
     payload = json.loads(command_result.stdout)
     assert payload["error_class"] == "LocalPdfAdapterUnavailableError"
@@ -233,7 +232,7 @@ def test_pypdf_adapter_load_rejects_missing_version_or_reader(monkeypatch: Monke
         PdfReader = object
 
     monkeypatch.setattr(
-        local_pdf_module.importlib,
+        importlib,
         "import_module",
         lambda name: MissingVersion(),
     )
@@ -244,7 +243,7 @@ def test_pypdf_adapter_load_rejects_missing_version_or_reader(monkeypatch: Monke
         __version__ = "6.7.0"
 
     monkeypatch.setattr(
-        local_pdf_module.importlib,
+        importlib,
         "import_module",
         lambda name: MissingReader(),
     )
@@ -296,7 +295,6 @@ def test_rejects_adapter_and_page_extraction_failures(tmp_path: Path) -> None:
     class FailingPageAdapter(_FakeAdapter):
         def open_reader(self, source_bytes: bytes) -> _FakeReader:
             del source_bytes
-            reader = _FakeReader(("text",))
             reader_pages = (_FakePage("", failure=True),)
 
             class Reader:
