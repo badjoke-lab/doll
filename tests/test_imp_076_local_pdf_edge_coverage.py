@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import importlib
+import os
 from pathlib import Path
+from typing import cast
 
 import pytest
 from pytest import MonkeyPatch
@@ -13,6 +15,7 @@ from doll.local_pdf import (
     LocalPdfAdapterUnavailableError,
     LocalPdfReadError,
     LocalPdfValidationError,
+    PdfTextAdapter,
     PypdfTextAdapter,
     extract_local_pdf_text,
 )
@@ -70,16 +73,17 @@ def test_pypdf_open_reader_reports_dependency_removed_after_load(
 
 
 def test_adapter_local_pdf_error_is_preserved(tmp_path: Path) -> None:
+    adapter = cast(PdfTextAdapter, _LocalErrorAdapter())
+
     with pytest.raises(LocalPdfReadError, match="synthetic adapter read failure"):
-        extract_local_pdf_text(_source(tmp_path), adapter=_LocalErrorAdapter())
+        extract_local_pdf_text(_source(tmp_path), adapter=adapter)
 
 
 def test_encryption_state_failure_precedes_page_inventory(tmp_path: Path) -> None:
+    adapter = cast(PdfTextAdapter, _EncryptionStateFailureAdapter())
+
     with pytest.raises(LocalPdfValidationError, match="encryption state"):
-        extract_local_pdf_text(
-            _source(tmp_path),
-            adapter=_EncryptionStateFailureAdapter(),
-        )
+        extract_local_pdf_text(_source(tmp_path), adapter=adapter)
 
 
 def test_file_handle_state_verification_failure_is_fail_closed(
@@ -90,10 +94,11 @@ def test_file_handle_state_verification_failure_is_fail_closed(
         del file_descriptor
         raise OSError("synthetic fstat failure")
 
-    monkeypatch.setattr(local_pdf_module.os, "fstat", fail_fstat)
+    monkeypatch.setattr(os, "fstat", fail_fstat)
+    adapter = cast(PdfTextAdapter, _LocalErrorAdapter())
 
     with pytest.raises(LocalPdfReadError, match="state could not be verified"):
-        extract_local_pdf_text(_source(tmp_path), adapter=_LocalErrorAdapter())
+        extract_local_pdf_text(_source(tmp_path), adapter=adapter)
 
 
 def test_identity_change_before_read_is_fail_closed(
@@ -101,6 +106,7 @@ def test_identity_change_before_read_is_fail_closed(
     monkeypatch: MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(local_pdf_module, "_same_identity", lambda left, right: False)
+    adapter = cast(PdfTextAdapter, _LocalErrorAdapter())
 
     with pytest.raises(LocalPdfReadError, match="changed before reading"):
-        extract_local_pdf_text(_source(tmp_path), adapter=_LocalErrorAdapter())
+        extract_local_pdf_text(_source(tmp_path), adapter=adapter)
