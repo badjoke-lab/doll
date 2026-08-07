@@ -15,6 +15,7 @@ from doll.diagnostics import redact_exception_text
 from doll.doctor_cli import doctor_command
 from doll.local_csv_cli import csv_app
 from doll.local_document_cli import document_app
+from doll.local_pdf_cli import pdf_app
 from doll.local_search_cli import search_command
 from doll.memory_cli import memory_app
 from doll.project_cli import decision_app, project_app
@@ -55,6 +56,7 @@ app.add_typer(state_package_app, name="state-package")
 app.add_typer(backup_app, name="backup")
 app.add_typer(csv_app, name="csv")
 app.add_typer(document_app, name="document")
+app.add_typer(pdf_app, name="pdf")
 app.command("doctor")(doctor_command)
 app.command("search")(search_command)
 

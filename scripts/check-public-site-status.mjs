@@ -60,8 +60,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 76,
-  "project-status.json must mark Phase 6 in progress through IMP-075 with IMP-076 next",
+    status.phase?.next_implementation === 77,
+  "project-status.json must mark Phase 6 in progress through IMP-076 with IMP-077 next",
 );
 expect(
   status.model_runtime &&
@@ -70,13 +70,13 @@ expect(
   "project-status.json requires model_runtime.connected and model_runtime.message",
 );
 expect(
-  status.model_runtime.message.includes("through IMP-075") &&
-    status.model_runtime.message.includes("explicit local CSV inspection and transformation") &&
-    status.model_runtime.message.includes("column selection, reordering, and header renaming") &&
-    status.model_runtime.message.includes("never evaluated or rewritten") &&
+  status.model_runtime.message.includes("through IMP-076") &&
+    status.model_runtime.message.includes("optional local PDF text extraction") &&
+    status.model_runtime.message.includes("invocation-only in-process pypdf adapter") &&
+    status.model_runtime.message.includes("reported without OCR") &&
     status.model_runtime.message.includes("no source overwrite, output file, persistence") &&
     status.model_runtime.message.includes("passes at both CI and real-machine evidence levels"),
-  "project-status.json must describe IMP-075 without broadening accepted real-machine evidence",
+  "project-status.json must describe IMP-076 without broadening accepted real-machine evidence",
 );
 expect(
   /^\d{4}-\d{2}-\d{2}$/.test(status.last_reviewed || ""),
@@ -502,6 +502,63 @@ expect(
 );
 
 expect(
+  dailyUse.local_pdf_extension?.implementation === "IMP-076" &&
+    dailyUse.local_pdf_extension?.status === "ci-pass" &&
+    JSON.stringify(dailyUse.local_pdf_extension?.passed_evidence_levels) ===
+      JSON.stringify(["ci"]) &&
+    JSON.stringify(dailyUse.local_pdf_extension?.required_evidence_levels) ===
+      JSON.stringify(["ci"]) &&
+    dailyUse.local_pdf_extension?.report_schema_version === 1 &&
+    dailyUse.local_pdf_extension?.selection_mode === "explicit-single-file" &&
+    JSON.stringify(dailyUse.local_pdf_extension?.allowed_extensions) ===
+      JSON.stringify([".pdf"]) &&
+    dailyUse.local_pdf_extension?.adapter_optional === true &&
+    dailyUse.local_pdf_extension?.adapter_id === "pypdf" &&
+    dailyUse.local_pdf_extension?.adapter_version_range === ">=6.14.2,<7" &&
+    dailyUse.local_pdf_extension?.adapter_loading === "invocation-only" &&
+    dailyUse.local_pdf_extension?.strict_parsing === true &&
+    dailyUse.local_pdf_extension?.maximum_source_bytes === 8388608 &&
+    dailyUse.local_pdf_extension?.maximum_document_pages === 200 &&
+    dailyUse.local_pdf_extension?.maximum_selected_pages === 100 &&
+    dailyUse.local_pdf_extension?.maximum_page_characters === 100000 &&
+    dailyUse.local_pdf_extension?.maximum_aggregate_characters === 1000000 &&
+    dailyUse.local_pdf_extension?.page_numbering === "one-based" &&
+    dailyUse.local_pdf_extension?.caller_order_preserved === true &&
+    dailyUse.local_pdf_extension?.symlinks_allowed === false &&
+    dailyUse.local_pdf_extension?.encrypted_pdf_allowed === false &&
+    dailyUse.local_pdf_extension?.password_entry === false &&
+    dailyUse.local_pdf_extension?.ocr_used === false &&
+    dailyUse.local_pdf_extension?.image_extraction_used === false &&
+    dailyUse.local_pdf_extension?.source_overwrite === false &&
+    dailyUse.local_pdf_extension?.source_persisted === false &&
+    dailyUse.local_pdf_extension?.output_persisted === false &&
+    dailyUse.local_pdf_extension?.artifact_created === false &&
+    dailyUse.local_pdf_extension?.index_created === false &&
+    dailyUse.local_pdf_extension?.workspace_mutation === false &&
+    dailyUse.local_pdf_extension?.state_mutation === false &&
+    dailyUse.local_pdf_extension?.audit_mutation === false &&
+    dailyUse.local_pdf_extension?.context_injection === false &&
+    dailyUse.local_pdf_extension?.model_execution === false &&
+    dailyUse.local_pdf_extension?.runtime_start === false &&
+    dailyUse.local_pdf_extension?.process_launch === false &&
+    dailyUse.local_pdf_extension?.shell_execution === false &&
+    dailyUse.local_pdf_extension?.tool_execution === false &&
+    dailyUse.local_pdf_extension?.capability_execution === false &&
+    dailyUse.local_pdf_extension?.network_access === false &&
+    dailyUse.local_pdf_extension?.cloud_fallback === false &&
+    dailyUse.local_pdf_extension?.origin_class === "external_content" &&
+    dailyUse.local_pdf_extension?.actor_type === "extractor" &&
+    dailyUse.local_pdf_extension?.acquisition_method === "extraction" &&
+    dailyUse.local_pdf_extension?.authority_class === "untrusted_data" &&
+    dailyUse.local_pdf_extension?.phase6_gate_complete === false &&
+    dailyUse.local_pdf_extension?.lite_v1_complete === false &&
+    dailyUse.local_pdf_extension?.stable_anti_lock_in_claim === false &&
+    dailyUse.local_pdf_extension?.implementation_doc ===
+      "docs/implementation/imp-076-optional-local-pdf-text-extraction.md",
+  "IMP-076 local PDF extraction must remain optional, untrusted, local-only, and CI-only",
+);
+
+expect(
   localWritingPrimary.test_id === "IMP-064-LOCAL-WRITING-PRIMARY" &&
     localWritingPrimary.result === "pass" &&
     localWritingPrimary.evidence_level === "real-machine" &&
@@ -830,8 +887,12 @@ expect(
   "roadmap must record the IMP-075 local-CSV boundary",
 );
 expect(
-  roadmap.includes("the next bounded implementation receives IMP-076 only when a new implementation issue is opened"),
-  "roadmap must identify IMP-076 as the next unallocated implementation identifier",
+  roadmap.includes("### IMP-076 — Optional local PDF text extraction adapter"),
+  "roadmap must record the IMP-076 local-PDF boundary",
+);
+expect(
+  roadmap.includes("the next bounded implementation receives IMP-077 only when a new implementation issue is opened"),
+  "roadmap must identify IMP-077 as the next unallocated implementation identifier",
 );
 expect(
   roadmap.includes("docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json"),
