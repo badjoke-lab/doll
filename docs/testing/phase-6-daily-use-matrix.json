@@ -505,5 +505,70 @@
     "lite_v1_complete": false,
     "stable_anti_lock_in_claim": false,
     "implementation_doc": "docs/implementation/imp-076-optional-local-pdf-text-extraction.md"
+  },
+  "local_ocr_extension": {
+    "implementation": "IMP-077",
+    "status": "ci-pass",
+    "description": "One caller-selected PNG or JPEG image can be OCR-recognized through an optional invocation-only local adapter after bounded standard-library source validation, without persistence, process launch, network access, or automatic context injection.",
+    "pytest_files": [
+      "tests/test_imp_077_local_ocr.py",
+      "tests/test_imp_077_local_ocr_edge_coverage.py",
+      "tests/test_imp_077_real_macos_ocr.py"
+    ],
+    "passed_evidence_levels": [
+      "ci"
+    ],
+    "required_evidence_levels": [
+      "ci"
+    ],
+    "report_schema_version": 1,
+    "selection_mode": "explicit-single-file",
+    "allowed_extensions": [
+      ".png",
+      ".jpg",
+      ".jpeg"
+    ],
+    "adapter_optional": true,
+    "adapter_id": "ocrmac-vision",
+    "adapter_version": "1.0.1",
+    "adapter_loading": "invocation-only",
+    "adapter_platform": "darwin",
+    "real_adapter_hosted_ci": true,
+    "primary_intel_mac_real_machine_evidence": false,
+    "maximum_source_bytes": 8388608,
+    "maximum_image_width": 10000,
+    "maximum_image_height": 10000,
+    "maximum_image_pixels": 25000000,
+    "maximum_recognized_lines": 1000,
+    "maximum_line_characters": 20000,
+    "maximum_aggregate_characters": 200000,
+    "animated_input_allowed": false,
+    "symlinks_allowed": false,
+    "source_overwrite": false,
+    "source_persisted": false,
+    "output_persisted": false,
+    "artifact_created": false,
+    "index_created": false,
+    "workspace_mutation": false,
+    "state_mutation": false,
+    "audit_mutation": false,
+    "context_injection": false,
+    "model_execution": false,
+    "runtime_start": false,
+    "process_launch": false,
+    "shell_execution": false,
+    "tool_execution": false,
+    "capability_execution": false,
+    "network_access": false,
+    "cloud_access": false,
+    "automatic_download": false,
+    "origin_class": "external_content",
+    "actor_type": "extractor",
+    "acquisition_method": "ocr",
+    "authority_class": "untrusted_data",
+    "phase6_gate_complete": false,
+    "lite_v1_complete": false,
+    "stable_anti_lock_in_claim": false,
+    "implementation_doc": "docs/implementation/imp-077-optional-local-image-ocr.md"
   }
 }

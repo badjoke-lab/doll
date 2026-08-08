@@ -60,8 +60,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 77,
-  "project-status.json must mark Phase 6 in progress through IMP-076 with IMP-077 next",
+    status.phase?.next_implementation === 78,
+  "project-status.json must mark Phase 6 in progress through IMP-077 with IMP-078 next",
 );
 expect(
   status.model_runtime &&
@@ -70,13 +70,15 @@ expect(
   "project-status.json requires model_runtime.connected and model_runtime.message",
 );
 expect(
-  status.model_runtime.message.includes("through IMP-076") &&
+  status.model_runtime.message.includes("through IMP-077") &&
     status.model_runtime.message.includes("optional local PDF text extraction") &&
+    status.model_runtime.message.includes("optional local image OCR") &&
+    status.model_runtime.message.includes("macOS Vision") &&
     status.model_runtime.message.includes("invocation-only in-process pypdf adapter") &&
     status.model_runtime.message.includes("reported without OCR") &&
     status.model_runtime.message.includes("no source overwrite, output file, persistence") &&
     status.model_runtime.message.includes("passes at both CI and real-machine evidence levels"),
-  "project-status.json must describe IMP-076 without broadening accepted real-machine evidence",
+  "project-status.json must describe IMP-077 without broadening accepted real-machine evidence",
 );
 expect(
   /^\d{4}-\d{2}-\d{2}$/.test(status.last_reviewed || ""),
