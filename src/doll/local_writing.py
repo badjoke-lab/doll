@@ -148,9 +148,7 @@ class LocalWritingWorkflowService:
             source_text=source_text,
             source_document_path=source_document_path,
         )
-        inline_source = (
-            _source_text(source_text) if source_kind == "inline" else None
-        )
+        inline_source = _source_text(source_text) if source_kind == "inline" else None
         safe_target_language = _target_language_for_mode(safe_mode, target_language)
         safe_operation_id = _operation_id(operation_id)
 
@@ -369,9 +367,7 @@ def _source_kind_for_mode(
         )
     if has_document:
         if not isinstance(source_document_path, Path):
-            raise LocalWritingWorkflowValidationError(
-                "writing source document path is invalid"
-            )
+            raise LocalWritingWorkflowValidationError("writing source document path is invalid")
         return "document"
     return "inline"
 
@@ -420,9 +416,7 @@ def _prepare_source_after_preflight(
         document = read_local_document(source_document_path)
         safe_text = _source_text(document.text)
     except (LocalDocumentError, LocalWritingWorkflowValidationError) as exc:
-        raise LocalWritingWorkflowValidationError(
-            "writing source document is invalid"
-        ) from exc
+        raise LocalWritingWorkflowValidationError("writing source document is invalid") from exc
     return _PreparedWritingSource(kind="document", text=safe_text, document=document)
 
 
@@ -550,9 +544,7 @@ def _result(
             document.source_byte_count if document is not None else 0
         ),
         source_document_source_sha256=document.source_sha256 if document is not None else None,
-        source_document_content_sha256=(
-            document.content_sha256 if document is not None else None
-        ),
+        source_document_content_sha256=(document.content_sha256 if document is not None else None),
         source_document_utf8_bom_removed=(
             document.utf8_bom_removed if document is not None else False
         ),

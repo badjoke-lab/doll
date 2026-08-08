@@ -189,9 +189,10 @@ def test_markdown_attachment_runs_as_untrusted_source_with_path_free_metadata(
         assert result.source_document_kind == "markdown"
         assert result.source_document_source_byte_count == len(source_bytes)
         assert result.source_document_source_sha256 == hashlib.sha256(source_bytes).hexdigest()
-        assert result.source_document_content_sha256 == hashlib.sha256(
-            expected_text.encode("utf-8")
-        ).hexdigest()
+        assert (
+            result.source_document_content_sha256
+            == hashlib.sha256(expected_text.encode("utf-8")).hexdigest()
+        )
         assert result.source_document_utf8_bom_removed is True
 
         prompt = json.loads(adapter.prompts[0])
