@@ -11,7 +11,10 @@ import typer
 from doll.local_ocr import LocalOcrError, extract_local_image_ocr
 
 ocr_app = typer.Typer(
-    help="Extract text from one explicitly selected local raster image through an optional OCR adapter.",
+    help=(
+        "Extract text from one explicitly selected local raster image "
+        "through an optional OCR adapter."
+    ),
     no_args_is_help=True,
 )
 

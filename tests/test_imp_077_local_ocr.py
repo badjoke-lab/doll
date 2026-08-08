@@ -322,26 +322,21 @@ def test_ocrmac_adapter_load_and_recognize_contract(monkeypatch: MonkeyPatch) ->
     image_module = ModuleType("PIL.Image")
 
     class FakeImage:
-        def __init__(self) -> None:
-            self.loaded = False
-            self.closed = False
-
         def load(self) -> object:
-            self.loaded = True
             return None
 
         def copy(self) -> object:
             return object()
 
         def close(self) -> None:
-            self.closed = True
+            return None
 
     class FakeEngine:
         def recognize(self) -> tuple[object, ...]:
             return (("Alpha", 0.9, (0, 0, 1, 1)), ("日本語", 0.8, (0, 0, 1, 1)))
 
-    setattr(image_module, "open", lambda source: FakeImage())
-    setattr(ocr_module, "OCR", lambda image, **kwargs: FakeEngine())
+    image_module.__dict__["open"] = lambda source: FakeImage()
+    ocr_module.__dict__["OCR"] = lambda image, **kwargs: FakeEngine()
 
     def fake_import(name: str) -> ModuleType:
         if name == "ocrmac.ocrmac":
@@ -388,7 +383,7 @@ def test_ocrmac_adapter_rejects_missing_callables_and_bad_annotations(
         def close(self) -> None:
             return None
 
-    setattr(image_module, "open", lambda source: FakeImage())
+    image_module.__dict__["open"] = lambda source: FakeImage()
     with pytest.raises(LocalOcrAdapterUnavailableError, match="OCR class"):
         adapter.recognize(_png_bytes())
 
@@ -396,7 +391,7 @@ def test_ocrmac_adapter_rejects_missing_callables_and_bad_annotations(
         def recognize(self) -> object:
             return "bad"
 
-    setattr(ocr_module, "OCR", lambda image, **kwargs: BadEngine())
+    ocr_module.__dict__["OCR"] = lambda image, **kwargs: BadEngine()
     with pytest.raises(LocalOcrValidationError, match="annotations"):
         adapter.recognize(_png_bytes())
 
@@ -404,7 +399,7 @@ def test_ocrmac_adapter_rejects_missing_callables_and_bad_annotations(
         def recognize(self) -> tuple[object, ...]:
             return ((123, 0.9),)
 
-    setattr(ocr_module, "OCR", lambda image, **kwargs: BadAnnotationEngine())
+    ocr_module.__dict__["OCR"] = lambda image, **kwargs: BadAnnotationEngine()
     with pytest.raises(LocalOcrValidationError, match="annotations"):
         adapter.recognize(_png_bytes())
 

@@ -383,7 +383,13 @@ def _inspect_png(raw: bytes) -> _ImageInfo:
         elif chunk_type == b"IDAT":
             saw_idat = True
         elif chunk_type == b"IEND":
-            if length != 0 or crc_end != len(raw) or width is None or height is None or not saw_idat:
+            if (
+                length != 0
+                or crc_end != len(raw)
+                or width is None
+                or height is None
+                or not saw_idat
+            ):
                 raise LocalOcrValidationError("local OCR PNG structure is invalid")
             return _ImageInfo(
                 image_format="png",
