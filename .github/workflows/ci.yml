@@ -8,16 +8,14 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   quality:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out implementation branch
+      - name: Check out repository
         uses: actions/checkout@v4
-        with:
-          ref: imp-077-optional-local-image-ocr
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -29,21 +27,8 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Generate dependency lock
-        run: uv lock
-
-      - name: Commit dependency lock if changed
-        shell: bash
-        run: |
-          if git diff --quiet -- uv.lock; then
-            echo "uv.lock already current"
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add uv.lock
-          git commit -m "Update IMP-077 dependency lock"
-          git push origin HEAD:imp-077-optional-local-image-ocr
+      - name: Verify dependency lock
+        run: uv lock --check
 
       - name: Install project
         run: uv sync --dev --locked
