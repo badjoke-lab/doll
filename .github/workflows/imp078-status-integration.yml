@@ -1,14 +1,16 @@
-name: CI
+name: IMP-078 status integration
 
 on:
-  pull_request:
-  workflow_dispatch:
+  push:
+    branches:
+      - imp-078-text-markdown-writing-attachments
 
 permissions:
   contents: write
 
 jobs:
   integrate:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Check out implementation branch
@@ -80,10 +82,7 @@ IMP-078 does not establish PDF, OCR/image, or CSV writing attachments, multiple 
               "implementation": "IMP-078",
               "status": "ci-pass",
               "description": "One explicit local UTF-8 text or Markdown document can replace inline primary source text for revise, summarize, or translate while remaining data-only untrusted writing material.",
-              "pytest_files": [
-                  "tests/test_imp_078_text_markdown_writing_attachments.py",
-                  "tests/test_local_writing_workflow.py"
-              ],
+              "pytest_files": ["tests/test_imp_078_text_markdown_writing_attachments.py", "tests/test_local_writing_workflow.py"],
               "passed_evidence_levels": ["ci"],
               "required_evidence_levels": ["ci"],
               "selection_mode": "explicit-single-file",
@@ -134,38 +133,14 @@ IMP-078 does not establish PDF, OCR/image, or CSV writing attachments, multiple 
 
           checker_path = Path("scripts/check-public-site-status.mjs")
           checker = checker_path.read_text(encoding="utf-8")
-          checker = once(
-              checker,
-              "status.phase?.next_implementation === 78,\n  \"project-status.json must mark Phase 6 in progress through IMP-077 with IMP-078 next\"",
-              "status.phase?.next_implementation === 79,\n  \"project-status.json must mark Phase 6 in progress through IMP-078 with IMP-079 next\"",
-          )
-          checker = once(
-              checker,
-              'status.model_runtime.message.includes("through IMP-077") &&',
-              'status.model_runtime.message.includes("through IMP-078") &&',
-          )
-          checker = once(
-              checker,
-              'status.model_runtime.message.includes("optional local image OCR") &&',
-              'status.model_runtime.message.includes("optional local image OCR") &&\n    status.model_runtime.message.includes("text/Markdown writing attachment integration") &&',
-          )
-          checker = once(
-              checker,
-              '"project-status.json must describe IMP-077 without broadening accepted real-machine evidence"',
-              '"project-status.json must describe IMP-078 without broadening accepted real-machine evidence"',
-          )
-          checker = once(
-              checker,
-              'roadmap.includes("the next bounded implementation receives IMP-078 only when a new implementation issue is opened"),',
-              'roadmap.includes("### IMP-078 — Explicit text and Markdown writing attachments") &&\n    roadmap.includes("the next bounded implementation receives IMP-079 only when a new implementation issue is opened"),',
-          )
-          checker = once(
-              checker,
-              '"roadmap must record IMP-077 and identify IMP-078 as the next unallocated implementation identifier"',
-              '"roadmap must record IMP-078 and identify IMP-079 as the next unallocated implementation identifier"',
-          )
-          marker = '''  "IMP-077 local image OCR must remain optional, bounded, untrusted, local-only, and CI-only",\n);\n'''
-          attachment_check = '''\n\nexpect(\n  dailyUse.text_markdown_writing_attachment_extension?.implementation === "IMP-078" &&\n    dailyUse.text_markdown_writing_attachment_extension?.status === "ci-pass" &&\n    JSON.stringify(dailyUse.text_markdown_writing_attachment_extension?.passed_evidence_levels) ===\n      JSON.stringify(["ci"]) &&\n    JSON.stringify(dailyUse.text_markdown_writing_attachment_extension?.required_evidence_levels) ===\n      JSON.stringify(["ci"]) &&\n    dailyUse.text_markdown_writing_attachment_extension?.selection_mode ===\n      "explicit-single-file" &&\n    JSON.stringify(dailyUse.text_markdown_writing_attachment_extension?.allowed_extensions) ===\n      JSON.stringify([".txt", ".md", ".markdown"]) &&\n    JSON.stringify(dailyUse.text_markdown_writing_attachment_extension?.supported_modes) ===\n      JSON.stringify(["revise", "summarize", "translate"]) &&\n    dailyUse.text_markdown_writing_attachment_extension?.draft_primary_source_allowed === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.exactly_one_primary_source === true &&\n    JSON.stringify(dailyUse.text_markdown_writing_attachment_extension?.primary_source_forms) ===\n      JSON.stringify(["inline", "document"]) &&\n    dailyUse.text_markdown_writing_attachment_extension?.reader_implementation === "IMP-074" &&\n    dailyUse.text_markdown_writing_attachment_extension?.maximum_document_source_bytes === 1048576 &&\n    dailyUse.text_markdown_writing_attachment_extension?.maximum_writing_source_characters === 16000 &&\n    dailyUse.text_markdown_writing_attachment_extension?.strict_utf8 === true &&\n    dailyUse.text_markdown_writing_attachment_extension?.utf8_bom_handling ===\n      "remove-and-report" &&\n    dailyUse.text_markdown_writing_attachment_extension?.symlinks_allowed === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.automatic_file_discovery === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.directory_traversal === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.globbing === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.persistent_document_record === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.source_record_created === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.artifact_created === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.persistent_index === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.semantic_retrieval === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.model_selected_context === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.network_access === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.cloud_access === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.process_launch === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.shell_execution === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.capability_execution === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.origin_class === "external_content" &&\n    dailyUse.text_markdown_writing_attachment_extension?.actor_type === "extractor" &&\n    dailyUse.text_markdown_writing_attachment_extension?.acquisition_method === "extraction" &&\n    dailyUse.text_markdown_writing_attachment_extension?.authority_class === "untrusted_data" &&\n    dailyUse.text_markdown_writing_attachment_extension?.phase6_gate_complete === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.lite_v1_complete === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.stable_anti_lock_in_claim === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.implementation_doc ===\n      "docs/implementation/imp-078-text-markdown-writing-attachments.md",\n  "IMP-078 text/Markdown writing attachments must remain explicit, untrusted, local-only, and CI-only",\n);\n'''
+          checker = once(checker, "status.phase?.next_implementation === 78,\n  \"project-status.json must mark Phase 6 in progress through IMP-077 with IMP-078 next\"", "status.phase?.next_implementation === 79,\n  \"project-status.json must mark Phase 6 in progress through IMP-078 with IMP-079 next\"")
+          checker = once(checker, 'status.model_runtime.message.includes("through IMP-077") &&', 'status.model_runtime.message.includes("through IMP-078") &&')
+          checker = once(checker, 'status.model_runtime.message.includes("optional local image OCR") &&', 'status.model_runtime.message.includes("optional local image OCR") &&\n    status.model_runtime.message.includes("text/Markdown writing attachment integration") &&')
+          checker = once(checker, '"project-status.json must describe IMP-077 without broadening accepted real-machine evidence"', '"project-status.json must describe IMP-078 without broadening accepted real-machine evidence"')
+          checker = once(checker, 'roadmap.includes("the next bounded implementation receives IMP-078 only when a new implementation issue is opened"),', 'roadmap.includes("### IMP-078 — Explicit text and Markdown writing attachments") &&\n    roadmap.includes("the next bounded implementation receives IMP-079 only when a new implementation issue is opened"),')
+          checker = once(checker, '"roadmap must record IMP-077 and identify IMP-078 as the next unallocated implementation identifier"', '"roadmap must record IMP-078 and identify IMP-079 as the next unallocated implementation identifier"')
+          marker = '  "IMP-077 local image OCR must remain optional, bounded, untrusted, local-only, and CI-only",\n);\n'
+          attachment_check = '''\n\nexpect(\n  dailyUse.text_markdown_writing_attachment_extension?.implementation === "IMP-078" &&\n    dailyUse.text_markdown_writing_attachment_extension?.status === "ci-pass" &&\n    JSON.stringify(dailyUse.text_markdown_writing_attachment_extension?.passed_evidence_levels) === JSON.stringify(["ci"]) &&\n    JSON.stringify(dailyUse.text_markdown_writing_attachment_extension?.required_evidence_levels) === JSON.stringify(["ci"]) &&\n    dailyUse.text_markdown_writing_attachment_extension?.selection_mode === "explicit-single-file" &&\n    JSON.stringify(dailyUse.text_markdown_writing_attachment_extension?.allowed_extensions) === JSON.stringify([".txt", ".md", ".markdown"]) &&\n    JSON.stringify(dailyUse.text_markdown_writing_attachment_extension?.supported_modes) === JSON.stringify(["revise", "summarize", "translate"]) &&\n    dailyUse.text_markdown_writing_attachment_extension?.draft_primary_source_allowed === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.exactly_one_primary_source === true &&\n    JSON.stringify(dailyUse.text_markdown_writing_attachment_extension?.primary_source_forms) === JSON.stringify(["inline", "document"]) &&\n    dailyUse.text_markdown_writing_attachment_extension?.reader_implementation === "IMP-074" &&\n    dailyUse.text_markdown_writing_attachment_extension?.maximum_document_source_bytes === 1048576 &&\n    dailyUse.text_markdown_writing_attachment_extension?.maximum_writing_source_characters === 16000 &&\n    dailyUse.text_markdown_writing_attachment_extension?.strict_utf8 === true &&\n    dailyUse.text_markdown_writing_attachment_extension?.utf8_bom_handling === "remove-and-report" &&\n    dailyUse.text_markdown_writing_attachment_extension?.symlinks_allowed === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.automatic_file_discovery === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.directory_traversal === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.globbing === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.persistent_document_record === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.source_record_created === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.artifact_created === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.persistent_index === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.semantic_retrieval === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.model_selected_context === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.network_access === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.cloud_access === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.process_launch === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.shell_execution === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.capability_execution === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.origin_class === "external_content" &&\n    dailyUse.text_markdown_writing_attachment_extension?.actor_type === "extractor" &&\n    dailyUse.text_markdown_writing_attachment_extension?.acquisition_method === "extraction" &&\n    dailyUse.text_markdown_writing_attachment_extension?.authority_class === "untrusted_data" &&\n    dailyUse.text_markdown_writing_attachment_extension?.phase6_gate_complete === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.lite_v1_complete === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.stable_anti_lock_in_claim === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.implementation_doc === "docs/implementation/imp-078-text-markdown-writing-attachments.md",\n  "IMP-078 text/Markdown writing attachments must remain explicit, untrusted, local-only, and CI-only",\n);\n'''
           checker = once(checker, marker, marker + attachment_check)
           checker_path.write_text(checker, encoding="utf-8")
           PY
