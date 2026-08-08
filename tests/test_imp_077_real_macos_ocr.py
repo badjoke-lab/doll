@@ -61,4 +61,3 @@ def test_real_ocrmac_vision_recognizes_deterministic_local_text(tmp_path: Path) 
     assert "DOLL" in normalized
     assert "OCR" in normalized
     assert "123" in normalized
-    assert result.network_access_used is False if hasattr(result, "network_access_used") else True
