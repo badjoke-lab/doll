@@ -8,14 +8,16 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   quality:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
+      - name: Check out implementation branch
         uses: actions/checkout@v4
+        with:
+          ref: imp-077-optional-local-image-ocr
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -26,6 +28,238 @@ jobs:
         uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
+
+      - name: Update IMP-077 roadmap and status artifacts
+        shell: bash
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+
+          import json
+          from pathlib import Path
+
+          def replace_once(text: str, old: str, new: str) -> str:
+              if old not in text:
+                  raise SystemExit(f"expected integration marker not found: {old[:80]!r}")
+              return text.replace(old, new, 1)
+
+          roadmap_path = Path("docs/spec/09-development-roadmap.md")
+          roadmap = roadmap_path.read_text(encoding="utf-8")
+          if "### IMP-077 — Optional local image OCR adapter" not in roadmap:
+              roadmap = replace_once(
+                  roadmap,
+                  "- IMP-030 through IMP-076;",
+                  "- IMP-030 through IMP-077;",
+              )
+              roadmap = replace_once(
+                  roadmap,
+                  ", and optional local PDF text extraction through IMP-076.",
+                  ", optional local PDF text extraction through IMP-076, and optional local image OCR through IMP-077.",
+              )
+              roadmap = replace_once(
+                  roadmap,
+                  "- Phase 6 local AI portability and daily-use integration is in progress through IMP-076;",
+                  "- Phase 6 local AI portability and daily-use integration is in progress through IMP-077;",
+              )
+              roadmap = replace_once(
+                  roadmap,
+                  "- the IMP-076 local-PDF extension passes at the `ci` evidence level and does not broaden accepted real-machine evidence;\n- the next bounded implementation receives IMP-077 only when a new implementation issue is opened;",
+                  "- the IMP-076 local-PDF extension passes at the `ci` evidence level and does not broaden accepted real-machine evidence;\n- IMP-077 adds one explicit bounded local OCR path for a caller-selected PNG or JPEG image, with standard-library source validation and an invocation-only optional macOS Vision adapter;\n- IMP-077 is assigned to Issue #237;\n- the IMP-077 local-image OCR extension passes at the `ci` evidence level, including hosted macOS Vision adapter execution, and does not broaden accepted primary real-machine evidence;\n- the next bounded implementation receives IMP-078 only when a new implementation issue is opened;",
+              )
+              section = """
+### IMP-077 — Optional local image OCR adapter
+
+Status: implemented with deterministic synthetic cross-platform CI evidence and hosted macOS Vision adapter evidence.
+
+Implemented `doll ocr extract` over one caller-selected regular non-symlink PNG or JPEG image through a replaceable optional adapter contract. Source bytes are bounded to eight megabytes and protected by path/open-handle identity, size, and modification-time verification. Standard-library validation checks PNG chunk structure and CRCs or bounded JPEG marker structure, rejects animated PNG input, requires extension/content agreement, and enforces 10,000-pixel width and height limits plus a 25,000,000-pixel decoded-area limit before OCR execution.
+
+The first real adapter is `ocrmac 1.0.1` over Apple Vision and is imported only when OCR is invoked on macOS. The lock resolves Pillow 12.3.0 and matching PyObjC 12.2.1 framework packages for that optional path. Core startup, help, non-OCR commands, Windows, and Ubuntu do not require the OCR stack. OCR receives validated in-memory image data rather than a path or URL and performs no process launch, shell execution, network access, cloud access, or automatic dependency or model download.
+
+Recognized output is bounded to 1,000 ordered lines, 20,000 characters per line, and 200,000 aggregate characters. Empty recognition is a successful explicit result. Human-readable and deterministic JSON output are available, including metadata-only mode. Every recognized line remains `external_content`, actor `extractor`, acquisition `ocr`, authority `untrusted_data`, and is not injected automatically into model context.
+
+Dedicated acceptance covers PNG and JPEG validation, Unicode and Japanese adapter-return preservation, hashes and dimensions, empty results, adapter absence, malformed and changed inputs, symlink and limit rejection, bounded output, path privacy, exact source/workspace/state preservation, and the default real `ocrmac`/Vision path on hosted macOS. Standard CI covers Ubuntu, macOS, and Windows. Hosted macOS adapter execution is CI evidence and does not replace or broaden primary Intel Mac real-machine release evidence.
+
+IMP-077 does not establish scanned-PDF OCR, automatic fallback from PDF extraction, multipage or animated image support, handwriting tuning, layout or table reconstruction, bounding-box publication, image enhancement, attachment integration, persistent OCR results, artifact publication, persistent indexing, semantic retrieval, model-selected context, Web retrieval, cross-platform real OCR adapters, performance acceptance, accessibility presentation, the release-candidate soak, complete Phase 6, Lite v1.0 completion, or stable general anti-lock-in.
+
+"""
+              roadmap = replace_once(
+                  roadmap,
+                  "\nSubsequent daily-use work may expand approved OCR adapters, attachment integration, accessibility presentation, Lite performance measurements, and soak testing.",
+                  section
+                  + "Subsequent daily-use work may expand attachment integration, cross-platform OCR adapters, accessibility presentation, Lite performance measurements, and soak testing.",
+              )
+              roadmap_path.write_text(roadmap, encoding="utf-8")
+
+          daily_path = Path("docs/testing/phase-6-daily-use-matrix.json")
+          daily = json.loads(daily_path.read_text(encoding="utf-8"))
+          daily["local_ocr_extension"] = {
+              "implementation": "IMP-077",
+              "status": "ci-pass",
+              "description": "One caller-selected PNG or JPEG image can be OCR-recognized through an optional invocation-only local adapter after bounded standard-library source validation, without persistence, process launch, network access, or automatic context injection.",
+              "pytest_files": [
+                  "tests/test_imp_077_local_ocr.py",
+                  "tests/test_imp_077_local_ocr_edge_coverage.py",
+                  "tests/test_imp_077_real_macos_ocr.py"
+              ],
+              "passed_evidence_levels": ["ci"],
+              "required_evidence_levels": ["ci"],
+              "report_schema_version": 1,
+              "selection_mode": "explicit-single-file",
+              "allowed_extensions": [".png", ".jpg", ".jpeg"],
+              "adapter_optional": True,
+              "adapter_id": "ocrmac-vision",
+              "adapter_version": "1.0.1",
+              "adapter_loading": "invocation-only",
+              "adapter_platform": "darwin",
+              "real_adapter_hosted_ci": True,
+              "primary_intel_mac_real_machine_evidence": False,
+              "maximum_source_bytes": 8388608,
+              "maximum_image_width": 10000,
+              "maximum_image_height": 10000,
+              "maximum_image_pixels": 25000000,
+              "maximum_recognized_lines": 1000,
+              "maximum_line_characters": 20000,
+              "maximum_aggregate_characters": 200000,
+              "animated_input_allowed": False,
+              "symlinks_allowed": False,
+              "source_overwrite": False,
+              "source_persisted": False,
+              "output_persisted": False,
+              "artifact_created": False,
+              "index_created": False,
+              "workspace_mutation": False,
+              "state_mutation": False,
+              "audit_mutation": False,
+              "context_injection": False,
+              "model_execution": False,
+              "runtime_start": False,
+              "process_launch": False,
+              "shell_execution": False,
+              "tool_execution": False,
+              "capability_execution": False,
+              "network_access": False,
+              "cloud_access": False,
+              "automatic_download": False,
+              "origin_class": "external_content",
+              "actor_type": "extractor",
+              "acquisition_method": "ocr",
+              "authority_class": "untrusted_data",
+              "phase6_gate_complete": False,
+              "lite_v1_complete": False,
+              "stable_anti_lock_in_claim": False,
+              "implementation_doc": "docs/implementation/imp-077-optional-local-image-ocr.md"
+          }
+          daily_path.write_text(
+              json.dumps(daily, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+
+          status_path = Path("website/project-status.json")
+          status = json.loads(status_path.read_text(encoding="utf-8"))
+          status["phase"]["next_implementation"] = 78
+          status["model_runtime"]["message"] = (
+              "Phase 6 is in progress through IMP-077. Offline Ollama session import, explicit text-only loopback capture, the accepted bounded local-portability migration drill, the deterministic shutdown escape bundle, bounded ChatGPT selected-history import, imported-context replay with accepted primary Intel Mac evidence, bounded local draft/revise/summarize/translate workflows, explicit data-only context, bounded local work-item proposals, explicit local portability review, structured local runtime failure guidance, a deterministic read-only doll doctor, explicit local full-text state search, explicit local UTF-8 text and Markdown reading, explicit local CSV inspection and transformation, optional local PDF text extraction, and optional local image OCR are implemented. The IMP-063/IMP-064 writing workflow passes at both CI and real-machine evidence levels. IMP-076 uses an invocation-only in-process pypdf adapter; encrypted documents fail closed and pages without extractable text are reported without OCR, with no source overwrite, output file, persistence, model execution, process launch, network access, native-path disclosure, or automatic context injection. IMP-077 recognizes bounded PNG/JPEG text through an invocation-only optional macOS Vision ocrmac adapter after standard-library source validation; no process launch, network access, cloud access, automatic download, persistence, or automatic context injection occurs. Attachment integration, accessibility presentation, Lite performance measurements, the release soak gate, semantic or automatic retrieval, cross-platform real OCR adapters, tools, the complete Phase 6 gate, Lite v1.0, target-specific application replacement, and stable general anti-lock-in remain incomplete."
+          )
+          status["last_reviewed"] = "2026-08-08"
+          status_path.write_text(
+              json.dumps(status, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+
+          checker_path = Path("scripts/check-public-site-status.mjs")
+          checker = checker_path.read_text(encoding="utf-8")
+          if "IMP-077 local image OCR must remain optional" not in checker:
+              checker = replace_once(
+                  checker,
+                  "status.phase?.next_implementation === 77,\n  \"project-status.json must mark Phase 6 in progress through IMP-076 with IMP-077 next\"",
+                  "status.phase?.next_implementation === 78,\n  \"project-status.json must mark Phase 6 in progress through IMP-077 with IMP-078 next\"",
+              )
+              checker = replace_once(
+                  checker,
+                  'status.model_runtime.message.includes("through IMP-076") &&',
+                  'status.model_runtime.message.includes("through IMP-077") &&',
+              )
+              checker = replace_once(
+                  checker,
+                  'status.model_runtime.message.includes("optional local PDF text extraction") &&',
+                  'status.model_runtime.message.includes("optional local PDF text extraction") &&\n    status.model_runtime.message.includes("optional local image OCR") &&\n    status.model_runtime.message.includes("macOS Vision") &&',
+              )
+              checker = replace_once(
+                  checker,
+                  '"project-status.json must describe IMP-076 without broadening accepted real-machine evidence"',
+                  '"project-status.json must describe IMP-077 without broadening accepted real-machine evidence"',
+              )
+              pdf_end = '''  "IMP-076 local PDF extraction must remain optional, untrusted, local-only, and CI-only",
+);
+'''
+              ocr_check = '''
+
+expect(
+  dailyUse.local_ocr_extension?.implementation === "IMP-077" &&
+    dailyUse.local_ocr_extension?.status === "ci-pass" &&
+    JSON.stringify(dailyUse.local_ocr_extension?.passed_evidence_levels) ===
+      JSON.stringify(["ci"]) &&
+    JSON.stringify(dailyUse.local_ocr_extension?.required_evidence_levels) ===
+      JSON.stringify(["ci"]) &&
+    dailyUse.local_ocr_extension?.report_schema_version === 1 &&
+    dailyUse.local_ocr_extension?.selection_mode === "explicit-single-file" &&
+    JSON.stringify(dailyUse.local_ocr_extension?.allowed_extensions) ===
+      JSON.stringify([".png", ".jpg", ".jpeg"]) &&
+    dailyUse.local_ocr_extension?.adapter_optional === true &&
+    dailyUse.local_ocr_extension?.adapter_id === "ocrmac-vision" &&
+    dailyUse.local_ocr_extension?.adapter_version === "1.0.1" &&
+    dailyUse.local_ocr_extension?.adapter_loading === "invocation-only" &&
+    dailyUse.local_ocr_extension?.adapter_platform === "darwin" &&
+    dailyUse.local_ocr_extension?.real_adapter_hosted_ci === true &&
+    dailyUse.local_ocr_extension?.primary_intel_mac_real_machine_evidence === false &&
+    dailyUse.local_ocr_extension?.maximum_source_bytes === 8388608 &&
+    dailyUse.local_ocr_extension?.maximum_image_width === 10000 &&
+    dailyUse.local_ocr_extension?.maximum_image_height === 10000 &&
+    dailyUse.local_ocr_extension?.maximum_image_pixels === 25000000 &&
+    dailyUse.local_ocr_extension?.maximum_recognized_lines === 1000 &&
+    dailyUse.local_ocr_extension?.maximum_line_characters === 20000 &&
+    dailyUse.local_ocr_extension?.maximum_aggregate_characters === 200000 &&
+    dailyUse.local_ocr_extension?.animated_input_allowed === false &&
+    dailyUse.local_ocr_extension?.symlinks_allowed === false &&
+    dailyUse.local_ocr_extension?.source_overwrite === false &&
+    dailyUse.local_ocr_extension?.source_persisted === false &&
+    dailyUse.local_ocr_extension?.output_persisted === false &&
+    dailyUse.local_ocr_extension?.artifact_created === false &&
+    dailyUse.local_ocr_extension?.index_created === false &&
+    dailyUse.local_ocr_extension?.workspace_mutation === false &&
+    dailyUse.local_ocr_extension?.state_mutation === false &&
+    dailyUse.local_ocr_extension?.audit_mutation === false &&
+    dailyUse.local_ocr_extension?.context_injection === false &&
+    dailyUse.local_ocr_extension?.model_execution === false &&
+    dailyUse.local_ocr_extension?.runtime_start === false &&
+    dailyUse.local_ocr_extension?.process_launch === false &&
+    dailyUse.local_ocr_extension?.shell_execution === false &&
+    dailyUse.local_ocr_extension?.tool_execution === false &&
+    dailyUse.local_ocr_extension?.capability_execution === false &&
+    dailyUse.local_ocr_extension?.network_access === false &&
+    dailyUse.local_ocr_extension?.cloud_access === false &&
+    dailyUse.local_ocr_extension?.automatic_download === false &&
+    dailyUse.local_ocr_extension?.origin_class === "external_content" &&
+    dailyUse.local_ocr_extension?.actor_type === "extractor" &&
+    dailyUse.local_ocr_extension?.acquisition_method === "ocr" &&
+    dailyUse.local_ocr_extension?.authority_class === "untrusted_data" &&
+    dailyUse.local_ocr_extension?.phase6_gate_complete === false &&
+    dailyUse.local_ocr_extension?.lite_v1_complete === false &&
+    dailyUse.local_ocr_extension?.stable_anti_lock_in_claim === false &&
+    dailyUse.local_ocr_extension?.implementation_doc ===
+      "docs/implementation/imp-077-optional-local-image-ocr.md",
+  "IMP-077 local image OCR must remain optional, bounded, untrusted, local-only, and CI-only",
+);
+'''
+              checker = replace_once(checker, pdf_end, pdf_end + ocr_check)
+              checker_path.write_text(checker, encoding="utf-8")
+          PY
+
+      - name: Generate final specification
+        run: uv run python scripts/build_final_spec.py
+
+      - name: Verify public status
+        run: node scripts/check-public-site-status.mjs
 
       - name: Verify dependency lock
         run: uv lock --check
@@ -44,6 +278,19 @@ jobs:
 
       - name: Check generated specification
         run: uv run python scripts/build_final_spec.py --check
+
+      - name: Commit integrated IMP-077 status if changed
+        shell: bash
+        run: |
+          git add DOLL_FINAL_SPEC.md docs/spec/09-development-roadmap.md docs/testing/phase-6-daily-use-matrix.json scripts/check-public-site-status.mjs website/project-status.json
+          if git diff --cached --quiet; then
+            echo "IMP-077 status artifacts already current"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Integrate IMP-077 roadmap and status"
+          git push origin HEAD:imp-077-optional-local-image-ocr
 
   test:
     name: Test (${{ matrix.os }})
