@@ -62,11 +62,7 @@ def _chunk(chunk_type: bytes, data: bytes) -> bytes:
 
 
 def _png_bytes(*, width: int = 120, height: int = 40, animated: bool = False) -> bytes:
-    ihdr = (
-        width.to_bytes(4, "big")
-        + height.to_bytes(4, "big")
-        + bytes((8, 2, 0, 0, 0))
-    )
+    ihdr = width.to_bytes(4, "big") + height.to_bytes(4, "big") + bytes((8, 2, 0, 0, 0))
     chunks = [_chunk(b"IHDR", ihdr)]
     if animated:
         chunks.append(_chunk(b"acTL", (2).to_bytes(4, "big") + (0).to_bytes(4, "big")))
@@ -78,12 +74,7 @@ def _png_bytes(*, width: int = 120, height: int = 40, animated: bool = False) ->
 
 def _jpeg_bytes(*, width: int = 120, height: int = 40) -> bytes:
     app0 = b"JFIF\x00" + b"\x01\x01\x00\x00\x01\x00\x01\x00\x00"
-    sof = (
-        b"\x08"
-        + height.to_bytes(2, "big")
-        + width.to_bytes(2, "big")
-        + b"\x01\x01\x11\x00"
-    )
+    sof = b"\x08" + height.to_bytes(2, "big") + width.to_bytes(2, "big") + b"\x01\x01\x11\x00"
     sos = b"\x01\x01\x00\x00\x3f\x00"
     return (
         b"\xff\xd8"
