@@ -152,6 +152,7 @@ def test_dimension_handle_and_identity_edge_failures(
     with pytest.raises(LocalOcrValidationError, match="regular file"):
         local_ocr_module._handle_state(1)
 
+    monkeypatch.undo()
     source = tmp_path / "identity.png"
     source.write_bytes(_png())
     monkeypatch.setattr(local_ocr_module, "_same_identity", lambda left, right: False)
