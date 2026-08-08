@@ -74,6 +74,8 @@ expect(
     status.model_runtime.message.includes("optional local PDF text extraction") &&
     status.model_runtime.message.includes("optional local image OCR") &&
     status.model_runtime.message.includes("macOS Vision") &&
+    status.model_runtime.message.includes("optional local image OCR") &&
+    status.model_runtime.message.includes("macOS Vision") &&
     status.model_runtime.message.includes("invocation-only in-process pypdf adapter") &&
     status.model_runtime.message.includes("reported without OCR") &&
     status.model_runtime.message.includes("no source overwrite, output file, persistence") &&
