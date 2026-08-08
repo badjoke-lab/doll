@@ -11,7 +11,7 @@ from typing import Protocol, cast
 
 import pytest
 
-from doll.local_ocr import OcrmacAdapter, extract_local_image_ocr
+from doll.local_ocr import extract_local_image_ocr
 
 
 class _GeneratedImage(Protocol):
@@ -52,7 +52,7 @@ def test_real_ocrmac_vision_recognizes_deterministic_local_text(tmp_path: Path) 
     source = tmp_path / "vision-ocr.png"
     image.save(source, format="PNG")
 
-    result = extract_local_image_ocr(source, adapter=OcrmacAdapter.load())
+    result = extract_local_image_ocr(source)
     normalized = " ".join(line.text.upper() for line in result.lines)
 
     assert result.adapter_id == "ocrmac-vision"
