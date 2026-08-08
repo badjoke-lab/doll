@@ -2,7 +2,7 @@
 
 ## Status
 
-Implemented on the IMP-077 branch pending final integration evidence.
+Implemented on the IMP-077 branch with hosted macOS Vision evidence; final cross-platform integration evidence remains pending.
 
 ## Objective
 
