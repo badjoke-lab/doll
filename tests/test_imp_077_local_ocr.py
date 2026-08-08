@@ -282,7 +282,7 @@ def test_optional_adapter_absence_is_clean_and_help_does_not_load_it(
 ) -> None:
     source = _source(tmp_path)
     original_import = importlib.import_module
-    monkeypatch.setattr(local_ocr_module.sys, "platform", "darwin")
+    monkeypatch.setattr(sys, "platform", "darwin")
 
     def missing(name: str) -> ModuleType:
         if name.startswith("ocrmac") or name == "PIL.Image":
@@ -304,11 +304,11 @@ def test_optional_adapter_absence_is_clean_and_help_does_not_load_it(
 
 def test_ocrmac_adapter_load_and_recognize_contract(monkeypatch: MonkeyPatch) -> None:
     original_platform = sys.platform
-    monkeypatch.setattr(local_ocr_module.sys, "platform", "linux")
+    monkeypatch.setattr(sys, "platform", "linux")
     with pytest.raises(LocalOcrAdapterUnavailableError, match="platform"):
         OcrmacAdapter.load()
 
-    monkeypatch.setattr(local_ocr_module.sys, "platform", "darwin")
+    monkeypatch.setattr(sys, "platform", "darwin")
     ocr_module = ModuleType("ocrmac.ocrmac")
     image_module = ModuleType("PIL.Image")
 
@@ -346,7 +346,7 @@ def test_ocrmac_adapter_load_and_recognize_contract(monkeypatch: MonkeyPatch) ->
     monkeypatch.setattr(importlib.metadata, "version", lambda name: "")
     with pytest.raises(LocalOcrAdapterUnavailableError, match="version"):
         OcrmacAdapter.load()
-    monkeypatch.setattr(local_ocr_module.sys, "platform", original_platform)
+    monkeypatch.setattr(sys, "platform", original_platform)
 
 
 def test_ocrmac_adapter_rejects_missing_callables_and_bad_annotations(
