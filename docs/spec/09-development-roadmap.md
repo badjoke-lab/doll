@@ -81,8 +81,8 @@ Completed:
 - Phase 4B project continuity foundation;
 - Phase 5 local runtime and model integration;
 - IMP-001 through IMP-023;
-- IMP-030 through IMP-076;
-- local workspace, SQLite state, migrations, managed artifacts, canonical conversation and project state, State Package v2, backup and restore, the model-independent safety boundary, AI-environment portability, project continuity, runtime-independent adapter contracts, a loopback-only Ollama adapter, authoritative runtime and model manifests, explicit bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, and accepted primary Intel Mac offline continuity evidence through IMP-054, the offline Ollama API session source adapter through IMP-055, explicit loopback Ollama chat capture through IMP-056, the deterministic local-portability migration harness through IMP-057, the deterministic shutdown escape bundle through IMP-058, the bounded ChatGPT conversations.json source adapter through IMP-059, the bounded ChatGPT numbered conversation-member aggregation through IMP-060, bounded imported conversation context replay through IMP-061, the exact-commit imported-context replay real-machine acceptance harness through IMP-062, and the bounded local writing workflow through IMP-063, the accepted exact-commit primary Intel Mac local-writing evidence through IMP-064, explicit data-only confirmed-memory and ProjectRecord context selection through IMP-065, explicit data-only DecisionRecord context selection through IMP-066, explicit verified Resume Bundle writing context through IMP-067, explicit local translation through IMP-068, bounded local work-item proposals through IMP-069, explicit local portability review through IMP-070, and structured local runtime failure guidance through IMP-071, read-only local doctor diagnostics through IMP-072, explicit local full-text state search through IMP-073, explicit local text and Markdown reading through IMP-074, explicit local CSV inspection and simple transformation through IMP-075, and optional local PDF text extraction through IMP-076.
+- IMP-030 through IMP-077;
+- local workspace, SQLite state, migrations, managed artifacts, canonical conversation and project state, State Package v2, backup and restore, the model-independent safety boundary, AI-environment portability, project continuity, runtime-independent adapter contracts, a loopback-only Ollama adapter, authoritative runtime and model manifests, explicit bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, and accepted primary Intel Mac offline continuity evidence through IMP-054, the offline Ollama API session source adapter through IMP-055, explicit loopback Ollama chat capture through IMP-056, the deterministic local-portability migration harness through IMP-057, the deterministic shutdown escape bundle through IMP-058, the bounded ChatGPT conversations.json source adapter through IMP-059, the bounded ChatGPT numbered conversation-member aggregation through IMP-060, bounded imported conversation context replay through IMP-061, the exact-commit imported-context replay real-machine acceptance harness through IMP-062, and the bounded local writing workflow through IMP-063, the accepted exact-commit primary Intel Mac local-writing evidence through IMP-064, explicit data-only confirmed-memory and ProjectRecord context selection through IMP-065, explicit data-only DecisionRecord context selection through IMP-066, explicit verified Resume Bundle writing context through IMP-067, explicit local translation through IMP-068, bounded local work-item proposals through IMP-069, explicit local portability review through IMP-070, and structured local runtime failure guidance through IMP-071, read-only local doctor diagnostics through IMP-072, explicit local full-text state search through IMP-073, explicit local text and Markdown reading through IMP-074, explicit local CSV inspection and simple transformation through IMP-075, optional local PDF text extraction through IMP-076, and optional local image OCR through IMP-077.
 
 Current implementation point:
 
@@ -94,7 +94,7 @@ Current implementation point:
 - Phase 5 passed its local-runtime continuity gate on 2026-06-28;
 - accepted real-machine evidence is bound to commit `1a5b66b2417d6f3e1eafcd14d2769e9c15d7f96c` on the primary Intel Mac with networking disabled;
 - IMP-048 through IMP-054 establish the runtime contract, loopback-only Ollama adapter, authoritative manifests and bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, State Package v2 transfer, backup restore, and accepted LRUN-001 through LRUN-012 evidence;
-- Phase 6 local AI portability and daily-use integration is in progress through IMP-076;
+- Phase 6 local AI portability and daily-use integration is in progress through IMP-077;
 - IMP-055 adds an offline source adapter for a documented caller-retained Ollama API session bundle, with exact JSON validation, content-free inventory, original-source hashing, deterministic normalization, explicit attachment-metadata loss, and reuse of the accepted generic staging and reviewed-publication boundary;
 - IMP-056 adds an explicit non-streaming text-only capture path through fixed IPv4 loopback, resolves one opaque already-installed local model through the filtered inventory, and returns an IMP-055-valid session bundle without reading application databases, logs, shell history, or unrelated sessions;
 - IMP-057 merged at commit `7b63ff512e20d1d6ae65da8938486b093e14b6c6` and composes explicit capture, reviewed canonical import, idempotency and conflict checks, generic export, State Package v2 transfer, backup restore, and alternate fresh-process inspection without the capture component;
@@ -154,7 +154,10 @@ Current implementation point:
 - IMP-076 adds one optional invocation-only in-process pypdf adapter for bounded text extraction from one explicitly selected local PDF, with exact page selection, empty-text page reporting, and no OCR, persistence, process launch, model execution, or network access;
 - IMP-076 is assigned to Issue #235;
 - the IMP-076 local-PDF extension passes at the `ci` evidence level and does not broaden accepted real-machine evidence;
-- the next bounded implementation receives IMP-077 only when a new implementation issue is opened;
+- IMP-077 adds one explicit bounded local OCR path for a caller-selected PNG or JPEG image, with standard-library source validation and an invocation-only optional macOS Vision adapter;
+- IMP-077 is assigned to Issue #237;
+- the IMP-077 local-image OCR extension passes at the `ci` evidence level, including hosted macOS Vision adapter execution, and does not broaden accepted primary real-machine evidence;
+- the next bounded implementation receives IMP-078 only when a new implementation issue is opened;
 - later local migration, cloud, and tool work must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts.
 
 Implementation identifier policy:
@@ -878,7 +881,21 @@ All extracted text remains `external_content`, `extractor`, `extraction`, and `u
 
 IMP-076 does not establish OCR, image extraction, layout reconstruction, table extraction, forms, annotations, attachments, password entry, PDF repair, JavaScript execution, external processes, arbitrary plugins, automatic discovery, semantic retrieval, model-selected context, writing-workflow attachment integration, artifact publication, persistent extraction results, Web retrieval, performance acceptance, the release-candidate soak, complete Phase 6, Lite v1.0 completion, or stable general anti-lock-in.
 
-Subsequent daily-use work may expand approved OCR adapters, attachment integration, accessibility presentation, Lite performance measurements, and soak testing.
+### IMP-077 — Optional local image OCR adapter
+
+Status: implemented with deterministic synthetic cross-platform CI evidence and hosted macOS Vision adapter evidence.
+
+Implemented `doll ocr extract` over one caller-selected regular non-symlink PNG or JPEG image through a replaceable optional adapter contract. Source bytes are bounded to eight megabytes and protected by path/open-handle identity, size, and modification-time verification. Standard-library validation checks PNG chunk structure and CRCs or bounded JPEG marker structure, rejects animated PNG input, requires extension/content agreement, and enforces 10,000-pixel width and height limits plus a 25,000,000-pixel decoded-area limit before OCR execution.
+
+The first real adapter is `ocrmac 1.0.1` over Apple Vision and is imported only when OCR is invoked on macOS. The lock resolves Pillow 12.3.0 and matching PyObjC 12.2.1 framework packages for that optional path. Core startup, help, non-OCR commands, Windows, and Ubuntu do not require the OCR stack. OCR receives validated in-memory image data rather than a path or URL and performs no process launch, shell execution, network access, cloud access, or automatic dependency or model download.
+
+Recognized output is bounded to 1,000 ordered lines, 20,000 characters per line, and 200,000 aggregate characters. Empty recognition is a successful explicit result. Human-readable and deterministic JSON output are available, including metadata-only mode. Every recognized line remains `external_content`, actor `extractor`, acquisition `ocr`, authority `untrusted_data`, and is not injected automatically into model context.
+
+Dedicated acceptance covers PNG and JPEG validation, Unicode and Japanese adapter-return preservation, hashes and dimensions, empty results, adapter absence, malformed and changed inputs, symlink and limit rejection, bounded output, path privacy, exact source/workspace/state preservation, and the default real `ocrmac`/Vision path on hosted macOS. Standard CI covers Ubuntu, macOS, and Windows. Hosted macOS adapter execution is CI evidence and does not replace or broaden primary Intel Mac real-machine release evidence.
+
+IMP-077 does not establish scanned-PDF OCR, automatic fallback from PDF extraction, multipage or animated image support, handwriting tuning, layout or table reconstruction, bounding-box publication, image enhancement, attachment integration, persistent OCR results, artifact publication, persistent indexing, semantic retrieval, model-selected context, Web retrieval, cross-platform real OCR adapters, performance acceptance, accessibility presentation, the release-candidate soak, complete Phase 6, Lite v1.0 completion, or stable general anti-lock-in.
+
+Subsequent daily-use work may expand attachment integration, cross-platform OCR adapters, accessibility presentation, Lite performance measurements, and soak testing.
 
 ## 13. Phase 7 — Optional cloud and multiple models
 
