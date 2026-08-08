@@ -74,8 +74,6 @@ expect(
     status.model_runtime.message.includes("optional local PDF text extraction") &&
     status.model_runtime.message.includes("optional local image OCR") &&
     status.model_runtime.message.includes("macOS Vision") &&
-    status.model_runtime.message.includes("optional local image OCR") &&
-    status.model_runtime.message.includes("macOS Vision") &&
     status.model_runtime.message.includes("invocation-only in-process pypdf adapter") &&
     status.model_runtime.message.includes("reported without OCR") &&
     status.model_runtime.message.includes("no source overwrite, output file, persistence") &&
@@ -895,8 +893,9 @@ expect(
   "roadmap must record the IMP-076 local-PDF boundary",
 );
 expect(
-  roadmap.includes("the next bounded implementation receives IMP-077 only when a new implementation issue is opened"),
-  "roadmap must identify IMP-077 as the next unallocated implementation identifier",
+  roadmap.includes("### IMP-077 — Optional local image OCR adapter") &&
+    roadmap.includes("the next bounded implementation receives IMP-078 only when a new implementation issue is opened"),
+  "roadmap must record IMP-077 and identify IMP-078 as the next unallocated implementation identifier",
 );
 expect(
   roadmap.includes("docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json"),
