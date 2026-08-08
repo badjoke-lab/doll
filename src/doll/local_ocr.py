@@ -293,9 +293,7 @@ def extract_local_image_ocr(
             raise LocalOcrValidationError("local OCR line exceeds the character limit")
         aggregate_characters += len(text)
         if aggregate_characters > _MAX_AGGREGATE_CHARACTERS:
-            raise LocalOcrValidationError(
-                "local OCR text exceeds the aggregate character limit"
-            )
+            raise LocalOcrValidationError("local OCR text exceeds the aggregate character limit")
         lines.append(LocalOcrLine(line_number=line_number, text=text))
 
     return LocalOcrExtraction(
