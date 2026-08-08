@@ -2,7 +2,7 @@
 
 ## Status
 
-Implemented and integrated on the IMP-077 branch with hosted macOS Vision evidence; final PR verification is in progress.
+Implemented and integrated on the IMP-077 branch with hosted macOS Vision evidence; public-status reconciliation and final PR verification are in progress.
 
 ## Objective
 
