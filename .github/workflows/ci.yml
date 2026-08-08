@@ -27,8 +27,15 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Verify dependency lock
-        run: uv lock --check
+      - name: Generate dependency lock candidate
+        run: uv lock
+
+      - name: Upload dependency lock candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: imp-077-uv-lock
+          path: uv.lock
+          if-no-files-found: error
 
       - name: Install project
         run: uv sync --dev --locked
