@@ -166,7 +166,8 @@ def test_markdown_attachment_runs_as_untrusted_source_with_path_free_metadata(
     source = tmp_path / "private-name.md"
     source_bytes = b"\xef\xbb\xbf# Heading\n\nJapanese: \xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e\n"
     source.write_bytes(source_bytes)
-    expected_text = "# Heading\n\nJapanese: 日本語\n"
+    document_text = "# Heading\n\nJapanese: 日本語\n"
+    expected_source_text = "# Heading\n\nJapanese: 日本語"
 
     with state.open_state_repository(initialized.root) as repository:
         repository.save_conversation(ConversationRecord(conversation_id=conversation_id))
@@ -185,22 +186,22 @@ def test_markdown_attachment_runs_as_untrusted_source_with_path_free_metadata(
         assert result.source_kind == "document"
         assert result.source_instruction_id is not None
         assert result.source_instruction_count == 1
-        assert result.source_character_count == len(expected_text)
+        assert result.source_character_count == len(expected_source_text)
         assert result.source_document_kind == "markdown"
         assert result.source_document_source_byte_count == len(source_bytes)
         assert result.source_document_source_sha256 == hashlib.sha256(source_bytes).hexdigest()
         assert (
             result.source_document_content_sha256
-            == hashlib.sha256(expected_text.encode("utf-8")).hexdigest()
+            == hashlib.sha256(document_text.encode("utf-8")).hexdigest()
         )
         assert result.source_document_utf8_bom_removed is True
 
         prompt = json.loads(adapter.prompts[0])
         current = prompt["channels"]["current_user_instruction"]
         untrusted = prompt["channels"]["untrusted_content"]
-        assert expected_text not in current[0]["content"]
+        assert expected_source_text not in current[0]["content"]
         assert len(untrusted) == 1
-        assert untrusted[0]["content"] == expected_text
+        assert untrusted[0]["content"] == expected_source_text
         assert untrusted[0]["origin_class"] == "external_content"
         assert untrusted[0]["effective_authority_class"] == "untrusted_data"
         assert untrusted[0]["data_only"] is True
@@ -285,7 +286,7 @@ def test_source_selection_conflicts_fail_before_origin_or_runtime(tmp_path: Path
         assert _instruction_origin_count(repository) == before
 
 
-def test_invalid_document_fails_after_target_preflight_before_origin_and_runtime(
+def test_invalid_document_is_read_only_after_target_preflight(
     tmp_path: Path,
     monkeypatch: MonkeyPatch,
 ) -> None:
@@ -300,19 +301,26 @@ def test_invalid_document_fails_after_target_preflight_before_origin_and_runtime
         _active_binding(repository, adapter)
         service = _service(repository, adapter)
         before = _instruction_origin_count(repository)
-        target_preflight = {"called": False}
-        original_preflight = service._preflight_target
-
-        def observed_preflight(**kwargs: object) -> None:
-            target_preflight["called"] = True
-            original_preflight(**kwargs)  # type: ignore[arg-type]
-
-        monkeypatch.setattr(service, "_preflight_target", observed_preflight)
+        read_calls = {"count": 0}
 
         def fail_read(path: Path) -> object:
+            read_calls["count"] += 1
             raise LocalDocumentReadError("private native path detail")
 
         monkeypatch.setattr(local_writing_module, "read_local_document", fail_read)
+
+        with pytest.raises(LocalWritingWorkflowValidationError, match="target is unavailable"):
+            service.execute(
+                mode="revise",
+                conversation_id=str(uuid4()),
+                scope_type="conversation",
+                scope_key="writing",
+                request_text="Revise.",
+                source_document_path=source,
+                operation_id="imp078.invalid.target",
+            )
+        assert read_calls["count"] == 0
+
         with pytest.raises(LocalWritingWorkflowValidationError, match="document is invalid"):
             service.execute(
                 mode="revise",
@@ -324,7 +332,7 @@ def test_invalid_document_fails_after_target_preflight_before_origin_and_runtime
                 operation_id="imp078.invalid.read",
             )
 
-        assert target_preflight["called"] is True
+        assert read_calls["count"] == 1
         assert adapter.prompts == []
         assert _instruction_origin_count(repository) == before
 
