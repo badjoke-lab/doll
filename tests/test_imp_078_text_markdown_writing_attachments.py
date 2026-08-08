@@ -186,7 +186,7 @@ def test_markdown_attachment_runs_as_untrusted_source_with_path_free_metadata(
         assert result.source_kind == "document"
         assert result.source_instruction_id is not None
         assert result.source_instruction_count == 1
-        assert result.source_character_count == len(expected_source_text)
+        assert result.source_character_count == len(document_text)
         assert result.source_document_kind == "markdown"
         assert result.source_document_source_byte_count == len(source_bytes)
         assert result.source_document_source_sha256 == hashlib.sha256(source_bytes).hexdigest()
