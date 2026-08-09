@@ -1,0 +1,55 @@
+name: IMP-080 format
+
+on:
+  push:
+    branches:
+      - imp-080-ocr-image-writing-attachment
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-080-ocr-image-writing-attachment
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - name: Fix long acceptance lines
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("tests/test_imp_080_ocr_image_writing_attachment.py")
+          text = path.read_text(encoding="utf-8")
+          text = text.replace(
+              "    runtime = service.verify_runtime(runtime.runtime_manifest_id, expected_revision=runtime.revision)\n",
+              "    runtime = service.verify_runtime(\n        runtime.runtime_manifest_id, expected_revision=runtime.revision\n    )\n",
+              1,
+          )
+          text = text.replace(
+              '        assert result.source_ocr_recognized_character_count == len("First recognized lineSecond line")\n',
+              '        assert result.source_ocr_recognized_character_count == len(\n            "First recognized lineSecond line"\n        )\n',
+              1,
+          )
+          path.write_text(text, encoding="utf-8")
+          PY
+      - name: Format and lint implementation files
+        run: |
+          uv run ruff format src/doll/local_writing.py tests/test_imp_080_ocr_image_writing_attachment.py
+          uv run ruff check --fix src/doll/local_writing.py tests/test_imp_080_ocr_image_writing_attachment.py
+      - name: Commit formatting
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/doll/local_writing.py tests/test_imp_080_ocr_image_writing_attachment.py
+          git diff --cached --quiet && exit 0
+          git commit -m "Format IMP-080 implementation"
+          git push origin HEAD:imp-080-ocr-image-writing-attachment
