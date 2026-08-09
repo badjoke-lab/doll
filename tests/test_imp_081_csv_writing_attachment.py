@@ -157,6 +157,7 @@ def _origin_count(repository: state.StateRepository) -> int:
 
 def _source(tmp_path: Path, text: str, *, bom: bool = False) -> Path:
     path = tmp_path / "private-source.csv"
+    path.parent.mkdir(parents=True, exist_ok=True)
     payload = text.encode("utf-8")
     path.write_bytes((b"\xef\xbb\xbf" if bom else b"") + payload)
     return path
@@ -283,7 +284,9 @@ def test_csv_source_conflicts_options_and_draft_fail_before_runtime(tmp_path: Pa
                 source_csv_path=cast(Path, "source.csv"),
                 operation_id="imp081.invalid.path.type",
             )
-        with pytest.raises(LocalWritingWorkflowValidationError, match="selected columns are invalid"):
+        with pytest.raises(
+            LocalWritingWorkflowValidationError, match="selected columns are invalid"
+        ):
             service.execute(
                 mode="revise",
                 conversation_id=conversation_id,

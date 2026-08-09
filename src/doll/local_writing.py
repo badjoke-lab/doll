@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Literal, cast
 
 from doll.instruction_origin import InstructionOriginService, InstructionSource
-from doll.local_csv import LocalCsvError, LocalCsvTransformation, transform_local_csv
 from doll.local_conversation import (
     LocalConversationResult,
     LocalConversationService,
@@ -18,6 +17,7 @@ from doll.local_conversation import (
     _message_text,
     _operation_id,
 )
+from doll.local_csv import LocalCsvError, LocalCsvTransformation, transform_local_csv
 from doll.local_document import LocalDocumentError, LocalDocumentResult, read_local_document
 from doll.local_ocr import LocalOcrError, LocalOcrExtraction, extract_local_image_ocr
 from doll.local_pdf import LocalPdfError, LocalPdfExtraction, extract_local_pdf_text
@@ -207,14 +207,10 @@ class LocalWritingWorkflowService:
             else "comma"
         )
         safe_csv_columns = (
-            _csv_selected_columns(source_csv_selected_columns)
-            if source_kind == "csv"
-            else ()
+            _csv_selected_columns(source_csv_selected_columns) if source_kind == "csv" else ()
         )
         safe_csv_renames = (
-            _csv_header_renames(source_csv_header_renames)
-            if source_kind == "csv"
-            else {}
+            _csv_header_renames(source_csv_header_renames) if source_kind == "csv" else {}
         )
         safe_target_language = _target_language_for_mode(safe_mode, target_language)
         safe_operation_id = _operation_id(operation_id)
@@ -464,9 +460,7 @@ def _source_kind_for_mode(
             "PDF page selection requires a PDF primary source"
         )
     if has_csv_options and not has_csv:
-        raise LocalWritingWorkflowValidationError(
-            "CSV options require a CSV primary source"
-        )
+        raise LocalWritingWorkflowValidationError("CSV options require a CSV primary source")
     if sum((has_inline, has_document, has_pdf, has_image, has_csv)) != 1:
         raise LocalWritingWorkflowValidationError(
             f"{mode} mode requires exactly one primary source"
@@ -524,22 +518,16 @@ def _source_text(value: object) -> str:
 
 def _csv_delimiter_profile(value: object) -> str:
     if not isinstance(value, str):
-        raise LocalWritingWorkflowValidationError(
-            "writing source CSV delimiter profile is invalid"
-        )
+        raise LocalWritingWorkflowValidationError("writing source CSV delimiter profile is invalid")
     return value
 
 
 def _csv_selected_columns(value: object) -> tuple[str, ...]:
     if isinstance(value, str | bytes) or not isinstance(value, Sequence):
-        raise LocalWritingWorkflowValidationError(
-            "writing source CSV selected columns are invalid"
-        )
+        raise LocalWritingWorkflowValidationError("writing source CSV selected columns are invalid")
     columns = tuple(value)
     if any(not isinstance(column, str) for column in columns):
-        raise LocalWritingWorkflowValidationError(
-            "writing source CSV selected columns are invalid"
-        )
+        raise LocalWritingWorkflowValidationError("writing source CSV selected columns are invalid")
     return columns
 
 
@@ -547,17 +535,13 @@ def _csv_header_renames(value: object) -> dict[str, str]:
     if value is None:
         return {}
     if not isinstance(value, Mapping):
-        raise LocalWritingWorkflowValidationError(
-            "writing source CSV header renames are invalid"
-        )
+        raise LocalWritingWorkflowValidationError("writing source CSV header renames are invalid")
     renames = dict(value)
     if any(
         not isinstance(source, str) or not isinstance(target, str)
         for source, target in renames.items()
     ):
-        raise LocalWritingWorkflowValidationError(
-            "writing source CSV header renames are invalid"
-        )
+        raise LocalWritingWorkflowValidationError("writing source CSV header renames are invalid")
     return renames
 
 
@@ -814,9 +798,7 @@ def _result(
             csv_result.source.blank_cell_count if csv_result is not None else 0
         ),
         source_csv_potential_formula_cell_count=(
-            csv_result.source.potential_formula_cell_count
-            if csv_result is not None
-            else 0
+            csv_result.source.potential_formula_cell_count if csv_result is not None else 0
         ),
         source_csv_output_byte_count=(
             csv_result.output_byte_count if csv_result is not None else 0
@@ -824,9 +806,7 @@ def _result(
         source_csv_output_character_count=(
             csv_result.output_character_count if csv_result is not None else 0
         ),
-        source_csv_output_sha256=(
-            csv_result.output_sha256 if csv_result is not None else None
-        ),
+        source_csv_output_sha256=(csv_result.output_sha256 if csv_result is not None else None),
         selected_context_instruction_ids=(
             selected_result.instruction_ids + bundle_result.instruction_ids
         ),
