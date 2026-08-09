@@ -1,6 +1,6 @@
 # IMP-080 — Explicit OCR image writing attachment
 
-Status: implementation and CI acceptance in progress.
+Status: implemented with deterministic CI evidence on Ubuntu, macOS, and Windows.
 
 Issue: #243
 
