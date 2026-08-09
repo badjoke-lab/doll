@@ -18,137 +18,21 @@ jobs:
         with:
           ref: imp-078-text-markdown-writing-attachments
 
-      - name: Integrate IMP-078 status artifacts
+      - name: Apply status integration
+        run: python scripts/imp078_status_integration_tmp.py
+
+      - name: Regenerate combined specification
+        run: python scripts/build_final_spec.py
+
+      - name: Verify public status
+        run: node scripts/check-public-site-status.mjs
+
+      - name: Commit generated integration
         shell: bash
         run: |
-          python - <<'PY'
-          from __future__ import annotations
-
-          import json
-          from pathlib import Path
-
-          def once(text: str, old: str, new: str) -> str:
-              if old not in text:
-                  raise SystemExit(f"marker missing: {old[:90]!r}")
-              return text.replace(old, new, 1)
-
-          roadmap_path = Path("docs/spec/09-development-roadmap.md")
-          roadmap = roadmap_path.read_text(encoding="utf-8")
-          if "### IMP-078 — Explicit text and Markdown writing attachments" not in roadmap:
-              roadmap = once(roadmap, "- IMP-030 through IMP-077;", "- IMP-030 through IMP-078;")
-              roadmap = once(
-                  roadmap,
-                  ", optional local PDF text extraction through IMP-076, and optional local image OCR through IMP-077.",
-                  ", optional local PDF text extraction through IMP-076, optional local image OCR through IMP-077, and explicit text/Markdown writing attachments through IMP-078.",
-              )
-              roadmap = once(
-                  roadmap,
-                  "- Phase 6 local AI portability and daily-use integration is in progress through IMP-077;",
-                  "- Phase 6 local AI portability and daily-use integration is in progress through IMP-078;",
-              )
-              roadmap = once(
-                  roadmap,
-                  "- the IMP-077 local-image OCR extension passes at the `ci` evidence level, including hosted macOS Vision adapter execution, and does not broaden accepted primary real-machine evidence;\n- the next bounded implementation receives IMP-078 only when a new implementation issue is opened;",
-                  "- the IMP-077 local-image OCR extension passes at the `ci` evidence level, including hosted macOS Vision adapter execution, and does not broaden accepted primary real-machine evidence;\n- IMP-078 composes one explicit local text or Markdown document into revise, summarize, and translate as the primary data-only writing source while preserving inline-source behavior and the existing task-authority boundary;\n- IMP-078 is assigned to Issue #239;\n- the IMP-078 text/Markdown writing-attachment extension passes at the `ci` evidence level and does not broaden accepted primary real-machine evidence;\n- the next bounded implementation receives IMP-079 only when a new implementation issue is opened;",
-              )
-              section = """
-### IMP-078 — Explicit text and Markdown writing attachments
-
-Status: implemented with deterministic synthetic CI evidence.
-
-Extended the accepted local writing workflow with one optional caller-selected `.txt`, `.md`, or `.markdown` source document. `revise`, `summarize`, and `translate` require exactly one primary source form: existing inline `source_text` or one explicit local document. `draft` remains source-free. Existing inline-source behavior is preserved.
-
-The workflow validates mode, request, source-form selection, target language, operation identity, conversation target, active binding, and runtime declaration before opening the selected file. The document is then read only through the unchanged IMP-074 bounded reader, including regular-file and symlink checks, one-megabyte byte limit, strict UTF-8, deterministic BOM handling, binary/control rejection, and path/open-handle identity, size, and modification-time verification. The existing 16,000-character writing-source limit is applied before any source InstructionOrigin is created.
-
-Validated document text enters only as data-only `external_content` through `extractor` / `extraction` with `untrusted_data` authority. The current user request remains the sole task-authority instruction. Hostile document instructions cannot change writing mode, target language, permissions, confirmation, capability authority, binding state, memory, project, decision, or completion authority. The source remains subject to the existing prompt-injection boundary.
-
-The content-free writing result identifies `none`, `inline`, or `document` source kind. Document-source metadata contains only document kind, source byte count, source SHA-256, returned-content SHA-256, BOM-removal state, and the existing writing-source character count. No native path, filename, source text, prompt text, response text, credential, or secret value is added to the result.
-
-IMP-078 creates no new persistent document or SourceRecord, copies no source file, creates no artifact or file-content index, performs no automatic discovery, directory traversal, globbing, semantic retrieval, model-selected context, process or shell execution, capability execution, network or cloud access, credential access, or binding change. Dedicated acceptance covers Markdown/BOM input, exact metadata, unchanged inline behavior, source-form conflicts, target-before-read ordering, invalid document failure before source-origin creation, writing limits, hostile document treatment, runtime failure, and exact source-file preservation. Standard CI covers Ubuntu, macOS, and Windows.
-
-IMP-078 does not establish PDF, OCR/image, or CSV writing attachments, multiple attachments, draft reference attachments, attachment persistence, source-record creation, artifact publication, persistent indexing, automatic file discovery, semantic retrieval, embeddings, ranking, model-selected context, Web retrieval, cloud inference, tools, target-specific export, accessibility presentation, Lite performance acceptance, the release-candidate soak, primary Intel Mac evidence for this extension, complete Phase 6, Lite v1.0 completion, or stable general anti-lock-in.
-
-"""
-              roadmap = once(
-                  roadmap,
-                  "\nSubsequent daily-use work may expand attachment integration, cross-platform OCR adapters, accessibility presentation, Lite performance measurements, and soak testing.",
-                  section + "Subsequent daily-use work may expand PDF/OCR/CSV and multiple-attachment integration, cross-platform OCR adapters, accessibility presentation, Lite performance measurements, and soak testing.",
-              )
-              roadmap_path.write_text(roadmap, encoding="utf-8")
-
-          matrix_path = Path("docs/testing/phase-6-daily-use-matrix.json")
-          matrix = json.loads(matrix_path.read_text(encoding="utf-8"))
-          matrix["text_markdown_writing_attachment_extension"] = {
-              "implementation": "IMP-078",
-              "status": "ci-pass",
-              "description": "One explicit local UTF-8 text or Markdown document can replace inline primary source text for revise, summarize, or translate while remaining data-only untrusted writing material.",
-              "pytest_files": ["tests/test_imp_078_text_markdown_writing_attachments.py", "tests/test_local_writing_workflow.py"],
-              "passed_evidence_levels": ["ci"],
-              "required_evidence_levels": ["ci"],
-              "selection_mode": "explicit-single-file",
-              "allowed_extensions": [".txt", ".md", ".markdown"],
-              "supported_modes": ["revise", "summarize", "translate"],
-              "draft_primary_source_allowed": False,
-              "exactly_one_primary_source": True,
-              "primary_source_forms": ["inline", "document"],
-              "reader_implementation": "IMP-074",
-              "maximum_document_source_bytes": 1048576,
-              "maximum_writing_source_characters": 16000,
-              "strict_utf8": True,
-              "utf8_bom_handling": "remove-and-report",
-              "symlinks_allowed": False,
-              "automatic_file_discovery": False,
-              "directory_traversal": False,
-              "globbing": False,
-              "persistent_document_record": False,
-              "source_record_created": False,
-              "artifact_created": False,
-              "persistent_index": False,
-              "semantic_retrieval": False,
-              "model_selected_context": False,
-              "network_access": False,
-              "cloud_access": False,
-              "process_launch": False,
-              "shell_execution": False,
-              "capability_execution": False,
-              "origin_class": "external_content",
-              "actor_type": "extractor",
-              "acquisition_method": "extraction",
-              "authority_class": "untrusted_data",
-              "phase6_gate_complete": False,
-              "lite_v1_complete": False,
-              "stable_anti_lock_in_claim": False,
-              "implementation_doc": "docs/implementation/imp-078-text-markdown-writing-attachments.md"
-          }
-          matrix_path.write_text(json.dumps(matrix, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-
-          status_path = Path("website/project-status.json")
-          status = json.loads(status_path.read_text(encoding="utf-8"))
-          status["phase"]["next_implementation"] = 79
-          status["model_runtime"]["message"] = (
-              "Phase 6 is in progress through IMP-078. Offline Ollama session import, explicit text-only loopback capture, the accepted bounded local-portability migration drill, the deterministic shutdown escape bundle, bounded ChatGPT selected-history import, imported-context replay with accepted primary Intel Mac evidence, bounded local draft/revise/summarize/translate workflows, explicit data-only state context, bounded local work-item proposals, explicit local portability review, structured local runtime failure guidance, a deterministic read-only doll doctor, explicit local full-text state search, explicit local UTF-8 text and Markdown reading, explicit local CSV inspection and transformation, optional local PDF text extraction, optional local image OCR, and explicit local text/Markdown writing attachment integration are implemented. The IMP-063/IMP-064 writing workflow passes at both CI and real-machine evidence levels. IMP-076 uses an invocation-only in-process pypdf adapter; encrypted documents fail closed, pages without extractable text are reported without OCR, and no source overwrite, output file, persistence, model execution, process launch, network access, native-path disclosure, or automatic context injection occurs. IMP-077 uses an invocation-only optional macOS Vision OCR adapter. IMP-078 allows exactly one explicit text or Markdown document to replace inline primary source text for revise, summarize, or translate while the document remains data-only untrusted content and no new persistent document record, artifact, index, automatic discovery, semantic retrieval, process, network, or cloud path is introduced. PDF/OCR/CSV and multiple-attachment writing integration, accessibility presentation, Lite performance measurements, the release soak gate, semantic or automatic retrieval, cross-platform real OCR adapters, tools, the complete Phase 6 gate, Lite v1.0, target-specific application replacement, and stable general anti-lock-in remain incomplete."
-          )
-          status["last_reviewed"] = "2026-08-08"
-          status_path.write_text(json.dumps(status, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-
-          checker_path = Path("scripts/check-public-site-status.mjs")
-          checker = checker_path.read_text(encoding="utf-8")
-          checker = once(checker, "status.phase?.next_implementation === 78,\n  \"project-status.json must mark Phase 6 in progress through IMP-077 with IMP-078 next\"", "status.phase?.next_implementation === 79,\n  \"project-status.json must mark Phase 6 in progress through IMP-078 with IMP-079 next\"")
-          checker = once(checker, 'status.model_runtime.message.includes("through IMP-077") &&', 'status.model_runtime.message.includes("through IMP-078") &&')
-          checker = once(checker, 'status.model_runtime.message.includes("optional local image OCR") &&', 'status.model_runtime.message.includes("optional local image OCR") &&\n    status.model_runtime.message.includes("text/Markdown writing attachment integration") &&')
-          checker = once(checker, '"project-status.json must describe IMP-077 without broadening accepted real-machine evidence"', '"project-status.json must describe IMP-078 without broadening accepted real-machine evidence"')
-          checker = once(checker, 'roadmap.includes("the next bounded implementation receives IMP-078 only when a new implementation issue is opened"),', 'roadmap.includes("### IMP-078 — Explicit text and Markdown writing attachments") &&\n    roadmap.includes("the next bounded implementation receives IMP-079 only when a new implementation issue is opened"),')
-          checker = once(checker, '"roadmap must record IMP-077 and identify IMP-078 as the next unallocated implementation identifier"', '"roadmap must record IMP-078 and identify IMP-079 as the next unallocated implementation identifier"')
-          marker = '  "IMP-077 local image OCR must remain optional, bounded, untrusted, local-only, and CI-only",\n);\n'
-          attachment_check = '''\n\nexpect(\n  dailyUse.text_markdown_writing_attachment_extension?.implementation === "IMP-078" &&\n    dailyUse.text_markdown_writing_attachment_extension?.status === "ci-pass" &&\n    JSON.stringify(dailyUse.text_markdown_writing_attachment_extension?.passed_evidence_levels) === JSON.stringify(["ci"]) &&\n    JSON.stringify(dailyUse.text_markdown_writing_attachment_extension?.required_evidence_levels) === JSON.stringify(["ci"]) &&\n    dailyUse.text_markdown_writing_attachment_extension?.selection_mode === "explicit-single-file" &&\n    JSON.stringify(dailyUse.text_markdown_writing_attachment_extension?.allowed_extensions) === JSON.stringify([".txt", ".md", ".markdown"]) &&\n    JSON.stringify(dailyUse.text_markdown_writing_attachment_extension?.supported_modes) === JSON.stringify(["revise", "summarize", "translate"]) &&\n    dailyUse.text_markdown_writing_attachment_extension?.draft_primary_source_allowed === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.exactly_one_primary_source === true &&\n    JSON.stringify(dailyUse.text_markdown_writing_attachment_extension?.primary_source_forms) === JSON.stringify(["inline", "document"]) &&\n    dailyUse.text_markdown_writing_attachment_extension?.reader_implementation === "IMP-074" &&\n    dailyUse.text_markdown_writing_attachment_extension?.maximum_document_source_bytes === 1048576 &&\n    dailyUse.text_markdown_writing_attachment_extension?.maximum_writing_source_characters === 16000 &&\n    dailyUse.text_markdown_writing_attachment_extension?.strict_utf8 === true &&\n    dailyUse.text_markdown_writing_attachment_extension?.utf8_bom_handling === "remove-and-report" &&\n    dailyUse.text_markdown_writing_attachment_extension?.symlinks_allowed === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.automatic_file_discovery === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.directory_traversal === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.globbing === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.persistent_document_record === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.source_record_created === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.artifact_created === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.persistent_index === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.semantic_retrieval === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.model_selected_context === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.network_access === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.cloud_access === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.process_launch === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.shell_execution === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.capability_execution === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.origin_class === "external_content" &&\n    dailyUse.text_markdown_writing_attachment_extension?.actor_type === "extractor" &&\n    dailyUse.text_markdown_writing_attachment_extension?.acquisition_method === "extraction" &&\n    dailyUse.text_markdown_writing_attachment_extension?.authority_class === "untrusted_data" &&\n    dailyUse.text_markdown_writing_attachment_extension?.phase6_gate_complete === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.lite_v1_complete === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.stable_anti_lock_in_claim === false &&\n    dailyUse.text_markdown_writing_attachment_extension?.implementation_doc === "docs/implementation/imp-078-text-markdown-writing-attachments.md",\n  "IMP-078 text/Markdown writing attachments must remain explicit, untrusted, local-only, and CI-only",\n);\n'''
-          checker = once(checker, marker, marker + attachment_check)
-          checker_path.write_text(checker, encoding="utf-8")
-          PY
-
-          python scripts/build_final_spec.py
-          node scripts/check-public-site-status.mjs
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add DOLL_FINAL_SPEC.md docs/spec/09-development-roadmap.md docs/testing/phase-6-daily-use-matrix.json scripts/check-public-site-status.mjs website/project-status.json
+          git diff --cached --quiet && exit 0
           git commit -m "Integrate IMP-078 roadmap and status"
           git push origin HEAD:imp-078-text-markdown-writing-attachments
