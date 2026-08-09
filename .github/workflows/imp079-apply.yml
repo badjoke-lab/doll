@@ -1,0 +1,32 @@
+name: IMP-079 core apply
+
+on:
+  push:
+    branches:
+      - imp-079-pdf-writing-attachment
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out implementation branch
+        uses: actions/checkout@v4
+        with:
+          ref: imp-079-pdf-writing-attachment
+
+      - name: Apply bounded core patch
+        run: python scripts/imp079_apply_tmp.py
+
+      - name: Commit core patch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/doll/local_writing.py
+          git diff --cached --quiet && exit 0
+          git commit -m "Implement IMP-079 PDF writing source core"
+          git push origin HEAD:imp-079-pdf-writing-attachment
