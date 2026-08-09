@@ -698,5 +698,78 @@
     "lite_v1_complete": false,
     "stable_anti_lock_in_claim": false,
     "implementation_doc": "docs/implementation/imp-079-pdf-writing-attachment.md"
+  },
+  "ocr_image_writing_attachment_extension": {
+    "implementation": "IMP-080",
+    "status": "ci-pass",
+    "description": "One explicit local PNG or JPEG can replace inline, text/Markdown, or PDF primary source material for revise, summarize, or translate after bounded IMP-077 OCR while remaining data-only untrusted writing material.",
+    "pytest_files": [
+      "tests/test_imp_080_ocr_image_writing_attachment.py",
+      "tests/test_imp_077_local_ocr.py",
+      "tests/test_local_writing_workflow.py"
+    ],
+    "passed_evidence_levels": [
+      "ci"
+    ],
+    "required_evidence_levels": [
+      "ci"
+    ],
+    "selection_mode": "explicit-single-file",
+    "allowed_extensions": [
+      ".png",
+      ".jpg",
+      ".jpeg"
+    ],
+    "supported_modes": [
+      "revise",
+      "summarize",
+      "translate"
+    ],
+    "draft_primary_source_allowed": false,
+    "exactly_one_primary_source": true,
+    "primary_source_forms": [
+      "inline",
+      "document",
+      "pdf",
+      "ocr"
+    ],
+    "reader_implementation": "IMP-077",
+    "adapter_optional": true,
+    "adapter_id": "ocrmac-vision",
+    "adapter_loading": "invocation-only",
+    "adapter_platform": "darwin",
+    "real_adapter_hosted_ci": true,
+    "primary_intel_mac_real_machine_evidence": false,
+    "line_order_preserved": true,
+    "line_join_separator": "\\n",
+    "maximum_source_bytes": 8388608,
+    "maximum_image_width": 10000,
+    "maximum_image_height": 10000,
+    "maximum_image_pixels": 25000000,
+    "maximum_recognized_lines": 1000,
+    "maximum_line_characters": 20000,
+    "maximum_ocr_aggregate_characters": 200000,
+    "maximum_writing_source_characters": 16000,
+    "symlinks_allowed": false,
+    "automatic_file_discovery": false,
+    "persistent_document_record": false,
+    "source_record_created": false,
+    "artifact_created": false,
+    "persistent_index": false,
+    "semantic_retrieval": false,
+    "model_selected_context": false,
+    "network_access": false,
+    "cloud_access": false,
+    "process_launch": false,
+    "shell_execution": false,
+    "capability_execution": false,
+    "origin_class": "external_content",
+    "actor_type": "extractor",
+    "acquisition_method": "ocr",
+    "authority_class": "untrusted_data",
+    "phase6_gate_complete": false,
+    "lite_v1_complete": false,
+    "stable_anti_lock_in_claim": false,
+    "implementation_doc": "docs/implementation/imp-080-ocr-image-writing-attachment.md"
   }
 }

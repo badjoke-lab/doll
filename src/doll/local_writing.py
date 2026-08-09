@@ -18,6 +18,7 @@ from doll.local_conversation import (
     _operation_id,
 )
 from doll.local_document import LocalDocumentError, LocalDocumentResult, read_local_document
+from doll.local_ocr import LocalOcrError, LocalOcrExtraction, extract_local_image_ocr
 from doll.local_pdf import LocalPdfError, LocalPdfExtraction, extract_local_pdf_text
 from doll.model_manifest import ModelManifestService, ModelManifestValidationError
 from doll.resume_bundle_context import (
@@ -37,7 +38,7 @@ from doll.writing_context import (
 )
 
 WritingMode = Literal["draft", "revise", "summarize", "translate"]
-WritingSourceKind = Literal["none", "inline", "document", "pdf"]
+WritingSourceKind = Literal["none", "inline", "document", "pdf", "ocr"]
 
 _ALLOWED_MODES = frozenset({"draft", "revise", "summarize", "translate"})
 _MAX_REQUEST_CHARS = 12_000
@@ -61,6 +62,7 @@ class _PreparedWritingSource:
     text: str | None
     document: LocalDocumentResult | None = None
     pdf: LocalPdfExtraction | None = None
+    ocr: LocalOcrExtraction | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -87,6 +89,16 @@ class LocalWritingWorkflowResult:
     source_pdf_selected_page_numbers: tuple[int, ...]
     source_pdf_empty_text_page_numbers: tuple[int, ...]
     source_pdf_extracted_character_count: int
+    source_ocr_adapter_id: str | None
+    source_ocr_adapter_version: str | None
+    source_ocr_source_byte_count: int
+    source_ocr_source_sha256: str | None
+    source_ocr_image_format: str | None
+    source_ocr_width: int
+    source_ocr_height: int
+    source_ocr_pixel_count: int
+    source_ocr_line_count: int
+    source_ocr_recognized_character_count: int
     selected_context_instruction_ids: tuple[str, ...]
     selected_memory_ids: tuple[str, ...]
     selected_project_ids: tuple[str, ...]
@@ -141,6 +153,7 @@ class LocalWritingWorkflowService:
         source_document_path: Path | None = None,
         source_pdf_path: Path | None = None,
         source_pdf_pages: Sequence[int] = (),
+        source_image_path: Path | None = None,
         target_language: str | None = None,
         memory_ids: Sequence[str] = (),
         project_ids: Sequence[str] = (),
@@ -161,6 +174,7 @@ class LocalWritingWorkflowService:
             source_document_path=source_document_path,
             source_pdf_path=source_pdf_path,
             source_pdf_pages=source_pdf_pages,
+            source_image_path=source_image_path,
         )
         inline_source = _source_text(source_text) if source_kind == "inline" else None
         safe_pdf_pages = _pdf_page_selection(source_pdf_pages) if source_kind == "pdf" else ()
@@ -181,6 +195,7 @@ class LocalWritingWorkflowService:
             source_document_path=source_document_path,
             source_pdf_path=source_pdf_path,
             source_pdf_pages=safe_pdf_pages,
+            source_image_path=source_image_path,
         )
 
         selected_service = SelectedWritingContextService(self.repository)
@@ -233,7 +248,7 @@ class LocalWritingWorkflowService:
                 source=InstructionSource(
                     origin_class="external_content",
                     actor_type="extractor",
-                    acquisition_method="extraction",
+                    acquisition_method=_source_acquisition_method(prepared_source.kind),
                     source_identifier=source_operation_id,
                     parent_operation_id=source_operation_id,
                     session_id=conversation_id,
@@ -371,13 +386,15 @@ def _source_kind_for_mode(
     source_document_path: object,
     source_pdf_path: object,
     source_pdf_pages: object,
+    source_image_path: object,
 ) -> WritingSourceKind:
     has_inline = source_text is not None
     has_document = source_document_path is not None
     has_pdf = source_pdf_path is not None
     has_pdf_pages = bool(source_pdf_pages)
+    has_image = source_image_path is not None
     if mode == "draft":
-        if has_inline or has_document or has_pdf or has_pdf_pages:
+        if has_inline or has_document or has_pdf or has_pdf_pages or has_image:
             raise LocalWritingWorkflowValidationError(
                 "draft mode does not accept primary source material"
             )
@@ -386,7 +403,7 @@ def _source_kind_for_mode(
         raise LocalWritingWorkflowValidationError(
             "PDF page selection requires a PDF primary source"
         )
-    if sum((has_inline, has_document, has_pdf)) != 1:
+    if sum((has_inline, has_document, has_pdf, has_image)) != 1:
         raise LocalWritingWorkflowValidationError(
             f"{mode} mode requires exactly one primary source"
         )
@@ -398,7 +415,17 @@ def _source_kind_for_mode(
         if not isinstance(source_pdf_path, Path):
             raise LocalWritingWorkflowValidationError("writing source PDF path is invalid")
         return "pdf"
+    if has_image:
+        if not isinstance(source_image_path, Path):
+            raise LocalWritingWorkflowValidationError("writing source OCR image path is invalid")
+        return "ocr"
     return "inline"
+
+
+def _source_acquisition_method(
+    source_kind: WritingSourceKind,
+) -> Literal["extraction", "ocr"]:
+    return "ocr" if source_kind == "ocr" else "extraction"
 
 
 def _source_for_mode(mode: WritingMode, value: object) -> str | None:
@@ -443,6 +470,7 @@ def _prepare_source_after_preflight(
     source_document_path: Path | None,
     source_pdf_path: Path | None,
     source_pdf_pages: tuple[int, ...],
+    source_image_path: Path | None,
 ) -> _PreparedWritingSource:
     if source_kind == "none":
         return _PreparedWritingSource(kind="none", text=None)
@@ -459,15 +487,25 @@ def _prepare_source_after_preflight(
         except (LocalDocumentError, LocalWritingWorkflowValidationError) as exc:
             raise LocalWritingWorkflowValidationError("writing source document is invalid") from exc
         return _PreparedWritingSource(kind="document", text=safe_text, document=document)
-    if source_pdf_path is None:
-        raise LocalWritingWorkflowValidationError("writing source PDF is unavailable")
+    if source_kind == "pdf":
+        if source_pdf_path is None:
+            raise LocalWritingWorkflowValidationError("writing source PDF is unavailable")
+        try:
+            pdf = extract_local_pdf_text(source_pdf_path, selected_pages=source_pdf_pages)
+            flattened = "\n\n".join(page.text for page in pdf.pages)
+            safe_text = _source_text(flattened)
+        except (LocalPdfError, LocalWritingWorkflowValidationError) as exc:
+            raise LocalWritingWorkflowValidationError("writing source PDF is invalid") from exc
+        return _PreparedWritingSource(kind="pdf", text=safe_text, pdf=pdf)
+    if source_image_path is None:
+        raise LocalWritingWorkflowValidationError("writing source OCR image is unavailable")
     try:
-        pdf = extract_local_pdf_text(source_pdf_path, selected_pages=source_pdf_pages)
-        flattened = "\n\n".join(page.text for page in pdf.pages)
+        ocr = extract_local_image_ocr(source_image_path)
+        flattened = "\n".join(line.text for line in ocr.lines)
         safe_text = _source_text(flattened)
-    except (LocalPdfError, LocalWritingWorkflowValidationError) as exc:
-        raise LocalWritingWorkflowValidationError("writing source PDF is invalid") from exc
-    return _PreparedWritingSource(kind="pdf", text=safe_text, pdf=pdf)
+    except (LocalOcrError, LocalWritingWorkflowValidationError) as exc:
+        raise LocalWritingWorkflowValidationError("writing source OCR image is invalid") from exc
+    return _PreparedWritingSource(kind="ocr", text=safe_text, ocr=ocr)
 
 
 def _target_language_for_mode(mode: WritingMode, value: object) -> str | None:
@@ -581,6 +619,7 @@ def _result(
 ) -> LocalWritingWorkflowResult:
     document = prepared_source.document
     pdf = prepared_source.pdf
+    ocr = prepared_source.ocr
     return LocalWritingWorkflowResult(
         mode=mode,
         target_language=target_language,
@@ -608,6 +647,18 @@ def _result(
         source_pdf_empty_text_page_numbers=(pdf.empty_text_page_numbers if pdf is not None else ()),
         source_pdf_extracted_character_count=(
             pdf.aggregate_character_count if pdf is not None else 0
+        ),
+        source_ocr_adapter_id=ocr.adapter_id if ocr is not None else None,
+        source_ocr_adapter_version=ocr.adapter_version if ocr is not None else None,
+        source_ocr_source_byte_count=ocr.source_byte_count if ocr is not None else 0,
+        source_ocr_source_sha256=ocr.source_sha256 if ocr is not None else None,
+        source_ocr_image_format=ocr.image_format if ocr is not None else None,
+        source_ocr_width=ocr.width if ocr is not None else 0,
+        source_ocr_height=ocr.height if ocr is not None else 0,
+        source_ocr_pixel_count=ocr.pixel_count if ocr is not None else 0,
+        source_ocr_line_count=ocr.line_count if ocr is not None else 0,
+        source_ocr_recognized_character_count=(
+            ocr.aggregate_character_count if ocr is not None else 0
         ),
         selected_context_instruction_ids=(
             selected_result.instruction_ids + bundle_result.instruction_ids

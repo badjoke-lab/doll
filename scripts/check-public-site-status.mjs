@@ -60,8 +60,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 80,
-  "project-status.json must mark Phase 6 in progress through IMP-079 with IMP-080 next",
+    status.phase?.next_implementation === 81,
+  "project-status.json must mark Phase 6 in progress through IMP-080 with IMP-081 next",
 );
 expect(
   status.model_runtime &&
@@ -70,17 +70,18 @@ expect(
   "project-status.json requires model_runtime.connected and model_runtime.message",
 );
 expect(
-  status.model_runtime.message.includes("through IMP-079") &&
+  status.model_runtime.message.includes("through IMP-080") &&
     status.model_runtime.message.includes("optional local PDF text extraction") &&
     status.model_runtime.message.includes("optional local image OCR") &&
     status.model_runtime.message.includes("text/Markdown writing attachment integration") &&
     status.model_runtime.message.includes("PDF writing attachment integration") &&
+    status.model_runtime.message.includes("OCR image writing attachment integration") &&
     status.model_runtime.message.includes("macOS Vision") &&
     status.model_runtime.message.includes("invocation-only in-process pypdf adapter") &&
     status.model_runtime.message.includes("reported without OCR") &&
     status.model_runtime.message.includes("no source overwrite, output file, persistence") &&
     status.model_runtime.message.includes("passes at both CI and real-machine evidence levels"),
-  "project-status.json must describe IMP-079 without broadening accepted real-machine evidence",
+  "project-status.json must describe IMP-080 without broadening accepted real-machine evidence",
 );
 expect(
   /^\d{4}-\d{2}-\d{2}$/.test(status.last_reviewed || ""),
@@ -676,6 +677,59 @@ expect(
   "IMP-079 PDF writing attachment must remain explicit, bounded, untrusted, local-only, and CI-only",
 );
 
+
+expect(
+  dailyUse.ocr_image_writing_attachment_extension?.implementation === "IMP-080" &&
+    dailyUse.ocr_image_writing_attachment_extension?.status === "ci-pass" &&
+    JSON.stringify(dailyUse.ocr_image_writing_attachment_extension?.passed_evidence_levels) === JSON.stringify(["ci"]) &&
+    JSON.stringify(dailyUse.ocr_image_writing_attachment_extension?.required_evidence_levels) === JSON.stringify(["ci"]) &&
+    dailyUse.ocr_image_writing_attachment_extension?.selection_mode === "explicit-single-file" &&
+    JSON.stringify(dailyUse.ocr_image_writing_attachment_extension?.allowed_extensions) === JSON.stringify([".png", ".jpg", ".jpeg"]) &&
+    JSON.stringify(dailyUse.ocr_image_writing_attachment_extension?.supported_modes) === JSON.stringify(["revise", "summarize", "translate"]) &&
+    dailyUse.ocr_image_writing_attachment_extension?.draft_primary_source_allowed === false &&
+    dailyUse.ocr_image_writing_attachment_extension?.exactly_one_primary_source === true &&
+    JSON.stringify(dailyUse.ocr_image_writing_attachment_extension?.primary_source_forms) === JSON.stringify(["inline", "document", "pdf", "ocr"]) &&
+    dailyUse.ocr_image_writing_attachment_extension?.reader_implementation === "IMP-077" &&
+    dailyUse.ocr_image_writing_attachment_extension?.adapter_optional === true &&
+    dailyUse.ocr_image_writing_attachment_extension?.adapter_id === "ocrmac-vision" &&
+    dailyUse.ocr_image_writing_attachment_extension?.adapter_loading === "invocation-only" &&
+    dailyUse.ocr_image_writing_attachment_extension?.adapter_platform === "darwin" &&
+    dailyUse.ocr_image_writing_attachment_extension?.real_adapter_hosted_ci === true &&
+    dailyUse.ocr_image_writing_attachment_extension?.primary_intel_mac_real_machine_evidence === false &&
+    dailyUse.ocr_image_writing_attachment_extension?.line_order_preserved === true &&
+    dailyUse.ocr_image_writing_attachment_extension?.line_join_separator === "\\n" &&
+    dailyUse.ocr_image_writing_attachment_extension?.maximum_source_bytes === 8388608 &&
+    dailyUse.ocr_image_writing_attachment_extension?.maximum_image_width === 10000 &&
+    dailyUse.ocr_image_writing_attachment_extension?.maximum_image_height === 10000 &&
+    dailyUse.ocr_image_writing_attachment_extension?.maximum_image_pixels === 25000000 &&
+    dailyUse.ocr_image_writing_attachment_extension?.maximum_recognized_lines === 1000 &&
+    dailyUse.ocr_image_writing_attachment_extension?.maximum_line_characters === 20000 &&
+    dailyUse.ocr_image_writing_attachment_extension?.maximum_ocr_aggregate_characters === 200000 &&
+    dailyUse.ocr_image_writing_attachment_extension?.maximum_writing_source_characters === 16000 &&
+    dailyUse.ocr_image_writing_attachment_extension?.symlinks_allowed === false &&
+    dailyUse.ocr_image_writing_attachment_extension?.automatic_file_discovery === false &&
+    dailyUse.ocr_image_writing_attachment_extension?.persistent_document_record === false &&
+    dailyUse.ocr_image_writing_attachment_extension?.source_record_created === false &&
+    dailyUse.ocr_image_writing_attachment_extension?.artifact_created === false &&
+    dailyUse.ocr_image_writing_attachment_extension?.persistent_index === false &&
+    dailyUse.ocr_image_writing_attachment_extension?.semantic_retrieval === false &&
+    dailyUse.ocr_image_writing_attachment_extension?.model_selected_context === false &&
+    dailyUse.ocr_image_writing_attachment_extension?.network_access === false &&
+    dailyUse.ocr_image_writing_attachment_extension?.cloud_access === false &&
+    dailyUse.ocr_image_writing_attachment_extension?.process_launch === false &&
+    dailyUse.ocr_image_writing_attachment_extension?.shell_execution === false &&
+    dailyUse.ocr_image_writing_attachment_extension?.capability_execution === false &&
+    dailyUse.ocr_image_writing_attachment_extension?.origin_class === "external_content" &&
+    dailyUse.ocr_image_writing_attachment_extension?.actor_type === "extractor" &&
+    dailyUse.ocr_image_writing_attachment_extension?.acquisition_method === "ocr" &&
+    dailyUse.ocr_image_writing_attachment_extension?.authority_class === "untrusted_data" &&
+    dailyUse.ocr_image_writing_attachment_extension?.phase6_gate_complete === false &&
+    dailyUse.ocr_image_writing_attachment_extension?.lite_v1_complete === false &&
+    dailyUse.ocr_image_writing_attachment_extension?.stable_anti_lock_in_claim === false &&
+    dailyUse.ocr_image_writing_attachment_extension?.implementation_doc === "docs/implementation/imp-080-ocr-image-writing-attachment.md",
+  "IMP-080 OCR image writing attachment must remain explicit, bounded, untrusted, local-only, and CI-only",
+);
+
 expect(
   localWritingPrimary.test_id === "IMP-064-LOCAL-WRITING-PRIMARY" &&
     localWritingPrimary.result === "pass" &&
@@ -1012,8 +1066,9 @@ expect(
   roadmap.includes("### IMP-077 — Optional local image OCR adapter") &&
     roadmap.includes("### IMP-078 — Explicit text and Markdown writing attachments") &&
     roadmap.includes("### IMP-079 — Explicit PDF writing attachment") &&
-    roadmap.includes("the next bounded implementation receives IMP-080 only when a new implementation issue is opened"),
-  "roadmap must record IMP-079 and identify IMP-080 as the next unallocated implementation identifier",
+    roadmap.includes("### IMP-080 — Explicit OCR image writing attachment") &&
+    roadmap.includes("the next bounded implementation receives IMP-081 only when a new implementation issue is opened"),
+  "roadmap must record IMP-080 and identify IMP-081 as the next unallocated implementation identifier",
 );
 expect(
   roadmap.includes("docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json"),
