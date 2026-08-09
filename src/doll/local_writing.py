@@ -17,6 +17,7 @@ from doll.local_conversation import (
     _message_text,
     _operation_id,
 )
+from doll.local_document import LocalDocumentError, LocalDocumentResult, read_local_document
 from doll.model_manifest import ModelManifestService, ModelManifestValidationError
 from doll.resume_bundle_context import (
     ResumeBundleWritingContextResult,
@@ -35,6 +36,7 @@ from doll.writing_context import (
 )
 
 WritingMode = Literal["draft", "revise", "summarize", "translate"]
+WritingSourceKind = Literal["none", "inline", "document"]
 
 _ALLOWED_MODES = frozenset({"draft", "revise", "summarize", "translate"})
 _MAX_REQUEST_CHARS = 12_000
@@ -53,6 +55,13 @@ class LocalWritingWorkflowValidationError(LocalWritingWorkflowError):
 
 
 @dataclass(frozen=True, slots=True)
+class _PreparedWritingSource:
+    kind: WritingSourceKind
+    text: str | None
+    document: LocalDocumentResult | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class LocalWritingWorkflowResult:
     """Content-free result for one bounded local writing workflow turn."""
 
@@ -62,6 +71,12 @@ class LocalWritingWorkflowResult:
     source_instruction_id: str | None
     source_instruction_count: int
     source_character_count: int
+    source_kind: WritingSourceKind
+    source_document_kind: str | None
+    source_document_source_byte_count: int
+    source_document_source_sha256: str | None
+    source_document_content_sha256: str | None
+    source_document_utf8_bom_removed: bool
     selected_context_instruction_ids: tuple[str, ...]
     selected_memory_ids: tuple[str, ...]
     selected_project_ids: tuple[str, ...]
@@ -113,6 +128,7 @@ class LocalWritingWorkflowService:
         request_text: str,
         operation_id: str,
         source_text: str | None = None,
+        source_document_path: Path | None = None,
         target_language: str | None = None,
         memory_ids: Sequence[str] = (),
         project_ids: Sequence[str] = (),
@@ -127,7 +143,12 @@ class LocalWritingWorkflowService:
 
         safe_mode = _mode(mode)
         safe_request = _request_text(request_text)
-        safe_source = _source_for_mode(safe_mode, source_text)
+        source_kind = _source_kind_for_mode(
+            safe_mode,
+            source_text=source_text,
+            source_document_path=source_document_path,
+        )
+        inline_source = _source_text(source_text) if source_kind == "inline" else None
         safe_target_language = _target_language_for_mode(safe_mode, target_language)
         safe_operation_id = _operation_id(operation_id)
 
@@ -137,6 +158,12 @@ class LocalWritingWorkflowService:
             scope_type=scope_type,
             scope_key=scope_key,
             parent_event_id=parent_event_id,
+        )
+
+        prepared_source = _prepare_source_after_preflight(
+            source_kind=source_kind,
+            inline_source=inline_source,
+            source_document_path=source_document_path,
         )
 
         selected_service = SelectedWritingContextService(self.repository)
@@ -180,12 +207,12 @@ class LocalWritingWorkflowService:
 
         source_instruction_id: str | None = None
         source_instruction_ids: tuple[str, ...] = ()
-        if safe_source is not None:
+        if prepared_source.text is not None:
             source_operation_id = _source_operation_id(safe_operation_id)
             self._require_unused_source_operation(source_operation_id)
             source_origin = InstructionOriginService(self.repository).create(
                 title=f"Local writing {safe_mode} source",
-                content=safe_source,
+                content=prepared_source.text,
                 source=InstructionSource(
                     origin_class="external_content",
                     actor_type="extractor",
@@ -193,7 +220,7 @@ class LocalWritingWorkflowService:
                     source_identifier=source_operation_id,
                     parent_operation_id=source_operation_id,
                     session_id=conversation_id,
-                    content_hash=_sha256_text(safe_source),
+                    content_hash=_sha256_text(prepared_source.text),
                 ),
                 operation_id=source_operation_id,
                 sensitivity=sensitivity,
@@ -255,7 +282,7 @@ class LocalWritingWorkflowService:
             mode=safe_mode,
             target_language=safe_target_language,
             source_instruction_id=source_instruction_id,
-            source_character_count=len(safe_source) if safe_source is not None else 0,
+            prepared_source=prepared_source,
             selected_result=selected_result,
             bundle_result=bundle_result,
             local_result=local_result,
@@ -320,13 +347,46 @@ def _request_text(value: object) -> str:
     return safe
 
 
+def _source_kind_for_mode(
+    mode: WritingMode,
+    *,
+    source_text: object,
+    source_document_path: object,
+) -> WritingSourceKind:
+    has_inline = source_text is not None
+    has_document = source_document_path is not None
+    if mode == "draft":
+        if has_inline or has_document:
+            raise LocalWritingWorkflowValidationError(
+                "draft mode does not accept primary source material"
+            )
+        return "none"
+    if has_inline == has_document:
+        raise LocalWritingWorkflowValidationError(
+            f"{mode} mode requires exactly one primary source"
+        )
+    if has_document:
+        if not isinstance(source_document_path, Path):
+            raise LocalWritingWorkflowValidationError("writing source document path is invalid")
+        return "document"
+    return "inline"
+
+
 def _source_for_mode(mode: WritingMode, value: object) -> str | None:
+    """Retain the accepted inline-source validation contract for existing callers/tests."""
+
     if mode == "draft":
         if value is not None:
             raise LocalWritingWorkflowValidationError("draft mode does not accept source text")
         return None
-    if not isinstance(value, str):
+    if value is None:
         raise LocalWritingWorkflowValidationError(f"{mode} mode requires source text")
+    return _source_text(value)
+
+
+def _source_text(value: object) -> str:
+    if not isinstance(value, str):
+        raise LocalWritingWorkflowValidationError("writing source must be text")
     try:
         safe = _message_text("writing source", value)
     except LocalConversationValidationError as exc:
@@ -336,6 +396,28 @@ def _source_for_mode(mode: WritingMode, value: object) -> str | None:
             "writing source exceeds the configured character limit"
         )
     return safe
+
+
+def _prepare_source_after_preflight(
+    *,
+    source_kind: WritingSourceKind,
+    inline_source: str | None,
+    source_document_path: Path | None,
+) -> _PreparedWritingSource:
+    if source_kind == "none":
+        return _PreparedWritingSource(kind="none", text=None)
+    if source_kind == "inline":
+        if inline_source is None:
+            raise LocalWritingWorkflowValidationError("writing inline source is unavailable")
+        return _PreparedWritingSource(kind="inline", text=inline_source)
+    if source_document_path is None:
+        raise LocalWritingWorkflowValidationError("writing source document is unavailable")
+    try:
+        document = read_local_document(source_document_path)
+        safe_text = _source_text(document.text)
+    except (LocalDocumentError, LocalWritingWorkflowValidationError) as exc:
+        raise LocalWritingWorkflowValidationError("writing source document is invalid") from exc
+    return _PreparedWritingSource(kind="document", text=safe_text, document=document)
 
 
 def _target_language_for_mode(mode: WritingMode, value: object) -> str | None:
@@ -442,11 +524,12 @@ def _result(
     mode: WritingMode,
     target_language: str | None,
     source_instruction_id: str | None,
-    source_character_count: int,
+    prepared_source: _PreparedWritingSource,
     selected_result: SelectedWritingContextResult,
     bundle_result: ResumeBundleWritingContextResult,
     local_result: LocalConversationResult,
 ) -> LocalWritingWorkflowResult:
+    document = prepared_source.document
     return LocalWritingWorkflowResult(
         mode=mode,
         target_language=target_language,
@@ -454,7 +537,17 @@ def _result(
         operation_id=local_result.operation_id,
         source_instruction_id=source_instruction_id,
         source_instruction_count=1 if source_instruction_id is not None else 0,
-        source_character_count=source_character_count,
+        source_character_count=len(prepared_source.text) if prepared_source.text is not None else 0,
+        source_kind=prepared_source.kind,
+        source_document_kind=document.document_kind if document is not None else None,
+        source_document_source_byte_count=(
+            document.source_byte_count if document is not None else 0
+        ),
+        source_document_source_sha256=document.source_sha256 if document is not None else None,
+        source_document_content_sha256=(document.content_sha256 if document is not None else None),
+        source_document_utf8_bom_removed=(
+            document.utf8_bom_removed if document is not None else False
+        ),
         selected_context_instruction_ids=(
             selected_result.instruction_ids + bundle_result.instruction_ids
         ),
