@@ -422,7 +422,9 @@ def _source_kind_for_mode(
     return "inline"
 
 
-def _source_acquisition_method(source_kind: WritingSourceKind) -> str:
+def _source_acquisition_method(
+    source_kind: WritingSourceKind,
+) -> Literal["extraction", "ocr"]:
     return "ocr" if source_kind == "ocr" else "extraction"
 
 

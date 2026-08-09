@@ -90,7 +90,7 @@ class _WritingAdapter:
         return ()
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(slots=True)
 class _StaticOcrAdapter:
     lines: tuple[str, ...]
     adapter_id: str = "fake-ocr"
