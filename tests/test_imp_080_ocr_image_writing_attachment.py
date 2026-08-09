@@ -123,7 +123,9 @@ def _active_binding(repository: state.StateRepository, adapter: _WritingAdapter)
         automatic_download=False,
         platforms=("test",),
     )
-    runtime = service.verify_runtime(runtime.runtime_manifest_id, expected_revision=runtime.revision)
+    runtime = service.verify_runtime(
+        runtime.runtime_manifest_id, expected_revision=runtime.revision
+    )
     model = service.create_model(
         runtime_manifest_id=runtime.runtime_manifest_id,
         runtime_private_locator="fake.imp080.model.1",
@@ -258,7 +260,9 @@ def test_ocr_image_is_validated_and_enters_writing_as_data_only_ocr_source(
         assert (result.source_ocr_width, result.source_ocr_height) == (3, 2)
         assert result.source_ocr_pixel_count == 6
         assert result.source_ocr_line_count == 2
-        assert result.source_ocr_recognized_character_count == len("First recognized lineSecond line")
+        assert result.source_ocr_recognized_character_count == len(
+            "First recognized lineSecond line"
+        )
 
         origin = InstructionOriginService(repository).get(result.source_instruction_id)
         assert origin.source.acquisition_method == "ocr"

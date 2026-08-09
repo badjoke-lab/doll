@@ -502,9 +502,7 @@ def _prepare_source_after_preflight(
         flattened = "\n".join(line.text for line in ocr.lines)
         safe_text = _source_text(flattened)
     except (LocalOcrError, LocalWritingWorkflowValidationError) as exc:
-        raise LocalWritingWorkflowValidationError(
-            "writing source OCR image is invalid"
-        ) from exc
+        raise LocalWritingWorkflowValidationError("writing source OCR image is invalid") from exc
     return _PreparedWritingSource(kind="ocr", text=safe_text, ocr=ocr)
 
 
