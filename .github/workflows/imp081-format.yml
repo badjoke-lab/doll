@@ -1,0 +1,49 @@
+name: IMP-081 format
+
+on:
+  push:
+    branches:
+      - imp-081-csv-writing-attachment
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-081-csv-writing-attachment
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - name: Fix acceptance fixture directory
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("tests/test_imp_081_csv_writing_attachment.py")
+          text = path.read_text(encoding="utf-8")
+          old = '    path = tmp_path / "private-source.csv"\n    payload = text.encode("utf-8")\n'
+          new = '    path = tmp_path / "private-source.csv"\n    path.parent.mkdir(parents=True, exist_ok=True)\n    payload = text.encode("utf-8")\n'
+          if old not in text:
+              raise SystemExit("source fixture marker missing")
+          path.write_text(text.replace(old, new, 1), encoding="utf-8")
+          PY
+      - name: Format and lint implementation files
+        run: |
+          uv run ruff format src/doll/local_writing.py tests/test_imp_081_csv_writing_attachment.py
+          uv run ruff check --fix src/doll/local_writing.py tests/test_imp_081_csv_writing_attachment.py
+      - name: Commit formatting
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/doll/local_writing.py tests/test_imp_081_csv_writing_attachment.py
+          git diff --cached --quiet && exit 0
+          git commit -m "Format IMP-081 implementation"
+          git push origin HEAD:imp-081-csv-writing-attachment
