@@ -570,5 +570,65 @@
     "lite_v1_complete": false,
     "stable_anti_lock_in_claim": false,
     "implementation_doc": "docs/implementation/imp-077-optional-local-image-ocr.md"
+  },
+  "text_markdown_writing_attachment_extension": {
+    "implementation": "IMP-078",
+    "status": "ci-pass",
+    "description": "One explicit local UTF-8 text or Markdown document can replace inline primary source text for revise, summarize, or translate while remaining data-only untrusted writing material.",
+    "pytest_files": [
+      "tests/test_imp_078_text_markdown_writing_attachments.py",
+      "tests/test_local_writing_workflow.py"
+    ],
+    "passed_evidence_levels": [
+      "ci"
+    ],
+    "required_evidence_levels": [
+      "ci"
+    ],
+    "selection_mode": "explicit-single-file",
+    "allowed_extensions": [
+      ".txt",
+      ".md",
+      ".markdown"
+    ],
+    "supported_modes": [
+      "revise",
+      "summarize",
+      "translate"
+    ],
+    "draft_primary_source_allowed": false,
+    "exactly_one_primary_source": true,
+    "primary_source_forms": [
+      "inline",
+      "document"
+    ],
+    "reader_implementation": "IMP-074",
+    "maximum_document_source_bytes": 1048576,
+    "maximum_writing_source_characters": 16000,
+    "strict_utf8": true,
+    "utf8_bom_handling": "remove-and-report",
+    "symlinks_allowed": false,
+    "automatic_file_discovery": false,
+    "directory_traversal": false,
+    "globbing": false,
+    "persistent_document_record": false,
+    "source_record_created": false,
+    "artifact_created": false,
+    "persistent_index": false,
+    "semantic_retrieval": false,
+    "model_selected_context": false,
+    "network_access": false,
+    "cloud_access": false,
+    "process_launch": false,
+    "shell_execution": false,
+    "capability_execution": false,
+    "origin_class": "external_content",
+    "actor_type": "extractor",
+    "acquisition_method": "extraction",
+    "authority_class": "untrusted_data",
+    "phase6_gate_complete": false,
+    "lite_v1_complete": false,
+    "stable_anti_lock_in_claim": false,
+    "implementation_doc": "docs/implementation/imp-078-text-markdown-writing-attachments.md"
   }
 }
