@@ -630,5 +630,73 @@
     "lite_v1_complete": false,
     "stable_anti_lock_in_claim": false,
     "implementation_doc": "docs/implementation/imp-078-text-markdown-writing-attachments.md"
+  },
+  "pdf_writing_attachment_extension": {
+    "implementation": "IMP-079",
+    "status": "ci-pass",
+    "description": "One explicit local PDF can replace inline or text/Markdown primary source material for revise, summarize, or translate after bounded IMP-076 extraction while remaining data-only untrusted writing material.",
+    "pytest_files": [
+      "tests/test_imp_079_pdf_writing_attachment.py",
+      "tests/test_local_writing_workflow.py",
+      "tests/test_imp_076_local_pdf.py"
+    ],
+    "passed_evidence_levels": [
+      "ci"
+    ],
+    "required_evidence_levels": [
+      "ci"
+    ],
+    "selection_mode": "explicit-single-file",
+    "allowed_extensions": [
+      ".pdf"
+    ],
+    "supported_modes": [
+      "revise",
+      "summarize",
+      "translate"
+    ],
+    "draft_primary_source_allowed": false,
+    "exactly_one_primary_source": true,
+    "primary_source_forms": [
+      "inline",
+      "document",
+      "pdf"
+    ],
+    "reader_implementation": "IMP-076",
+    "adapter_optional": true,
+    "adapter_id": "pypdf",
+    "adapter_loading": "invocation-only",
+    "page_numbering": "one-based",
+    "caller_order_preserved": true,
+    "page_join_separator": "\\n\\n",
+    "maximum_pdf_source_bytes": 8388608,
+    "maximum_document_pages": 200,
+    "maximum_selected_pages": 100,
+    "maximum_pdf_page_characters": 100000,
+    "maximum_pdf_aggregate_characters": 1000000,
+    "maximum_writing_source_characters": 16000,
+    "encrypted_pdf_allowed": false,
+    "ocr_used": false,
+    "symlinks_allowed": false,
+    "automatic_file_discovery": false,
+    "persistent_document_record": false,
+    "source_record_created": false,
+    "artifact_created": false,
+    "persistent_index": false,
+    "semantic_retrieval": false,
+    "model_selected_context": false,
+    "network_access": false,
+    "cloud_access": false,
+    "process_launch": false,
+    "shell_execution": false,
+    "capability_execution": false,
+    "origin_class": "external_content",
+    "actor_type": "extractor",
+    "acquisition_method": "extraction",
+    "authority_class": "untrusted_data",
+    "phase6_gate_complete": false,
+    "lite_v1_complete": false,
+    "stable_anti_lock_in_claim": false,
+    "implementation_doc": "docs/implementation/imp-079-pdf-writing-attachment.md"
   }
 }
