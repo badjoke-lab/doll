@@ -457,9 +457,7 @@ def _prepare_source_after_preflight(
             document = read_local_document(source_document_path)
             safe_text = _source_text(document.text)
         except (LocalDocumentError, LocalWritingWorkflowValidationError) as exc:
-            raise LocalWritingWorkflowValidationError(
-                "writing source document is invalid"
-            ) from exc
+            raise LocalWritingWorkflowValidationError("writing source document is invalid") from exc
         return _PreparedWritingSource(kind="document", text=safe_text, document=document)
     if source_pdf_path is None:
         raise LocalWritingWorkflowValidationError("writing source PDF is unavailable")
@@ -606,12 +604,8 @@ def _result(
         source_pdf_source_byte_count=pdf.source_byte_count if pdf is not None else 0,
         source_pdf_source_sha256=pdf.source_sha256 if pdf is not None else None,
         source_pdf_document_page_count=pdf.document_page_count if pdf is not None else 0,
-        source_pdf_selected_page_numbers=(
-            pdf.selected_page_numbers if pdf is not None else ()
-        ),
-        source_pdf_empty_text_page_numbers=(
-            pdf.empty_text_page_numbers if pdf is not None else ()
-        ),
+        source_pdf_selected_page_numbers=(pdf.selected_page_numbers if pdf is not None else ()),
+        source_pdf_empty_text_page_numbers=(pdf.empty_text_page_numbers if pdf is not None else ()),
         source_pdf_extracted_character_count=(
             pdf.aggregate_character_count if pdf is not None else 0
         ),
