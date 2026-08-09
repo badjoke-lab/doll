@@ -224,7 +224,8 @@ def test_csv_transform_becomes_data_only_source_with_path_free_metadata(tmp_path
         assert "extra" not in material
         assert "=1+1" not in current
         assert prompt["channels"]["untrusted_content"][0]["data_only"] is True
-        assert result.source_character_count == len(material)
+        assert result.source_character_count == result.source_csv_output_character_count
+        assert result.source_character_count == len(material) + 1
         assert source.name not in repr(result)
         assert str(source) not in repr(result)
         assert "Alice" not in repr(result)
