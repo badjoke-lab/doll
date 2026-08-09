@@ -310,6 +310,44 @@ def test_csv_source_conflicts_options_and_draft_fail_before_runtime(tmp_path: Pa
                 operation_id="imp081.invalid.renames.type",
             )
 
+        with pytest.raises(
+            LocalWritingWorkflowValidationError, match="delimiter profile is invalid"
+        ):
+            service.execute(
+                mode="revise",
+                conversation_id=conversation_id,
+                scope_type="conversation",
+                scope_key="writing",
+                request_text="Revise.",
+                source_csv_path=csv_path,
+                source_csv_delimiter_profile=cast(str, 1),
+                operation_id="imp081.invalid.delimiter.type",
+            )
+        with pytest.raises(
+            LocalWritingWorkflowValidationError, match="selected columns are invalid"
+        ):
+            service.execute(
+                mode="revise",
+                conversation_id=conversation_id,
+                scope_type="conversation",
+                scope_key="writing",
+                request_text="Revise.",
+                source_csv_path=csv_path,
+                source_csv_selected_columns=cast(Sequence[str], "name"),
+                operation_id="imp081.invalid.columns.string",
+            )
+        with pytest.raises(LocalWritingWorkflowValidationError, match="header renames are invalid"):
+            service.execute(
+                mode="revise",
+                conversation_id=conversation_id,
+                scope_type="conversation",
+                scope_key="writing",
+                request_text="Revise.",
+                source_csv_path=csv_path,
+                source_csv_header_renames=cast(Mapping[str, str], (("name", "title"),)),
+                operation_id="imp081.invalid.renames.shape",
+            )
+
         assert adapter.prompts == []
         assert _origin_count(repository) == before
 
