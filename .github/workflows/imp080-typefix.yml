@@ -1,0 +1,57 @@
+name: IMP-080 typing fixes
+
+on:
+  push:
+    branches:
+      - imp-080-ocr-image-writing-attachment
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-080-ocr-image-writing-attachment
+      - name: Apply narrow typing fixes
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          core = Path("src/doll/local_writing.py")
+          text = core.read_text(encoding="utf-8")
+          old = "def _source_acquisition_method(source_kind: WritingSourceKind) -> str:\n"
+          new = 'def _source_acquisition_method(\n    source_kind: WritingSourceKind,\n) -> Literal["extraction", "ocr"]:\n'
+          if old not in text:
+              raise SystemExit("source acquisition helper marker missing")
+          core.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+          test = Path("tests/test_imp_080_ocr_image_writing_attachment.py")
+          text = test.read_text(encoding="utf-8")
+          old = "@dataclass(frozen=True, slots=True)\nclass _StaticOcrAdapter:\n"
+          new = "@dataclass(slots=True)\nclass _StaticOcrAdapter:\n"
+          if old not in text:
+              raise SystemExit("fake OCR adapter marker missing")
+          test.write_text(text.replace(old, new, 1), encoding="utf-8")
+          PY
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - run: uv run ruff format src/doll/local_writing.py tests/test_imp_080_ocr_image_writing_attachment.py
+      - run: uv run ruff check src/doll/local_writing.py tests/test_imp_080_ocr_image_writing_attachment.py
+      - run: uv run mypy src/doll/local_writing.py tests/test_imp_080_ocr_image_writing_attachment.py
+      - name: Commit typing fixes
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/doll/local_writing.py tests/test_imp_080_ocr_image_writing_attachment.py
+          git diff --cached --quiet && exit 0
+          git commit -m "Fix IMP-080 typing contracts"
+          git push origin HEAD:imp-080-ocr-image-writing-attachment
