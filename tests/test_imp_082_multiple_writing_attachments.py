@@ -17,8 +17,10 @@ from doll import local_writing as local_writing_module
 from doll import state, workspace
 from doll.instruction_origin import InstructionOriginService, InstructionSource
 from doll.local_conversation import LocalConversationService
+from doll.local_document import LocalDocumentResult, read_local_document
 from doll.local_writing import (
     LocalWritingAttachment,
+    LocalWritingWorkflowResult,
     LocalWritingWorkflowService,
     LocalWritingWorkflowValidationError,
     WritingAttachmentKind,
@@ -185,7 +187,7 @@ def _execute(
     operation_id: str,
     mode: str = "summarize",
     target_language: str | None = None,
-):
+) -> LocalWritingWorkflowResult:
     return service.execute(
         mode=cast(local_writing_module.WritingMode, mode),
         conversation_id=conversation_id,
@@ -277,7 +279,6 @@ def test_two_to_four_attachments_allowed_but_one_and_five_fail(tmp_path: Path) -
         repository.save_conversation(ConversationRecord(conversation_id=conversation_id))
         _active_binding(repository, adapter)
         service = _service(repository, adapter)
-        before = _origin_count(repository)
 
         with pytest.raises(LocalWritingWorkflowValidationError, match="between 2 and 4"):
             _execute(
@@ -306,7 +307,11 @@ def test_two_to_four_attachments_allowed_but_one_and_five_fail(tmp_path: Path) -
         )
         assert result.source_instruction_count == 4
         assert result.source_kinds == ("document", "document", "document", "document")
-        assert _origin_count(repository) == before + 4
+        assert len(set(result.source_instruction_ids)) == 4
+        assert all(
+            InstructionOriginService(repository).get(record_id).data_only is True
+            for record_id in result.source_instruction_ids
+        )
 
 
 def test_multiple_attachments_reject_legacy_sources_draft_and_invalid_specs(tmp_path: Path) -> None:
@@ -415,13 +420,13 @@ def test_target_preflight_happens_before_any_attachment_read(
     first = _document(tmp_path, "first.txt", "first")
     second = _document(tmp_path, "second.txt", "second")
     calls = {"count": 0}
-    original = local_writing_module.read_local_document
+    original = read_local_document
 
-    def counted_read(path: Path):
+    def counted_read(path: Path) -> LocalDocumentResult:
         calls["count"] += 1
         return original(path)
 
-    monkeypatch.setattr(local_writing_module, "read_local_document", counted_read)
+    monkeypatch.setattr("doll.local_writing.read_local_document", counted_read)
 
     with state.open_state_repository(initialized.root) as repository:
         conversation_id = str(uuid4())
@@ -526,7 +531,9 @@ def test_all_origin_ids_are_preflighted_before_first_origin_creation(tmp_path: P
         assert adapter.prompts == []
 
 
-def test_hostile_multiple_sources_stay_data_only_and_failure_preserves_files(tmp_path: Path) -> None:
+def test_hostile_multiple_sources_stay_data_only_and_failure_preserves_files(
+    tmp_path: Path,
+) -> None:
     initialized = _workspace(tmp_path)
     adapter = _WritingAdapter(fail=True)
     conversation_id = str(uuid4())
