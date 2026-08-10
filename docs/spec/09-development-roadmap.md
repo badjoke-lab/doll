@@ -94,7 +94,7 @@ Current implementation point:
 - Phase 5 passed its local-runtime continuity gate on 2026-06-28;
 - accepted real-machine evidence is bound to commit `1a5b66b2417d6f3e1eafcd14d2769e9c15d7f96c` on the primary Intel Mac with networking disabled;
 - IMP-048 through IMP-054 establish the runtime contract, loopback-only Ollama adapter, authoritative manifests and bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, State Package v2 transfer, backup restore, and accepted LRUN-001 through LRUN-012 evidence;
-- Phase 6 local AI portability and daily-use integration is in progress through IMP-080;
+- Phase 6 local AI portability and daily-use integration is in progress through IMP-081;
 - IMP-055 adds an offline source adapter for a documented caller-retained Ollama API session bundle, with exact JSON validation, content-free inventory, original-source hashing, deterministic normalization, explicit attachment-metadata loss, and reuse of the accepted generic staging and reviewed-publication boundary;
 - IMP-056 adds an explicit non-streaming text-only capture path through fixed IPv4 loopback, resolves one opaque already-installed local model through the filtered inventory, and returns an IMP-055-valid session bundle without reading application databases, logs, shell history, or unrelated sessions;
 - IMP-057 merged at commit `7b63ff512e20d1d6ae65da8938486b093e14b6c6` and composes explicit capture, reviewed canonical import, idempotency and conflict checks, generic export, State Package v2 transfer, backup restore, and alternate fresh-process inspection without the capture component;
@@ -166,7 +166,10 @@ Current implementation point:
 - IMP-080 composes one explicitly selected local PNG or JPEG through the bounded IMP-077 OCR path into revise, summarize, and translate as the primary data-only writing source while preserving the exactly-one-primary-source contract;
 - IMP-080 is assigned to Issue #243;
 - the IMP-080 OCR-image writing-attachment extension passes at the `ci` evidence level and does not broaden accepted primary real-machine evidence;
-- the next bounded implementation receives IMP-081 only when a new implementation issue is opened;
+- IMP-081 composes one explicitly selected local UTF-8 CSV through the bounded IMP-075 transformation path into revise, summarize, and translate as the primary data-only writing source while preserving the exactly-one-primary-source contract;
+- IMP-081 is assigned to Issue #245;
+- the IMP-081 CSV writing-attachment extension passes at the `ci` evidence level and does not broaden accepted primary real-machine evidence;
+- the next bounded implementation receives IMP-082 only when a new implementation issue is opened;
 - later local migration, cloud, and tool work must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts.
 
 Implementation identifier policy:
@@ -958,7 +961,24 @@ Dedicated acceptance exercises real IMP-077 PNG structural/source validation wit
 
 IMP-080 does not establish image understanding beyond OCR, PDF OCR or scanned-PDF fallback, Windows/Linux real OCR adapters, CSV writing attachment integration, multiple attachments, mixed primary sources, draft reference attachments, attachment persistence, SourceRecord creation, artifact publication, persistent indexing, automatic file discovery, semantic retrieval, embeddings, ranking, model-selected context, Web retrieval, process or shell execution, tools, capability execution, network or cloud access, target-specific export, accessibility presentation, Lite performance acceptance, the release-candidate soak, complete Phase 6, Lite v1.0 completion, or stable general anti-lock-in.
 
-Subsequent daily-use work may expand CSV and multiple-attachment writing integration, cross-platform OCR adapters, accessibility presentation, Lite performance measurements, and soak testing.
+
+### IMP-081 — Explicit CSV writing attachment
+
+Status: implemented with deterministic synthetic CI evidence.
+
+Extended the accepted local writing workflow with one optional caller-selected UTF-8 CSV primary source. `revise`, `summarize`, and `translate` now require exactly one of inline source text, one explicit text/Markdown document, one explicit PDF, one explicit OCR image, or one explicit CSV. `draft` remains source-free. Existing inline, document, PDF, and OCR source behavior is preserved.
+
+The workflow validates source-form selection, CSV option types, operation identity, conversation target, capacity, active binding, and runtime declaration before reading or transforming the selected CSV. The CSV then passes only through the unchanged IMP-075 bounded transformation boundary, including regular non-symlink file validation, strict UTF-8 and deterministic BOM handling, explicit comma/tab/semicolon/pipe delimiter profiles, rectangular parsing, bounded source/row/column/cell limits, exact caller-ordered column selection and reordering, and exact header renaming. Formula-like cells remain visible strings and are never evaluated or executed.
+
+Only the deterministic transformed CSV text becomes writing material. It must satisfy the existing 16,000-character writing-source limit before a writing-source InstructionOrigin is created. The transformed CSV remains data-only `external_content` through `extractor` / `extraction` with `untrusted_data` authority. The current user request remains the only task-authority instruction. CSV cell content cannot change writing mode, target language, permissions, confirmation, capability authority, binding state, memory, project state, decisions, completion authority, or other authoritative state.
+
+The content-free writing result identifies `csv` source kind and exposes only the selected delimiter profile, source and transformed hashes/byte counts, BOM-removal state, row and source/output column counts, blank-cell count, potential-formula-cell count, transformed output byte/character count and hash, plus the existing writing-source character count. Native path, filename, header or cell text, prompt text, generated response text, credentials, and secrets are not added to the result.
+
+Dedicated acceptance covers BOM/semicolon parsing, caller-selected column order and header renaming, formula-like text preservation without execution, source-form conflicts, invalid option shapes, target-before-transform ordering, transform errors before source-origin creation, missing-column and writing-limit failure, hostile CSV instructions, runtime failure, path privacy, exact source-file preservation, and the accepted writing-source newline normalization contract. Standard CI passes on Ubuntu, macOS, and Windows; Windows coverage remains above the unchanged 95% project threshold. IMP-081 does not broaden the accepted IMP-064 primary Intel Mac real-machine evidence.
+
+IMP-081 does not establish formula execution, spreadsheet formats such as XLSX/ODS, multiple attachments, mixed primary sources, draft reference attachments, attachment persistence, SourceRecord creation, artifact publication, persistent indexing, automatic file discovery, semantic retrieval, embeddings, ranking, model-selected context, Web retrieval, process or shell execution, tools, capability execution, network or cloud access, target-specific export, accessibility presentation, Lite performance acceptance, the release-candidate soak, complete Phase 6, Lite v1.0 completion, or stable general anti-lock-in.
+
+Subsequent daily-use work may expand multiple-attachment writing integration, cross-platform OCR adapters, accessibility presentation, Lite performance measurements, and soak testing.
 
 ## 13. Phase 7 — Optional cloud and multiple models
 

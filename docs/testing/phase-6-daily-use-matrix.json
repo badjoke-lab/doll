@@ -771,5 +771,75 @@
     "lite_v1_complete": false,
     "stable_anti_lock_in_claim": false,
     "implementation_doc": "docs/implementation/imp-080-ocr-image-writing-attachment.md"
+  },
+  "csv_writing_attachment_extension": {
+    "implementation": "IMP-081",
+    "status": "ci-pass",
+    "description": "One explicit local UTF-8 CSV can replace inline, text/Markdown, PDF, or OCR primary source material for revise, summarize, or translate after bounded IMP-075 transformation while remaining data-only untrusted writing material.",
+    "pytest_files": [
+      "tests/test_imp_081_csv_writing_attachment.py",
+      "tests/test_imp_075_local_csv.py",
+      "tests/test_local_writing_workflow.py"
+    ],
+    "passed_evidence_levels": [
+      "ci"
+    ],
+    "required_evidence_levels": [
+      "ci"
+    ],
+    "selection_mode": "explicit-single-file",
+    "allowed_extensions": [
+      ".csv"
+    ],
+    "supported_modes": [
+      "revise",
+      "summarize",
+      "translate"
+    ],
+    "draft_primary_source_allowed": false,
+    "exactly_one_primary_source": true,
+    "primary_source_forms": [
+      "inline",
+      "document",
+      "pdf",
+      "ocr",
+      "csv"
+    ],
+    "reader_implementation": "IMP-075",
+    "delimiter_profiles": [
+      "comma",
+      "tab",
+      "semicolon",
+      "pipe"
+    ],
+    "caller_ordered_column_selection": true,
+    "column_reordering": true,
+    "header_renaming": true,
+    "formula_evaluation": false,
+    "formula_like_cells_preserved_as_text": true,
+    "maximum_writing_source_characters": 16000,
+    "strict_utf8": true,
+    "utf8_bom_handling": "remove-and-report",
+    "symlinks_allowed": false,
+    "automatic_file_discovery": false,
+    "persistent_document_record": false,
+    "source_record_created": false,
+    "artifact_created": false,
+    "persistent_index": false,
+    "semantic_retrieval": false,
+    "model_selected_context": false,
+    "network_access": false,
+    "cloud_access": false,
+    "process_launch": false,
+    "shell_execution": false,
+    "capability_execution": false,
+    "origin_class": "external_content",
+    "actor_type": "extractor",
+    "acquisition_method": "extraction",
+    "authority_class": "untrusted_data",
+    "phase6_gate_complete": false,
+    "lite_v1_complete": false,
+    "stable_anti_lock_in_claim": false,
+    "implementation_doc": "docs/implementation/imp-081-csv-writing-attachment.md"
   }
 }
