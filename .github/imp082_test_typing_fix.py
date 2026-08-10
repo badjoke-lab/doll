@@ -31,6 +31,10 @@ replacements = {
         "            for record_id in result.source_instruction_ids\n"
         "        )\n"
     ),
+    "        service = _service(repository, adapter)\n        before = _origin_count(repository)\n\n        with pytest.raises(LocalWritingWorkflowValidationError, match=\"between 2 and 4\"):\n": (
+        "        service = _service(repository, adapter)\n\n"
+        "        with pytest.raises(LocalWritingWorkflowValidationError, match=\"between 2 and 4\"):\n"
+    ),
 }
 for old, new in replacements.items():
     count = text.count(old)
