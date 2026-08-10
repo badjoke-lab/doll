@@ -11,6 +11,9 @@ replacements = {
     '    monkeypatch.setattr(measurement_module.os, "name", "nt")\n': (
         '    monkeypatch.setattr(os, "name", "nt")\n'
     ),
+    '    monkeypatch.setattr(measurement_module.os, "scandir", fail_scan)\n': (
+        '    monkeypatch.setattr(os, "scandir", fail_scan)\n'
+    ),
     "            rss_reader=cast(object, lambda: object()),\n": (
         "            rss_reader=cast(Callable[[], ProcessRssSnapshot], lambda: object()),\n"
     ),
