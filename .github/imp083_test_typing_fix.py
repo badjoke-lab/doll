@@ -4,7 +4,7 @@ path = Path("tests/test_imp_083_lite_client_measurement.py")
 text = path.read_text(encoding="utf-8")
 
 replacements = {
-    "import json\nfrom pathlib import Path\nfrom typing import cast\n": (
+    "import json\nimport os\nfrom pathlib import Path\nfrom typing import cast\n": (
         "import ctypes\nimport json\nimport os\nfrom collections.abc import Callable\n"
         "from pathlib import Path\nfrom typing import cast\n"
     ),
