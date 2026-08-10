@@ -22,6 +22,7 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --dev --locked
       - run: uv run ruff format src/doll/lite_measurement.py tests/test_imp_083_lite_client_measurement.py scripts/run_imp_083_lite_client_measurement.py
+      - run: uv run ruff check --fix src/doll/lite_measurement.py tests/test_imp_083_lite_client_measurement.py scripts/run_imp_083_lite_client_measurement.py
       - run: uv run ruff check src/doll/lite_measurement.py tests/test_imp_083_lite_client_measurement.py scripts/run_imp_083_lite_client_measurement.py
       - run: uv run mypy src/doll/lite_measurement.py tests/test_imp_083_lite_client_measurement.py scripts/run_imp_083_lite_client_measurement.py
       - run: uv run pytest -q --no-cov tests/test_imp_083_lite_client_measurement.py
