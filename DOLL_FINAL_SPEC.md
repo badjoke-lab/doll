@@ -24,7 +24,7 @@
 - `docs/spec/08-acceptance-and-continuity-tests.md` — SHA-256 `1ae9b70cf28257b35a30238bdc46c2caea93dbd17fdf8b516ff708c9e208a698`
 - `docs/spec/08a-ai-environment-portability-acceptance.md` — SHA-256 `3a1876d8b506204254ccd54eb58cfabcf2ddc92e3edd446d90650b9ae22ff305`
 - `docs/spec/08b-project-continuity-acceptance.md` — SHA-256 `b58623f21bdd183a21e1904ebcec954ffb2b6976254b72ac52f13deae83306cc`
-- `docs/spec/09-development-roadmap.md` — SHA-256 `b5dc8ac8fb024002d7144c447dbfc22a2faf44a73b6df417b251167bed12357d`
+- `docs/spec/09-development-roadmap.md` — SHA-256 `069059c0f29b0a8ecc240582c05be3c60088654d6bfdae0f7a502ca6d52986b3`
 
 ---
 
@@ -8577,7 +8577,7 @@ Current implementation point:
 - Phase 5 passed its local-runtime continuity gate on 2026-06-28;
 - accepted real-machine evidence is bound to commit `1a5b66b2417d6f3e1eafcd14d2769e9c15d7f96c` on the primary Intel Mac with networking disabled;
 - IMP-048 through IMP-054 establish the runtime contract, loopback-only Ollama adapter, authoritative manifests and bindings, canonical local conversation and streaming, explicit fallback switching, exact rollback, State Package v2 transfer, backup restore, and accepted LRUN-001 through LRUN-012 evidence;
-- Phase 6 local AI portability and daily-use integration is in progress through IMP-081;
+- Phase 6 local AI portability and daily-use integration is in progress through IMP-082;
 - IMP-055 adds an offline source adapter for a documented caller-retained Ollama API session bundle, with exact JSON validation, content-free inventory, original-source hashing, deterministic normalization, explicit attachment-metadata loss, and reuse of the accepted generic staging and reviewed-publication boundary;
 - IMP-056 adds an explicit non-streaming text-only capture path through fixed IPv4 loopback, resolves one opaque already-installed local model through the filtered inventory, and returns an IMP-055-valid session bundle without reading application databases, logs, shell history, or unrelated sessions;
 - IMP-057 merged at commit `7b63ff512e20d1d6ae65da8938486b093e14b6c6` and composes explicit capture, reviewed canonical import, idempotency and conflict checks, generic export, State Package v2 transfer, backup restore, and alternate fresh-process inspection without the capture component;
@@ -8652,7 +8652,10 @@ Current implementation point:
 - IMP-081 composes one explicitly selected local UTF-8 CSV through the bounded IMP-075 transformation path into revise, summarize, and translate as the primary data-only writing source while preserving the exactly-one-primary-source contract;
 - IMP-081 is assigned to Issue #245;
 - the IMP-081 CSV writing-attachment extension passes at the `ci` evidence level and does not broaden accepted primary real-machine evidence;
-- the next bounded implementation receives IMP-082 only when a new implementation issue is opened;
+- IMP-082 composes two through four explicitly selected caller-ordered local document, PDF, OCR-image, or CSV attachments into revise, summarize, and translate while reusing the accepted source-specific boundaries, requiring all attachment preparation and all source-operation-ID preflight before the first new source origin is created;
+- IMP-082 is assigned to Issue #247;
+- the IMP-082 multiple-writing-attachment extension passes at the `ci` evidence level and does not broaden accepted primary real-machine evidence;
+- the next bounded implementation receives IMP-083 only when a new implementation issue is opened;
 - later local migration, cloud, and tool work must continue through the Phase 3 safety boundary and the Phase 4A/4B canonical state contracts.
 
 Implementation identifier policy:
@@ -9461,7 +9464,26 @@ Dedicated acceptance covers BOM/semicolon parsing, caller-selected column order 
 
 IMP-081 does not establish formula execution, spreadsheet formats such as XLSX/ODS, multiple attachments, mixed primary sources, draft reference attachments, attachment persistence, SourceRecord creation, artifact publication, persistent indexing, automatic file discovery, semantic retrieval, embeddings, ranking, model-selected context, Web retrieval, process or shell execution, tools, capability execution, network or cloud access, target-specific export, accessibility presentation, Lite performance acceptance, the release-candidate soak, complete Phase 6, Lite v1.0 completion, or stable general anti-lock-in.
 
-Subsequent daily-use work may expand multiple-attachment writing integration, cross-platform OCR adapters, accessibility presentation, Lite performance measurements, and soak testing.
+
+### IMP-082 — Explicit multiple writing attachments
+
+Status: implemented with deterministic synthetic CI evidence.
+
+Extended the accepted local writing workflow so one `revise`, `summarize`, or `translate` turn may consume an explicit caller-ordered set of two through four local attachments. Supported attachment kinds are text/Markdown documents, PDFs, OCR images, and CSVs through the unchanged IMP-074, IMP-076, IMP-077, and IMP-075 preparation boundaries. The existing legacy single-source API remains valid and cannot be mixed with the new multiple-attachment argument. `draft` remains source-free.
+
+The workflow validates attachment cardinality and specification shapes, source-form exclusivity, mode, request, target language, operation identity, conversation target, active binding, and runtime declaration before opening the first attachment. Every attachment must then prepare successfully through its existing source-specific validator. Caller order is preserved. The aggregate prepared writing material must remain within the existing 16,000-character writing-source limit.
+
+No source InstructionOrigin is created until every attachment has prepared successfully and the aggregate character limit has passed. Derived source-operation identifiers for all attachments are also checked for prior use before the first new source origin is created. This prevents a later invalid attachment, aggregate overflow, or pre-existing later origin from leaving a newly created partial source-origin prefix.
+
+Each attachment receives one ordered data-only `external_content` InstructionOrigin with `untrusted_data` authority. OCR material retains acquisition `ocr`; document, PDF, and CSV material retain `extraction`. The current user request remains the only task-authority instruction. Attachment text cannot grant permissions, confirmation, capability authority, binding changes, memory/project/decision mutation, completion authority, or tool authority.
+
+Multi-attachment results use `source_kind = multiple` and expose only ordered content-free source-origin IDs, source kinds, prepared character counts, prepared-content SHA-256 values, and aggregate source character count. Legacy singular source-specific result metadata remains reserved for single-source turns. Native paths, filenames, attachment bodies, prompts, generated responses, credentials, and secrets are not added to the result.
+
+Dedicated acceptance covers mixed document/CSV order, two-through-four cardinality, legacy-source conflicts, draft rejection, invalid attachment members and source-specific option shapes, target-before-read ordering, later-source failure before origin creation, aggregate-limit failure, all-origin-ID preflight before first creation, hostile multiple-source data isolation, runtime failure, path/content privacy, and exact source preservation. Standard CI passes on Ubuntu, macOS, and Windows, including an unchanged project coverage threshold of at least 95 percent. IMP-082 does not broaden the accepted IMP-064 primary Intel Mac real-machine evidence.
+
+IMP-082 does not establish automatic file discovery, directory traversal, globbing, draft reference attachments, attachment persistence, SourceRecord creation, artifact publication, persistent indexing, semantic retrieval, embeddings, ranking, model-selected attachments, XLSX/ODS support, formula execution, PDF OCR/scanned-PDF fallback, new OCR adapters, Web retrieval, process or shell execution, tools, capability execution, network or cloud access, target-specific export, accessibility presentation, Lite performance acceptance, the release-candidate soak, complete Phase 6, Lite v1.0 completion, or stable general anti-lock-in.
+
+Subsequent daily-use work may expand cross-platform OCR adapters, accessibility presentation, Lite performance measurements, and soak testing.
 
 ## 13. Phase 7 — Optional cloud and multiple models
 
