@@ -23,6 +23,8 @@ jobs:
       - run: uv sync --dev --locked
       - name: Integrate IMP-081 status and controlled spec source
         run: python .github/imp081_status_integrate.py
+      - name: Extend public status checker for IMP-081
+        run: python .github/imp081_status_checker_fix.py
       - name: Rebuild generated final specification
         run: uv run python scripts/build_final_spec.py
       - name: Verify generated specification
