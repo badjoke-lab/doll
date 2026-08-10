@@ -21,6 +21,7 @@ jobs:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --dev --locked
+      - run: python .github/imp083_test_typing_fix.py
       - run: uv run ruff format src/doll/lite_measurement.py tests/test_imp_083_lite_client_measurement.py scripts/run_imp_083_lite_client_measurement.py
       - run: uv run ruff check --fix src/doll/lite_measurement.py tests/test_imp_083_lite_client_measurement.py scripts/run_imp_083_lite_client_measurement.py
       - run: uv run ruff check src/doll/lite_measurement.py tests/test_imp_083_lite_client_measurement.py scripts/run_imp_083_lite_client_measurement.py
@@ -39,12 +40,12 @@ jobs:
           assert all(payload["checks"].values())
           assert not any(payload["privacy"].values())
           PY
-      - name: Commit formatting if needed
+      - name: Commit formatting and fixes if needed
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add src/doll/lite_measurement.py tests/test_imp_083_lite_client_measurement.py scripts/run_imp_083_lite_client_measurement.py
           git diff --cached --quiet && exit 0
-          git commit -m "Format IMP-083 measurement harness"
+          git commit -m "Fix and format IMP-083 measurement harness"
           git push origin HEAD:imp-083-lite-client-resource-measurement
