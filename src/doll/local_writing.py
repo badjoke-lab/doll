@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal, cast
@@ -17,6 +17,7 @@ from doll.local_conversation import (
     _message_text,
     _operation_id,
 )
+from doll.local_csv import LocalCsvError, LocalCsvTransformation, transform_local_csv
 from doll.local_document import LocalDocumentError, LocalDocumentResult, read_local_document
 from doll.local_ocr import LocalOcrError, LocalOcrExtraction, extract_local_image_ocr
 from doll.local_pdf import LocalPdfError, LocalPdfExtraction, extract_local_pdf_text
@@ -38,7 +39,7 @@ from doll.writing_context import (
 )
 
 WritingMode = Literal["draft", "revise", "summarize", "translate"]
-WritingSourceKind = Literal["none", "inline", "document", "pdf", "ocr"]
+WritingSourceKind = Literal["none", "inline", "document", "pdf", "ocr", "csv"]
 
 _ALLOWED_MODES = frozenset({"draft", "revise", "summarize", "translate"})
 _MAX_REQUEST_CHARS = 12_000
@@ -63,6 +64,7 @@ class _PreparedWritingSource:
     document: LocalDocumentResult | None = None
     pdf: LocalPdfExtraction | None = None
     ocr: LocalOcrExtraction | None = None
+    csv: LocalCsvTransformation | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -99,6 +101,19 @@ class LocalWritingWorkflowResult:
     source_ocr_pixel_count: int
     source_ocr_line_count: int
     source_ocr_recognized_character_count: int
+    source_csv_delimiter_profile: str | None
+    source_csv_source_byte_count: int
+    source_csv_source_sha256: str | None
+    source_csv_content_sha256: str | None
+    source_csv_utf8_bom_removed: bool
+    source_csv_row_count: int
+    source_csv_source_column_count: int
+    source_csv_output_column_count: int
+    source_csv_blank_cell_count: int
+    source_csv_potential_formula_cell_count: int
+    source_csv_output_byte_count: int
+    source_csv_output_character_count: int
+    source_csv_output_sha256: str | None
     selected_context_instruction_ids: tuple[str, ...]
     selected_memory_ids: tuple[str, ...]
     selected_project_ids: tuple[str, ...]
@@ -154,6 +169,10 @@ class LocalWritingWorkflowService:
         source_pdf_path: Path | None = None,
         source_pdf_pages: Sequence[int] = (),
         source_image_path: Path | None = None,
+        source_csv_path: Path | None = None,
+        source_csv_delimiter_profile: str = "comma",
+        source_csv_selected_columns: Sequence[str] = (),
+        source_csv_header_renames: Mapping[str, str] | None = None,
         target_language: str | None = None,
         memory_ids: Sequence[str] = (),
         project_ids: Sequence[str] = (),
@@ -175,9 +194,24 @@ class LocalWritingWorkflowService:
             source_pdf_path=source_pdf_path,
             source_pdf_pages=source_pdf_pages,
             source_image_path=source_image_path,
+            source_csv_path=source_csv_path,
+            source_csv_delimiter_profile=source_csv_delimiter_profile,
+            source_csv_selected_columns=source_csv_selected_columns,
+            source_csv_header_renames=source_csv_header_renames,
         )
         inline_source = _source_text(source_text) if source_kind == "inline" else None
         safe_pdf_pages = _pdf_page_selection(source_pdf_pages) if source_kind == "pdf" else ()
+        safe_csv_delimiter = (
+            _csv_delimiter_profile(source_csv_delimiter_profile)
+            if source_kind == "csv"
+            else "comma"
+        )
+        safe_csv_columns = (
+            _csv_selected_columns(source_csv_selected_columns) if source_kind == "csv" else ()
+        )
+        safe_csv_renames = (
+            _csv_header_renames(source_csv_header_renames) if source_kind == "csv" else {}
+        )
         safe_target_language = _target_language_for_mode(safe_mode, target_language)
         safe_operation_id = _operation_id(operation_id)
 
@@ -196,6 +230,10 @@ class LocalWritingWorkflowService:
             source_pdf_path=source_pdf_path,
             source_pdf_pages=safe_pdf_pages,
             source_image_path=source_image_path,
+            source_csv_path=source_csv_path,
+            source_csv_delimiter_profile=safe_csv_delimiter,
+            source_csv_selected_columns=safe_csv_columns,
+            source_csv_header_renames=safe_csv_renames,
         )
 
         selected_service = SelectedWritingContextService(self.repository)
@@ -387,14 +425,32 @@ def _source_kind_for_mode(
     source_pdf_path: object,
     source_pdf_pages: object,
     source_image_path: object,
+    source_csv_path: object,
+    source_csv_delimiter_profile: object,
+    source_csv_selected_columns: object,
+    source_csv_header_renames: object,
 ) -> WritingSourceKind:
     has_inline = source_text is not None
     has_document = source_document_path is not None
     has_pdf = source_pdf_path is not None
     has_pdf_pages = bool(source_pdf_pages)
     has_image = source_image_path is not None
+    has_csv = source_csv_path is not None
+    has_csv_options = (
+        source_csv_delimiter_profile != "comma"
+        or bool(source_csv_selected_columns)
+        or source_csv_header_renames is not None
+    )
     if mode == "draft":
-        if has_inline or has_document or has_pdf or has_pdf_pages or has_image:
+        if (
+            has_inline
+            or has_document
+            or has_pdf
+            or has_pdf_pages
+            or has_image
+            or has_csv
+            or has_csv_options
+        ):
             raise LocalWritingWorkflowValidationError(
                 "draft mode does not accept primary source material"
             )
@@ -403,7 +459,9 @@ def _source_kind_for_mode(
         raise LocalWritingWorkflowValidationError(
             "PDF page selection requires a PDF primary source"
         )
-    if sum((has_inline, has_document, has_pdf, has_image)) != 1:
+    if has_csv_options and not has_csv:
+        raise LocalWritingWorkflowValidationError("CSV options require a CSV primary source")
+    if sum((has_inline, has_document, has_pdf, has_image, has_csv)) != 1:
         raise LocalWritingWorkflowValidationError(
             f"{mode} mode requires exactly one primary source"
         )
@@ -419,6 +477,10 @@ def _source_kind_for_mode(
         if not isinstance(source_image_path, Path):
             raise LocalWritingWorkflowValidationError("writing source OCR image path is invalid")
         return "ocr"
+    if has_csv:
+        if not isinstance(source_csv_path, Path):
+            raise LocalWritingWorkflowValidationError("writing source CSV path is invalid")
+        return "csv"
     return "inline"
 
 
@@ -454,6 +516,35 @@ def _source_text(value: object) -> str:
     return safe
 
 
+def _csv_delimiter_profile(value: object) -> str:
+    if not isinstance(value, str):
+        raise LocalWritingWorkflowValidationError("writing source CSV delimiter profile is invalid")
+    return value
+
+
+def _csv_selected_columns(value: object) -> tuple[str, ...]:
+    if isinstance(value, str | bytes) or not isinstance(value, Sequence):
+        raise LocalWritingWorkflowValidationError("writing source CSV selected columns are invalid")
+    columns = tuple(value)
+    if any(not isinstance(column, str) for column in columns):
+        raise LocalWritingWorkflowValidationError("writing source CSV selected columns are invalid")
+    return columns
+
+
+def _csv_header_renames(value: object) -> dict[str, str]:
+    if value is None:
+        return {}
+    if not isinstance(value, Mapping):
+        raise LocalWritingWorkflowValidationError("writing source CSV header renames are invalid")
+    renames = dict(value)
+    if any(
+        not isinstance(source, str) or not isinstance(target, str)
+        for source, target in renames.items()
+    ):
+        raise LocalWritingWorkflowValidationError("writing source CSV header renames are invalid")
+    return renames
+
+
 def _pdf_page_selection(value: object) -> tuple[int, ...]:
     if isinstance(value, str | bytes) or not isinstance(value, Sequence):
         raise LocalWritingWorkflowValidationError("writing source PDF pages are invalid")
@@ -471,6 +562,10 @@ def _prepare_source_after_preflight(
     source_pdf_path: Path | None,
     source_pdf_pages: tuple[int, ...],
     source_image_path: Path | None,
+    source_csv_path: Path | None,
+    source_csv_delimiter_profile: str,
+    source_csv_selected_columns: tuple[str, ...],
+    source_csv_header_renames: Mapping[str, str],
 ) -> _PreparedWritingSource:
     if source_kind == "none":
         return _PreparedWritingSource(kind="none", text=None)
@@ -497,15 +592,31 @@ def _prepare_source_after_preflight(
         except (LocalPdfError, LocalWritingWorkflowValidationError) as exc:
             raise LocalWritingWorkflowValidationError("writing source PDF is invalid") from exc
         return _PreparedWritingSource(kind="pdf", text=safe_text, pdf=pdf)
-    if source_image_path is None:
-        raise LocalWritingWorkflowValidationError("writing source OCR image is unavailable")
+    if source_kind == "ocr":
+        if source_image_path is None:
+            raise LocalWritingWorkflowValidationError("writing source OCR image is unavailable")
+        try:
+            ocr = extract_local_image_ocr(source_image_path)
+            flattened = "\n".join(line.text for line in ocr.lines)
+            safe_text = _source_text(flattened)
+        except (LocalOcrError, LocalWritingWorkflowValidationError) as exc:
+            raise LocalWritingWorkflowValidationError(
+                "writing source OCR image is invalid"
+            ) from exc
+        return _PreparedWritingSource(kind="ocr", text=safe_text, ocr=ocr)
+    if source_csv_path is None:
+        raise LocalWritingWorkflowValidationError("writing source CSV is unavailable")
     try:
-        ocr = extract_local_image_ocr(source_image_path)
-        flattened = "\n".join(line.text for line in ocr.lines)
-        safe_text = _source_text(flattened)
-    except (LocalOcrError, LocalWritingWorkflowValidationError) as exc:
-        raise LocalWritingWorkflowValidationError("writing source OCR image is invalid") from exc
-    return _PreparedWritingSource(kind="ocr", text=safe_text, ocr=ocr)
+        csv_result = transform_local_csv(
+            source_csv_path,
+            delimiter_profile=source_csv_delimiter_profile,
+            selected_columns=source_csv_selected_columns,
+            header_renames=source_csv_header_renames,
+        )
+        safe_text = _source_text(csv_result.output_csv)
+    except (LocalCsvError, LocalWritingWorkflowValidationError) as exc:
+        raise LocalWritingWorkflowValidationError("writing source CSV is invalid") from exc
+    return _PreparedWritingSource(kind="csv", text=safe_text, csv=csv_result)
 
 
 def _target_language_for_mode(mode: WritingMode, value: object) -> str | None:
@@ -620,6 +731,7 @@ def _result(
     document = prepared_source.document
     pdf = prepared_source.pdf
     ocr = prepared_source.ocr
+    csv_result = prepared_source.csv
     return LocalWritingWorkflowResult(
         mode=mode,
         target_language=target_language,
@@ -660,6 +772,41 @@ def _result(
         source_ocr_recognized_character_count=(
             ocr.aggregate_character_count if ocr is not None else 0
         ),
+        source_csv_delimiter_profile=(
+            csv_result.source.delimiter_profile if csv_result is not None else None
+        ),
+        source_csv_source_byte_count=(
+            csv_result.source.source_byte_count if csv_result is not None else 0
+        ),
+        source_csv_source_sha256=(
+            csv_result.source.source_sha256 if csv_result is not None else None
+        ),
+        source_csv_content_sha256=(
+            csv_result.source.content_sha256 if csv_result is not None else None
+        ),
+        source_csv_utf8_bom_removed=(
+            csv_result.source.utf8_bom_removed if csv_result is not None else False
+        ),
+        source_csv_row_count=(csv_result.source.row_count if csv_result is not None else 0),
+        source_csv_source_column_count=(
+            csv_result.source.column_count if csv_result is not None else 0
+        ),
+        source_csv_output_column_count=(
+            len(csv_result.output_headers) if csv_result is not None else 0
+        ),
+        source_csv_blank_cell_count=(
+            csv_result.source.blank_cell_count if csv_result is not None else 0
+        ),
+        source_csv_potential_formula_cell_count=(
+            csv_result.source.potential_formula_cell_count if csv_result is not None else 0
+        ),
+        source_csv_output_byte_count=(
+            csv_result.output_byte_count if csv_result is not None else 0
+        ),
+        source_csv_output_character_count=(
+            csv_result.output_character_count if csv_result is not None else 0
+        ),
+        source_csv_output_sha256=(csv_result.output_sha256 if csv_result is not None else None),
         selected_context_instruction_ids=(
             selected_result.instruction_ids + bundle_result.instruction_ids
         ),
