@@ -24,10 +24,17 @@ replacements = {
     "    monkeypatch.setattr(local_writing_module, \"read_local_document\", counted_read)\n": (
         "    monkeypatch.setattr(\"doll.local_writing.read_local_document\", counted_read)\n"
     ),
+    "        assert _origin_count(repository) == before + 4\n": (
+        "        assert len(set(result.source_instruction_ids)) == 4\n"
+        "        assert all(\n"
+        "            InstructionOriginService(repository).get(record_id).data_only is True\n"
+        "            for record_id in result.source_instruction_ids\n"
+        "        )\n"
+    ),
 }
 for old, new in replacements.items():
     count = text.count(old)
     if count != 1:
-        raise SystemExit(f"typing marker count={count}: {old!r}")
+        raise SystemExit(f"focused-fix marker count={count}: {old!r}")
     text = text.replace(old, new, 1)
 path.write_text(text, encoding="utf-8")
