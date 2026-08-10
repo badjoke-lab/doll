@@ -407,6 +407,84 @@ def test_multiple_attachments_reject_legacy_sources_draft_and_invalid_specs(tmp_
                 source_attachments=cast(Sequence[LocalWritingAttachment], "bad"),
                 operation_id="imp082.attachments.shape",
             )
+        with pytest.raises(
+            LocalWritingWorkflowValidationError, match="source attachment is invalid"
+        ):
+            _execute(
+                service,
+                conversation_id=conversation_id,
+                attachments=(
+                    cast(LocalWritingAttachment, object()),
+                    LocalWritingAttachment(kind="document", path=second),
+                ),
+                operation_id="imp082.attachment.member.invalid",
+            )
+        with pytest.raises(LocalWritingWorkflowValidationError, match="PDF pages are invalid"):
+            _execute(
+                service,
+                conversation_id=conversation_id,
+                attachments=(
+                    LocalWritingAttachment(
+                        kind="pdf",
+                        path=first,
+                        pdf_pages=cast(tuple[int, ...], (True,)),
+                    ),
+                    LocalWritingAttachment(kind="document", path=second),
+                ),
+                operation_id="imp082.pdf.pages.type.invalid",
+            )
+        with pytest.raises(
+            LocalWritingWorkflowValidationError, match="delimiter profile is invalid"
+        ):
+            _execute(
+                service,
+                conversation_id=conversation_id,
+                attachments=(
+                    LocalWritingAttachment(
+                        kind="csv",
+                        path=first,
+                        csv_delimiter_profile=cast(str, 1),
+                    ),
+                    LocalWritingAttachment(kind="document", path=second),
+                ),
+                operation_id="imp082.csv.delimiter.type.invalid",
+            )
+        with pytest.raises(
+            LocalWritingWorkflowValidationError, match="selected columns are invalid"
+        ):
+            _execute(
+                service,
+                conversation_id=conversation_id,
+                attachments=(
+                    LocalWritingAttachment(
+                        kind="csv",
+                        path=first,
+                        csv_selected_columns=cast(tuple[str, ...], (1,)),
+                    ),
+                    LocalWritingAttachment(kind="document", path=second),
+                ),
+                operation_id="imp082.csv.columns.type.invalid",
+            )
+        with pytest.raises(
+            LocalWritingWorkflowValidationError,
+            match="attachment CSV header renames are invalid",
+        ):
+            _execute(
+                service,
+                conversation_id=conversation_id,
+                attachments=(
+                    LocalWritingAttachment(
+                        kind="csv",
+                        path=first,
+                        csv_header_renames=cast(
+                            tuple[tuple[str, str], ...],
+                            (("name",),),
+                        ),
+                    ),
+                    LocalWritingAttachment(kind="document", path=second),
+                ),
+                operation_id="imp082.csv.rename.shape.invalid",
+            )
         assert adapter.prompts == []
         assert _origin_count(repository) == before
 
