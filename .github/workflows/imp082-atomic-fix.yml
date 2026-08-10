@@ -1,0 +1,36 @@
+name: IMP-082 atomic origin fix
+
+on:
+  push:
+    branches:
+      - imp-082-multiple-writing-attachments
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: imp-082-multiple-writing-attachments
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - run: python .github/imp082_atomic_fix.py
+      - run: uv run ruff format src/doll/local_writing.py
+      - run: uv run ruff check src/doll/local_writing.py
+      - run: uv run mypy src/doll/local_writing.py
+      - name: Commit atomic origin guard
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/doll/local_writing.py
+          git diff --cached --quiet && exit 0
+          git commit -m "Preflight multiple writing source origins atomically"
+          git push origin HEAD:imp-082-multiple-writing-attachments
