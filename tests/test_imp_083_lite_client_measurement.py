@@ -265,7 +265,7 @@ def test_linux_current_rss_parser_handles_valid_and_invalid_data(monkeypatch: Mo
         return original(self, encoding=encoding, errors=errors)
 
     monkeypatch.setattr(Path, "read_text", valid_read)
-    monkeypatch.setattr(os, "sysconf", lambda name: 4096)
+    monkeypatch.setattr(os, "sysconf", lambda name: 4096, raising=False)
     assert measurement_module._linux_current_rss_bytes() == 20_480
 
     def invalid_read(
