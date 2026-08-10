@@ -60,8 +60,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 82,
-  "project-status.json must mark Phase 6 in progress through IMP-081 with IMP-082 next",
+    status.phase?.next_implementation === 83,
+  "project-status.json must mark Phase 6 in progress through IMP-082 with IMP-083 next",
 );
 expect(
   status.model_runtime &&
@@ -70,19 +70,20 @@ expect(
   "project-status.json requires model_runtime.connected and model_runtime.message",
 );
 expect(
-  status.model_runtime.message.includes("through IMP-081") &&
+  status.model_runtime.message.includes("through IMP-082") &&
     status.model_runtime.message.includes("optional local PDF text extraction") &&
     status.model_runtime.message.includes("optional local image OCR") &&
     status.model_runtime.message.includes("text/Markdown writing attachment integration") &&
     status.model_runtime.message.includes("PDF writing attachment integration") &&
     status.model_runtime.message.includes("OCR image writing attachment integration") &&
     status.model_runtime.message.includes("CSV writing attachment integration") &&
+    status.model_runtime.message.includes("multiple-attachment writing integration") &&
     status.model_runtime.message.includes("macOS Vision") &&
     status.model_runtime.message.includes("invocation-only in-process pypdf adapter") &&
     status.model_runtime.message.includes("reported without OCR") &&
     status.model_runtime.message.includes("no source overwrite, output file, persistence") &&
     status.model_runtime.message.includes("passes at both CI and real-machine evidence levels"),
-  "project-status.json must describe IMP-081 without broadening accepted real-machine evidence",
+  "project-status.json must describe IMP-082 without broadening accepted real-machine evidence",
 );
 expect(
   /^\d{4}-\d{2}-\d{2}$/.test(status.last_reviewed || ""),
@@ -777,6 +778,55 @@ expect(
 );
 
 expect(
+  dailyUse.multiple_writing_attachment_extension?.implementation === "IMP-082" &&
+    dailyUse.multiple_writing_attachment_extension?.status === "ci-pass" &&
+    JSON.stringify(dailyUse.multiple_writing_attachment_extension?.passed_evidence_levels) === JSON.stringify(["ci"]) &&
+    JSON.stringify(dailyUse.multiple_writing_attachment_extension?.required_evidence_levels) === JSON.stringify(["ci"]) &&
+    dailyUse.multiple_writing_attachment_extension?.selection_mode === "explicit-ordered-multiple-files" &&
+    dailyUse.multiple_writing_attachment_extension?.minimum_attachments === 2 &&
+    dailyUse.multiple_writing_attachment_extension?.maximum_attachments === 4 &&
+    JSON.stringify(dailyUse.multiple_writing_attachment_extension?.supported_attachment_kinds) === JSON.stringify(["document", "pdf", "ocr", "csv"]) &&
+    JSON.stringify(dailyUse.multiple_writing_attachment_extension?.supported_modes) === JSON.stringify(["revise", "summarize", "translate"]) &&
+    dailyUse.multiple_writing_attachment_extension?.draft_attachments_allowed === false &&
+    dailyUse.multiple_writing_attachment_extension?.caller_order_preserved === true &&
+    dailyUse.multiple_writing_attachment_extension?.legacy_primary_source_mixing_allowed === false &&
+    dailyUse.multiple_writing_attachment_extension?.maximum_aggregate_writing_source_characters === 16000 &&
+    dailyUse.multiple_writing_attachment_extension?.target_preflight_before_attachment_read === true &&
+    dailyUse.multiple_writing_attachment_extension?.all_attachments_prepared_before_origin_creation === true &&
+    dailyUse.multiple_writing_attachment_extension?.all_source_operation_ids_preflighted_before_origin_creation === true &&
+    dailyUse.multiple_writing_attachment_extension?.one_instruction_origin_per_attachment === true &&
+    dailyUse.multiple_writing_attachment_extension?.source_specific_boundaries?.document === "IMP-074" &&
+    dailyUse.multiple_writing_attachment_extension?.source_specific_boundaries?.csv === "IMP-075" &&
+    dailyUse.multiple_writing_attachment_extension?.source_specific_boundaries?.pdf === "IMP-076" &&
+    dailyUse.multiple_writing_attachment_extension?.source_specific_boundaries?.ocr === "IMP-077" &&
+    dailyUse.multiple_writing_attachment_extension?.origin_class === "external_content" &&
+    dailyUse.multiple_writing_attachment_extension?.actor_type === "extractor" &&
+    dailyUse.multiple_writing_attachment_extension?.authority_class === "untrusted_data" &&
+    dailyUse.multiple_writing_attachment_extension?.data_only === true &&
+    dailyUse.multiple_writing_attachment_extension?.per_source_acquisition_method_preserved === true &&
+    dailyUse.multiple_writing_attachment_extension?.automatic_file_discovery === false &&
+    dailyUse.multiple_writing_attachment_extension?.directory_traversal === false &&
+    dailyUse.multiple_writing_attachment_extension?.globbing === false &&
+    dailyUse.multiple_writing_attachment_extension?.attachment_persistence === false &&
+    dailyUse.multiple_writing_attachment_extension?.source_record_created === false &&
+    dailyUse.multiple_writing_attachment_extension?.artifact_created === false &&
+    dailyUse.multiple_writing_attachment_extension?.persistent_index === false &&
+    dailyUse.multiple_writing_attachment_extension?.semantic_retrieval === false &&
+    dailyUse.multiple_writing_attachment_extension?.model_selected_context === false &&
+    dailyUse.multiple_writing_attachment_extension?.network_access === false &&
+    dailyUse.multiple_writing_attachment_extension?.cloud_access === false &&
+    dailyUse.multiple_writing_attachment_extension?.process_launch === false &&
+    dailyUse.multiple_writing_attachment_extension?.shell_execution === false &&
+    dailyUse.multiple_writing_attachment_extension?.capability_execution === false &&
+    dailyUse.multiple_writing_attachment_extension?.primary_intel_mac_real_machine_evidence === false &&
+    dailyUse.multiple_writing_attachment_extension?.phase6_gate_complete === false &&
+    dailyUse.multiple_writing_attachment_extension?.lite_v1_complete === false &&
+    dailyUse.multiple_writing_attachment_extension?.stable_anti_lock_in_claim === false &&
+    dailyUse.multiple_writing_attachment_extension?.implementation_doc === "docs/implementation/imp-082-multiple-writing-attachments.md",
+  "IMP-082 multiple writing attachments must remain explicit, ordered, atomic-before-origin, untrusted, local-only, and CI-only",
+);
+
+expect(
   localWritingPrimary.test_id === "IMP-064-LOCAL-WRITING-PRIMARY" &&
     localWritingPrimary.result === "pass" &&
     localWritingPrimary.evidence_level === "real-machine" &&
@@ -1114,8 +1164,9 @@ expect(
     roadmap.includes("### IMP-079 — Explicit PDF writing attachment") &&
     roadmap.includes("### IMP-080 — Explicit OCR image writing attachment") &&
     roadmap.includes("### IMP-081 — Explicit CSV writing attachment") &&
-    roadmap.includes("the next bounded implementation receives IMP-082 only when a new implementation issue is opened"),
-  "roadmap must record IMP-081 and identify IMP-082 as the next unallocated implementation identifier",
+    roadmap.includes("### IMP-082 — Explicit multiple writing attachments") &&
+    roadmap.includes("the next bounded implementation receives IMP-083 only when a new implementation issue is opened"),
+  "roadmap must record IMP-082 and identify IMP-083 as the next unallocated implementation identifier",
 );
 expect(
   roadmap.includes("docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json"),

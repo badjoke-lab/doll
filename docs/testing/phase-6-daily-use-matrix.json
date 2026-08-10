@@ -841,5 +841,76 @@
     "lite_v1_complete": false,
     "stable_anti_lock_in_claim": false,
     "implementation_doc": "docs/implementation/imp-081-csv-writing-attachment.md"
+  },
+  "multiple_writing_attachment_extension": {
+    "implementation": "IMP-082",
+    "status": "ci-pass",
+    "description": "Two to four explicit caller-ordered local document, PDF, OCR-image, or CSV attachments can become separate data-only untrusted writing sources for revise, summarize, or translate while reusing existing source-specific boundaries.",
+    "pytest_files": [
+      "tests/test_imp_082_multiple_writing_attachments.py",
+      "tests/test_local_writing_workflow.py",
+      "tests/test_imp_078_text_markdown_writing_attachment.py",
+      "tests/test_imp_079_pdf_writing_attachment.py",
+      "tests/test_imp_080_ocr_image_writing_attachment.py",
+      "tests/test_imp_081_csv_writing_attachment.py"
+    ],
+    "passed_evidence_levels": [
+      "ci"
+    ],
+    "required_evidence_levels": [
+      "ci"
+    ],
+    "selection_mode": "explicit-ordered-multiple-files",
+    "minimum_attachments": 2,
+    "maximum_attachments": 4,
+    "supported_attachment_kinds": [
+      "document",
+      "pdf",
+      "ocr",
+      "csv"
+    ],
+    "supported_modes": [
+      "revise",
+      "summarize",
+      "translate"
+    ],
+    "draft_attachments_allowed": false,
+    "caller_order_preserved": true,
+    "legacy_primary_source_mixing_allowed": false,
+    "maximum_aggregate_writing_source_characters": 16000,
+    "target_preflight_before_attachment_read": true,
+    "all_attachments_prepared_before_origin_creation": true,
+    "all_source_operation_ids_preflighted_before_origin_creation": true,
+    "one_instruction_origin_per_attachment": true,
+    "source_specific_boundaries": {
+      "document": "IMP-074",
+      "csv": "IMP-075",
+      "pdf": "IMP-076",
+      "ocr": "IMP-077"
+    },
+    "origin_class": "external_content",
+    "actor_type": "extractor",
+    "authority_class": "untrusted_data",
+    "data_only": true,
+    "per_source_acquisition_method_preserved": true,
+    "automatic_file_discovery": false,
+    "directory_traversal": false,
+    "globbing": false,
+    "attachment_persistence": false,
+    "source_record_created": false,
+    "artifact_created": false,
+    "persistent_index": false,
+    "semantic_retrieval": false,
+    "model_selected_context": false,
+    "network_access": false,
+    "cloud_access": false,
+    "process_launch": false,
+    "shell_execution": false,
+    "capability_execution": false,
+    "primary_intel_mac_real_machine_evidence": false,
+    "phase6_gate_complete": false,
+    "lite_v1_complete": false,
+    "stable_anti_lock_in_claim": false,
+    "implementation_doc": "docs/implementation/imp-082-multiple-writing-attachments.md"
   }
 }
