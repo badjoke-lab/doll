@@ -39,11 +39,13 @@ from doll.writing_context import (
 )
 
 WritingMode = Literal["draft", "revise", "summarize", "translate"]
-WritingSourceKind = Literal["none", "inline", "document", "pdf", "ocr", "csv"]
+WritingAttachmentKind = Literal["document", "pdf", "ocr", "csv"]
+WritingSourceKind = Literal["none", "inline", "document", "pdf", "ocr", "csv", "multiple"]
 
 _ALLOWED_MODES = frozenset({"draft", "revise", "summarize", "translate"})
 _MAX_REQUEST_CHARS = 12_000
 _MAX_SOURCE_CHARS = 16_000
+_MAX_WRITING_ATTACHMENTS = 4
 _MAX_TARGET_LANGUAGE_CHARS = 80
 _TASK_SCHEMA_VERSION = 1
 _TARGET_LANGUAGE_PUNCTUATION = frozenset(" -_()[]/.")
@@ -55,6 +57,18 @@ class LocalWritingWorkflowError(StateError):
 
 class LocalWritingWorkflowValidationError(LocalWritingWorkflowError):
     """Raised before runtime execution when a writing workflow is invalid."""
+
+
+@dataclass(frozen=True, slots=True)
+class LocalWritingAttachment:
+    """One explicit local attachment specification for a bounded multi-source turn."""
+
+    kind: WritingAttachmentKind
+    path: Path
+    pdf_pages: tuple[int, ...] = ()
+    csv_delimiter_profile: str = "comma"
+    csv_selected_columns: tuple[str, ...] = ()
+    csv_header_renames: tuple[tuple[str, str], ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -78,6 +92,10 @@ class LocalWritingWorkflowResult:
     source_instruction_count: int
     source_character_count: int
     source_kind: WritingSourceKind
+    source_instruction_ids: tuple[str, ...]
+    source_kinds: tuple[WritingAttachmentKind | Literal["inline"], ...]
+    source_character_counts: tuple[int, ...]
+    source_content_sha256s: tuple[str, ...]
     source_document_kind: str | None
     source_document_source_byte_count: int
     source_document_source_sha256: str | None
@@ -173,6 +191,7 @@ class LocalWritingWorkflowService:
         source_csv_delimiter_profile: str = "comma",
         source_csv_selected_columns: Sequence[str] = (),
         source_csv_header_renames: Mapping[str, str] | None = None,
+        source_attachments: Sequence[LocalWritingAttachment] = (),
         target_language: str | None = None,
         memory_ids: Sequence[str] = (),
         project_ids: Sequence[str] = (),
@@ -187,6 +206,7 @@ class LocalWritingWorkflowService:
 
         safe_mode = _mode(mode)
         safe_request = _request_text(request_text)
+        safe_attachments = _writing_attachments(source_attachments)
         source_kind = _source_kind_for_mode(
             safe_mode,
             source_text=source_text,
@@ -198,6 +218,7 @@ class LocalWritingWorkflowService:
             source_csv_delimiter_profile=source_csv_delimiter_profile,
             source_csv_selected_columns=source_csv_selected_columns,
             source_csv_header_renames=source_csv_header_renames,
+            source_attachments=safe_attachments,
         )
         inline_source = _source_text(source_text) if source_kind == "inline" else None
         safe_pdf_pages = _pdf_page_selection(source_pdf_pages) if source_kind == "pdf" else ()
@@ -223,18 +244,29 @@ class LocalWritingWorkflowService:
             parent_event_id=parent_event_id,
         )
 
-        prepared_source = _prepare_source_after_preflight(
-            source_kind=source_kind,
-            inline_source=inline_source,
-            source_document_path=source_document_path,
-            source_pdf_path=source_pdf_path,
-            source_pdf_pages=safe_pdf_pages,
-            source_image_path=source_image_path,
-            source_csv_path=source_csv_path,
-            source_csv_delimiter_profile=safe_csv_delimiter,
-            source_csv_selected_columns=safe_csv_columns,
-            source_csv_header_renames=safe_csv_renames,
-        )
+        if source_kind == "multiple":
+            prepared_sources = tuple(
+                _prepare_attachment_after_preflight(attachment) for attachment in safe_attachments
+            )
+            aggregate_source_characters = sum(len(source.text or "") for source in prepared_sources)
+            if aggregate_source_characters > _MAX_SOURCE_CHARS:
+                raise LocalWritingWorkflowValidationError(
+                    "writing source attachments exceed the configured aggregate character limit"
+                )
+        else:
+            prepared_source = _prepare_source_after_preflight(
+                source_kind=source_kind,
+                inline_source=inline_source,
+                source_document_path=source_document_path,
+                source_pdf_path=source_pdf_path,
+                source_pdf_pages=safe_pdf_pages,
+                source_image_path=source_image_path,
+                source_csv_path=source_csv_path,
+                source_csv_delimiter_profile=safe_csv_delimiter,
+                source_csv_selected_columns=safe_csv_columns,
+                source_csv_header_renames=safe_csv_renames,
+            )
+            prepared_sources = (prepared_source,) if prepared_source.text is not None else ()
 
         selected_service = SelectedWritingContextService(self.repository)
         bundle_service = ResumeBundleWritingContextService(self.repository)
@@ -275,13 +307,22 @@ class LocalWritingWorkflowService:
                 "selected writing context is invalid"
             ) from exc
 
-        source_instruction_id: str | None = None
-        source_instruction_ids: tuple[str, ...] = ()
-        if prepared_source.text is not None:
-            source_operation_id = _source_operation_id(safe_operation_id)
+        source_instruction_ids_list: list[str] = []
+        for index, prepared_source in enumerate(prepared_sources, start=1):
+            if prepared_source.text is None:
+                continue
+            source_operation_id = (
+                _source_operation_id(safe_operation_id)
+                if len(prepared_sources) == 1
+                else _attachment_source_operation_id(safe_operation_id, index)
+            )
             self._require_unused_source_operation(source_operation_id)
             source_origin = InstructionOriginService(self.repository).create(
-                title=f"Local writing {safe_mode} source",
+                title=(
+                    f"Local writing {safe_mode} source"
+                    if len(prepared_sources) == 1
+                    else f"Local writing {safe_mode} attachment {index}"
+                ),
                 content=prepared_source.text,
                 source=InstructionSource(
                     origin_class="external_content",
@@ -295,8 +336,8 @@ class LocalWritingWorkflowService:
                 operation_id=source_operation_id,
                 sensitivity=sensitivity,
             )
-            source_instruction_id = source_origin.record_id
-            source_instruction_ids = (source_origin.record_id,)
+            source_instruction_ids_list.append(source_origin.record_id)
+        source_instruction_ids = tuple(source_instruction_ids_list)
 
         try:
             selected_result = selected_service.materialize(
@@ -351,8 +392,9 @@ class LocalWritingWorkflowService:
         return _result(
             mode=safe_mode,
             target_language=safe_target_language,
-            source_instruction_id=source_instruction_id,
-            prepared_source=prepared_source,
+            source_kind=source_kind,
+            source_instruction_ids=source_instruction_ids,
+            prepared_sources=prepared_sources,
             selected_result=selected_result,
             bundle_result=bundle_result,
             local_result=local_result,
@@ -429,6 +471,7 @@ def _source_kind_for_mode(
     source_csv_delimiter_profile: object,
     source_csv_selected_columns: object,
     source_csv_header_renames: object,
+    source_attachments: tuple[LocalWritingAttachment, ...],
 ) -> WritingSourceKind:
     has_inline = source_text is not None
     has_document = source_document_path is not None
@@ -436,6 +479,7 @@ def _source_kind_for_mode(
     has_pdf_pages = bool(source_pdf_pages)
     has_image = source_image_path is not None
     has_csv = source_csv_path is not None
+    has_attachments = bool(source_attachments)
     has_csv_options = (
         source_csv_delimiter_profile != "comma"
         or bool(source_csv_selected_columns)
@@ -450,11 +494,20 @@ def _source_kind_for_mode(
             or has_image
             or has_csv
             or has_csv_options
+            or has_attachments
         ):
             raise LocalWritingWorkflowValidationError(
                 "draft mode does not accept primary source material"
             )
         return "none"
+    if has_attachments:
+        if any(
+            (has_inline, has_document, has_pdf, has_pdf_pages, has_image, has_csv, has_csv_options)
+        ):
+            raise LocalWritingWorkflowValidationError(
+                "multiple attachments cannot be combined with legacy primary source arguments"
+            )
+        return "multiple"
     if has_pdf_pages and not has_pdf:
         raise LocalWritingWorkflowValidationError(
             "PDF page selection requires a PDF primary source"
@@ -487,7 +540,77 @@ def _source_kind_for_mode(
 def _source_acquisition_method(
     source_kind: WritingSourceKind,
 ) -> Literal["extraction", "ocr"]:
+    if source_kind == "multiple":
+        raise LocalWritingWorkflowValidationError(
+            "aggregate writing source has no acquisition method"
+        )
     return "ocr" if source_kind == "ocr" else "extraction"
+
+
+def _writing_attachments(value: object) -> tuple[LocalWritingAttachment, ...]:
+    if isinstance(value, str | bytes) or not isinstance(value, Sequence):
+        raise LocalWritingWorkflowValidationError("writing source attachments are invalid")
+    attachments = tuple(value)
+    if not attachments:
+        return ()
+    if len(attachments) < 2 or len(attachments) > _MAX_WRITING_ATTACHMENTS:
+        raise LocalWritingWorkflowValidationError(
+            "writing source attachments must contain between 2 and 4 items"
+        )
+    normalized: list[LocalWritingAttachment] = []
+    for attachment in attachments:
+        if not isinstance(attachment, LocalWritingAttachment):
+            raise LocalWritingWorkflowValidationError("writing source attachment is invalid")
+        if attachment.kind not in ("document", "pdf", "ocr", "csv"):
+            raise LocalWritingWorkflowValidationError("writing source attachment kind is invalid")
+        if not isinstance(attachment.path, Path):
+            raise LocalWritingWorkflowValidationError("writing source attachment path is invalid")
+        safe_pdf_pages = _pdf_page_selection(attachment.pdf_pages)
+        safe_csv_delimiter = _csv_delimiter_profile(attachment.csv_delimiter_profile)
+        safe_csv_columns = _csv_selected_columns(attachment.csv_selected_columns)
+        safe_csv_renames = _attachment_header_renames(attachment.csv_header_renames)
+        if attachment.kind != "pdf" and safe_pdf_pages:
+            raise LocalWritingWorkflowValidationError(
+                "PDF page selection requires a PDF attachment"
+            )
+        has_csv_options = (
+            safe_csv_delimiter != "comma" or bool(safe_csv_columns) or bool(safe_csv_renames)
+        )
+        if attachment.kind != "csv" and has_csv_options:
+            raise LocalWritingWorkflowValidationError("CSV options require a CSV attachment")
+        normalized.append(
+            LocalWritingAttachment(
+                kind=attachment.kind,
+                path=attachment.path,
+                pdf_pages=safe_pdf_pages,
+                csv_delimiter_profile=safe_csv_delimiter,
+                csv_selected_columns=safe_csv_columns,
+                csv_header_renames=safe_csv_renames,
+            )
+        )
+    return tuple(normalized)
+
+
+def _attachment_header_renames(value: object) -> tuple[tuple[str, str], ...]:
+    if isinstance(value, str | bytes) or not isinstance(value, Sequence):
+        raise LocalWritingWorkflowValidationError(
+            "writing source attachment CSV header renames are invalid"
+        )
+    pairs = tuple(value)
+    normalized: list[tuple[str, str]] = []
+    for pair in pairs:
+        if (
+            isinstance(pair, str | bytes)
+            or not isinstance(pair, Sequence)
+            or len(pair) != 2
+            or not isinstance(pair[0], str)
+            or not isinstance(pair[1], str)
+        ):
+            raise LocalWritingWorkflowValidationError(
+                "writing source attachment CSV header renames are invalid"
+            )
+        normalized.append((pair[0], pair[1]))
+    return tuple(normalized)
 
 
 def _source_for_mode(mode: WritingMode, value: object) -> str | None:
@@ -619,6 +742,23 @@ def _prepare_source_after_preflight(
     return _PreparedWritingSource(kind="csv", text=safe_text, csv=csv_result)
 
 
+def _prepare_attachment_after_preflight(
+    attachment: LocalWritingAttachment,
+) -> _PreparedWritingSource:
+    return _prepare_source_after_preflight(
+        source_kind=attachment.kind,
+        inline_source=None,
+        source_document_path=attachment.path if attachment.kind == "document" else None,
+        source_pdf_path=attachment.path if attachment.kind == "pdf" else None,
+        source_pdf_pages=attachment.pdf_pages,
+        source_image_path=attachment.path if attachment.kind == "ocr" else None,
+        source_csv_path=attachment.path if attachment.kind == "csv" else None,
+        source_csv_delimiter_profile=attachment.csv_delimiter_profile,
+        source_csv_selected_columns=attachment.csv_selected_columns,
+        source_csv_header_renames=dict(attachment.csv_header_renames),
+    )
+
+
 def _target_language_for_mode(mode: WritingMode, value: object) -> str | None:
     if mode != "translate":
         if value is not None:
@@ -714,6 +854,11 @@ def _source_operation_id(operation_id: str) -> str:
     return f"imp063.source.{digest}"
 
 
+def _attachment_source_operation_id(operation_id: str, index: int) -> str:
+    digest = hashlib.sha256(operation_id.encode("utf-8")).hexdigest()[:32]
+    return f"imp082.source.{digest}.{index:02d}"
+
+
 def _sha256_text(value: str) -> str:
     return f"sha256:{hashlib.sha256(value.encode('utf-8')).hexdigest()}"
 
@@ -722,25 +867,38 @@ def _result(
     *,
     mode: WritingMode,
     target_language: str | None,
-    source_instruction_id: str | None,
-    prepared_source: _PreparedWritingSource,
+    source_kind: WritingSourceKind,
+    source_instruction_ids: tuple[str, ...],
+    prepared_sources: tuple[_PreparedWritingSource, ...],
     selected_result: SelectedWritingContextResult,
     bundle_result: ResumeBundleWritingContextResult,
     local_result: LocalConversationResult,
 ) -> LocalWritingWorkflowResult:
-    document = prepared_source.document
-    pdf = prepared_source.pdf
-    ocr = prepared_source.ocr
-    csv_result = prepared_source.csv
+    single_source = prepared_sources[0] if len(prepared_sources) == 1 else None
+    document = single_source.document if single_source is not None else None
+    pdf = single_source.pdf if single_source is not None else None
+    ocr = single_source.ocr if single_source is not None else None
+    csv_result = single_source.csv if single_source is not None else None
     return LocalWritingWorkflowResult(
         mode=mode,
         target_language=target_language,
         conversation_id=local_result.conversation_id,
         operation_id=local_result.operation_id,
-        source_instruction_id=source_instruction_id,
-        source_instruction_count=1 if source_instruction_id is not None else 0,
-        source_character_count=len(prepared_source.text) if prepared_source.text is not None else 0,
-        source_kind=prepared_source.kind,
+        source_instruction_id=(
+            source_instruction_ids[0] if len(source_instruction_ids) == 1 else None
+        ),
+        source_instruction_count=len(source_instruction_ids),
+        source_character_count=sum(len(source.text or "") for source in prepared_sources),
+        source_kind=source_kind,
+        source_instruction_ids=source_instruction_ids,
+        source_kinds=tuple(
+            cast(WritingAttachmentKind | Literal["inline"], source.kind)
+            for source in prepared_sources
+        ),
+        source_character_counts=tuple(len(source.text or "") for source in prepared_sources),
+        source_content_sha256s=tuple(
+            _sha256_text(source.text or "") for source in prepared_sources
+        ),
         source_document_kind=document.document_kind if document is not None else None,
         source_document_source_byte_count=(
             document.source_byte_count if document is not None else 0
