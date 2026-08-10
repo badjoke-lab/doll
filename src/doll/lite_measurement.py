@@ -290,6 +290,7 @@ def read_process_rss() -> ProcessRssSnapshot:
             current_bytes=current,
             peak_bytes=peak,
         )
+    current_bytes = _linux_current_rss_bytes() if sys.platform.startswith("linux") else None
     try:
         import resource
 
@@ -304,7 +305,8 @@ def read_process_rss() -> ProcessRssSnapshot:
     if raw_peak < 0:
         raise LiteClientMeasurementError("Lite measurement peak RSS is invalid")
     peak_bytes = raw_peak if sys.platform == "darwin" else raw_peak * 1024
-    current_bytes = _linux_current_rss_bytes() if sys.platform.startswith("linux") else None
+    if current_bytes is not None:
+        peak_bytes = max(peak_bytes, current_bytes)
     return ProcessRssSnapshot(
         source="resource-ru_maxrss",
         current_bytes=current_bytes,
@@ -394,7 +396,9 @@ def _validate_rss_snapshot(snapshot: ProcessRssSnapshot) -> None:
     if not isinstance(snapshot, ProcessRssSnapshot):
         raise LiteClientMeasurementError("Lite measurement RSS snapshot is invalid")
     for value in (snapshot.current_bytes, snapshot.peak_bytes):
-        if value is not None and (isinstance(value, bool) or not isinstance(value, int) or value < 0):
+        if value is not None and (
+            isinstance(value, bool) or not isinstance(value, int) or value < 0
+        ):
             raise LiteClientMeasurementError("Lite measurement RSS value is invalid")
     if (
         snapshot.current_bytes is not None

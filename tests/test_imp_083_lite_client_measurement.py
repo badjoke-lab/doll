@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import ctypes
 import json
 import os
+from collections.abc import Callable
 from pathlib import Path
 from typing import cast
 
@@ -29,7 +31,9 @@ def _fake_rss() -> ProcessRssSnapshot:
     )
 
 
-def test_measurement_runs_fixed_client_only_workload_with_content_free_result(tmp_path: Path) -> None:
+def test_measurement_runs_fixed_client_only_workload_with_content_free_result(
+    tmp_path: Path,
+) -> None:
     workspace = tmp_path / "measurement-workspace"
     result = measure_lite_client_resources(workspace, rss_reader=_fake_rss)
 
@@ -69,7 +73,9 @@ def test_measurement_runs_fixed_client_only_workload_with_content_free_result(tm
     assert "lite-measurement" not in serialized
 
 
-def test_measurement_accepts_existing_empty_target_but_rejects_other_targets(tmp_path: Path) -> None:
+def test_measurement_accepts_existing_empty_target_but_rejects_other_targets(
+    tmp_path: Path,
+) -> None:
     empty = tmp_path / "empty"
     empty.mkdir()
     result = measure_lite_client_resources(empty, rss_reader=_fake_rss)
@@ -154,14 +160,14 @@ def test_workspace_disk_usage_wraps_scan_failures(tmp_path: Path, monkeypatch: M
         del path
         raise OSError("private scan failure")
 
-    monkeypatch.setattr(measurement_module.os, "scandir", fail_scan)
+    monkeypatch.setattr(os, "scandir", fail_scan)
     with pytest.raises(LiteClientMeasurementError, match="could not be traversed") as raised:
         inspect_workspace_disk_usage(root)
     assert "private scan failure" not in str(raised.value)
 
 
 def test_clock_and_rss_validation_fail_closed(tmp_path: Path) -> None:
-    values = iter((10, 9))
+    values = iter((10, 9, 8))
     with pytest.raises(LiteClientMeasurementError, match="clock moved backwards"):
         measure_lite_client_resources(
             tmp_path / "backwards",
@@ -172,7 +178,7 @@ def test_clock_and_rss_validation_fail_closed(tmp_path: Path) -> None:
     with pytest.raises(LiteClientMeasurementError, match="RSS snapshot is invalid"):
         measure_lite_client_resources(
             tmp_path / "invalid-rss-shape",
-            rss_reader=cast(object, lambda: object()),
+            rss_reader=cast(Callable[[], ProcessRssSnapshot], lambda: object()),
         )
 
     def negative_rss() -> ProcessRssSnapshot:
@@ -198,7 +204,7 @@ def test_clock_and_rss_validation_fail_closed(tmp_path: Path) -> None:
 
 def test_clock_rejects_bool_and_negative_values() -> None:
     with pytest.raises(LiteClientMeasurementError, match="clock is invalid"):
-        measurement_module._clock_value(cast(object, lambda: True))
+        measurement_module._clock_value(cast(Callable[[], int], lambda: True))
     with pytest.raises(LiteClientMeasurementError, match="clock is invalid"):
         measurement_module._clock_value(lambda: -1)
     assert measurement_module._duration(4, 9) == 5
@@ -229,7 +235,7 @@ def test_process_rss_snapshot_serialization_and_actual_adapter() -> None:
 
 
 def test_read_process_rss_windows_wrapper_can_be_injected(monkeypatch: MonkeyPatch) -> None:
-    monkeypatch.setattr(measurement_module.os, "name", "nt")
+    monkeypatch.setattr(os, "name", "nt")
     monkeypatch.setattr(
         measurement_module,
         "_windows_process_rss",
@@ -249,17 +255,25 @@ def test_read_process_rss_windows_wrapper_can_be_injected(monkeypatch: MonkeyPat
 def test_linux_current_rss_parser_handles_valid_and_invalid_data(monkeypatch: MonkeyPatch) -> None:
     original = Path.read_text
 
-    def valid_read(self: Path, *args: object, **kwargs: object) -> str:
+    def valid_read(
+        self: Path,
+        encoding: str | None = None,
+        errors: str | None = None,
+    ) -> str:
         if str(self) == "/proc/self/statm":
             return "100 5 0 0 0 0 0\n"
-        return original(self, *args, **kwargs)
+        return original(self, encoding=encoding, errors=errors)
 
     monkeypatch.setattr(Path, "read_text", valid_read)
-    monkeypatch.setattr(measurement_module.os, "sysconf", lambda name: 4096)
+    monkeypatch.setattr(os, "sysconf", lambda name: 4096)
     assert measurement_module._linux_current_rss_bytes() == 20_480
 
-    def invalid_read(self: Path, *args: object, **kwargs: object) -> str:
-        del self, args, kwargs
+    def invalid_read(
+        self: Path,
+        encoding: str | None = None,
+        errors: str | None = None,
+    ) -> str:
+        del self, encoding, errors
         return "invalid"
 
     monkeypatch.setattr(Path, "read_text", invalid_read)
@@ -269,5 +283,5 @@ def test_linux_current_rss_parser_handles_valid_and_invalid_data(monkeypatch: Mo
 def test_windows_process_rss_returns_unavailable_without_windows_dll(
     monkeypatch: MonkeyPatch,
 ) -> None:
-    monkeypatch.delattr(measurement_module.ctypes, "WinDLL", raising=False)
+    monkeypatch.delattr(ctypes, "WinDLL", raising=False)
     assert measurement_module._windows_process_rss() == (None, None)

@@ -110,12 +110,14 @@ def _measurement_checks(
         "process_peak_rss_available": measurement.process_rss.peak_bytes is not None,
         "process_peak_rss_non_negative": measurement.process_rss.peak_bytes is not None
         and measurement.process_rss.peak_bytes >= 0,
-        "process_current_rss_non_negative_when_available": measurement.process_rss.current_bytes is None
+        "process_current_rss_non_negative_when_available": measurement.process_rss.current_bytes
+        is None
         or measurement.process_rss.current_bytes >= 0,
         "doctor_passed": measurement.doctor_overall_status == "pass",
         "no_network_attempt": guard.network_attempt_count == 0,
         "no_process_attempt": guard.process_attempt_count == 0,
-        "external_runtime_memory_excluded": payload.get("external_runtime_memory_included") is False,
+        "external_runtime_memory_excluded": payload.get("external_runtime_memory_included")
+        is False,
         "model_memory_excluded": payload.get("model_memory_included") is False,
         "model_execution_not_used": payload.get("model_execution_used") is False,
         "cloud_access_not_used": payload.get("cloud_access_used") is False,
@@ -133,10 +135,7 @@ def _privacy_flags(payload: dict[str, object]) -> dict[str, bool]:
         "usernames_in_report": getpass.getuser(),
         "hostnames_in_report": platform.node(),
     }
-    flags = {
-        key: bool(value and value in serialized)
-        for key, value in candidates.items()
-    }
+    flags = {key: bool(value and value in serialized) for key, value in candidates.items()}
     flags.update(
         {
             "model_names_in_report": False,
