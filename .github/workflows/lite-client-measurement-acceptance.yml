@@ -10,6 +10,7 @@ on:
       - scripts/run_imp_083_lite_client_measurement.py
       - docs/testing/imp-083-primary-intel-mac-runbook.md
       - tests/test_imp_083_lite_client_measurement.py
+      - tests/test_imp_083_lite_client_measurement_resource_fallback.py
   pull_request:
     paths:
       - .github/workflows/lite-client-measurement-acceptance.yml
@@ -17,6 +18,7 @@ on:
       - scripts/run_imp_083_lite_client_measurement.py
       - docs/testing/imp-083-primary-intel-mac-runbook.md
       - tests/test_imp_083_lite_client_measurement.py
+      - tests/test_imp_083_lite_client_measurement_resource_fallback.py
 
 permissions:
   contents: read
@@ -44,6 +46,7 @@ jobs:
           uv run pytest -q --no-cov
           --junitxml=imp083-focused-junit.xml
           tests/test_imp_083_lite_client_measurement.py
+          tests/test_imp_083_lite_client_measurement_resource_fallback.py
       - name: Run guarded synthetic measurement
         shell: bash
         run: |
