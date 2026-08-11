@@ -73,9 +73,32 @@ def _head() -> str:
     ).stdout.strip()
 
 
+def _git_diff_is_clean(*arguments: str) -> bool:
+    completed = subprocess.run(
+        ["git", "diff", "--quiet", "--ignore-submodules=none", *arguments],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if completed.returncode == 0:
+        return True
+    if completed.returncode == 1:
+        return False
+    raise RuntimeError("git tracked-state check failed")
+
+
+def _require_clean_tracked_checkout() -> None:
+    if not _git_diff_is_clean("--cached", "HEAD", "--"):
+        raise RuntimeError("tracked index differs from HEAD")
+    if not _git_diff_is_clean("--"):
+        raise RuntimeError("tracked working tree differs from index")
+
+
 def _validate_environment(arguments: argparse.Namespace) -> bool:
     if not SHA.fullmatch(arguments.commit_sha) or arguments.commit_sha != _head():
         raise RuntimeError("commit mismatch")
+    _require_clean_tracked_checkout()
     machine = cast(str, arguments.evidence_level) == "real-machine"
     if machine:
         if (
