@@ -35,13 +35,13 @@ Unix peak RSS uses `resource.getrusage(RUSAGE_SELF)` and normalizes Linux KiB ve
 
 ## Workspace disk traversal
 
-Disk measurement traverses only the explicitly selected workspace root. It does not follow symlinks. Every resolved entry must remain beneath the selected root. Unsupported entries, symlinks, traversal failures, more than 20,000 entries, or depth beyond 32 fail closed. Only aggregate byte/count values are returned; names and paths are excluded.
+Disk measurement traverses only the explicitly selected workspace root. An existing workspace input that is itself a symbolic link is rejected before workspace initialization, so initialization cannot resolve through that link and create files in its target. Traversal does not follow inner symlinks. Every resolved entry must remain beneath the selected root. Unsupported entries, symlinks, traversal failures, more than 20,000 entries, or depth beyond 32 fail closed. Only aggregate byte/count values are returned; names and paths are excluded.
 
 ## Evidence runner
 
-`scripts/run_imp_083_lite_client_measurement.py` binds every run to the exact checked-out Git commit using the established fixed `git rev-parse HEAD` evidence-wrapper pattern.
+`scripts/run_imp_083_lite_client_measurement.py` binds every run to the checked-out Git commit by requiring the supplied 40-character commit SHA to equal `git rev-parse HEAD` and by separately requiring the tracked index to equal HEAD and the tracked working tree to equal the index. A staged or unstaged tracked change therefore rejects the evidence run before measurement begins. Untracked evidence output is not treated as a source change, so shell redirection or `tee` may create the JSON result file without defeating the tracked-source guard.
 
-After the commit guard passes, a Python audit hook rejects measured-workload socket connection attempts and process-launch attempts. The exact-commit git check therefore remains an evidence-wrapper process, not part of the measured workload. The result reports this distinction explicitly.
+After the commit and tracked-state guards pass, a Python audit hook rejects measured-workload socket connection attempts and process-launch attempts. The Git checks therefore remain evidence-wrapper processes, not part of the measured workload. The result reports this distinction explicitly.
 
 CI evidence runs on Ubuntu, macOS, and Windows. A separate primary Intel Mac runbook requires Darwin x86_64/amd64 plus explicit offline and local-only operator confirmation. The real-machine path uses the same workload and schema; it does not require Ollama or a model.
 
