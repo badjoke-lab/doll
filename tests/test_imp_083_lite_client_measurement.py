@@ -457,7 +457,7 @@ def test_clock_and_rss_validation_fail_closed(tmp_path: Path) -> None:
 
 def test_clock_rejects_bool_non_integer_and_negative_values() -> None:
     with pytest.raises(LiteClientMeasurementError, match="clock is invalid"):
-        measurement_module._clock_value(cast(Callable[[], int], lambda: True))
+        measurement_module._clock_value(lambda: True)
     with pytest.raises(LiteClientMeasurementError, match="clock is invalid"):
         measurement_module._clock_value(cast(Callable[[], int], lambda: cast(int, "bad")))
     with pytest.raises(LiteClientMeasurementError, match="clock is invalid"):
@@ -584,7 +584,7 @@ def test_windows_process_rss_handles_failed_query_and_dll_errors(monkeypatch: Mo
 def test_runner_requires_clean_tracked_index_and_worktree(tmp_path: Path) -> None:
     runner = _load_runner()
     repository, head = _temporary_git_repository(tmp_path)
-    runner.ROOT = repository
+    setattr(runner, "ROOT", repository)
     arguments = argparse.Namespace(
         commit_sha=head,
         evidence_level="ci",
@@ -608,7 +608,7 @@ def test_runner_requires_clean_tracked_index_and_worktree(tmp_path: Path) -> Non
 def test_runner_rejects_commit_mismatch_before_checkout_claim(tmp_path: Path) -> None:
     runner = _load_runner()
     repository, head = _temporary_git_repository(tmp_path)
-    runner.ROOT = repository
+    setattr(runner, "ROOT", repository)
     arguments = argparse.Namespace(
         commit_sha="0" * 40 if head != "0" * 40 else "1" * 40,
         evidence_level="ci",
