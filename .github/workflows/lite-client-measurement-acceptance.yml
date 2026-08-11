@@ -40,7 +40,10 @@ jobs:
       - run: uv sync --locked --all-extras
       - name: Run IMP-083 focused acceptance
         shell: bash
-        run: uv run pytest -q --no-cov tests/test_imp_083_lite_client_measurement.py
+        run: >-
+          uv run pytest -q --no-cov
+          --junitxml=imp083-focused-junit.xml
+          tests/test_imp_083_lite_client_measurement.py
       - name: Run guarded synthetic measurement
         shell: bash
         run: |
@@ -67,4 +70,6 @@ jobs:
         if: always()
         with:
           name: imp083-lite-client-measurement-${{ matrix.os }}
-          path: imp083-lite-client-measurement.json
+          path: |
+            imp083-lite-client-measurement.json
+            imp083-focused-junit.xml
