@@ -60,8 +60,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 83,
-  "project-status.json must mark Phase 6 in progress through IMP-082 with IMP-083 next",
+    status.phase?.next_implementation === 84,
+  "project-status.json must mark Phase 6 in progress through IMP-083 with IMP-084 next",
 );
 expect(
   status.model_runtime &&
@@ -70,7 +70,9 @@ expect(
   "project-status.json requires model_runtime.connected and model_runtime.message",
 );
 expect(
-  status.model_runtime.message.includes("through IMP-082") &&
+  status.model_runtime.message.includes("through IMP-083") &&
+    status.model_runtime.message.includes("bounded Lite client resource measurement mechanics") &&
+    status.model_runtime.message.includes("does not define RAM, disk, or latency requirements") &&
     status.model_runtime.message.includes("optional local PDF text extraction") &&
     status.model_runtime.message.includes("optional local image OCR") &&
     status.model_runtime.message.includes("text/Markdown writing attachment integration") &&
@@ -83,7 +85,7 @@ expect(
     status.model_runtime.message.includes("reported without OCR") &&
     status.model_runtime.message.includes("no source overwrite, output file, persistence") &&
     status.model_runtime.message.includes("passes at both CI and real-machine evidence levels"),
-  "project-status.json must describe IMP-082 without broadening accepted real-machine evidence",
+  "project-status.json must describe IMP-083 without inventing resource thresholds or real-machine evidence",
 );
 expect(
   /^\d{4}-\d{2}-\d{2}$/.test(status.last_reviewed || ""),
@@ -827,6 +829,38 @@ expect(
 );
 
 expect(
+  dailyUse.lite_client_resource_measurement?.implementation === "IMP-083" &&
+    dailyUse.lite_client_resource_measurement?.status === "ci-pass" &&
+    JSON.stringify(dailyUse.lite_client_resource_measurement?.passed_evidence_levels) === JSON.stringify(["ci"]) &&
+    JSON.stringify(dailyUse.lite_client_resource_measurement?.required_evidence_levels) === JSON.stringify(["ci"]) &&
+    dailyUse.lite_client_resource_measurement?.measurement_scope === "doll-lite-client-only" &&
+    dailyUse.lite_client_resource_measurement?.measurement_schema_version === 1 &&
+    JSON.stringify(dailyUse.lite_client_resource_measurement?.workload_steps) === JSON.stringify(["workspace_initialize", "state_initialize", "workspace_load", "state_read_only_open", "doctor_read_only"]) &&
+    dailyUse.lite_client_resource_measurement?.monotonic_duration_measurement === true &&
+    dailyUse.lite_client_resource_measurement?.workspace_disk_measurement === true &&
+    dailyUse.lite_client_resource_measurement?.workspace_entry_limit === 20000 &&
+    dailyUse.lite_client_resource_measurement?.workspace_depth_limit === 32 &&
+    dailyUse.lite_client_resource_measurement?.workspace_root_symlink_allowed === false &&
+    dailyUse.lite_client_resource_measurement?.workspace_inner_symlinks_allowed === false &&
+    dailyUse.lite_client_resource_measurement?.exact_commit_required === true &&
+    dailyUse.lite_client_resource_measurement?.tracked_index_must_match_head === true &&
+    dailyUse.lite_client_resource_measurement?.tracked_worktree_must_match_index === true &&
+    dailyUse.lite_client_resource_measurement?.untracked_evidence_output_allowed === true &&
+    dailyUse.lite_client_resource_measurement?.measured_workload_network_access === false &&
+    dailyUse.lite_client_resource_measurement?.measured_workload_process_launch === false &&
+    dailyUse.lite_client_resource_measurement?.external_runtime_memory_measured === false &&
+    dailyUse.lite_client_resource_measurement?.model_memory_measured === false &&
+    dailyUse.lite_client_resource_measurement?.performance_thresholds_defined === false &&
+    dailyUse.lite_client_resource_measurement?.primary_intel_mac_real_machine_evidence === false &&
+    dailyUse.lite_client_resource_measurement?.phase6_gate_complete === false &&
+    dailyUse.lite_client_resource_measurement?.lite_v1_complete === false &&
+    dailyUse.lite_client_resource_measurement?.stable_anti_lock_in_claim === false &&
+    dailyUse.lite_client_resource_measurement?.implementation_doc === "docs/implementation/imp-083-lite-client-resource-measurement.md" &&
+    dailyUse.lite_client_resource_measurement?.runbook === "docs/testing/imp-083-primary-intel-mac-runbook.md",
+  "IMP-083 Lite client resource measurement must remain client-only, bounded, exact-checkout guarded, CI-only, threshold-free, and non-claiming",
+);
+
+expect(
   localWritingPrimary.test_id === "IMP-064-LOCAL-WRITING-PRIMARY" &&
     localWritingPrimary.result === "pass" &&
     localWritingPrimary.evidence_level === "real-machine" &&
@@ -1165,8 +1199,10 @@ expect(
     roadmap.includes("### IMP-080 — Explicit OCR image writing attachment") &&
     roadmap.includes("### IMP-081 — Explicit CSV writing attachment") &&
     roadmap.includes("### IMP-082 — Explicit multiple writing attachments") &&
-    roadmap.includes("the next bounded implementation receives IMP-083 only when a new implementation issue is opened"),
-  "roadmap must record IMP-082 and identify IMP-083 as the next unallocated implementation identifier",
+    roadmap.includes("### IMP-083 — Lite client resource measurement harness") &&
+    roadmap.includes("IMP-083 is assigned to Issue #249") &&
+    roadmap.includes("the next bounded implementation receives IMP-084 only when a new implementation issue is opened"),
+  "roadmap must bind IMP-083 to Issue #249 and identify IMP-084 as the next unallocated implementation identifier",
 );
 expect(
   roadmap.includes("docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json"),
