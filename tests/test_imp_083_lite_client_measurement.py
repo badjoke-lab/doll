@@ -584,7 +584,7 @@ def test_windows_process_rss_handles_failed_query_and_dll_errors(monkeypatch: Mo
 def test_runner_requires_clean_tracked_index_and_worktree(tmp_path: Path) -> None:
     runner = _load_runner()
     repository, head = _temporary_git_repository(tmp_path)
-    setattr(runner, "ROOT", repository)
+    cast(SimpleNamespace, runner).ROOT = repository
     arguments = argparse.Namespace(
         commit_sha=head,
         evidence_level="ci",
@@ -608,7 +608,7 @@ def test_runner_requires_clean_tracked_index_and_worktree(tmp_path: Path) -> Non
 def test_runner_rejects_commit_mismatch_before_checkout_claim(tmp_path: Path) -> None:
     runner = _load_runner()
     repository, head = _temporary_git_repository(tmp_path)
-    setattr(runner, "ROOT", repository)
+    cast(SimpleNamespace, runner).ROOT = repository
     arguments = argparse.Namespace(
         commit_sha="0" * 40 if head != "0" * 40 else "1" * 40,
         evidence_level="ci",
