@@ -10,7 +10,8 @@ Run the exact IMP-083 doll-client-only resource measurement on the primary Intel
 - operating system reports Darwin;
 - architecture reports `x86_64` or `amd64`;
 - check out the exact implementation commit to be measured;
-- working tree should be clean;
+- tracked index must match HEAD and the tracked working tree must match the index;
+- untracked evidence output is permitted, so the JSON redirection below does not invalidate the tracked-source guard;
 - networking is manually disabled for the measurement run;
 - no cloud credential is required;
 - no Ollama process or model is required by this measurement;
@@ -30,7 +31,7 @@ uv run python scripts/run_imp_083_lite_client_measurement.py \
   > imp083-lite-client-measurement.json
 ```
 
-The runner independently checks that `--commit-sha` matches the current checkout and rejects real-machine evidence on non-Darwin or non-Intel architectures.
+The runner independently checks that `--commit-sha` matches the current checkout, rejects staged or unstaged tracked changes before measurement, and rejects real-machine evidence on non-Darwin or non-Intel architectures.
 
 ## Expected result
 
