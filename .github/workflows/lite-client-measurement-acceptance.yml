@@ -1,0 +1,78 @@
+name: Lite client measurement acceptance
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/lite-client-measurement-acceptance.yml
+      - src/doll/lite_measurement.py
+      - scripts/run_imp_083_lite_client_measurement.py
+      - docs/testing/imp-083-primary-intel-mac-runbook.md
+      - tests/test_imp_083_lite_client_measurement.py
+      - tests/test_imp_083_lite_client_measurement_resource_fallback.py
+  pull_request:
+    paths:
+      - .github/workflows/lite-client-measurement-acceptance.yml
+      - src/doll/lite_measurement.py
+      - scripts/run_imp_083_lite_client_measurement.py
+      - docs/testing/imp-083-primary-intel-mac-runbook.md
+      - tests/test_imp_083_lite_client_measurement.py
+      - tests/test_imp_083_lite_client_measurement_resource_fallback.py
+
+permissions:
+  contents: read
+
+jobs:
+  measurement:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked --all-extras
+      - name: Run IMP-083 focused acceptance
+        shell: bash
+        run: >-
+          uv run pytest -q --no-cov
+          --junitxml=imp083-focused-junit.xml
+          tests/test_imp_083_lite_client_measurement.py
+          tests/test_imp_083_lite_client_measurement_resource_fallback.py
+      - name: Run guarded synthetic measurement
+        shell: bash
+        run: |
+          set -o pipefail
+          COMMIT_SHA="$(git rev-parse HEAD)"
+          uv run python scripts/run_imp_083_lite_client_measurement.py \
+            --commit-sha "$COMMIT_SHA" \
+            --evidence-level ci \
+            | tee imp083-lite-client-measurement.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          payload = json.loads(Path("imp083-lite-client-measurement.json").read_text(encoding="utf-8"))
+          if payload.get("result") != "pass":
+              raise SystemExit("IMP-083 measurement did not pass")
+          checks = payload.get("checks")
+          privacy = payload.get("privacy")
+          if not isinstance(checks, dict) or not checks or not all(checks.values()):
+              raise SystemExit("IMP-083 measurement checks are invalid")
+          if not isinstance(privacy, dict) or any(privacy.values()):
+              raise SystemExit("IMP-083 measurement privacy flags are invalid")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: imp083-lite-client-measurement-${{ matrix.os }}
+          path: |
+            imp083-lite-client-measurement.json
+            imp083-focused-junit.xml

@@ -912,5 +912,50 @@
     "lite_v1_complete": false,
     "stable_anti_lock_in_claim": false,
     "implementation_doc": "docs/implementation/imp-082-multiple-writing-attachments.md"
+  },
+  "lite_client_resource_measurement": {
+    "implementation": "IMP-083",
+    "status": "ci-pass",
+    "description": "A bounded local-only five-step harness measures doll Lite client timing, process RSS, and aggregate workspace disk usage without defining performance thresholds or measuring external runtime/model memory.",
+    "pytest_files": [
+      "tests/test_imp_083_lite_client_measurement.py",
+      "tests/test_imp_083_lite_client_measurement_resource_fallback.py"
+    ],
+    "passed_evidence_levels": [
+      "ci"
+    ],
+    "required_evidence_levels": [
+      "ci"
+    ],
+    "measurement_scope": "doll-lite-client-only",
+    "measurement_schema_version": 1,
+    "workload_steps": [
+      "workspace_initialize",
+      "state_initialize",
+      "workspace_load",
+      "state_read_only_open",
+      "doctor_read_only"
+    ],
+    "monotonic_duration_measurement": true,
+    "workspace_disk_measurement": true,
+    "workspace_entry_limit": 20000,
+    "workspace_depth_limit": 32,
+    "workspace_root_symlink_allowed": false,
+    "workspace_inner_symlinks_allowed": false,
+    "exact_commit_required": true,
+    "tracked_index_must_match_head": true,
+    "tracked_worktree_must_match_index": true,
+    "untracked_evidence_output_allowed": true,
+    "measured_workload_network_access": false,
+    "measured_workload_process_launch": false,
+    "external_runtime_memory_measured": false,
+    "model_memory_measured": false,
+    "performance_thresholds_defined": false,
+    "primary_intel_mac_real_machine_evidence": false,
+    "phase6_gate_complete": false,
+    "lite_v1_complete": false,
+    "stable_anti_lock_in_claim": false,
+    "implementation_doc": "docs/implementation/imp-083-lite-client-resource-measurement.md",
+    "runbook": "docs/testing/imp-083-primary-intel-mac-runbook.md"
   }
 }
