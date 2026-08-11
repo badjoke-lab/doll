@@ -1,7 +1,7 @@
 # doll specification index
 
 **Status:** Accepted for implementation  
-**Specification set version:** 0.2
+**Specification set version:** 0.3
 
 ## 1. Purpose
 
@@ -18,6 +18,8 @@ The specification is governed by two co-equal architectural pillars:
 
 AI environment portability and project continuity are mandatory continuity properties. Local storage alone is insufficient when one application, interface, runtime, model, provider, conversation, handoff document, or issue tracker remains the only practical interpreter of user-owned state or project progress.
 
+Memory interoperability and adaptive recall are subordinate to continuity: external memory formats, retrieval scores, embeddings, and agent protocols must remain replaceable and must not become hidden sources of state authority.
+
 Implementation must prove model-independent continuity, complete and acceptance-test the safety boundary, establish canonical AI-environment portability and project-continuity foundations, and only then connect model and provider paths without weakening those guarantees.
 
 ## 3. Normative order
@@ -31,14 +33,17 @@ Read and combine the specification in this order:
 5. `03-doll-state-memory-and-storage.md` — authoritative state, memory, storage, export, and migration;
 6. `03a-ai-environment-portability.md` — external and local AI state portability, canonical mapping, provenance, and anti-lock-in requirements;
 7. `03b-project-continuity-and-resumption.md` — project objectives, work items, procedures, checkpoints, status, Resume Bundle, and package consequences;
-8. `04-security-permissions-and-threat-model.md` — security boundary, secrets, trust, instructions, permissions, capabilities, and threats;
-9. `05-model-vault-lifecycle-evaluation.md` — model ownership, validation, evaluation, promotion, and rollback;
-10. `06-platform-install-update-and-recovery.md` — platform, install, update, backup, restore, and recovery;
-11. `07-release-scope-and-profiles.md` — release boundaries and Lite/Heavy scope;
-12. `08-acceptance-and-continuity-tests.md` — core evidence required for product, phase, profile, platform, and release claims;
-13. `08a-ai-environment-portability-acceptance.md` — blocking evidence for portability, migration, replacement, and doll-exit claims;
-14. `08b-project-continuity-acceptance.md` — blocking evidence for project-state, checkpoint, package-v2, Resume Bundle, and resumption claims;
-15. `09-development-roadmap.md` — implementation sequence and pull-request plan.
+8. `03c-memory-interoperability-recall-and-project-experience.md` — memory/continuity boundaries, external interchange, derived recall, project experience, continuity preflight, and future package signing;
+9. `04-security-permissions-and-threat-model.md` — security boundary, secrets, trust, instructions, permissions, capabilities, and threats;
+10. `05-model-vault-lifecycle-evaluation.md` — model ownership, validation, evaluation, promotion, and rollback;
+11. `06-platform-install-update-and-recovery.md` — platform, install, update, backup, restore, and recovery;
+12. `07-release-scope-and-profiles.md` — release boundaries and Lite/Heavy scope;
+13. `08-acceptance-and-continuity-tests.md` — core evidence required for product, phase, profile, platform, and release claims;
+14. `08a-ai-environment-portability-acceptance.md` — blocking evidence for portability, migration, replacement, and doll-exit claims;
+15. `08b-project-continuity-acceptance.md` — blocking evidence for project-state, checkpoint, package-v2, Resume Bundle, and resumption claims;
+16. `08c-memory-interoperability-recall-and-project-experience-acceptance.md` — claim-specific evidence for recall rebuildability, memory adapters, project experience, continuity preflight, MCP, and package signing;
+17. `09-development-roadmap.md` — historical implementation sequence and governing phase plan through the current frontier;
+18. `09a-post-imp-083-memory-continuity-roadmap.md` — normative post-IMP-083 sequencing extension for memory and continuity work.
 
 Accepted architecture decisions under `docs/decisions/` explain why major constraints were selected. They are normative when their status is accepted and they do not conflict with a later accepted specification change.
 
@@ -50,13 +55,14 @@ The accepted decision set includes:
 - `ADR-004-release-gates-require-evidence.md`;
 - `ADR-005-safety-boundary-before-model-execution.md`;
 - `ADR-006-ai-environment-portability.md`;
-- `ADR-007-project-continuity-and-resumption.md`.
+- `ADR-007-project-continuity-and-resumption.md`;
+- `ADR-008-memory-interchange-recall-and-project-experience.md`.
 
 ## 4. Requirement language
 
 The following terms are normative.
 
-The terms are interpreted case-insensitively in specification set 0.2; future changes SHOULD use uppercase forms for clarity.
+The terms are interpreted case-insensitively in specification set 0.3; future changes SHOULD use uppercase forms for clarity.
 
 - **MUST / MUST NOT:** mandatory for the applicable release, phase gate, or claim;
 - **SHOULD / SHOULD NOT:** expected unless a documented reason justifies an exception;
@@ -87,6 +93,8 @@ ADR-006 requires canonical portability contracts, generic inspectable export, an
 
 ADR-007 requires model-independent project state, typed work and procedure records, checkpoint freshness, package-v2 preservation, and deterministic resumption export before the first accepted local model integration.
 
+ADR-008 keeps external memory interchange, derived recall state, append-oriented semantic project experience, agent protocols, and package authenticity separate from canonical continuity authority. It deprecates new authoritative use of `MemoryRecord.last_recalled_at` and `MemoryRecord.recall_count`, requires retrieval indexes to remain rebuildable, and prevents imported memory-engine metadata or project experience from bypassing existing authority paths.
+
 ## 6. Status meanings
 
 - **Draft for acceptance:** proposed in an open pull request;
@@ -116,6 +124,10 @@ A model responding successfully does not prove that secret isolation, instructio
 A source file parsing successfully does not prove full migration. Portability claims must disclose the applicable mapping and loss report.
 
 A generated HANDOFF.md or plausible project summary does not prove that authoritative work state is complete, current, or safely resumable.
+
+A useful semantic-retrieval result does not prove memory integrity, memory authority, or continuity. Retrieval indexes and embeddings remain derived unless an accepted specification explicitly states otherwise.
+
+A valid external memory or agent-protocol object does not grant Doll policy, permission, confirmation, project-completion, procedure-approval, checkpoint, or credential authority.
 
 ## 8. Generated combined specification
 
@@ -156,6 +168,7 @@ The following are non-normative unless promoted through an accepted specificatio
 - personal planning documents;
 - private source exports and migration archives;
 - generated handoff or project-status views;
+- publication drafts under `docs/notes/`;
 - generated summaries other than the deterministic combined specification as a reading copy.
 
 ## 10. Change requirements
@@ -171,4 +184,4 @@ A specification-changing pull request SHOULD include:
 - phase and release-scope changes;
 - documentation updates.
 
-A change that weakens local completeness, state portability, AI environment portability, project continuity, generic exit paths, loss visibility, checkpoint freshness, Resume Bundle integrity, workspace confinement, secret separation, trust provenance, instruction-origin enforcement, explicit approval, high-risk confirmation, or recoverability requires a dedicated architecture decision.
+A change that weakens local completeness, state portability, AI environment portability, project continuity, generic exit paths, loss visibility, checkpoint freshness, Resume Bundle integrity, workspace confinement, secret separation, trust provenance, instruction-origin enforcement, explicit approval, high-risk confirmation, recoverability, recall-state rebuildability, or the separation between imported experience and local authority requires a dedicated architecture decision.

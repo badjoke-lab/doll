@@ -5,18 +5,19 @@
 > The authoritative sources are the Markdown files under `docs/spec/`.
 > Regenerate this file with `python scripts/build_final_spec.py`.
 
-**Specification set version:** 0.2  
+**Specification set version:** 0.3  
 **Generation:** deterministic; no timestamp is embedded
 
 ## Included source documents
 
-- `docs/spec/00-index.md` — SHA-256 `8b17dd0817d389f2cc5b0a9775ef0b3d434381f400f6dd10983e4f8ac2582009`
+- `docs/spec/00-index.md` — SHA-256 `b1696a43d78337dd3ed0db7188f7a32d3157d5b2813aca7b47901b1d373d1ec8`
 - `docs/spec/00-decisions-baseline.md` — SHA-256 `114f45e16ee5ef5788d15a234653a6af2e2e23aba10c7951ec32144f61f4d833`
 - `docs/spec/01-product-and-continuity-contract.md` — SHA-256 `12cd88ee22046833795e6ba265978cb4508e0042e72e791350cde1bd1f74063f`
 - `docs/spec/02-architecture-and-data-flow.md` — SHA-256 `9698b80087aee29a37b826500e975c1e8576226e0cff797a4b931d283412abcf`
 - `docs/spec/03-doll-state-memory-and-storage.md` — SHA-256 `92e9c2dbd29123eb057a590821ed06702e6938d2c99421510e59ffb9af2656bd`
 - `docs/spec/03a-ai-environment-portability.md` — SHA-256 `f01efd1788f96d4552853c0d36b50cc70a06616673df133e53594a5ded134f0f`
 - `docs/spec/03b-project-continuity-and-resumption.md` — SHA-256 `13c536b9e4fc1261248e93aec0fba74534faae8087c4b22319e97e6309034a0b`
+- `docs/spec/03c-memory-interoperability-recall-and-project-experience.md` — SHA-256 `a7f7262c725451ff68b59a4e28f51c20d8869bb4b1bea1f450e4fed8bd388f6f`
 - `docs/spec/04-security-permissions-and-threat-model.md` — SHA-256 `fb40578f529840d00dbf3cf9534824d5f15ccc36d20041f945bf42b5acbe9566`
 - `docs/spec/05-model-vault-lifecycle-evaluation.md` — SHA-256 `3011788c55be9232db98bf932d8c859c88ed3d3bc3e603f0d4c3c709f2eb4268`
 - `docs/spec/06-platform-install-update-and-recovery.md` — SHA-256 `b73b6106d28b3fcb740b6d2f8b5dee4935a7a998537e5858395a85170ce85072`
@@ -24,7 +25,9 @@
 - `docs/spec/08-acceptance-and-continuity-tests.md` — SHA-256 `1ae9b70cf28257b35a30238bdc46c2caea93dbd17fdf8b516ff708c9e208a698`
 - `docs/spec/08a-ai-environment-portability-acceptance.md` — SHA-256 `3a1876d8b506204254ccd54eb58cfabcf2ddc92e3edd446d90650b9ae22ff305`
 - `docs/spec/08b-project-continuity-acceptance.md` — SHA-256 `b58623f21bdd183a21e1904ebcec954ffb2b6976254b72ac52f13deae83306cc`
+- `docs/spec/08c-memory-interoperability-recall-and-project-experience-acceptance.md` — SHA-256 `5cb51c3961eeb802fb3355d880c4e85c7068f60b0b050babf0cc03b6053e482f`
 - `docs/spec/09-development-roadmap.md` — SHA-256 `fbec991100a72eb6a5aa35f59adefb7358d99135db8d4897a306c53aff6bf393`
+- `docs/spec/09a-post-imp-083-memory-continuity-roadmap.md` — SHA-256 `c894e80728016c66f89ab199f31b10a5cc2dbb50bc99b8a206a7756208026faf`
 
 ---
 
@@ -32,7 +35,7 @@
 # doll specification index
 
 **Status:** Accepted for implementation  
-**Specification set version:** 0.2
+**Specification set version:** 0.3
 
 ## 1. Purpose
 
@@ -49,6 +52,8 @@ The specification is governed by two co-equal architectural pillars:
 
 AI environment portability and project continuity are mandatory continuity properties. Local storage alone is insufficient when one application, interface, runtime, model, provider, conversation, handoff document, or issue tracker remains the only practical interpreter of user-owned state or project progress.
 
+Memory interoperability and adaptive recall are subordinate to continuity: external memory formats, retrieval scores, embeddings, and agent protocols must remain replaceable and must not become hidden sources of state authority.
+
 Implementation must prove model-independent continuity, complete and acceptance-test the safety boundary, establish canonical AI-environment portability and project-continuity foundations, and only then connect model and provider paths without weakening those guarantees.
 
 ## 3. Normative order
@@ -62,14 +67,17 @@ Read and combine the specification in this order:
 5. `03-doll-state-memory-and-storage.md` — authoritative state, memory, storage, export, and migration;
 6. `03a-ai-environment-portability.md` — external and local AI state portability, canonical mapping, provenance, and anti-lock-in requirements;
 7. `03b-project-continuity-and-resumption.md` — project objectives, work items, procedures, checkpoints, status, Resume Bundle, and package consequences;
-8. `04-security-permissions-and-threat-model.md` — security boundary, secrets, trust, instructions, permissions, capabilities, and threats;
-9. `05-model-vault-lifecycle-evaluation.md` — model ownership, validation, evaluation, promotion, and rollback;
-10. `06-platform-install-update-and-recovery.md` — platform, install, update, backup, restore, and recovery;
-11. `07-release-scope-and-profiles.md` — release boundaries and Lite/Heavy scope;
-12. `08-acceptance-and-continuity-tests.md` — core evidence required for product, phase, profile, platform, and release claims;
-13. `08a-ai-environment-portability-acceptance.md` — blocking evidence for portability, migration, replacement, and doll-exit claims;
-14. `08b-project-continuity-acceptance.md` — blocking evidence for project-state, checkpoint, package-v2, Resume Bundle, and resumption claims;
-15. `09-development-roadmap.md` — implementation sequence and pull-request plan.
+8. `03c-memory-interoperability-recall-and-project-experience.md` — memory/continuity boundaries, external interchange, derived recall, project experience, continuity preflight, and future package signing;
+9. `04-security-permissions-and-threat-model.md` — security boundary, secrets, trust, instructions, permissions, capabilities, and threats;
+10. `05-model-vault-lifecycle-evaluation.md` — model ownership, validation, evaluation, promotion, and rollback;
+11. `06-platform-install-update-and-recovery.md` — platform, install, update, backup, restore, and recovery;
+12. `07-release-scope-and-profiles.md` — release boundaries and Lite/Heavy scope;
+13. `08-acceptance-and-continuity-tests.md` — core evidence required for product, phase, profile, platform, and release claims;
+14. `08a-ai-environment-portability-acceptance.md` — blocking evidence for portability, migration, replacement, and doll-exit claims;
+15. `08b-project-continuity-acceptance.md` — blocking evidence for project-state, checkpoint, package-v2, Resume Bundle, and resumption claims;
+16. `08c-memory-interoperability-recall-and-project-experience-acceptance.md` — claim-specific evidence for recall rebuildability, memory adapters, project experience, continuity preflight, MCP, and package signing;
+17. `09-development-roadmap.md` — historical implementation sequence and governing phase plan through the current frontier;
+18. `09a-post-imp-083-memory-continuity-roadmap.md` — normative post-IMP-083 sequencing extension for memory and continuity work.
 
 Accepted architecture decisions under `docs/decisions/` explain why major constraints were selected. They are normative when their status is accepted and they do not conflict with a later accepted specification change.
 
@@ -81,13 +89,14 @@ The accepted decision set includes:
 - `ADR-004-release-gates-require-evidence.md`;
 - `ADR-005-safety-boundary-before-model-execution.md`;
 - `ADR-006-ai-environment-portability.md`;
-- `ADR-007-project-continuity-and-resumption.md`.
+- `ADR-007-project-continuity-and-resumption.md`;
+- `ADR-008-memory-interchange-recall-and-project-experience.md`.
 
 ## 4. Requirement language
 
 The following terms are normative.
 
-The terms are interpreted case-insensitively in specification set 0.2; future changes SHOULD use uppercase forms for clarity.
+The terms are interpreted case-insensitively in specification set 0.3; future changes SHOULD use uppercase forms for clarity.
 
 - **MUST / MUST NOT:** mandatory for the applicable release, phase gate, or claim;
 - **SHOULD / SHOULD NOT:** expected unless a documented reason justifies an exception;
@@ -118,6 +127,8 @@ ADR-006 requires canonical portability contracts, generic inspectable export, an
 
 ADR-007 requires model-independent project state, typed work and procedure records, checkpoint freshness, package-v2 preservation, and deterministic resumption export before the first accepted local model integration.
 
+ADR-008 keeps external memory interchange, derived recall state, append-oriented semantic project experience, agent protocols, and package authenticity separate from canonical continuity authority. It deprecates new authoritative use of `MemoryRecord.last_recalled_at` and `MemoryRecord.recall_count`, requires retrieval indexes to remain rebuildable, and prevents imported memory-engine metadata or project experience from bypassing existing authority paths.
+
 ## 6. Status meanings
 
 - **Draft for acceptance:** proposed in an open pull request;
@@ -147,6 +158,10 @@ A model responding successfully does not prove that secret isolation, instructio
 A source file parsing successfully does not prove full migration. Portability claims must disclose the applicable mapping and loss report.
 
 A generated HANDOFF.md or plausible project summary does not prove that authoritative work state is complete, current, or safely resumable.
+
+A useful semantic-retrieval result does not prove memory integrity, memory authority, or continuity. Retrieval indexes and embeddings remain derived unless an accepted specification explicitly states otherwise.
+
+A valid external memory or agent-protocol object does not grant Doll policy, permission, confirmation, project-completion, procedure-approval, checkpoint, or credential authority.
 
 ## 8. Generated combined specification
 
@@ -187,6 +202,7 @@ The following are non-normative unless promoted through an accepted specificatio
 - personal planning documents;
 - private source exports and migration archives;
 - generated handoff or project-status views;
+- publication drafts under `docs/notes/`;
 - generated summaries other than the deterministic combined specification as a reading copy.
 
 ## 10. Change requirements
@@ -202,7 +218,7 @@ A specification-changing pull request SHOULD include:
 - phase and release-scope changes;
 - documentation updates.
 
-A change that weakens local completeness, state portability, AI environment portability, project continuity, generic exit paths, loss visibility, checkpoint freshness, Resume Bundle integrity, workspace confinement, secret separation, trust provenance, instruction-origin enforcement, explicit approval, high-risk confirmation, or recoverability requires a dedicated architecture decision.
+A change that weakens local completeness, state portability, AI environment portability, project continuity, generic exit paths, loss visibility, checkpoint freshness, Resume Bundle integrity, workspace confinement, secret separation, trust provenance, instruction-origin enforcement, explicit approval, high-risk confirmation, recoverability, recall-state rebuildability, or the separation between imported experience and local authority requires a dedicated architecture decision.
 <!-- END SOURCE: docs/spec/00-index.md -->
 
 ---
@@ -4047,6 +4063,609 @@ Implementation must prove that:
 - project-continuity exports contain no secret values or private host details;
 - unsupported, omitted, stale, or lossy information remains explicit.
 <!-- END SOURCE: docs/spec/03b-project-continuity-and-resumption.md -->
+
+---
+
+<!-- BEGIN SOURCE: docs/spec/03c-memory-interoperability-recall-and-project-experience.md -->
+# Memory interoperability, recall, and project experience
+
+**Status:** Draft for acceptance  
+**Specification version:** 0.1  
+**Depends on:** `01-product-and-continuity-contract.md`, `02-architecture-and-data-flow.md`, `03-doll-state-memory-and-storage.md`, `03a-ai-environment-portability.md`, `03b-project-continuity-and-resumption.md`, `04-security-permissions-and-threat-model.md`, `ADR-008-memory-interchange-recall-and-project-experience.md`
+
+## 1. Purpose
+
+This specification extends Doll State with explicit boundaries between:
+
+- durable memory content;
+- external memory interchange;
+- recall, ranking, and consolidation behavior;
+- semantic project experience;
+- deterministic pre-action continuity checks.
+
+The purpose is to make memory more useful and interoperable without narrowing doll from a continuity system into a memory database and without allowing retrieval mechanics, imported formats, models, or agent protocols to gain authority over canonical state.
+
+This document is a forward implementation contract. Merging it does not claim that the new record types, adapters, recall engine, MCP surface, or signing behavior are already implemented.
+
+## 2. Memory layer and continuity layer
+
+Doll distinguishes two related layers.
+
+### 2.1 Memory layer
+
+The memory layer answers:
+
+> What information from prior interaction or work should remain available and, when relevant, be recalled for a later task?
+
+It may include:
+
+- confirmed facts and durable context;
+- user preferences that are properly represented as memory rather than policy;
+- remembered relationships;
+- project-scoped context;
+- relations and contradictions between memories;
+- memory candidates and consolidation review;
+- recall signals and derived retrieval state.
+
+### 2.2 Continuity layer
+
+The continuity layer answers:
+
+> If the model, provider, runtime, interface, conversation, machine, or application changes, what user-owned state is required to reconstruct and resume the AI-assisted environment safely?
+
+It includes the memory layer and also includes, where enabled:
+
+- identity and preferences;
+- policy and permission;
+- projects and decisions;
+- work items and blockers;
+- procedures and checkpoints;
+- project experience;
+- conversations and artifacts;
+- sources, evidence, claims, and provenance;
+- model, runtime, and binding records;
+- import mappings and portability losses;
+- backup, migration, restore, and recovery state.
+
+Portable memory is therefore one continuity mechanism. It is not a complete substitute for Doll State or the Doll State Package.
+
+## 3. Canonical state, interchange, and interfaces
+
+### 3.1 Canonical Doll State
+
+Authoritative Doll State remains defined by the accepted versioned Doll record contracts and managed files.
+
+No external memory format, provider export, agent protocol, retrieval index, embedding representation, or product-specific database becomes canonical merely because doll can import, export, or query it.
+
+### 3.2 Interchange formats
+
+Doll SHOULD use suitable published, open, versioned interchange formats through adapters when that avoids an unnecessary Doll-specific external standard.
+
+An interchange adapter MUST declare:
+
+```text
+adapter_id
+adapter_version
+source_or_target_format
+supported_format_versions
+mapping_rules_version
+loss_categories
+network_behavior
+```
+
+The generic Phase 4A import/export, provenance, idempotency, quarantine, mapping, loss, and reviewed-publication rules continue to apply.
+
+### 3.3 Protocol interfaces
+
+A protocol such as MCP is an access interface, not a persistence schema.
+
+Protocol input MUST be assigned an instruction origin and authority class before it may affect any accepted management path. A protocol client's claim that an object is a policy, permission, approved procedure, trusted memory, completed task, or confirmed decision does not make it authoritative.
+
+A future write-capable external-agent interface MUST begin with proposal-only operations unless a later accepted specification names a narrower trusted mutation and its confirmation requirements.
+
+## 4. Authoritative memory versus recall state
+
+### 4.1 Authoritative memory meaning
+
+For a confirmed memory, the following remain part of the durable semantic record or its accepted linked state:
+
+- content;
+- subject;
+- confirmation state;
+- source and provenance;
+- validity interval;
+- confidence where defined;
+- sensitivity;
+- related and contradictory memory links;
+- record revision and lifecycle.
+
+These properties are not recalculated from retrieval frequency.
+
+### 4.2 Recall data is not memory truth
+
+The following are recall or retrieval properties rather than authoritative semantic truth:
+
+- last recall time;
+- recall frequency;
+- injection frequency;
+- positive, negative, or neutral usefulness feedback;
+- lexical match scores;
+- semantic similarity scores;
+- embedding IDs and vector dimensions;
+- activation or decay scores;
+- ranking position;
+- context-budget priority;
+- derived co-access associations.
+
+The optional `last_recalled_at` and `recall_count` fields previously listed under `MemoryRecord` in `03-doll-state-memory-and-storage.md` are **deprecated as new authoritative MemoryRecord fields**. Existing persisted or imported values MAY remain readable for compatibility, but new implementations MUST place equivalent behavior in the usage-signal or derived-recall boundary defined here.
+
+A retrieval update MUST NOT increment the authoritative MemoryRecord revision merely because the memory was searched, ranked, selected, or injected.
+
+## 5. MemoryUsageSignalRecord
+
+A later implementation MAY persist minimal memory-use evidence when it has clear value for local retrieval quality, explainability, or user review.
+
+When persisted, it uses a versioned `MemoryUsageSignalRecord` rather than mutating the MemoryRecord.
+
+Initial logical fields are:
+
+```text
+signal_id
+memory_id
+signal_kind
+occurred_at
+actor_type
+project_id
+session_id
+operation_id
+retrieval_method_id
+context_selection_policy_version
+provenance
+sensitivity
+```
+
+Optional bounded fields may include:
+
+```text
+feedback_class
+reason_code
+related_memory_ids
+```
+
+Initial signal kinds may include:
+
+```text
+recalled
+selected_for_context
+helpful
+irrelevant
+contradiction_surfaced
+explicitly_reinforced
+```
+
+### 5.1 Signal authority
+
+A usage signal describes an observed retrieval or feedback event. It does not establish that the memory is true, false, approved, obsolete, or safe to delete.
+
+The signal MUST identify the actor or method that produced it. Model-generated usefulness feedback and imported usage counters remain lower-authority evidence than explicit user feedback.
+
+### 5.2 Privacy and boundedness
+
+Usage signals SHOULD retain identifiers and bounded reason codes rather than duplicate memory bodies, prompts, generated responses, native paths, or private environment details.
+
+A signal implementation MUST be locally inspectable and deletable under the applicable retention policy.
+
+### 5.3 Continuity requirements
+
+`MemoryUsageSignalRecord` is authoritative operational history if implemented. Its first accepted implementation MUST include, in the same slice:
+
+- explicit schema versioning;
+- record validation;
+- Doll State Package registration and validation;
+- backup and restore coverage;
+- fresh-process inspection;
+- migration or compatibility handling;
+- secret and sensitivity tests.
+
+The absence of usage signals MUST NOT make confirmed memory uninterpretable.
+
+## 6. RecallState and reproducible retrieval indexes
+
+`RecallState` is a derived view or cache. It is not an authoritative Doll State record unless a future architecture decision explicitly changes that classification.
+
+A RecallState implementation SHOULD identify:
+
+```text
+memory_id
+memory_revision
+algorithm_id
+algorithm_version
+context_selection_policy_version
+generated_at_or_source_revision
+lexical_score
+semantic_score
+recency_component
+usefulness_component
+scope_component
+final_priority
+index_or_embedding_reference
+```
+
+Not every implementation needs every score. Missing optional retrieval components MUST have documented neutral behavior.
+
+### 6.1 Rebuildability
+
+RecallState, embeddings, BM25/FTS indexes, vector indexes, RRF results, ranking caches, and derived association graphs MUST be rebuildable from authoritative records plus any retained usage signals they declare as inputs.
+
+Deleting or corrupting a reproducible retrieval index MUST NOT:
+
+- delete or archive confirmed memory;
+- change memory confirmation state;
+- alter policy, permission, project, decision, or work authority;
+- block state inspection, backup verification, restore, or generic export.
+
+### 6.2 Model independence
+
+An embedding model or semantic-search model is replaceable. Changing it MAY change retrieval quality or ordering, but MUST NOT change canonical memory identity or semantic content.
+
+Embeddings MUST NOT be the only representation of a memory.
+
+### 6.3 Local-first retrieval
+
+The default recall path for a local-complete release MUST operate without a cloud embedding or ranking service.
+
+Semantic retrieval MAY be absent. A deterministic lexical fallback MUST remain available for the release profiles that claim local memory search.
+
+## 7. Context selection and transparency
+
+Existing explicit selection remains a valid and preferred control path.
+
+A later automatic or semi-automatic recall feature MUST:
+
+- operate under a versioned context-selection policy;
+- apply project, sensitivity, validity, and context-budget limits;
+- reject secret values and disallowed records before model context construction;
+- preserve instruction-origin separation;
+- expose which memory IDs were selected where practical;
+- permit the user to request a turn without long-term memory;
+- avoid automatic expansion from one selected record into unrestricted linked-record traversal;
+- treat model-proposed retrieval choices as proposals or ranking input, not authority.
+
+Semantic retrieval does not imply semantic authority.
+
+## 8. Consolidation, duplicates, and contradictions
+
+Doll MAY add a memory-consolidation workflow that detects:
+
+- likely duplicates;
+- compatible extensions;
+- contradictions;
+- expired or stale validity;
+- overly broad memories that should be split;
+- related memories that may benefit from explicit links.
+
+Detection MAY use deterministic comparison, local models, or optional external models under the accepted outbound boundary.
+
+The output MUST remain a review candidate until the target memory contract's trusted mutation path accepts it.
+
+A consolidation process MUST NOT automatically:
+
+- merge confirmed memories;
+- rewrite content;
+- supersede a confirmed memory;
+- convert a suggestion into confirmed memory;
+- archive or delete memory because recall activation is low;
+- treat repeated model output as user confirmation.
+
+A contradiction remains inspectable until explicitly resolved. Historical provenance MUST survive merge or supersession.
+
+## 9. General memory interoperability profile: PAM
+
+Portable AI Memory (PAM) v1.x is the first high-priority general memory-interchange target. Initial implementation targets the published PAM v1.0 contract through a version-bound adapter.
+
+PAM support MUST remain optional and MUST NOT be required to inspect or recover Doll State.
+
+### 9.1 PAM import
+
+A PAM importer MUST use the generic staged import path and MUST:
+
+- preserve exact source bytes or an approved content-addressed source reference where permitted;
+- bind the import to the PAM format version and Doll adapter version;
+- validate supported PAM structure without network dependency;
+- preserve source identifiers and provenance where safe;
+- map unsupported types, relations, conversations, access metadata, lifecycle values, signatures, and embeddings through explicit mapping or loss reporting;
+- keep imported memory content external and untrusted until reviewed for the applicable Doll target;
+- remain idempotent for unchanged source objects.
+
+PAM `content_hash` is source-format integrity metadata. Doll MUST NOT use PAM's normalized content hash as the canonical Doll record identity or as proof that two semantically sensitive values are interchangeable.
+
+PAM `access` or equivalent foreign permission metadata MUST NOT create Doll PermissionRecords or local sharing authority.
+
+A valid PAM signature MAY be verified and preserved as source evidence. It does not replace Doll provenance, user confirmation, or package trust rules.
+
+### 9.2 PAM export
+
+A PAM exporter MAY export the subset of confirmed Doll memories and relations that can be represented by the selected PAM target version.
+
+It MUST:
+
+- state the target PAM version;
+- calculate PAM-required fields according to that version;
+- report Doll fields or semantics that cannot be represented;
+- keep optional embeddings non-authoritative;
+- distinguish PAM memory export from complete Doll continuity export.
+
+A successful PAM export MUST NOT be described as a complete Doll State Package or complete AI-environment migration.
+
+## 10. Product-specific interoperability profiles
+
+### 10.1 PLUR / Engram
+
+A future PLUR Engram adapter is lower priority than the general PAM profile and the core Doll recall boundary.
+
+The adapter MUST treat PLUR-specific activation, decay, usage, emotional weight, injection ranking, and learned association values as external memory-engine metadata. Those values MUST NOT directly change Doll MemoryRecord lifecycle or confirmation state.
+
+Mapping guidance:
+
+- terminological and behavioral Engrams may become imported memory candidates or imported external memory records according to the accepted target path;
+- procedural Engrams MUST NOT automatically become approved ProcedureRecords;
+- architectural Engrams MUST NOT automatically become DecisionRecords or PolicyRecords;
+- PLUR episodes may map to imported project-experience claims when a safe project relationship exists;
+- foreign visibility or sharing metadata cannot grant Doll permission authority.
+
+An export to PLUR MUST disclose fields and semantics that are lossy, including Doll authority, evidence, project-state, and policy distinctions that Engrams do not represent directly.
+
+### 10.2 PROJECTMEM
+
+A future PROJECTMEM adapter begins import-first and MUST bind behavior to the actual supported application/export version rather than assume that a paper description and current implementation are identical.
+
+PROJECTMEM events may be preserved as imported `ProjectExperienceRecord` claims with source provenance. Imported decisions, fixes, completed-state wording, plans, warnings, and agent-authored summaries MUST NOT directly mutate Doll DecisionRecords, WorkItem completion, Procedure approval, checkpoints, policies, or permissions.
+
+Doll-to-PROJECTMEM export is optional. If implemented, it MUST be described as lossy unless the exact selected mapping has acceptance evidence.
+
+## 11. ProjectExperienceRecord
+
+`ProjectExperienceRecord` preserves semantic work history that should survive a conversation or model replacement.
+
+It is distinct from operational audit.
+
+Initial logical fields are:
+
+```text
+experience_id
+project_id
+work_item_id
+event_kind
+summary
+outcome
+occurred_at
+assertion_state
+related_record_ids
+evidence_ids
+source_ids
+supersedes_id
+provenance
+sensitivity
+```
+
+Optional implementation-specific bounded metadata MAY identify a method or tool class, but MUST NOT duplicate raw secrets, full prompts, generated responses, or unnecessary command output.
+
+### 11.1 Event kinds
+
+The first schema SHOULD support:
+
+```text
+observation
+hypothesis
+attempt
+outcome
+resolution
+lesson
+```
+
+Unknown kinds MUST NOT be silently coerced to another kind.
+
+### 11.2 Outcomes
+
+Where applicable:
+
+```text
+worked
+failed
+partial
+unknown
+```
+
+An outcome is a claim whose trust depends on `assertion_state`, provenance, and linked evidence. The word `failed` in imported text is not automatically trusted merely because it maps to the field.
+
+### 11.3 Assertion state
+
+The schema MUST distinguish at least the semantic authority source needed to tell apart:
+
+- user-recorded or user-confirmed experience;
+- deterministic system observation with bounded evidence;
+- imported external claim;
+- model-proposed experience.
+
+Exact enum names are assigned by the implementation specification.
+
+### 11.4 Append-oriented history
+
+After publication, the semantic event payload is append-oriented.
+
+A material correction SHOULD create a new experience record linked through `supersedes_id` or another accepted correction relationship. The earlier record remains inspectable.
+
+Archival or retention metadata MAY change under the common record lifecycle, but the system MUST NOT silently rewrite a failed attempt into a successful one.
+
+### 11.5 Not global event sourcing
+
+ProjectExperienceRecord does not replace revisioned authoritative current state.
+
+Doll continues to store current project objectives, work status, decisions, policies, permissions, bindings, and checkpoints through their accepted record contracts.
+
+### 11.6 Continuity integration
+
+The first accepted ProjectExperienceRecord implementation MUST include:
+
+- versioned schema validation;
+- State Package registration and link validation;
+- backup and restore;
+- fresh-process inspection;
+- deterministic export;
+- sensitivity and secret controls;
+- migration or read-compatibility behavior;
+- explicit Resume Bundle inclusion rules or explicit omission and loss reporting.
+
+## 12. ContinuityPreflight
+
+`ContinuityPreflight` is a deterministic, model-independent read-only check over relevant accepted state before a proposed action or capability request proceeds.
+
+It may inspect, within bounded scope:
+
+- PolicyRecords;
+- PermissionRecords;
+- relevant DecisionRecords;
+- approved ProcedureRecords;
+- WorkItem blockers and dependencies;
+- ProjectExperienceRecords;
+- applicable capability and confirmation requirements.
+
+### 12.1 Output
+
+A preflight result SHOULD contain:
+
+```text
+rule_set_id
+rule_set_version
+project_id
+proposed_action_class
+status
+matched_record_ids
+warning_codes
+authoritative_blocker_ids
+requires_confirmation
+```
+
+The result MUST avoid raw secret values and unnecessary source content.
+
+### 12.2 Authority
+
+ContinuityPreflight cannot grant permission.
+
+A prior failed experience normally produces a warning with supporting record IDs. It does not create a hard deny merely because the retrieval system ranked it highly.
+
+A hard denial may be surfaced only when it comes from an existing authoritative policy, permission, blocker, capability rule, or another accepted deterministic authority source.
+
+Imported or model-proposed experience MAY contribute advisory context but MUST NOT independently become a hard authority.
+
+### 12.3 Integration with the safety boundary
+
+ContinuityPreflight MUST compose with, not replace, the accepted Capability Broker, permission, risk, credential, confirmation, and prompt-defense boundaries.
+
+A model cannot bypass preflight by omitting prior history from its prompt. The authoritative check is performed outside model reasoning.
+
+## 13. Future agent interface through MCP
+
+MCP MAY be used in Phase 8 or later for interoperable local agent access.
+
+Initial Doll MCP direction is:
+
+- read-only inspection for explicitly scoped non-secret state;
+- deterministic search and context retrieval;
+- proposal creation where the target schema already permits model or external proposals;
+- no direct completion, procedure approval, checkpoint confirmation, policy creation, permission grant, credential access, or high-risk confirmation from protocol content.
+
+A remote MCP transport, multi-user interface, or cross-machine agent requires a separate threat-model and authentication decision. Local MCP support MUST NOT silently open a network listener.
+
+## 14. Package integrity and future signing
+
+Current Doll State Package checksum verification remains the integrity baseline.
+
+A future Phase 9 signing extension MUST separate:
+
+- integrity hashes;
+- authenticity signatures;
+- encryption/confidentiality.
+
+The signed representation MUST bind the complete declared package inventory. At minimum the authenticated manifest description includes every member's:
+
+```text
+path
+category
+size_bytes
+content_digest
+```
+
+plus package-format identity and the deterministic metadata required to prevent member substitution or omission.
+
+Where JSON canonicalization is required, Doll SHOULD use an established canonicalization standard such as RFC 8785 rather than a project-specific serializer contract for cryptographic meaning.
+
+A first signing implementation SHOULD use a broadly reviewed signature primitive and library, such as Ed25519 where platform and dependency review accept it.
+
+Signature verification MUST NOT require a network identity provider. DID or remote identity systems remain optional future integrations rather than package prerequisites.
+
+The project MUST NOT invent custom cryptography.
+
+## 15. Compatibility and migration
+
+This specification introduces no immediate physical SQLite migration and no runtime behavior change by itself.
+
+When the new persisted records are implemented:
+
+- each receives an explicit schema version;
+- package category registration and compatibility rules are added in the same slice;
+- existing State Package v2 inputs that omit the new optional categories remain readable unless a later accepted package-version decision says otherwise;
+- backup and restore remain backward compatible for supported earlier state schemas;
+- imported external metadata never supplies missing authoritative user decisions;
+- derived RecallState may be discarded and rebuilt during migration.
+
+Deprecating `MemoryRecord.last_recalled_at` and `recall_count` for new authoritative writes does not require deleting older compatible data. Migration may preserve legacy values as imported or compatibility metadata while moving future behavior to usage signals.
+
+## 16. Claim discipline
+
+The following are separate claims:
+
+- confirmed-memory persistence;
+- deterministic local memory search;
+- semantic retrieval;
+- recall feedback;
+- memory consolidation;
+- PAM import;
+- PAM export;
+- PLUR import or export;
+- PROJECTMEM import or export;
+- ProjectExperienceRecord continuity;
+- ContinuityPreflight;
+- MCP read interface;
+- MCP proposal interface;
+- signed Doll State Package.
+
+Passing one claim MUST NOT be used as evidence for another.
+
+In particular:
+
+- a valid PAM file is not proof of complete Doll continuity;
+- a working embedding index is not proof that memory survives index loss;
+- a successful imported PROJECTMEM event is not proof of trusted work completion;
+- a preflight warning is not a permission denial unless an accepted authoritative rule produces that denial;
+- checksum verification is not a cryptographic-authenticity claim.
+
+## 17. Acceptance requirements
+
+The applicable behavior MUST pass `08c-memory-interoperability-recall-and-project-experience-acceptance.md` before the corresponding stable claim is made.
+
+Adding this specification does not retroactively invalidate accepted Phase 1 through Phase 5 evidence or completed bounded Phase 6 slices. New tests become blocking only for the feature or phase claim identified by the post-IMP-082 roadmap extension.
+
+## 18. External design references
+
+The following external designs informed this specification but are not runtime dependencies or sources of Doll authority:
+
+- Portable AI Memory (PAM) specification v1.0;
+- PLUR Engram specification v2.1;
+- PROJECTMEM v0.2.x and the PROJECTMEM paper.
+
+Doll adapters MUST bind to the exact supported external version at implementation time and MUST re-check upstream behavior before claiming compatibility.
+<!-- END SOURCE: docs/spec/03c-memory-interoperability-recall-and-project-experience.md -->
 
 ---
 
@@ -8480,6 +9099,286 @@ It does not prove autonomous project management, perfect task extraction, univer
 
 ---
 
+<!-- BEGIN SOURCE: docs/spec/08c-memory-interoperability-recall-and-project-experience-acceptance.md -->
+# Memory interoperability, recall, and project-experience acceptance
+
+**Status:** Draft for acceptance  
+**Specification version:** 0.1  
+**Depends on:** `03c-memory-interoperability-recall-and-project-experience.md`, `04-security-permissions-and-threat-model.md`, `08-acceptance-and-continuity-tests.md`, `08a-ai-environment-portability-acceptance.md`, `08b-project-continuity-acceptance.md`
+
+## 1. Purpose
+
+This document defines acceptance evidence for the memory-interoperability, derived-recall, semantic project-experience, continuity-preflight, agent-interface, and package-signing extensions defined by `03c-memory-interoperability-recall-and-project-experience.md`.
+
+These checks are claim-specific. They do not retroactively invalidate accepted Phase 1 through Phase 5 gates or already accepted bounded Phase 6 evidence.
+
+A check becomes blocking only when an implementation or release claims the corresponding feature, adapter, phase requirement, or package property.
+
+## 2. Evidence rules
+
+Unless a test explicitly requires a real external application or real machine, deterministic synthetic CI evidence is the default first acceptance level.
+
+Tests MUST use synthetic content and MUST NOT commit:
+
+- private memories;
+- personal conversation exports;
+- private project history;
+- credentials or secret values;
+- native user paths;
+- private model names or responses;
+- third-party personal data.
+
+External-format compatibility fixtures SHOULD be generated from published schemas or synthetic examples and retained with exact version attribution. Network access MUST NOT be required to validate an already-supported local import or export format.
+
+## 3. Recall-state separation
+
+### MCON-001 — Recall-index loss preserves authoritative memory
+
+**Claim:** Derived retrieval state is reproducible and non-authoritative.
+
+The test MUST:
+
+1. create confirmed memories through the accepted trusted path;
+2. build the implemented recall/index state;
+3. record authoritative memory IDs, revisions, content hashes, confirmation state, validity, provenance, and lifecycle;
+4. remove or corrupt only the reproducible recall/index state;
+5. inspect confirmed memory without rebuilding the index;
+6. rebuild the recall/index state from accepted inputs;
+7. compare authoritative memory before and after.
+
+Pass requires:
+
+- no confirmed memory is deleted, archived, superseded, re-confirmed, or revision-bumped because the index was lost;
+- memory remains inspectable without the index;
+- rebuild does not require cloud access for a local-complete profile;
+- the rebuilt index declares its algorithm and version.
+
+### MCON-002 — Recall algorithm replacement does not rewrite memory
+
+The test runs the same accepted memory set through two supported recall algorithm or index versions.
+
+Pass requires:
+
+- retrieval ordering MAY differ;
+- authoritative MemoryRecord content, revision, confirmation, provenance, sensitivity, and lifecycle remain unchanged;
+- algorithm identity is observable in derived results;
+- rollback to the earlier retrieval implementation does not require reverting authoritative memory.
+
+### MCON-003 — Usage feedback cannot become memory authority
+
+The test records supported usage signals including helpful, irrelevant, recalled, and contradiction-surfaced cases from the actor classes implemented by the feature.
+
+Pass requires:
+
+- signals do not silently edit MemoryRecord content or lifecycle;
+- model feedback is distinguishable from explicit user feedback;
+- repeated negative feedback does not delete, archive, supersede, or de-confirm a memory;
+- signal output is bounded and does not duplicate full secret or private content unnecessarily;
+- package, backup, restore, and fresh-process behavior matches the implemented signal contract.
+
+### MCON-004 — Consolidation remains review-controlled
+
+Fixtures contain exact duplicates, near duplicates, compatible extensions, contradictions, and unrelated memories.
+
+Pass requires:
+
+- detection is deterministic for the declared detector version where the implementation claims determinism;
+- candidates identify source memories and reasons;
+- no candidate automatically merges, supersedes, confirms, archives, or deletes a confirmed memory;
+- a rejected or failed consolidation attempt preserves the prior valid state;
+- historical provenance remains inspectable after an accepted supersession or merge path.
+
+## 4. PAM interoperability
+
+### MCON-005 — PAM import uses the portability boundary
+
+The test imports a supported synthetic PAM v1.x fixture containing memories, relations, provenance, lifecycle metadata, access metadata, and optional unsupported or lossy fields.
+
+Pass requires:
+
+- the exact supported PAM version and Doll adapter version are recorded;
+- validation runs without network access;
+- original source integrity is retained through the accepted source-preservation contract;
+- unchanged re-import is idempotent;
+- unsupported or transformed information appears in mapping or loss reporting;
+- PAM permissions, access metadata, instructions, and lifecycle values cannot create Doll PermissionRecords, policies, confirmations, approved procedures, work completion, or other local authority;
+- PAM content hashes are not used as canonical Doll record IDs;
+- no optional embedding is required to preserve semantic memory content.
+
+### MCON-006 — PAM export is valid and explicitly partial
+
+The test exports a supported set of confirmed Doll memories to a selected PAM target version.
+
+Pass requires:
+
+- the output validates against the locally retained or otherwise deterministic supported PAM contract;
+- PAM-required hashes and fields are generated according to the declared target version;
+- unsupported Doll semantics are disclosed in mapping or loss output;
+- optional embedding absence does not invalidate the memory export when the PAM target version permits omission;
+- the result is labelled as memory interchange rather than complete Doll continuity export.
+
+### MCON-007 — PAM source integrity is not Doll semantic identity
+
+Synthetic fixtures MUST include values where the PAM normalization or hashing rules could collapse distinctions that Doll must preserve for its own canonical records.
+
+Pass requires:
+
+- import preserves the exact supported source content and provenance;
+- Doll canonical identity and duplicate handling use the accepted Doll mapping contract rather than blindly equating records from a PAM content hash;
+- source hash metadata remains available for PAM conformance and audit.
+
+## 5. PLUR / Engram interoperability
+
+### MCON-008 — PLUR retrieval metadata cannot mutate Doll lifecycle
+
+A synthetic supported Engram fixture includes activation, decay, usage, confidence, association, and status metadata.
+
+Pass requires:
+
+- PLUR retrieval fields are preserved, mapped, or reported as external memory-engine metadata;
+- low activation or retirement-candidate semantics do not archive or delete a Doll MemoryRecord automatically;
+- procedural or architectural Engrams do not become approved ProcedureRecords, DecisionRecords, policies, permissions, or completion authority;
+- imported visibility or sharing metadata cannot grant Doll permission authority;
+- mapping and loss are explicit.
+
+## 6. ProjectExperienceRecord
+
+### MCON-009 — Project experience survives continuity operations
+
+The test creates the implemented experience kinds and assertion states, including at least one failed attempt and one later resolution.
+
+Pass requires:
+
+- record schema and links validate;
+- the semantic event payload remains append-oriented after publication;
+- a correction creates a linked replacement or superseding record rather than silently rewriting the prior event;
+- State Package export/import preserves the supported records;
+- state backup and restore preserve them;
+- a fresh process can inspect them without a model or network;
+- secret and private-host data are excluded according to policy;
+- Resume Bundle inclusion or omission follows the declared deterministic rule.
+
+### MCON-010 — Imported project experience remains untrusted
+
+A synthetic PROJECTMEM-style source contains an attempt, a failure, a fix, a decision statement, and a plan or completion claim.
+
+Pass requires:
+
+- imported event provenance and supported source-version identity are retained;
+- imported event content may become an imported project-experience claim only through the accepted import mapping;
+- imported decisions do not directly become trusted DecisionRecords;
+- imported fixes or completion wording do not complete WorkItems;
+- imported plans do not change ProjectRecord scope or objective;
+- imported procedures do not become approved;
+- repeated import is idempotent for unchanged source events;
+- mapping and loss reporting is explicit.
+
+## 7. ContinuityPreflight
+
+### MCON-011 — Prior failed experience produces an evidence-linked warning
+
+The fixture contains a trusted or otherwise eligible failed ProjectExperienceRecord relevant to a proposed action.
+
+Pass requires:
+
+- preflight runs without a model or network;
+- the result identifies the rule-set version and matched experience record IDs;
+- the prior failure produces the declared warning behavior;
+- the warning does not grant or revoke permission by itself;
+- no project or experience record is mutated by the read-only preflight.
+
+### MCON-012 — Existing authority remains authoritative
+
+Fixtures exercise authoritative PolicyRecord, PermissionRecord, WorkItem blocker, capability risk, and required-confirmation cases.
+
+Pass requires:
+
+- preflight surfaces the applicable authoritative blockers or confirmation requirements;
+- a retrieved memory or imported experience cannot override an authoritative denial;
+- a retrieved memory or imported experience cannot manufacture a permission grant;
+- the existing Capability Broker and high-risk confirmation path remain the execution authority;
+- omitting the relevant history from a model prompt cannot bypass the deterministic preflight.
+
+### MCON-013 — Imported and model-proposed experience is advisory by default
+
+The same semantic warning is supplied once as a user-confirmed experience and once as imported or model-proposed experience.
+
+Pass requires:
+
+- assertion/provenance differences remain inspectable;
+- lower-authority experience cannot independently produce a new hard deny;
+- any advisory use is explainable through record IDs and rule codes;
+- promotion, if supported, uses the explicit trusted target path.
+
+## 8. MCP or equivalent interoperable agent interface
+
+### MCON-014 — Protocol access does not become storage authority
+
+When an MCP interface or equivalent standard agent protocol is implemented, tests MUST prove that:
+
+- read operations are scoped and secret-safe;
+- protocol messages are assigned instruction origin and authority;
+- proposal-capable operations create only record types and states explicitly permitted as proposals;
+- protocol content cannot grant permission, confirm a checkpoint, approve a procedure, complete work, create high-risk confirmation, or retrieve a secret value;
+- disabling the protocol interface does not prevent core state inspection, generic export, backup, restore, or local recovery;
+- no network listener is opened merely because the local interface package is installed.
+
+## 9. Signed Doll State Package
+
+### MCON-015 — Signature covers the complete declared package inventory
+
+When package signing is implemented, the test creates a signed package and independently changes, removes, substitutes, or adds declared members across multiple categories.
+
+Pass requires:
+
+- the signature verification path authenticates the canonical package manifest or equivalent complete signed representation;
+- every declared member is bound by path, category, size, and digest or an equivalently complete standard structure;
+- member removal, substitution, or digest-preserving path/category substitution fails verification;
+- verification requires no network identity provider;
+- unsigned legacy packages remain handled according to their declared compatibility policy rather than being silently treated as signed.
+
+### MCON-016 — Signing and encryption remain separate
+
+Pass requires:
+
+- signing does not imply confidentiality;
+- encryption does not imply signer authenticity;
+- verification reports integrity/authenticity state independently from encryption state;
+- no custom signature primitive, custom cipher, or project-specific cryptographic canonicalization is introduced.
+
+## 10. Claim matrix
+
+| Claim | Minimum acceptance |
+| --- | --- |
+| Rebuildable derived recall | MCON-001, MCON-002 |
+| Persistent memory-use feedback | MCON-003 |
+| Memory consolidation | MCON-004 |
+| PAM import | MCON-005, MCON-007 plus applicable PORT tests |
+| PAM export | MCON-006 plus applicable PORT tests |
+| PLUR adapter | MCON-008 plus applicable PORT tests |
+| ProjectExperienceRecord | MCON-009 |
+| PROJECTMEM import | MCON-010 plus applicable PORT tests |
+| ContinuityPreflight | MCON-011, MCON-012, MCON-013 |
+| MCP agent interface | MCON-014 plus applicable safety tests |
+| Signed Doll State Package | MCON-015, MCON-016 plus existing package/restore tests |
+
+## 11. Phase and release interaction
+
+The post-IMP-082 roadmap determines when these claims are scheduled.
+
+Rules:
+
+- an adapter-specific MCON test does not block releases that do not claim that adapter;
+- semantic retrieval MUST NOT become an accepted automatic context path before MCON-001 through MCON-003 cover the implemented derived-recall boundary;
+- ContinuityPreflight MUST NOT become an execution prerequisite until MCON-011 through MCON-013 pass for the implemented rule set;
+- a new persisted record type MUST NOT merge without its package, backup, restore, compatibility, and fresh-process checks;
+- a package-signing claim remains Phase 9 work and does not invalidate checksum-only packages that are still supported by their declared package version.
+
+No current acceptance result is broadened merely by merging this specification.
+<!-- END SOURCE: docs/spec/08c-memory-interoperability-recall-and-project-experience-acceptance.md -->
+
+---
+
 <!-- BEGIN SOURCE: docs/spec/09-development-roadmap.md -->
 # Development roadmap
 
@@ -9654,3 +10553,300 @@ Moving model execution before the Phase 3 safety gate or before the required Pha
 
 Weakening AI environment portability, project continuity, generic inspectable export, source provenance, idempotency, loss visibility, checkpoint freshness, Resume Bundle integrity, trusted completion authority, or the local-first migration priority requires a dedicated architecture decision.
 <!-- END SOURCE: docs/spec/09-development-roadmap.md -->
+
+---
+
+<!-- BEGIN SOURCE: docs/spec/09a-post-imp-083-memory-continuity-roadmap.md -->
+# Post-IMP-083 memory and continuity roadmap extension
+
+**Status:** Draft for acceptance  
+**Specification version:** 0.1  
+**Applies after:** IMP-083  
+**Depends on:** `09-development-roadmap.md`, `03c-memory-interoperability-recall-and-project-experience.md`, `08c-memory-interoperability-recall-and-project-experience-acceptance.md`, `ADR-008-memory-interchange-recall-and-project-experience.md`
+
+## 1. Purpose
+
+This document extends the accepted development roadmap after IMP-083 with the design consequences of the 2026-08 memory-portability and project-experience review.
+
+It does not renumber or invalidate completed implementation records or accepted evidence.
+
+It exists as a separate extension because `09-development-roadmap.md` is also a historical record of the implementation sequence through IMP-083. Future roadmap consolidation MAY fold this extension into that document once the new slices have stable implementation identifiers.
+
+## 2. Supersession of stale immediate-work text
+
+Section 18, **Immediate work**, in `09-development-roadmap.md` was written from an earlier IMP-067 implementation point and no longer describes the repository's actual frontier.
+
+For work after IMP-083, this document supersedes that section.
+
+All other governing phase order, gate rules, definition-of-done requirements, implementation-identifier rules, and accepted historical results in `09-development-roadmap.md` remain in force unless this extension explicitly changes them.
+
+## 3. Current baseline
+
+The accepted baseline for this extension is:
+
+- Phase 0 through Phase 5 are complete at their documented bounded gates;
+- Phase 6 is in progress through IMP-083;
+- IMP-073 provides deterministic explicit local lexical state search without a persistent index or automatic context injection;
+- IMP-065 through IMP-067 provide explicit, bounded, data-only continuity-context selection for local writing;
+- IMP-074 through IMP-082 provide explicit local document and attachment preparation paths;
+- IMP-083 adds bounded deterministic local resource measurement and its evidence path; it does not establish adaptive memory or external memory interoperability;
+- semantic retrieval, persistent retrieval indexes, embeddings, model-selected context, broad agent protocols, PAM/PLUR/PROJECTMEM adapters, ProjectExperienceRecord, ContinuityPreflight, and package signing are not established by IMP-083.
+
+This extension preserves those non-claims.
+
+## 4. Scheduling principles
+
+The next work MUST preserve these rules.
+
+1. **Do not replace explicit context with semantic automation in one step.** Derived recall is introduced behind the existing explicit and data-only context boundary.
+2. **Do not make interoperability formats canonical.** PAM, PLUR, PROJECTMEM, and MCP remain adapters or interfaces around Doll State.
+3. **Do not let retrieval state mutate truth.** Usage and ranking are separated before adaptive recall is accepted.
+4. **Do not add a persisted record without continuity coverage.** New records require schema, package, backup, restore, compatibility, and fresh-process validation in the same implementation slice.
+5. **Do not convert current state to global event sourcing.** Append-oriented ProjectExperienceRecord complements revisioned current-state records.
+6. **Do not make prior experience a new permission system.** ContinuityPreflight composes with the existing safety boundary and may only surface existing authority or advisory evidence.
+7. **Do not delay local completeness in order to add cloud integration.** Phase 7 remains optional and follows the accepted Phase 6 local-complete priorities.
+8. **Do not reserve IMP identifiers in this document.** The next implementation issue receives the next available monotonic identifier only when opened.
+
+## 5. Phase 6 extension — local recall and continuity intelligence
+
+Phase 6 remains **Local AI portability and daily-use integration**.
+
+The following work is scheduled inside or adjacent to the remaining Phase 6 track because it improves local daily use and continuity without adding cloud dependence.
+
+### 5.1 Preserve the current explicit-context baseline
+
+Before adding automatic semantic selection, later work MUST retain:
+
+- explicit user selection as a supported path;
+- data-only treatment for selected memory, project, decision, Resume Bundle, document, PDF, OCR, CSV, and attachment material;
+- no automatic linked-record expansion;
+- no model authority over policy, permission, completion, procedure approval, or checkpoint confirmation;
+- the ability to run without semantic indexes or embedding models.
+
+This is a continuing constraint, not a new implementation slice by itself.
+
+### 5.2 MemoryUsageSignalRecord and derived RecallState foundation
+
+The first adaptive-memory implementation slice SHOULD establish:
+
+- versioned `MemoryUsageSignalRecord` when persistent signals are used;
+- append-oriented bounded signal creation;
+- explicit actor/provenance differences between user, model, deterministic system, and imported signals;
+- derived `RecallState` with explicit algorithm/version identity;
+- index removal and deterministic rebuild behavior;
+- no authoritative MemoryRecord revision changes from retrieval alone;
+- MCON-001 through MCON-003 for the implemented boundary.
+
+If the first implementation can prove useful recall without persisting usage signals, it MAY introduce derived RecallState first. It MUST NOT smuggle equivalent counters back into authoritative MemoryRecord fields.
+
+### 5.3 Local retrieval upgrade
+
+After the separation above is proven, local recall MAY progress in bounded steps:
+
+1. deterministic lexical scoring over the existing authoritative searchable surface;
+2. optional persistent lexical index where useful;
+3. optional local semantic embeddings;
+4. deterministic fusion or ranking with an explicit algorithm version;
+5. context-budget selection with inspectable selected record IDs.
+
+Every stage MUST retain a no-cloud path and a deterministic lexical fallback for the applicable local profile.
+
+Semantic retrieval is not required merely because PLUR or another system uses embeddings. It should be introduced only when measured usefulness justifies the extra dependency and rebuild cost.
+
+### 5.4 Memory consolidation review
+
+After recall-state separation, a bounded consolidation workflow MAY add duplicate and contradiction candidates.
+
+The first accepted version MUST remain review-controlled and MUST pass MCON-004 before claiming consolidation.
+
+Automatic merge, autonomous deletion, or lifecycle changes based on activation or decay remain out of scope.
+
+### 5.5 PAM v1.x import/export adapter
+
+PAM is the first scheduled general memory-interchange profile.
+
+The implementation order is:
+
+1. exact supported-version declaration;
+2. offline validation fixture and resource limits;
+3. staged import through the existing Phase 4A portability path;
+4. mapping and loss report;
+5. unchanged-source idempotency and conflict behavior;
+6. authority-separation tests;
+7. confirmed-memory subset export;
+8. explicit distinction between PAM memory export and Doll State continuity export;
+9. MCON-005 through MCON-007 plus applicable PORT evidence.
+
+PAM support is claim-specific. It does not retroactively become a prerequisite for previously accepted doll-to-doll continuity evidence.
+
+### 5.6 ProjectExperienceRecord
+
+A later local-continuity slice SHOULD add ProjectExperienceRecord before any experience-aware pre-action warning is treated as a stable feature.
+
+The implementation MUST include in one accepted slice:
+
+- versioned experience schema and assertion/provenance state;
+- append-oriented semantic payload behavior;
+- correction/supersession relationships;
+- project and optional work-item link validation;
+- State Package registration;
+- backup and restore;
+- fresh-process inspection;
+- deterministic export and Resume Bundle inclusion or explicit omission rules;
+- secret/sensitivity coverage;
+- MCON-009.
+
+The first version SHOULD favor explicit user recording and deterministic system observations. Automatic model extraction from arbitrary conversations remains proposal-only.
+
+### 5.7 ContinuityPreflight
+
+After ProjectExperienceRecord exists, a deterministic read-only ContinuityPreflight MAY be added.
+
+The first slice SHOULD cover only a small set of action classes and rules, for example:
+
+- authoritative policy denial already applicable to the action;
+- existing PermissionRecord or capability requirement;
+- current WorkItem blocker;
+- a directly relevant prior failed ProjectExperienceRecord;
+- a required approved ProcedureRecord or confirmation already defined by accepted policy.
+
+The preflight MUST:
+
+- run without a model;
+- cite matched record IDs and rule-set version;
+- treat prior failure as advisory unless another accepted authority already blocks the action;
+- never grant permission;
+- never replace the Capability Broker;
+- pass MCON-011 through MCON-013.
+
+### 5.8 Existing Phase 6 completion work remains visible
+
+The new memory/experience work MUST NOT hide the pre-existing Phase 6 completion requirements.
+
+The project still needs the remaining evidence required by the accepted Phase 6 and Lite release claims, including applicable portability, performance, accessibility, cross-platform, and soak work identified by the current roadmap and release specification. IMP-083's bounded resource-measurement path is part of that evidence track, not evidence that the broader Phase 6 completion gate has passed.
+
+A claim-specific PAM or semantic-recall adapter MAY ship experimentally without blocking unrelated Phase 6 completion, but no stable claim may be made before its MCON/PORT evidence passes.
+
+## 6. Phase 7 — optional cloud and multiple models
+
+The accepted Phase 7 order remains valid.
+
+Memory and context changes add these constraints:
+
+- cloud embeddings or cloud reranking MUST NOT become the only recall path;
+- cloud models consume a bounded context package produced by the same local authority and context-selection boundary;
+- cloud-provider memory APIs are source/target adapters, not canonical state;
+- provider-native memory, instruction, or ACL semantics cannot grant Doll authority;
+- automatic cloud fallback remains prohibited.
+
+No PAM, PLUR, PROJECTMEM, or MCP implementation requires Phase 7 cloud support.
+
+## 7. Phase 8 — agent interfaces and product-specific memory adapters
+
+Phase 8 remains the primary home for optional external-service and agent interfaces.
+
+The following work is added to its candidate sequence.
+
+### 7.1 PLUR / Engram adapter
+
+After the Doll recall boundary and PAM general profile are stable enough to provide a reference mapping discipline, a PLUR adapter MAY be implemented.
+
+Priority:
+
+- import first or bidirectional only when the mapping is clear;
+- activation/decay/usage metadata remains external retrieval metadata;
+- procedural/architectural Engrams remain candidates rather than authority;
+- PLUR episodes may map to imported project-experience claims;
+- MCON-008 and applicable PORT evidence are required for a stable claim.
+
+### 7.2 PROJECTMEM importer
+
+PROJECTMEM support begins import-first.
+
+The adapter MUST:
+
+- bind to the actual supported PROJECTMEM application/export version;
+- preserve exact source provenance and event relationships available in that version;
+- map supported semantic work events to imported project-experience claims;
+- keep decisions, fixes, plans, and completion statements non-authoritative;
+- pass MCON-010 and applicable PORT evidence.
+
+Doll-to-PROJECTMEM export remains optional and lower priority because it is inherently narrower than complete Doll continuity state.
+
+### 7.3 MCP read and proposal interface
+
+A local MCP interface MAY be added after the applicable state/search operations are stable.
+
+Recommended order:
+
+1. read-only workspace/project/memory inspection under explicit scope;
+2. deterministic search and retrieval;
+3. proposal-only memory or work-item creation where the target schema already permits proposals;
+4. only later consider additional mutations through a dedicated accepted security decision.
+
+MCON-014 is required before a stable MCP interface claim.
+
+A remote MCP listener or cross-machine agent path is not implied and requires its own threat model.
+
+## 8. Phase 9 — package authenticity and long-term operation
+
+Phase 9 gains an explicit Doll State Package signing track.
+
+Recommended order:
+
+1. define the complete canonical package-manifest representation to be signed;
+2. bind every declared member path, category, size, and digest;
+3. choose established JSON canonicalization where needed;
+4. choose a reviewed signature primitive/library;
+5. implement offline verification;
+6. define unsigned legacy-package compatibility;
+7. test member removal, substitution, addition, and metadata tampering;
+8. keep signing separate from backup/package encryption;
+9. add key rotation, verification, migration, and recovery guidance;
+10. pass MCON-015 and MCON-016.
+
+DID, remote certificate services, hosted key accounts, and network identity providers remain optional. Package verification MUST have a local path.
+
+## 9. Non-goals of this extension
+
+This roadmap extension does not schedule:
+
+- a Doll-specific public memory interchange standard;
+- global conversion of Doll State to event sourcing;
+- automatic deletion driven by memory decay;
+- autonomous memory confirmation;
+- automatic adoption of imported permissions or ACLs;
+- a mandatory vector database;
+- a mandatory embedding model;
+- cloud-only retrieval;
+- arbitrary remote MCP access;
+- automatic execution of ProjectExperience lessons;
+- custom cryptography.
+
+## 10. Immediate order after this documentation change
+
+Once this specification change is accepted, the implementation frontier is:
+
+1. continue the existing Phase 6 completion track from IMP-083 without regressing explicit context, local-only behavior, portability, resource-measurement evidence, or safety;
+2. schedule the bounded derived-recall foundation before any semantic/model-selected memory context feature;
+3. schedule PAM v1.x as the first general memory-interchange adapter when the recall/interchange boundary is ready;
+4. schedule ProjectExperienceRecord before ContinuityPreflight;
+5. keep PLUR, PROJECTMEM, and MCP as later Phase 8 interoperability work unless a concrete user need justifies earlier bounded work;
+6. keep full package signing in Phase 9;
+7. assign each implementation identifier only when its issue is opened.
+
+No code implementation is authorized merely by the existence of this roadmap document; each slice still requires the normal issue, specification citation, bounded scope, tests, and pull-request review.
+
+## 11. Change-control rule
+
+Future changes that collapse any of the following boundaries require a dedicated architecture decision:
+
+- Doll State versus external memory interchange;
+- authoritative MemoryRecord versus derived recall state;
+- revisioned current state versus append-oriented project experience;
+- advisory experience versus permission/capability authority;
+- MCP transport versus canonical persistence;
+- package integrity, authenticity, and encryption.
+
+The continuity-first, safety-before-authority, local-complete, cloud-optional ordering remains unchanged.
+<!-- END SOURCE: docs/spec/09a-post-imp-083-memory-continuity-roadmap.md -->
