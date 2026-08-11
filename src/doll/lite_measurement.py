@@ -138,6 +138,8 @@ def measure_lite_client_resources(
 
     if not isinstance(workspace_path, Path):
         raise LiteClientMeasurementError("Lite measurement workspace path is invalid")
+    if workspace_path.is_symlink():
+        raise LiteClientMeasurementError("Lite measurement workspace root must not be a symbolic link")
     if workspace_path.exists() and (not workspace_path.is_dir() or any(workspace_path.iterdir())):
         raise LiteClientMeasurementError("Lite measurement workspace must be absent or empty")
 
