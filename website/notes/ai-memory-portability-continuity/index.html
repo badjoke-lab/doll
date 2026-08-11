@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Memory Is Becoming Portable. Continuity Still Isn't. — doll</title>
+  <meta name="description" content="AI services are getting better at exporting, importing, and reusing memory and chat history. Why portability is real progress, but still not the same as user-owned AI continuity.">
+  <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+  <p><a href="../../">Back to doll</a></p>
+
+  <main>
+    <article>
+      <h1>AI Memory Is Becoming Portable. Continuity Still Isn't.</h1>
+
+      <h2>Moving your chats is progress. Moving your AI life is a different problem.</h2>
+
+      <p><time datetime="2026-08-12">August 12, 2026</time></p>
+
+      <p>AI services are finally starting to make switching less painful.</p>
+
+      <p>
+        Google now lets eligible Gemini users bring over preferences, remembered facts, general context, and full chat history from other AI platforms. The chat-history flow explicitly supports exports from ChatGPT and Claude, and Google says imported chats can be searched and continued inside Gemini.
+        <sup><a href="#source-1">[1]</a></sup>
+      </p>
+
+      <p>That is real progress.</p>
+
+      <p>
+        For years, the practical answer to “Can I move my AI history somewhere else?” was often little more than “Download an archive and keep it somewhere safe.” Now a major AI provider is treating another provider's history as something that can become useful context again, not just a backup file.
+      </p>
+
+      <p>But a useful question follows immediately:</p>
+
+      <p><strong>What, exactly, has moved?</strong></p>
+
+      <h2>Export Is Not Portability</h2>
+
+      <p>
+        ChatGPT can export a ZIP containing chat history and other relevant account data.
+        <sup><a href="#source-2">[2]</a></sup>
+        Claude lets individual users export conversation data and account user data.
+        <sup><a href="#source-3">[3]</a></sup>
+        Gemini can export chats, generated media, uploads, Gems data, and other Gemini Apps activity through Google Takeout.
+        <sup><a href="#source-4">[4]</a></sup>
+      </p>
+
+      <p>Those features matter. They reduce the chance that a service becomes the only place where a user's past exists.</p>
+
+      <p>But an archive is not yet a working environment.</p>
+
+      <p>
+        OpenAI's own guidance for moving exported conversations between personal ChatGPT accounts makes the distinction unusually clear. A user can upload exported conversation JSON into a new chat so ChatGPT can use it as reference. OpenAI explicitly says that this is not a full account migration: it does not recreate the old chats as separate conversations, restore the original sidebar, or move settings, memories, GPTs, files, subscriptions, or workspace access.
+        <sup><a href="#source-5">[5]</a></sup>
+      </p>
+
+      <p>You can carry the record of the past without recreating the environment that produced it.</p>
+
+      <p><strong>Export is not portability. And portability is not continuity.</strong></p>
+
+      <h2>Four Different Problems</h2>
+
+      <p>It helps to separate four layers that are often collapsed into one word.</p>
+
+      <h3>1. Exportability</h3>
+
+      <p>
+        You can get a copy of your data out: JSON, ZIP, HTML, media files, or another documented archive format.
+      </p>
+
+      <p>This is the minimum condition for avoiding total captivity, but by itself it is closer to backup than migration.</p>
+
+      <h3>2. Importability</h3>
+
+      <p>
+        Another system can accept the exported material. Gemini's new import flow is an important example because it accepts memory-like context and full chat-history ZIP files from another AI platform.
+        <sup><a href="#source-1">[1]</a></sup>
+      </p>
+
+      <h3>3. Portability</h3>
+
+      <p>
+        The imported material remains useful in the destination. It is not merely an inert attachment. It can be searched, referenced, or used as context for future interaction.
+      </p>
+
+      <p>Gemini is moving meaningfully in this direction. Imported memory is used to help personalize future conversations, while imported chats appear in chat history and can be searched.
+        <sup><a href="#source-1">[1]</a></sup>
+      </p>
+
+      <h3>4. Continuity</h3>
+
+      <p>
+        You can change the model, provider, application, runtime, or machine and still resume from where you were—not merely recover what you once said.
+      </p>
+
+      <p>This is a different engineering problem.</p>
+
+      <h2>Chat History Is a Record of the Past. Continuity Is the Ability to Resume From It.</h2>
+
+      <p>Imagine someone who has spent a year building software with an AI assistant.</p>
+
+      <p>They successfully move ten thousand old conversations to a new provider.</p>
+
+      <p>That is valuable. But does the new system now know:</p>
+
+      <ul>
+        <li>which issue is currently being worked on;</li>
+        <li>which pull request is authoritative and which one is obsolete;</li>
+        <li>which specification is current;</li>
+        <li>which design was rejected and why;</li>
+        <li>which decisions are final and which are provisional;</li>
+        <li>which failure must not be repeated;</li>
+        <li>what has already been tested;</li>
+        <li>what should happen next?</li>
+      </ul>
+
+      <p>Some of those answers may exist somewhere inside the chat archive.</p>
+
+      <p>That is not the same as having current state.</p>
+
+      <p>
+        A transcript can tell a new model what happened. A continuity layer must also preserve what remains true now, what has been superseded, where a claim came from, and what work is still open.
+      </p>
+
+      <p><strong>Chat history is a record of the past. Continuity is the ability to resume from it.</strong></p>
+
+      <h2>Work State Exists Outside the Chat</h2>
+
+      <p>Browser state provides a simple example.</p>
+
+      <p>
+        When OpenAI announced the end of Atlas, it told users to save important Atlas data before the August 9, 2026 stop date. Bookmarks would not transfer automatically, open tabs might not transfer, and browser history might not transfer. ChatGPT conversation history, meanwhile, was explicitly described as separate from Atlas browser data.
+        <sup><a href="#source-6">[6]</a></sup>
+      </p>
+
+      <p>This is not an argument that Atlas handled migration badly. It illustrates a broader point.</p>
+
+      <p>
+        The state of an AI-assisted task does not live only in the transcript. It can also live in open pages, files, tabs, tools, credentials, pending actions, local artifacts, repositories, and external systems.
+      </p>
+
+      <p><strong>Chat history is not work state.</strong></p>
+
+      <h2>Memory Is Not the Whole Continuity Layer Either</h2>
+
+      <p>Portable memory is another important step, but memory alone is still too narrow.</p>
+
+      <p>A memory such as “the user prefers concise answers” is useful and portable.</p>
+
+      <p>Now compare it with this:</p>
+
+      <blockquote>
+        <p>For this project, approach B replaced approach A because of constraint X. The decision was accepted in issue 123. Later implementation assumes B unless that decision is explicitly superseded.</p>
+      </blockquote>
+
+      <p>That is not merely a fact about the user. It is part of project authority and decision state.</p>
+
+      <p>A durable personal AI environment may need to preserve several kinds of state:</p>
+
+      <ul>
+        <li>memory and preferences;</li>
+        <li>project state;</li>
+        <li>decision history;</li>
+        <li>provenance;</li>
+        <li>unresolved work;</li>
+        <li>relationships between records;</li>
+        <li>current authority;</li>
+        <li>recovery information;</li>
+        <li>tool and workflow state.</li>
+      </ul>
+
+      <p>
+        Remembering who the user is and knowing where the user currently is in a long-running body of work are related problems. They are not the same problem.
+      </p>
+
+      <h2>Provider-to-Provider Portability Is Still Provider-Dependent</h2>
+
+      <p>Gemini's import feature deserves credit precisely because it reduces switching cost.</p>
+
+      <p>But look at the architecture.</p>
+
+      <pre><code>ChatGPT / Claude
+       ↓
+     Gemini
+       ↓
+  Provider C</code></pre>
+
+      <p>
+        ChatGPT and Claude exports become portable into Gemini because Google built an importer for them. If a user later wants to move to Provider C, Provider C needs to understand enough of the previous system's exports to make the next migration useful.
+      </p>
+
+      <p>This is provider-to-provider portability.</p>
+
+      <p>It is much better than no portability. It is still different from user-owned continuity.</p>
+
+      <h2>Put the Canonical State Outside the Provider</h2>
+
+      <p>A different architecture is possible:</p>
+
+      <pre><code>         User-owned continuity
+ memory / decisions / projects / state
+                    ↓
+                  doll
+        ↙           ↓           ↘
+    Local AI     ChatGPT     Gemini / Claude / ...</code></pre>
+
+      <p>
+        In this model, the canonical copy of durable state does not live inside whichever AI service happens to be active today.
+      </p>
+
+      <p>
+        The provider is a capability layer. It receives the context it needs, does the work it is good at, and can be replaced later.
+      </p>
+
+      <p>The continuity layer remains under the user's control.</p>
+
+      <p>
+        If an import format changes, an adapter can change. If a model is discontinued, another model can be used. If cloud access disappears, the durable state does not disappear with it.
+      </p>
+
+      <h2>What doll Is Trying to Separate</h2>
+
+      <p>This distinction is central to doll.</p>
+
+      <p>doll is not trying to become the foundation model that must survive forever.</p>
+
+      <p>It is trying to make the foundation model replaceable.</p>
+
+      <p>The continuity layer belongs on the user's side:</p>
+
+      <ul>
+        <li>memory;</li>
+        <li>preferences and personality settings;</li>
+        <li>project state;</li>
+        <li>DecisionRecords;</li>
+        <li>provenance;</li>
+        <li>work state;</li>
+        <li>user-owned data and recovery state.</li>
+      </ul>
+
+      <p>The capability layer can change:</p>
+
+      <ul>
+        <li>a local model;</li>
+        <li>OpenAI;</li>
+        <li>Anthropic;</li>
+        <li>Gemini;</li>
+        <li>future models that do not exist yet.</li>
+      </ul>
+
+      <p>The principle is simple:</p>
+
+      <p><strong>Own the continuity. Rent the capability.</strong></p>
+
+      <h2>Continuity Is Harder Than Portability</h2>
+
+      <p>None of this means continuity is solved.</p>
+
+      <p>It creates harder questions.</p>
+
+      <p>What deserves to become durable memory?</p>
+
+      <p>How should stale information be superseded?</p>
+
+      <p>How should conflicting records be resolved?</p>
+
+      <p>Which state is authoritative and which state is only evidence?</p>
+
+      <p>How should a continuity layer adapt to models with different context windows, tools, safety boundaries, and capabilities?</p>
+
+      <p>How much provider-specific state can be translated before the translation becomes fiction?</p>
+
+      <p>And if memory, preferences, and working state move to a very different model, in what sense is the result the “same” personal AI?</p>
+
+      <p>Those questions are harder than exporting a ZIP file.</p>
+
+      <p>That is exactly why portability and continuity should not be treated as synonyms.</p>
+
+      <h2>From a Portable Past to a Resumable One</h2>
+
+      <p>
+        The direction of the industry is encouraging. ChatGPT, Claude, and Gemini all provide meaningful ways to export user data. Gemini now goes further by importing memory-like context and full chat histories from other AI platforms. OpenAI provides a reference-based path for reusing exported conversations in another personal ChatGPT account.
+        <sup><a href="#source-1">[1]</a></sup>
+        <sup><a href="#source-2">[2]</a></sup>
+        <sup><a href="#source-3">[3]</a></sup>
+        <sup><a href="#source-4">[4]</a></sup>
+        <sup><a href="#source-5">[5]</a></sup>
+      </p>
+
+      <p>This is not evidence that portability has failed.</p>
+
+      <p>It is evidence that portability is becoming important enough for major providers to build it.</p>
+
+      <p>The next question is whether the user can own the layer above it.</p>
+
+      <p><strong>Your AI should not merely let you export the past. It should let you continue from it.</strong></p>
+
+      <hr>
+
+      <h2>Notes and Sources</h2>
+
+      <ol>
+        <li id="source-1">
+          <a href="https://support.google.com/gemini/answer/16868299?hl=en">Google — Import from other AI platforms to Gemini Apps</a>
+        </li>
+        <li id="source-2">
+          <a href="https://help.openai.com/en/articles/7260999-how-do-i-export-my-data">OpenAI — Exporting your ChatGPT history and data</a>
+        </li>
+        <li id="source-3">
+          <a href="https://support.claude.com/en/articles/9450526-export-your-claude-data">Claude Help Center — Export your Claude data</a>
+        </li>
+        <li id="source-4">
+          <a href="https://support.google.com/gemini/answer/16920332?hl=en">Google — Download your Gemini Apps data</a>
+        </li>
+        <li id="source-5">
+          <a href="https://help.openai.com/en/articles/9106926-transferring-conversations-from-1-chatgpt-account-to-another-chatgpt-account">OpenAI — Transfer exported conversations between ChatGPT accounts</a>
+        </li>
+        <li id="source-6">
+          <a href="https://help.openai.com/en/articles/20001371">OpenAI — Evolving Atlas into ChatGPT for browser-based agentic work</a>
+        </li>
+      </ol>
+
+      <p>
+        Product behavior and availability described here were checked against the linked official help pages on August 12, 2026. Gemini's cross-platform import feature is limited by account type, age, region, and surface; Google's help page says it is not currently available in the EEA, Switzerland, or the United Kingdom. The distinctions between exportability, importability, portability, and continuity, and the architecture proposed for doll, are this article's analysis rather than terminology claimed by those providers.
+      </p>
+    </article>
+  </main>
+</body>
+</html>
