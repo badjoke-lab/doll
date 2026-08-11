@@ -142,6 +142,7 @@ The repository is in Phase 6 local AI portability and daily-use integration.
 
 - Phase 0 through Phase 5 have passed their documented bounded gates.
 - IMP-001 through IMP-023 and IMP-030 through IMP-083 are complete; IMP-024 through IMP-029 are retired and must not be reused.
+- IMP-083 establishes bounded local resource-measurement evidence; it does not establish adaptive recall, memory interchange adapters, project-experience state, or agent interoperability.
 - The accepted specification set after this design update is version 0.3.
 - `docs/spec/09-development-roadmap.md` remains the historical and governing phase roadmap through the current implementation frontier.
 - `docs/spec/09a-post-imp-083-memory-continuity-roadmap.md` governs post-IMP-083 memory and continuity sequencing once accepted.
