@@ -515,7 +515,7 @@ def test_linux_current_rss_parser_handles_valid_and_invalid_data(monkeypatch: Mo
         encoding: str | None = None,
         errors: str | None = None,
     ) -> str:
-        if str(self) == "/proc/self/statm":
+        if str(self).replace("\\", "/").endswith("/proc/self/statm"):
             return "100 5 0 0 0 0 0\n"
         return original(self, encoding=encoding, errors=errors)
 
