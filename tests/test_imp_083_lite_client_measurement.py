@@ -459,7 +459,7 @@ def test_clock_rejects_bool_non_integer_and_negative_values() -> None:
     with pytest.raises(LiteClientMeasurementError, match="clock is invalid"):
         measurement_module._clock_value(lambda: True)
     with pytest.raises(LiteClientMeasurementError, match="clock is invalid"):
-        measurement_module._clock_value(cast(Callable[[], int], lambda: cast(int, "bad")))
+        measurement_module._clock_value(lambda: cast(int, "bad"))
     with pytest.raises(LiteClientMeasurementError, match="clock is invalid"):
         measurement_module._clock_value(lambda: -1)
     assert measurement_module._duration(4, 9) == 5
