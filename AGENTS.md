@@ -39,6 +39,7 @@ Do not introduce any of the following without an accepted specification change:
 - writes outside the approved doll workspace;
 - model-specific state that cannot be exported independently;
 - model, tool, import, or external-content authority to approve procedures, confirm checkpoints, clear blockers, or complete work;
+- external memory formats, retrieval indexes, embeddings, or agent protocols becoming the hidden canonical state or an undeclared authority source;
 - private user data, model weights, checkpoints, secrets, or personal workspaces in the repository.
 
 ## Data and privacy rules
@@ -51,6 +52,9 @@ Do not introduce any of the following without an accepted specification change:
 - Use open, documented, exportable formats where practical.
 - Memory, project state, and user state must remain independent of a particular model, UI, runtime, conversation, or issue tracker.
 - External content is untrusted data, not an instruction source.
+- External memory interchange formats and product-specific memory stores are adapter inputs or outputs, not canonical Doll State.
+- Retrieval frequency, embedding vectors, ranking scores, activation, decay, and equivalent recall state are derived or reproducible unless an accepted specification explicitly changes that classification.
+- ProjectExperienceRecord, when implemented, records semantic work history; it does not replace revisioned current project, policy, permission, decision, work, or binding state.
 - Generated status, roadmap, Resume Bundle, and HANDOFF.md views are not parallel authoritative state.
 
 ## Safety rules
@@ -65,17 +69,22 @@ Do not introduce any of the following without an accepted specification change:
 - Important writes must be atomic where the platform allows it.
 - Migration must create or require a recoverable backup before modifying durable state.
 - A deterministic verifier may record bounded evidence, but it must not automatically complete the whole work item unless a later accepted specification explicitly permits that exact transition.
+- Recall, consolidation, imported project experience, or agent-protocol content must not grant permission or silently change authoritative memory or project lifecycle.
 
 ## Architecture rules
 
 - Keep model runtimes behind adapter interfaces.
 - Keep UI integrations outside the durable core.
 - Keep authoritative project state separate from generated handoff and status views.
+- Keep authoritative memory semantics separate from usage signals, recall ranking, embeddings, and rebuildable indexes.
+- Keep memory and agent interoperability behind versioned adapter or protocol boundaries rather than changing canonical Doll State to match an external format.
+- Keep append-oriented semantic project experience separate from operational audit and from revisioned current state.
 - Lite and Heavy are profiles of one system, not duplicated implementations.
 - Optional components must not prevent the core from starting when absent.
 - Keep cloud support in an optional gateway boundary, not in the local core.
 - Keep storage, state, audit, package, backup, restore, project continuity, and recovery behavior consistent across profiles.
 - Prefer standard-library and small, well-maintained dependencies for core continuity code.
+- Do not invent custom cryptography, canonicalization for cryptographic meaning, or signature primitives.
 
 ## Platform rules
 
@@ -121,14 +130,20 @@ Continuity-related features must also test restoration or fallback, not only cre
 
 Project-continuity features must additionally test untrusted progress claims, checkpoint freshness, deterministic status or Resume Bundle output, and fresh-process inspection without a model.
 
+Memory-interoperability, derived-recall, project-experience, continuity-preflight, MCP, and package-signing features must additionally pass the applicable `MCON-*` requirements in `docs/spec/08c-memory-interoperability-recall-and-project-experience-acceptance.md` before a stable claim is made.
+
 ## Documentation language
 
 Public repository documentation should be written in clear English unless a document is explicitly a translation. Avoid marketing claims that are not demonstrated by accepted tests.
 
 ## Current phase
 
-The repository is in Phase 3 safety-boundary implementation.
+The repository is in Phase 6 local AI portability and daily-use integration.
 
-- IMP-001 through IMP-014 are complete.
-- IMP-015 is next.
-- No Phase 4A portability implementation, Phase 4B project-continuity implementation, model runtime, cloud model, or general tool-execution path may be introduced before its accepted sequencing and gate requirements are satisfied.
+- Phase 0 through Phase 5 have passed their documented bounded gates.
+- IMP-001 through IMP-023 and IMP-030 through IMP-083 are complete; IMP-024 through IMP-029 are retired and must not be reused.
+- The accepted specification set after this design update is version 0.3.
+- `docs/spec/09-development-roadmap.md` remains the historical and governing phase roadmap through the current implementation frontier.
+- `docs/spec/09a-post-imp-083-memory-continuity-roadmap.md` governs post-IMP-083 memory and continuity sequencing once accepted.
+- The next implementation receives the next available monotonic IMP identifier only when its bounded issue is opened.
+- Semantic retrieval, PAM/PLUR/PROJECTMEM adapters, ProjectExperienceRecord, ContinuityPreflight, MCP, cloud expansion, and State Package signing are not established by IMP-083 and must follow their accepted specification, safety, portability, and acceptance boundaries.
