@@ -1,5 +1,16 @@
 export const OFFICIAL_NOTES = Object.freeze([
   Object.freeze({
+    id: "ai-memory-portability-continuity",
+    kind: "official",
+    title: "AI Memory Is Becoming Portable. Continuity Still Isn't.",
+    path: "/notes/ai-memory-portability-continuity/",
+    description: "AI services are getting better at exporting, importing, and reusing memory and chat history. Why portability is real progress, but still not the same as user-owned AI continuity.",
+    summary: "Why exportability, importability, portability, and continuity are different layers—and why durable AI state should remain outside any one provider.",
+    published: "2026-08-12",
+    related: Object.freeze(["frontier-ai-infrastructure", "access-is-not-continuity", "ai-access-national-policy", "permissioned-ai-access", "ai-will-remain"]),
+    externalVersions: Object.freeze([]),
+  }),
+  Object.freeze({
     id: "frontier-ai-infrastructure",
     kind: "official",
     title: "Frontier AI Is Becoming Infrastructure. Your Memory Should Not Live Inside It.",
