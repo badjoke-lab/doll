@@ -141,11 +141,12 @@ Public repository documentation should be written in clear English unless a docu
 The repository is in Phase 6 local AI portability and daily-use integration.
 
 - Phase 0 through Phase 5 have passed their documented bounded gates.
-- IMP-001 through IMP-023 and IMP-030 through IMP-084 are complete; IMP-024 through IMP-029 are retired and must not be reused.
+- IMP-001 through IMP-023 and IMP-030 through IMP-085 are complete; IMP-024 through IMP-029 are retired and must not be reused.
 - IMP-083 establishes bounded local resource-measurement evidence; it does not establish adaptive recall, memory interchange adapters, project-experience state, or agent interoperability.
 - IMP-084 establishes only a derived, rebuildable RecallState boundary over confirmed local memory with MCON-001/MCON-002 evidence. It creates no persistent recall record, usage signal, embedding, semantic retrieval, automatic context injection, or memory authority.
+- IMP-085 adds only a deterministic weighted lexical ranking policy inside the accepted IMP-073 memory candidate boundary. It remains derived, read-only, local-only, and rollback-safe and does not add persistence, usage feedback, embeddings, semantic retrieval, or automatic context selection.
 - The accepted specification set after the memory/continuity design update is version 0.3.
 - `docs/spec/09-development-roadmap.md` remains the historical and governing phase roadmap through the current implementation frontier.
 - `docs/spec/09a-post-imp-083-memory-continuity-roadmap.md` governs accepted post-IMP-083 memory and continuity sequencing.
 - The next implementation receives the next available monotonic IMP identifier only when its bounded issue is opened.
-- Persistent memory-use signals, semantic retrieval, PAM/PLUR/PROJECTMEM adapters, ProjectExperienceRecord, ContinuityPreflight, MCP, cloud expansion, and State Package signing are not established by IMP-084 and must follow their accepted specification, safety, portability, and acceptance boundaries.
+- Persistent memory-use signals, persistent lexical indexes, semantic retrieval, context-budget selection, PAM/PLUR/PROJECTMEM adapters, ProjectExperienceRecord, ContinuityPreflight, MCP, cloud expansion, and State Package signing are not established by IMP-085 and must follow their accepted specification, safety, portability, and acceptance boundaries.
