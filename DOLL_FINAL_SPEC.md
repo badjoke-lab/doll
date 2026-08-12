@@ -17,7 +17,7 @@
 - `docs/spec/03-doll-state-memory-and-storage.md` — SHA-256 `92e9c2dbd29123eb057a590821ed06702e6938d2c99421510e59ffb9af2656bd`
 - `docs/spec/03a-ai-environment-portability.md` — SHA-256 `f01efd1788f96d4552853c0d36b50cc70a06616673df133e53594a5ded134f0f`
 - `docs/spec/03b-project-continuity-and-resumption.md` — SHA-256 `13c536b9e4fc1261248e93aec0fba74534faae8087c4b22319e97e6309034a0b`
-- `docs/spec/03c-memory-interoperability-recall-and-project-experience.md` — SHA-256 `a7f7262c725451ff68b59a4e28f51c20d8869bb4b1bea1f450e4fed8bd388f6f`
+- `docs/spec/03c-memory-interoperability-recall-and-project-experience.md` — SHA-256 `94299ab0d7cd362f82c0da65b3ff5cf5cb234975ba2d170335859954f18cefeb`
 - `docs/spec/04-security-permissions-and-threat-model.md` — SHA-256 `fb40578f529840d00dbf3cf9534824d5f15ccc36d20041f945bf42b5acbe9566`
 - `docs/spec/05-model-vault-lifecycle-evaluation.md` — SHA-256 `3011788c55be9232db98bf932d8c859c88ed3d3bc3e603f0d4c3c709f2eb4268`
 - `docs/spec/06-platform-install-update-and-recovery.md` — SHA-256 `b73b6106d28b3fcb740b6d2f8b5dee4935a7a998537e5858395a85170ce85072`
@@ -25,9 +25,9 @@
 - `docs/spec/08-acceptance-and-continuity-tests.md` — SHA-256 `1ae9b70cf28257b35a30238bdc46c2caea93dbd17fdf8b516ff708c9e208a698`
 - `docs/spec/08a-ai-environment-portability-acceptance.md` — SHA-256 `3a1876d8b506204254ccd54eb58cfabcf2ddc92e3edd446d90650b9ae22ff305`
 - `docs/spec/08b-project-continuity-acceptance.md` — SHA-256 `b58623f21bdd183a21e1904ebcec954ffb2b6976254b72ac52f13deae83306cc`
-- `docs/spec/08c-memory-interoperability-recall-and-project-experience-acceptance.md` — SHA-256 `5cb51c3961eeb802fb3355d880c4e85c7068f60b0b050babf0cc03b6053e482f`
+- `docs/spec/08c-memory-interoperability-recall-and-project-experience-acceptance.md` — SHA-256 `d331f9803474325840cc6d84b8c509273b9b387676ad78fa33d04f9d13a2bfa4`
 - `docs/spec/09-development-roadmap.md` — SHA-256 `fbec991100a72eb6a5aa35f59adefb7358d99135db8d4897a306c53aff6bf393`
-- `docs/spec/09a-post-imp-083-memory-continuity-roadmap.md` — SHA-256 `c894e80728016c66f89ab199f31b10a5cc2dbb50bc99b8a206a7756208026faf`
+- `docs/spec/09a-post-imp-083-memory-continuity-roadmap.md` — SHA-256 `d1c7fb97d2007996c39cb632f39054f7cbc69cc70a24707f8c61b6aee681b1d3`
 
 ---
 
@@ -4069,7 +4069,7 @@ Implementation must prove that:
 <!-- BEGIN SOURCE: docs/spec/03c-memory-interoperability-recall-and-project-experience.md -->
 # Memory interoperability, recall, and project experience
 
-**Status:** Draft for acceptance  
+**Status:** Accepted for implementation  
 **Specification version:** 0.1  
 **Depends on:** `01-product-and-continuity-contract.md`, `02-architecture-and-data-flow.md`, `03-doll-state-memory-and-storage.md`, `03a-ai-environment-portability.md`, `03b-project-continuity-and-resumption.md`, `04-security-permissions-and-threat-model.md`, `ADR-008-memory-interchange-recall-and-project-experience.md`
 
@@ -4654,7 +4654,7 @@ In particular:
 
 The applicable behavior MUST pass `08c-memory-interoperability-recall-and-project-experience-acceptance.md` before the corresponding stable claim is made.
 
-Adding this specification does not retroactively invalidate accepted Phase 1 through Phase 5 evidence or completed bounded Phase 6 slices. New tests become blocking only for the feature or phase claim identified by the post-IMP-082 roadmap extension.
+Adding this specification does not retroactively invalidate accepted Phase 1 through Phase 5 evidence or completed bounded Phase 6 slices. New tests become blocking only for the feature or phase claim identified by the post-IMP-083 roadmap extension.
 
 ## 18. External design references
 
@@ -9102,7 +9102,7 @@ It does not prove autonomous project management, perfect task extraction, univer
 <!-- BEGIN SOURCE: docs/spec/08c-memory-interoperability-recall-and-project-experience-acceptance.md -->
 # Memory interoperability, recall, and project-experience acceptance
 
-**Status:** Draft for acceptance  
+**Status:** Accepted for implementation  
 **Specification version:** 0.1  
 **Depends on:** `03c-memory-interoperability-recall-and-project-experience.md`, `04-security-permissions-and-threat-model.md`, `08-acceptance-and-continuity-tests.md`, `08a-ai-environment-portability-acceptance.md`, `08b-project-continuity-acceptance.md`
 
@@ -9364,7 +9364,7 @@ Pass requires:
 
 ## 11. Phase and release interaction
 
-The post-IMP-082 roadmap determines when these claims are scheduled.
+The post-IMP-083 roadmap determines when these claims are scheduled.
 
 Rules:
 
@@ -10559,7 +10559,7 @@ Weakening AI environment portability, project continuity, generic inspectable ex
 <!-- BEGIN SOURCE: docs/spec/09a-post-imp-083-memory-continuity-roadmap.md -->
 # Post-IMP-083 memory and continuity roadmap extension
 
-**Status:** Draft for acceptance  
+**Status:** Accepted for implementation  
 **Specification version:** 0.1  
 **Applies after:** IMP-083  
 **Depends on:** `09-development-roadmap.md`, `03c-memory-interoperability-recall-and-project-experience.md`, `08c-memory-interoperability-recall-and-project-experience-acceptance.md`, `ADR-008-memory-interchange-recall-and-project-experience.md`
@@ -10825,7 +10825,7 @@ This roadmap extension does not schedule:
 
 ## 10. Immediate order after this documentation change
 
-Once this specification change is accepted, the implementation frontier is:
+With this specification change accepted, the implementation frontier is:
 
 1. continue the existing Phase 6 completion track from IMP-083 without regressing explicit context, local-only behavior, portability, resource-measurement evidence, or safety;
 2. schedule the bounded derived-recall foundation before any semantic/model-selected memory context feature;
