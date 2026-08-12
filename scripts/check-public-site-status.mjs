@@ -60,8 +60,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 84,
-  "project-status.json must mark Phase 6 in progress through IMP-083 with IMP-084 next",
+    status.phase?.next_implementation === 85,
+  "project-status.json must mark Phase 6 in progress through IMP-084 with IMP-085 next",
 );
 expect(
   status.model_runtime &&
@@ -70,8 +70,11 @@ expect(
   "project-status.json requires model_runtime.connected and model_runtime.message",
 );
 expect(
-  status.model_runtime.message.includes("through IMP-083") &&
+  status.model_runtime.message.includes("through IMP-084") &&
     status.model_runtime.message.includes("bounded Lite client resource measurement mechanics") &&
+    status.model_runtime.message.includes("derived rebuildable RecallState boundary") &&
+    status.model_runtime.message.includes("MCON-001/MCON-002") &&
+    status.model_runtime.message.includes("without a persistent recall record") &&
     status.model_runtime.message.includes("does not define RAM, disk, or latency requirements") &&
     status.model_runtime.message.includes("optional local PDF text extraction") &&
     status.model_runtime.message.includes("optional local image OCR") &&
@@ -85,7 +88,7 @@ expect(
     status.model_runtime.message.includes("reported without OCR") &&
     status.model_runtime.message.includes("no source overwrite, output file, persistence") &&
     status.model_runtime.message.includes("passes at both CI and real-machine evidence levels"),
-  "project-status.json must describe IMP-083 without inventing resource thresholds or real-machine evidence",
+  "project-status.json must describe IMP-084 while preserving bounded IMP-083 evidence and non-claims",
 );
 expect(
   /^\d{4}-\d{2}-\d{2}$/.test(status.last_reviewed || ""),
@@ -567,7 +570,6 @@ expect(
   "IMP-076 local PDF extraction must remain optional, untrusted, local-only, and CI-only",
 );
 
-
 expect(
   dailyUse.local_ocr_extension?.implementation === "IMP-077" &&
     dailyUse.local_ocr_extension?.status === "ci-pass" &&
@@ -586,7 +588,6 @@ expect(
     dailyUse.local_ocr_extension?.stable_anti_lock_in_claim === false,
   "IMP-077 local image OCR must remain optional, bounded, untrusted, local-only, and CI-only",
 );
-
 
 expect(
   dailyUse.text_markdown_writing_attachment_extension?.implementation === "IMP-078" &&
@@ -629,7 +630,6 @@ expect(
     dailyUse.text_markdown_writing_attachment_extension?.implementation_doc === "docs/implementation/imp-078-text-markdown-writing-attachments.md",
   "IMP-078 text/Markdown writing attachments must remain explicit, untrusted, local-only, and CI-only",
 );
-
 
 expect(
   dailyUse.pdf_writing_attachment_extension?.implementation === "IMP-079" &&
@@ -680,7 +680,6 @@ expect(
     dailyUse.pdf_writing_attachment_extension?.implementation_doc === "docs/implementation/imp-079-pdf-writing-attachment.md",
   "IMP-079 PDF writing attachment must remain explicit, bounded, untrusted, local-only, and CI-only",
 );
-
 
 expect(
   dailyUse.ocr_image_writing_attachment_extension?.implementation === "IMP-080" &&
@@ -1202,7 +1201,7 @@ expect(
     roadmap.includes("### IMP-083 — Lite client resource measurement harness") &&
     roadmap.includes("IMP-083 is assigned to Issue #249") &&
     roadmap.includes("the next bounded implementation receives IMP-084 only when a new implementation issue is opened"),
-  "roadmap must bind IMP-083 to Issue #249 and identify IMP-084 as the next unallocated implementation identifier",
+  "roadmap must bind IMP-083 to Issue #249 and preserve the historical IMP-084 allocation frontier",
 );
 expect(
   roadmap.includes("docs/testing/results/IMP-057-primary-intel-mac-2026-06-29.json"),
