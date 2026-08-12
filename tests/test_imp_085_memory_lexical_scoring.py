@@ -124,7 +124,8 @@ def test_imp_085_weighted_policy_can_replace_and_rollback_without_memory_writes(
         metadata_memory = service.create(
             subject="neutral metadata memory",
             content="neutral body",
-            source_reference="alpha beta source",
+            source_reference="alpha-source",
+            session_id="beta-session",
         )
         content_before = service.get(content_memory.record_id)
         metadata_before = service.get(metadata_memory.record_id)
