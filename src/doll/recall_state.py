@@ -9,14 +9,14 @@ from doll.local_search import LOCAL_SEARCH_MODE, LocalSearchHit, search_local_st
 from doll.memory import ConfirmedMemoryService
 from doll.state_repository import StateRepository
 
-RECALL_STATE_REPORT_SCHEMA_VERSION = 1
-DEFAULT_RECALL_ALGORITHM_ID = "local-search-order"
-RECALL_ALGORITHM_VERSION = "1"
-
 RecallAlgorithmId = Literal[
     "local-search-order",
     "bounded-field-count-rerank",
 ]
+
+RECALL_STATE_REPORT_SCHEMA_VERSION = 1
+DEFAULT_RECALL_ALGORITHM_ID: RecallAlgorithmId = "local-search-order"
+RECALL_ALGORITHM_VERSION = "1"
 _SUPPORTED_ALGORITHMS: frozenset[str] = frozenset(
     {
         DEFAULT_RECALL_ALGORITHM_ID,
@@ -40,7 +40,7 @@ class RecallState:
     memory_id: str
     memory_revision: int
     source_state_revision: int
-    algorithm_id: str
+    algorithm_id: RecallAlgorithmId
     algorithm_version: str
     lexical_score: int
     rank: int
@@ -62,7 +62,7 @@ class RecallStateReport:
     """Deterministic ephemeral recall output for one bounded local-memory query."""
 
     source_state_revision: int
-    algorithm_id: str
+    algorithm_id: RecallAlgorithmId
     algorithm_version: str
     search_mode: str
     scanned_records: int
@@ -171,7 +171,7 @@ def _candidate_from_hit(
     )
 
 
-def _validate_algorithm_id(algorithm_id: RecallAlgorithmId) -> RecallAlgorithmId:
+def _validate_algorithm_id(algorithm_id: object) -> RecallAlgorithmId:
     if not isinstance(algorithm_id, str) or algorithm_id not in _SUPPORTED_ALGORITHMS:
         raise RecallStateValidationError("unsupported recall algorithm")
     return cast(RecallAlgorithmId, algorithm_id)
