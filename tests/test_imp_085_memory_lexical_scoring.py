@@ -35,7 +35,7 @@ def test_imp_085_weighted_memory_fields_rank_subject_content_and_metadata(
         metadata_memory = service.create(
             subject="another neutral subject",
             content="another neutral body",
-            source_reference="alpha beta source",
+            source_reference="alpha-beta-source",
         )
         service.create(
             subject="secret alpha beta",
