@@ -1,6 +1,6 @@
 # Memory interoperability, recall, and project-experience acceptance
 
-**Status:** Draft for acceptance  
+**Status:** Accepted for implementation  
 **Specification version:** 0.1  
 **Depends on:** `03c-memory-interoperability-recall-and-project-experience.md`, `04-security-permissions-and-threat-model.md`, `08-acceptance-and-continuity-tests.md`, `08a-ai-environment-portability-acceptance.md`, `08b-project-continuity-acceptance.md`
 
@@ -262,7 +262,7 @@ Pass requires:
 
 ## 11. Phase and release interaction
 
-The post-IMP-082 roadmap determines when these claims are scheduled.
+The post-IMP-083 roadmap determines when these claims are scheduled.
 
 Rules:
 
