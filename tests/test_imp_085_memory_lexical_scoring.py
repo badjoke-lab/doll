@@ -55,9 +55,7 @@ def test_imp_085_weighted_memory_fields_rank_subject_content_and_metadata(
         immutable=True,
     ) as repository:
         report = derive_memory_recall_state(repository, "alpha beta")
-        assert (
-            report.algorithm_id == DEFAULT_RECALL_ALGORITHM_ID == "weighted-memory-fields"
-        )
+        assert report.algorithm_id == DEFAULT_RECALL_ALGORITHM_ID == "weighted-memory-fields"
         assert report.algorithm_version == RECALL_ALGORITHM_VERSION == "1"
         assert [item.memory_id for item in report.states] == [
             subject_memory.record_id,
