@@ -61,12 +61,11 @@ def test_imp_084_recall_state_is_ephemeral_rebuildable_and_memory_safe(
         assert recalled.lexical_score >= 1
         assert repository.status().state_revision == state_revision_before
         assert repository.status().record_count == record_count_before
-        assert (
-            repository.connection.execute(
-                "SELECT COUNT(*) FROM records WHERE record_type = 'recall_state'"
-            ).fetchone()[0]
-            == 0
-        )
+        recall_row = repository.connection.execute(
+            "SELECT COUNT(*) FROM records WHERE record_type = 'recall_state'"
+        ).fetchone()
+        assert recall_row is not None
+        assert recall_row[0] == 0
         first_derivation = report.to_dict()
 
     with state.open_state_repository(
