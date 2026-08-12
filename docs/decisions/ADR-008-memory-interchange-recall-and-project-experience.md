@@ -168,7 +168,7 @@ Rejected because an interaction protocol does not replace durable, versioned, us
 
 - add a normative memory-interoperability, recall, and project-experience extension;
 - add acceptance identifiers for rebuildability, adapter authority, experience preservation, and continuity preflight;
-- update the post-IMP-082 roadmap without reserving implementation identifiers prematurely;
+- update the post-IMP-083 roadmap without reserving implementation identifiers prematurely;
 - update repository agent guidance so the current implementation phase is not stale;
 - implement new persisted record types only with versioning, package, backup, restore, migration, and fresh-process coverage in the same accepted slice;
 - keep PAM, PLUR, PROJECTMEM, and MCP integrations optional and removable;

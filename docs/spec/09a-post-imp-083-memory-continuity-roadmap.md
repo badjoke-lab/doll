@@ -1,6 +1,6 @@
 # Post-IMP-083 memory and continuity roadmap extension
 
-**Status:** Draft for acceptance  
+**Status:** Accepted for implementation  
 **Specification version:** 0.1  
 **Applies after:** IMP-083  
 **Depends on:** `09-development-roadmap.md`, `03c-memory-interoperability-recall-and-project-experience.md`, `08c-memory-interoperability-recall-and-project-experience-acceptance.md`, `ADR-008-memory-interchange-recall-and-project-experience.md`
@@ -266,7 +266,7 @@ This roadmap extension does not schedule:
 
 ## 10. Immediate order after this documentation change
 
-Once this specification change is accepted, the implementation frontier is:
+With this specification change accepted, the implementation frontier is:
 
 1. continue the existing Phase 6 completion track from IMP-083 without regressing explicit context, local-only behavior, portability, resource-measurement evidence, or safety;
 2. schedule the bounded derived-recall foundation before any semantic/model-selected memory context feature;

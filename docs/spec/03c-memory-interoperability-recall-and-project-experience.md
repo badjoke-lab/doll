@@ -1,6 +1,6 @@
 # Memory interoperability, recall, and project experience
 
-**Status:** Draft for acceptance  
+**Status:** Accepted for implementation  
 **Specification version:** 0.1  
 **Depends on:** `01-product-and-continuity-contract.md`, `02-architecture-and-data-flow.md`, `03-doll-state-memory-and-storage.md`, `03a-ai-environment-portability.md`, `03b-project-continuity-and-resumption.md`, `04-security-permissions-and-threat-model.md`, `ADR-008-memory-interchange-recall-and-project-experience.md`
 
@@ -585,7 +585,7 @@ In particular:
 
 The applicable behavior MUST pass `08c-memory-interoperability-recall-and-project-experience-acceptance.md` before the corresponding stable claim is made.
 
-Adding this specification does not retroactively invalidate accepted Phase 1 through Phase 5 evidence or completed bounded Phase 6 slices. New tests become blocking only for the feature or phase claim identified by the post-IMP-082 roadmap extension.
+Adding this specification does not retroactively invalidate accepted Phase 1 through Phase 5 evidence or completed bounded Phase 6 slices. New tests become blocking only for the feature or phase claim identified by the post-IMP-083 roadmap extension.
 
 ## 18. External design references
 
