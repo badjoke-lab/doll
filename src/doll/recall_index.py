@@ -654,7 +654,7 @@ def _restrict_file(path: Path) -> None:
 
 
 def _fsync_file(path: Path) -> None:
-    flags = os.O_RDONLY | cast(int, getattr(os, "O_BINARY", 0))
+    flags = os.O_RDWR | cast(int, getattr(os, "O_BINARY", 0))
     try:
         descriptor = os.open(path, flags)
         try:
