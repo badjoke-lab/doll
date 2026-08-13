@@ -41,7 +41,9 @@ def _case(report: RecallBenchmarkReport, case_id: str) -> RecallBenchmarkCaseRes
     return next(case for case in report.cases if case.case_id == case_id)
 
 
-def _scan_snapshot(report: RecallBenchmarkReport) -> tuple[tuple[str, tuple[str, ...], int | None], ...]:
+def _scan_snapshot(
+    report: RecallBenchmarkReport,
+) -> tuple[tuple[str, tuple[str, ...], int | None], ...]:
     return tuple((case.case_id, case.returned_labels, case.expected_rank) for case in report.cases)
 
 
