@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import os
 import sqlite3
 import tempfile
@@ -152,6 +151,7 @@ def build_memory_lexical_index(repository: StateRepository) -> MemoryLexicalInde
 
     _require_read_only(repository)
     source_status = repository.status()
+    _validate_repository_identity(repository)
     index_path = memory_lexical_index_path(repository)
     index_directory = _prepare_index_directory(repository)
     descriptor, temporary_name = tempfile.mkstemp(
@@ -213,7 +213,7 @@ def build_memory_lexical_index(repository: StateRepository) -> MemoryLexicalInde
         return inspect_memory_lexical_index(repository)
     except RecallIndexError:
         raise
-    except (OSError, sqlite3.DatabaseError, MemoryCorruptError, json.JSONDecodeError) as exc:
+    except (OSError, sqlite3.DatabaseError, MemoryCorruptError) as exc:
         raise RecallIndexUnavailableError("memory lexical index could not be built safely") from exc
     finally:
         if connection is not None:
@@ -225,6 +225,7 @@ def inspect_memory_lexical_index(repository: StateRepository) -> MemoryLexicalIn
     """Verify index integrity, contract identity, workspace binding, and freshness."""
 
     _require_read_only(repository)
+    _validate_repository_identity(repository)
     connection = _open_index_read_only(repository)
     try:
         inspection = _validate_open_index(connection)
@@ -247,6 +248,7 @@ def query_memory_lexical_index(
     """Query the optional exact-token sidecar without changing authoritative state."""
 
     _require_read_only(repository)
+    _validate_repository_identity(repository)
     terms = _validate_query(query)
     _validate_limit(limit)
     connection = _open_index_read_only(repository)
@@ -318,6 +320,7 @@ def discard_memory_lexical_index(repository: StateRepository) -> bool:
     """Delete only the disposable sidecar; authoritative memory remains untouched."""
 
     _require_read_only(repository)
+    _validate_repository_identity(repository)
     index_path = memory_lexical_index_path(repository)
     _validate_index_parent(repository)
     if not os.path.lexists(index_path):
@@ -380,10 +383,7 @@ def _populate_index(
                 INSERT INTO token_postings (token, memory_id, field_class)
                 VALUES (?, ?, ?)
                 """,
-                (
-                    (token, memory.record_id, field_class)
-                    for token, field_class in postings
-                ),
+                ((token, memory.record_id, field_class) for token, field_class in postings),
             )
             posting_count += len(postings)
         connection.execute("COMMIT")
@@ -472,6 +472,15 @@ def _require_read_only(repository: StateRepository) -> None:
         raise RecallIndexValidationError("memory lexical index requires a read-only repository")
 
 
+def _validate_repository_identity(repository: StateRepository) -> None:
+    status = repository.status()
+    if (
+        str(repository.workspace.record.workspace_id) != status.workspace_id
+        or repository.workspace.record.state_revision != status.state_revision
+    ):
+        raise RecallIndexValidationError("workspace identity and Doll State revision are inconsistent")
+
+
 def _prepare_index_directory(repository: StateRepository) -> Path:
     index_directory = _validate_index_parent(repository)
     if not index_directory.exists():
@@ -527,7 +536,10 @@ def _validate_open_index(connection: sqlite3.Connection) -> MemoryLexicalIndexIn
         integrity = connection.execute("PRAGMA integrity_check").fetchone()
         if integrity is None or integrity[0] != "ok":
             raise RecallIndexCorruptError("memory lexical index failed SQLite integrity check")
-        user_version = cast(int, connection.execute("PRAGMA user_version").fetchone()[0])
+        user_version_row = connection.execute("PRAGMA user_version").fetchone()
+        if user_version_row is None:
+            raise RecallIndexCorruptError("memory lexical index user version is missing")
+        user_version = cast(int, user_version_row[0])
         row = connection.execute(
             """
             SELECT
