@@ -5,7 +5,9 @@ from pathlib import Path
 from doll import state, workspace
 from doll.memory import ConfirmedMemoryService
 from doll.recall_benchmark import (
+    RecallBenchmarkBindings,
     RecallBenchmarkCaseResult,
+    RecallBenchmarkCorpus,
     RecallBenchmarkReport,
     load_recall_benchmark_corpus,
     populate_synthetic_recall_benchmark,
@@ -25,7 +27,9 @@ def _initialized_workspace(root: Path) -> workspace.InitializedWorkspace:
     return initialized
 
 
-def _populate(root: Path) -> tuple[workspace.InitializedWorkspace, object, object]:
+def _populate(
+    root: Path,
+) -> tuple[workspace.InitializedWorkspace, RecallBenchmarkCorpus, RecallBenchmarkBindings]:
     corpus = load_recall_benchmark_corpus(_CORPUS_PATH)
     initialized = _initialized_workspace(root)
     with state.open_state_repository(initialized.root) as repository:
@@ -35,6 +39,10 @@ def _populate(root: Path) -> tuple[workspace.InitializedWorkspace, object, objec
 
 def _case(report: RecallBenchmarkReport, case_id: str) -> RecallBenchmarkCaseResult:
     return next(case for case in report.cases if case.case_id == case_id)
+
+
+def _scan_snapshot(report: RecallBenchmarkReport) -> tuple[tuple[str, tuple[str, ...], int | None], ...]:
+    return tuple((case.case_id, case.returned_labels, case.expected_rank) for case in report.cases)
 
 
 def test_imp_087_baseline_measures_lexical_strength_and_semantic_opportunity(
@@ -112,7 +120,8 @@ def test_imp_087_missing_or_corrupt_index_never_blocks_scan_baseline(tmp_path: P
         assert missing.lexical_recall_at_1 == "1"
         assert missing.semantic_opportunity_miss_count == 2
         build_memory_lexical_index(repository)
-        scan_baseline = run_recall_benchmark(repository, corpus, bindings).logical_dict()
+        available = run_recall_benchmark(repository, corpus, bindings)
+        scan_baseline = _scan_snapshot(available)
         index_path = memory_lexical_index_path(repository)
 
     index_path.write_bytes(b"synthetic-corrupt-index")
@@ -129,17 +138,7 @@ def test_imp_087_missing_or_corrupt_index_never_blocks_scan_baseline(tmp_path: P
         assert corrupt.lexical_recall_at_1 == "1"
         assert corrupt.lexical_recall_at_3 == "1"
         assert corrupt.semantic_opportunity_miss_count == 2
-        corrupt_logical = corrupt.logical_dict()
-        for key in ("index_status", "index_error_type", "index_coverage"):
-            corrupt_logical[key] = scan_baseline[key]
-        for case in corrupt_logical["cases"]:
-            assert isinstance(case, dict)
-            case["index_returned_labels"] = next(
-                baseline_case["index_returned_labels"]
-                for baseline_case in scan_baseline["cases"]
-                if isinstance(baseline_case, dict) and baseline_case["case_id"] == case["case_id"]
-            )
-        assert corrupt_logical == scan_baseline
+        assert _scan_snapshot(corrupt) == scan_baseline
 
 
 def test_imp_087_benchmark_does_not_mutate_authoritative_memory(tmp_path: Path) -> None:
