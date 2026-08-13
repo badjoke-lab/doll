@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "corpus_id": "imp-087-memory-recall-baseline-v1",
+  "memories": [
+    {
+      "label": "direct-subject",
+      "subject": "alpha beta release",
+      "content": "A fabricated release note for deterministic recall testing."
+    },
+    {
+      "label": "subject-ranking",
+      "subject": "garden schedule priority",
+      "content": "A fabricated planning note."
+    },
+    {
+      "label": "content-ranking",
+      "subject": "neutral planning note",
+      "content": "garden schedule"
+    },
+    {
+      "label": "phrase-target",
+      "subject": "quiet harbor checklist",
+      "content": "A fabricated harbor note."
+    },
+    {
+      "label": "phrase-separated",
+      "subject": "quiet winter harbor checklist",
+      "content": "A fabricated alternate harbor note."
+    },
+    {
+      "label": "metadata-target",
+      "subject": "neutral metadata memory",
+      "content": "A fabricated metadata-only retrieval note.",
+      "source_reference": "ledger-proof-token"
+    },
+    {
+      "label": "unicode-target",
+      "subject": "ＦＵＬＬＷＩＤＴＨ ＣＡＳＥ",
+      "content": "A fabricated Unicode normalization note."
+    },
+    {
+      "label": "substring-target",
+      "subject": "microservicecatalog",
+      "content": "A fabricated substring-only lexical note."
+    },
+    {
+      "label": "semantic-vehicle",
+      "subject": "Automobile maintenance",
+      "content": "Schedule engine servicing before long trips."
+    },
+    {
+      "label": "semantic-groceries",
+      "subject": "Purchase provisions",
+      "content": "Remember to buy groceries before dinner."
+    },
+    {
+      "label": "secret-excluded",
+      "subject": "hidden marker",
+      "content": "This fabricated secret memory must never be eligible.",
+      "sensitivity": "secret"
+    },
+    {
+      "label": "archived-excluded",
+      "subject": "retired marker",
+      "content": "This fabricated archived memory must never be eligible.",
+      "archived": true
+    },
+    {
+      "label": "distractor",
+      "subject": "unrelated telescope notes",
+      "content": "Observe a fabricated night sky from the hill."
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "lexical-direct",
+      "classification": "lexical",
+      "query": "alpha beta",
+      "expected_label": "direct-subject",
+      "index_compatible": true
+    },
+    {
+      "case_id": "lexical-subject-vs-content",
+      "classification": "lexical",
+      "query": "garden schedule",
+      "expected_label": "subject-ranking",
+      "index_compatible": true
+    },
+    {
+      "case_id": "lexical-exact-phrase",
+      "classification": "lexical",
+      "query": "quiet harbor",
+      "expected_label": "phrase-target",
+      "index_compatible": true
+    },
+    {
+      "case_id": "lexical-metadata-only",
+      "classification": "lexical",
+      "query": "ledger-proof-token",
+      "expected_label": "metadata-target",
+      "index_compatible": true
+    },
+    {
+      "case_id": "lexical-unicode-normalization",
+      "classification": "lexical",
+      "query": "fullwidth case",
+      "expected_label": "unicode-target",
+      "index_compatible": true
+    },
+    {
+      "case_id": "lexical-substring-fallback",
+      "classification": "lexical",
+      "query": "service",
+      "expected_label": "substring-target",
+      "index_compatible": false
+    },
+    {
+      "case_id": "semantic-vehicle-paraphrase",
+      "classification": "semantic_opportunity",
+      "query": "fix my car",
+      "expected_label": "semantic-vehicle",
+      "index_compatible": false
+    },
+    {
+      "case_id": "semantic-grocery-paraphrase",
+      "classification": "semantic_opportunity",
+      "query": "get food supplies",
+      "expected_label": "semantic-groceries",
+      "index_compatible": false
+    },
+    {
+      "case_id": "exclude-secret",
+      "classification": "exclusion",
+      "query": "hidden marker",
+      "expected_label": null,
+      "index_compatible": true
+    },
+    {
+      "case_id": "exclude-archived",
+      "classification": "exclusion",
+      "query": "retired marker",
+      "expected_label": null,
+      "index_compatible": true
+    }
+  ]
+}
