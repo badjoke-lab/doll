@@ -116,6 +116,7 @@ IMP-088 therefore uses an injectable synthetic transport to prove harness behavi
 - `truncate` is false;
 - model identity is explicit;
 - malformed vectors fail closed;
+- invalid model names, request bounds, timeouts, runtime inventory, and benchmark bindings fail closed;
 - secret and archived memories never enter ranking;
 - identical vectors produce deterministic MemoryRecord-ID tie ordering;
 - ranking is read-only;
