@@ -22,7 +22,10 @@ def test_imp_090_detects_declared_candidate_classes(tmp_path: Path) -> None:
     with state.open_state_repository(initialized.root) as repository:
         service = ConfirmedMemoryService(repository)
         exact_a = service.create(subject="Backup Schedule", content="Run the LOCAL backup nightly.")
-        exact_b = service.create(subject=" backup   schedule ", content="run the local backup nightly.")
+        exact_b = service.create(
+            subject=" backup   schedule ",
+            content="run the local backup nightly.",
+        )
         near_a = service.create(
             subject="Shutdown verification",
             content="Keep the local backup before every shutdown and verify it.",
@@ -65,11 +68,14 @@ def test_imp_090_detects_declared_candidate_classes(tmp_path: Path) -> None:
     assert first == second
     assert first.source_state_revision == source_revision
     pairs = {
-        (candidate.kind, frozenset((candidate.left_memory_id, candidate.right_memory_id))): candidate
+        (
+            candidate.kind,
+            frozenset((candidate.left_memory_id, candidate.right_memory_id)),
+        ): candidate
         for candidate in first.candidates
     }
     assert ("exact_duplicate", frozenset((exact_a.record_id, exact_b.record_id))) in pairs
-    near = pairs[("near_duplicate", frozenset((near_a.record_id, near_b.record_id)))]
+    near = pairs[("near_duplicate", frozenset((near_a.record_id, near_b.record_id))]
     assert near.lexical_overlap_basis_points is not None
     assert near.lexical_overlap_basis_points >= NEAR_DUPLICATE_THRESHOLD_BASIS_POINTS
     assert (
