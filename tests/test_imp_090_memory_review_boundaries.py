@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import cast
 
 import pytest
 
@@ -11,6 +10,7 @@ from doll.memory_consolidation import (
     MemoryConsolidationValidationError,
     detect_memory_consolidation_candidates,
 )
+from doll.state_repository import StateRepository
 
 
 def _init(root: Path) -> workspace.InitializedWorkspace:
@@ -20,8 +20,8 @@ def _init(root: Path) -> workspace.InitializedWorkspace:
     return initialized
 
 
-def _snapshot(repository: object) -> dict[str, tuple[object, ...]]:
-    service = ConfirmedMemoryService(cast(object, repository))
+def _snapshot(repository: StateRepository) -> dict[str, tuple[object, ...]]:
+    service = ConfirmedMemoryService(repository)
     memories = service.list(include_archived=True, limit=200)
     return {
         memory.record_id: (
@@ -38,7 +38,9 @@ def _snapshot(repository: object) -> dict[str, tuple[object, ...]]:
     }
 
 
-def test_imp_090_review_preserves_memory_state_and_exclusions(tmp_path: Path) -> None:
+def test_imp_090_review_preserves_memory_state_and_exclusions(
+    tmp_path: Path,
+) -> None:
     initialized = _init(tmp_path / "workspace")
     with state.open_state_repository(initialized.root) as repository:
         service = ConfirmedMemoryService(repository)

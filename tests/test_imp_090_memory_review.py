@@ -21,7 +21,10 @@ def test_imp_090_detects_declared_candidate_classes(tmp_path: Path) -> None:
     initialized = _init(tmp_path / "workspace")
     with state.open_state_repository(initialized.root) as repository:
         service = ConfirmedMemoryService(repository)
-        exact_a = service.create(subject="Backup Schedule", content="Run the LOCAL backup nightly.")
+        exact_a = service.create(
+            subject="Backup Schedule",
+            content="Run the LOCAL backup nightly.",
+        )
         exact_b = service.create(
             subject=" backup   schedule ",
             content="run the local backup nightly.",
@@ -74,21 +77,27 @@ def test_imp_090_detects_declared_candidate_classes(tmp_path: Path) -> None:
         ): candidate
         for candidate in first.candidates
     }
-    assert ("exact_duplicate", frozenset((exact_a.record_id, exact_b.record_id))) in pairs
-    near = pairs[("near_duplicate", frozenset((near_a.record_id, near_b.record_id))]
+    exact_pair = frozenset((exact_a.record_id, exact_b.record_id))
+    assert ("exact_duplicate", exact_pair) in pairs
+
+    near_pair = frozenset((near_a.record_id, near_b.record_id))
+    near = pairs[("near_duplicate", near_pair)]
     assert near.lexical_overlap_basis_points is not None
     assert near.lexical_overlap_basis_points >= NEAR_DUPLICATE_THRESHOLD_BASIS_POINTS
-    assert (
-        "compatible_extension",
-        frozenset((extension_a.record_id, extension_b.record_id)),
-    ) in pairs
-    assert (
-        "explicit_contradiction",
-        frozenset((conflict_a.record_id, conflict_b.record_id)),
-    ) in pairs
+
+    extension_pair = frozenset((extension_a.record_id, extension_b.record_id))
+    assert ("compatible_extension", extension_pair) in pairs
+
+    conflict_pair = frozenset((conflict_a.record_id, conflict_b.record_id))
+    assert ("explicit_contradiction", conflict_pair) in pairs
+
     assert all(
-        unrelated.record_id not in {candidate.left_memory_id, candidate.right_memory_id}
+        unrelated.record_id
+        not in {candidate.left_memory_id, candidate.right_memory_id}
         for candidate in first.candidates
     )
-    assert all(candidate.to_dict()["review_required"] is True for candidate in first.candidates)
+    assert all(
+        candidate.to_dict()["review_required"] is True
+        for candidate in first.candidates
+    )
     assert first.to_dict()["automatic_memory_mutation"] is False
