@@ -1,6 +1,6 @@
 # IMP-089 — Inspectable lexical memory context-budget preview
 
-Status: implementation branch
+Status: implementation branch; validation tracked in PR #272
 
 ## Purpose
 
@@ -59,7 +59,7 @@ Confirmed MemoryRecord does not currently provide a canonical project-membership
 
 Synthetic tests cover deterministic ordering, version/revision identity, item and character budgets, validity windows, sensitivity, archive/secret exclusion, disabled-memory output, invalid controls, read-only enforcement, no InstructionOrigin creation during preview, and explicit materialization remaining a separate write.
 
-Quality, type checking, and Ubuntu/macOS/Windows CI are blocking before merge.
+Quality, type checking, and Ubuntu/macOS/Windows CI are blocking before merge. PR #272 is the merge gate for this slice.
 
 ## Non-claims
 
