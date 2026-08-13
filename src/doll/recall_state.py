@@ -2,25 +2,33 @@
 
 from __future__ import annotations
 
+import unicodedata
 from dataclasses import dataclass
 from typing import Literal, cast
 
 from doll.local_search import LOCAL_SEARCH_MODE, LocalSearchHit, search_local_state
-from doll.memory import ConfirmedMemoryService
+from doll.memory import ConfirmedMemoryInfo, ConfirmedMemoryService
 from doll.state_repository import StateRepository
 
 RecallAlgorithmId = Literal[
     "local-search-order",
     "bounded-field-count-rerank",
+    "weighted-memory-fields",
 ]
 
 RECALL_STATE_REPORT_SCHEMA_VERSION = 1
-DEFAULT_RECALL_ALGORITHM_ID: RecallAlgorithmId = "local-search-order"
+DEFAULT_RECALL_ALGORITHM_ID: RecallAlgorithmId = "weighted-memory-fields"
 RECALL_ALGORITHM_VERSION = "1"
+_WEIGHTED_SUBJECT_TERM_SCORE = 8
+_WEIGHTED_CONTENT_TERM_SCORE = 4
+_WEIGHTED_METADATA_ONLY_TERM_SCORE = 1
+_WEIGHTED_SUBJECT_PHRASE_BONUS = 8
+_WEIGHTED_CONTENT_PHRASE_BONUS = 4
 _SUPPORTED_ALGORITHMS: frozenset[str] = frozenset(
     {
-        DEFAULT_RECALL_ALGORITHM_ID,
+        "local-search-order",
         "bounded-field-count-rerank",
+        DEFAULT_RECALL_ALGORITHM_ID,
     }
 )
 
@@ -114,13 +122,24 @@ def derive_memory_recall_state(
         record_type="memory",
         limit=limit,
     )
+    normalized_query, query_terms = _normalized_query_parts(query)
     memory_service = ConfirmedMemoryService(repository)
     candidates = tuple(
-        _candidate_from_hit(memory_service, hit, source_rank)
+        _candidate_from_hit(
+            memory_service,
+            hit,
+            source_rank,
+            resolved_algorithm,
+            normalized_query,
+            query_terms,
+        )
         for source_rank, hit in enumerate(search_report.hits, start=1)
     )
 
-    if resolved_algorithm == "bounded-field-count-rerank":
+    if resolved_algorithm in {
+        "bounded-field-count-rerank",
+        "weighted-memory-fields",
+    }:
         ordered = tuple(
             sorted(
                 candidates,
@@ -161,14 +180,58 @@ def _candidate_from_hit(
     memory_service: ConfirmedMemoryService,
     hit: LocalSearchHit,
     source_rank: int,
+    algorithm_id: RecallAlgorithmId,
+    normalized_query: str,
+    query_terms: tuple[str, ...],
 ) -> _RecallCandidate:
     memory = memory_service.get(hit.record_id)
+    lexical_score = len(hit.matches)
+    if algorithm_id == "weighted-memory-fields":
+        lexical_score = _weighted_memory_lexical_score(
+            memory,
+            normalized_query,
+            query_terms,
+        )
     return _RecallCandidate(
         memory_id=memory.record_id,
         memory_revision=memory.revision,
         source_rank=source_rank,
-        lexical_score=len(hit.matches),
+        lexical_score=lexical_score,
     )
+
+
+def _weighted_memory_lexical_score(
+    memory: ConfirmedMemoryInfo,
+    normalized_query: str,
+    query_terms: tuple[str, ...],
+) -> int:
+    subject = _normalize_lexical_text(memory.subject)
+    content = _normalize_lexical_text(memory.content)
+    score = 0
+    for term in query_terms:
+        subject_match = term in subject
+        content_match = term in content
+        if subject_match:
+            score += _WEIGHTED_SUBJECT_TERM_SCORE
+        if content_match:
+            score += _WEIGHTED_CONTENT_TERM_SCORE
+        if not subject_match and not content_match:
+            score += _WEIGHTED_METADATA_ONLY_TERM_SCORE
+    if normalized_query in subject:
+        score += _WEIGHTED_SUBJECT_PHRASE_BONUS
+    if normalized_query in content:
+        score += _WEIGHTED_CONTENT_PHRASE_BONUS
+    return score
+
+
+def _normalized_query_parts(query: str) -> tuple[str, tuple[str, ...]]:
+    normalized = _normalize_lexical_text(query)
+    return normalized, tuple(dict.fromkeys(normalized.split(" ")))
+
+
+def _normalize_lexical_text(value: str) -> str:
+    normalized = unicodedata.normalize("NFKC", value)
+    return " ".join(normalized.split()).casefold()
 
 
 def _validate_algorithm_id(algorithm_id: object) -> RecallAlgorithmId:
