@@ -84,6 +84,8 @@ The experiment handles at most 64 memories in one run. This is an explicit bound
 
 `evaluate_semantic_benchmark()` runs the candidate only against the versioned fabricated IMP-087 corpus.
 
+The benchmark bindings must contain exactly the corpus labels before any expected or excluded synthetic MemoryRecord ID is used. Missing or extra label mappings fail closed as `SemanticCandidateValidationError` rather than leaking a raw lookup error.
+
 It reports:
 
 - evidence kind (`synthetic` or `real_model`);
