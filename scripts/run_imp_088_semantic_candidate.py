@@ -17,9 +17,7 @@ from doll.semantic_candidate import (
 )
 
 _REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
-_CORPUS_PATH = (
-    _REPOSITORY_ROOT / "docs" / "testing" / "imp-087-memory-recall-benchmark-corpus.json"
-)
+_CORPUS_PATH = _REPOSITORY_ROOT / "docs" / "testing" / "imp-087-memory-recall-benchmark-corpus.json"
 
 
 def main() -> int:
@@ -32,7 +30,10 @@ def main() -> int:
     parser.add_argument(
         "--model",
         required=True,
-        help="Explicit already-installed local Ollama embedding model name, for example embeddinggemma",
+        help=(
+            "Explicit already-installed local Ollama embedding model name, "
+            "for example embeddinggemma"
+        ),
     )
     args = parser.parse_args()
 

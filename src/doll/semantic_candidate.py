@@ -228,7 +228,9 @@ class OllamaSemanticEmbeddingClient:
         try:
             endpoint = candidate.endpoint
         except Exception:
-            raise SemanticCandidateValidationError("semantic candidate transport is invalid") from None
+            raise SemanticCandidateValidationError(
+                "semantic candidate transport is invalid"
+            ) from None
         if not isinstance(endpoint, OllamaEndpoint) or endpoint != config.endpoint:
             raise SemanticCandidateValidationError("semantic candidate transport endpoint mismatch")
         self._transport = candidate
@@ -244,7 +246,9 @@ class OllamaSemanticEmbeddingClient:
         timeout_seconds: float = MAX_SEMANTIC_TIMEOUT_SECONDS,
     ) -> SemanticEmbeddingBatch:
         if not self._config.local_only_confirmed:
-            raise SemanticCandidateValidationError("semantic candidate requires local-only confirmation")
+            raise SemanticCandidateValidationError(
+                "semantic candidate requires local-only confirmation"
+            )
         safe_inputs = _validate_inputs(inputs)
         timeout = _validate_timeout(timeout_seconds)
         body = json.dumps(
@@ -274,7 +278,9 @@ class OllamaSemanticEmbeddingClient:
         """Inspect only already-installed local Ollama state; never pull or install anything."""
 
         if not self._config.local_only_confirmed:
-            raise SemanticCandidateValidationError("semantic candidate requires local-only confirmation")
+            raise SemanticCandidateValidationError(
+                "semantic candidate requires local-only confirmation"
+            )
         version_response = self._request("GET", "/api/version", body=None, context=None)
         if version_response.status_code != 200:
             raise SemanticCandidateUnavailableError("local Ollama version is unavailable")
@@ -285,7 +291,9 @@ class OllamaSemanticEmbeddingClient:
             raise SemanticCandidateUnavailableError("local Ollama model inventory is unavailable")
         revision = _find_model_revision(tags_response.body, self.model_name)
         if revision is None:
-            raise SemanticCandidateUnavailableError("requested embedding model is not installed locally")
+            raise SemanticCandidateUnavailableError(
+                "requested embedding model is not installed locally"
+            )
         return SemanticModelIdentity(self.model_name, revision, ollama_version)
 
     def _request(
@@ -338,7 +346,7 @@ def rank_semantic_memories(
             scan_truncated=scan_truncated,
             states=(),
         )
-    texts = (safe_query,) + tuple(_memory_retrieval_text(memory) for memory in memories)
+    texts = (safe_query, *tuple(_memory_retrieval_text(memory) for memory in memories))
     batch = client.embed(texts)
     query_vector = batch.vectors[0]
     candidates = tuple(
@@ -363,7 +371,9 @@ def rank_semantic_memories(
         for rank, (memory, score) in enumerate(ordered, start=1)
     )
     if repository.status().state_revision != source_state_revision:
-        raise SemanticCandidateValidationError("Doll State changed during semantic candidate ranking")
+        raise SemanticCandidateValidationError(
+            "Doll State changed during semantic candidate ranking"
+        )
     return SemanticRecallReport(
         source_state_revision=source_state_revision,
         policy_id=SEMANTIC_CANDIDATE_POLICY_ID,
@@ -403,7 +413,9 @@ def evaluate_semantic_benchmark(
             continue
         report = rank_semantic_memories(repository, case.query, client, limit=3)
         returned_ids = tuple(state.memory_id for state in report.states)
-        returned_labels = tuple(id_to_label.get(memory_id, "<unknown>") for memory_id in returned_ids)
+        returned_labels = tuple(
+            id_to_label.get(memory_id, "<unknown>") for memory_id in returned_ids
+        )
         all_returned_ids.update(returned_ids)
         expected_rank = _expected_rank(returned_labels, case.expected_label)
         results.append(
@@ -477,7 +489,9 @@ def _validate_inputs(inputs: object) -> tuple[str, ...]:
         if not normalized or len(normalized) > MAX_SEMANTIC_INPUT_CHARS:
             raise SemanticCandidateValidationError("semantic embedding input size is invalid")
         if any(ord(character) < 32 and character not in {"\n", "\t"} for character in normalized):
-            raise SemanticCandidateValidationError("semantic embedding input contains control characters")
+            raise SemanticCandidateValidationError(
+                "semantic embedding input contains control characters"
+            )
         safe.append(normalized)
     return tuple(safe)
 
@@ -494,7 +508,11 @@ def _validate_query(query: object) -> str:
 
 
 def _validate_limit(limit: object) -> int:
-    if isinstance(limit, bool) or not isinstance(limit, int) or not 1 <= limit <= MAX_SEMANTIC_RESULT_LIMIT:
+    if (
+        isinstance(limit, bool)
+        or not isinstance(limit, int)
+        or not 1 <= limit <= MAX_SEMANTIC_RESULT_LIMIT
+    ):
         raise SemanticCandidateValidationError("semantic result limit is invalid")
     return limit
 
@@ -569,7 +587,9 @@ def _load_json_object(raw: object) -> dict[str, object]:
             parse_constant=_reject_json_constant,
         )
     except (UnicodeDecodeError, json.JSONDecodeError, SemanticCandidateResponseError):
-        raise SemanticCandidateResponseError("semantic candidate response is invalid JSON") from None
+        raise SemanticCandidateResponseError(
+            "semantic candidate response is invalid JSON"
+        ) from None
     if not isinstance(value, dict):
         raise SemanticCandidateResponseError("semantic candidate response must be an object")
     return cast(dict[str, object], value)
@@ -636,8 +656,8 @@ def _ratio(numerator: int, denominator: int) -> str:
 
 
 __all__ = [
-    "MAX_SEMANTIC_INPUT_CHARS",
     "MAX_SEMANTIC_INPUTS",
+    "MAX_SEMANTIC_INPUT_CHARS",
     "MAX_SEMANTIC_MEMORIES",
     "MAX_SEMANTIC_RESULT_LIMIT",
     "MAX_SEMANTIC_TIMEOUT_SECONDS",

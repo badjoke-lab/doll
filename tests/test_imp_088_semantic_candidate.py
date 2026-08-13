@@ -258,7 +258,7 @@ def test_imp_088_synthetic_benchmark_math_can_pass_without_changing_lexical_fall
         if not memory.archived and memory.sensitivity != "secret"
     }
     for index, case in enumerate(
-        (case for case in corpus.cases if case.classification != "exclusion")
+        case for case in corpus.cases if case.classification != "exclusion"
     ):
         vector = [0.0] * dimensions
         vector[index] = 1.0
