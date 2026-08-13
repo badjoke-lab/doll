@@ -10,6 +10,7 @@ from doll.memory import ConfirmedMemoryInfo, ConfirmedMemoryService
 from doll.recall_state import (
     DEFAULT_RECALL_ALGORITHM_ID,
     RECALL_ALGORITHM_VERSION,
+    RecallState,
     RecallStateValidationError,
     derive_memory_recall_state,
 )
@@ -233,14 +234,17 @@ def preview_memory_context_budget(
         if len(selections) >= safe_maximum_items:
             exclusions.append(_exclusion(recall_state, "item_limit"))
             continue
+
+        selected_ids = tuple(selection.memory_id for selection in selections)
         try:
-            plan = writing_context.plan(memory_ids=(memory.record_id,))
+            single_plan = writing_context.plan(memory_ids=(memory.record_id,))
+            combined_plan = writing_context.plan(memory_ids=(*selected_ids, memory.record_id))
         except SelectedWritingContextError as exc:
             raise MemoryContextBudgetValidationError(
                 "recalled memory cannot satisfy the explicit writing-context boundary"
             ) from exc
-        estimated_characters = plan.character_count
-        if selected_characters + estimated_characters > safe_maximum_characters:
+        estimated_characters = single_plan.character_count
+        if combined_plan.character_count > safe_maximum_characters:
             exclusions.append(
                 _exclusion(
                     recall_state,
@@ -259,7 +263,7 @@ def preview_memory_context_budget(
                 estimated_context_characters=estimated_characters,
             )
         )
-        selected_characters += estimated_characters
+        selected_characters = combined_plan.character_count
 
     _require_stable_state(repository, source_state_revision)
     return MemoryContextBudgetReport(
@@ -284,30 +288,16 @@ def preview_memory_context_budget(
 
 
 def _exclusion(
-    recall_state: object,
+    recall_state: RecallState,
     reason: MemoryContextBudgetExclusionReason,
     *,
     estimated_context_characters: int | None = None,
 ) -> MemoryContextBudgetExclusion:
-    memory_id = getattr(recall_state, "memory_id", None)
-    memory_revision = getattr(recall_state, "memory_revision", None)
-    rank = getattr(recall_state, "rank", None)
-    lexical_score = getattr(recall_state, "lexical_score", None)
-    if (
-        not isinstance(memory_id, str)
-        or isinstance(memory_revision, bool)
-        or not isinstance(memory_revision, int)
-        or isinstance(rank, bool)
-        or not isinstance(rank, int)
-        or isinstance(lexical_score, bool)
-        or not isinstance(lexical_score, int)
-    ):
-        raise MemoryContextBudgetValidationError("recall state is invalid")
     return MemoryContextBudgetExclusion(
-        memory_id=memory_id,
-        memory_revision=memory_revision,
-        recall_rank=rank,
-        lexical_score=lexical_score,
+        memory_id=recall_state.memory_id,
+        memory_revision=recall_state.memory_revision,
+        recall_rank=recall_state.rank,
+        lexical_score=recall_state.lexical_score,
         reason=reason,
         estimated_context_characters=estimated_context_characters,
     )
@@ -330,10 +320,9 @@ def _parse_memory_timestamp(value: str | None) -> datetime | None:
     if value is None:
         return None
     try:
-        parsed = _parse_utc_datetime(value)
+        return _parse_utc_datetime(value)
     except ValueError as exc:
         raise MemoryContextBudgetValidationError("memory validity timestamp is invalid") from exc
-    return parsed
 
 
 def _validate_as_of(value: object) -> tuple[str, datetime]:
