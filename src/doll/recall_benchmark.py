@@ -292,9 +292,10 @@ def run_recall_benchmark(
             Fraction(1, result.expected_rank)
             if result.expected_rank is not None
             else Fraction(0, 1)
-        )
-        for result in lexical
-    , Fraction(0, 1))
+            for result in lexical
+        ),
+        Fraction(0, 1),
+    )
     index_coverage: str | None = None
     if index_status == "available":
         index_hits = sum(
