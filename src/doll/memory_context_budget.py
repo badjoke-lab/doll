@@ -209,7 +209,9 @@ def preview_memory_context_budget(
             algorithm_id=DEFAULT_RECALL_ALGORITHM_ID,
         )
     except RecallStateValidationError as exc:
-        raise MemoryContextBudgetValidationError("memory recall preview request is invalid") from exc
+        raise MemoryContextBudgetValidationError(
+            "memory recall preview request is invalid"
+        ) from exc
     if recall.source_state_revision != source_state_revision:
         raise MemoryContextBudgetValidationError(
             "Doll State changed before memory context-budget selection"
