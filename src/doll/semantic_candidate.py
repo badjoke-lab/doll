@@ -400,6 +400,8 @@ def evaluate_semantic_benchmark(
         raise SemanticCandidateValidationError("semantic evidence kind is invalid")
     if not repository.read_only:
         raise SemanticCandidateValidationError("semantic benchmark requires a read-only repository")
+    if set(bindings.label_to_memory_id) != {memory.label for memory in corpus.memories}:
+        raise SemanticCandidateValidationError("semantic benchmark bindings do not match the corpus")
     id_to_label = bindings.memory_id_to_label()
     excluded_ids = {
         bindings.label_to_memory_id[memory.label]

@@ -388,7 +388,7 @@ def test_imp_088_benchmark_rejects_invalid_authority_inputs(tmp_path: Path) -> N
                 _client(),
                 evidence_kind=cast(Any, "invalid"),
             )
-        with pytest.raises(KeyError):
+        with pytest.raises(SemanticCandidateValidationError):
             evaluate_semantic_benchmark(
                 repository,
                 corpus,
