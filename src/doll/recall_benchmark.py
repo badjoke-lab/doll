@@ -265,9 +265,7 @@ def run_recall_benchmark(
         if index_status == "available":
             indexed = query_memory_lexical_index(repository, case.query)
             index_ids = tuple(hit.memory_id for hit in indexed.hits)
-            index_labels = tuple(
-                id_to_label.get(memory_id, "<unknown>") for memory_id in index_ids
-            )
+            index_labels = tuple(id_to_label.get(memory_id, "<unknown>") for memory_id in index_ids)
         results.append(
             RecallBenchmarkCaseResult(
                 case_id=case.case_id,
@@ -317,8 +315,7 @@ def run_recall_benchmark(
         ),
         lexical_recall_at_3=_ratio(
             sum(
-                result.expected_rank is not None and result.expected_rank <= 3
-                for result in lexical
+                result.expected_rank is not None and result.expected_rank <= 3 for result in lexical
             ),
             len(lexical),
         ),
