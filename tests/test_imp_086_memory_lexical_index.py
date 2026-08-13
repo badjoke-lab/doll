@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import sqlite3
 from pathlib import Path
 
@@ -95,6 +96,9 @@ def test_imp_086_index_is_disposable_rebuildable_and_excludes_secret_archived_me
         first_report = report.to_dict()
 
         index_path = memory_lexical_index_path(repository)
+        if os.name != "nt":
+            assert index_path.stat().st_mode & 0o077 == 0
+            assert index_path.parent.stat().st_mode & 0o077 == 0
         connection = sqlite3.connect(index_path)
         try:
             table_names = {
@@ -124,6 +128,11 @@ def test_imp_086_index_is_disposable_rebuildable_and_excludes_secret_archived_me
         finally:
             connection.close()
 
+        canonical_index_rows = repository.connection.execute(
+            "SELECT COUNT(*) FROM records WHERE record_type = 'recall_index'"
+        ).fetchone()
+        assert canonical_index_rows is not None
+        assert canonical_index_rows[0] == 0
         assert repository.status().state_revision == state_revision_before
         assert repository.status().record_count == record_count_before
         assert discard_memory_lexical_index(repository) is True
@@ -206,9 +215,6 @@ def test_imp_086_stale_and_corrupt_index_do_not_block_memory_package_backup_or_s
     backup = create_state_backup(initialized.root, backup_path)
     verified_backup = verify_backup(backup_path)
     assert verified_backup.file_sha256 == backup.inspection.file_sha256
-    assert ConfirmedMemoryService(
-        state.open_state_repository(initialized.root, read_only=True).__enter__()
-    )
 
     with state.open_state_repository(
         initialized.root,
@@ -217,8 +223,11 @@ def test_imp_086_stale_and_corrupt_index_do_not_block_memory_package_backup_or_s
     ) as repository:
         assert ConfirmedMemoryService(repository).get(first.record_id) == first_before
         post_backup_revision = repository.status().state_revision
-        with pytest.raises(RecallIndexStaleError):
+        assert post_backup_revision > changed_state_revision
+        with pytest.raises(RecallIndexCorruptError):
             inspect_memory_lexical_index(repository)
+        fallback = derive_memory_recall_state(repository, "alpha")
+        assert [item.memory_id for item in fallback.states] == [first.record_id]
         rebuilt = build_memory_lexical_index(repository)
         assert rebuilt.source_state_revision == post_backup_revision
         assert query_memory_lexical_index(repository, "alpha").result_count == 1
