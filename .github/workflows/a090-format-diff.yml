@@ -1,0 +1,23 @@
+name: A090 format diff
+
+on:
+  push:
+    branches:
+      - agent/a090
+
+permissions:
+  contents: read
+
+jobs:
+  diff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/imp-090
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - run: uv run ruff format --diff tests/test_imp_090_memory_review.py
