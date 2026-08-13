@@ -1,0 +1,48 @@
+name: IMP-089 Ruff helper
+
+on:
+  push:
+    branches:
+      - agent/imp-089-ruff-helper
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/imp-089-memory-context-budget-preview
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - name: Apply final IMP-089 formatting
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("src/doll/memory_context_budget.py")
+          text = path.read_text(encoding="utf-8")
+          old = '        raise MemoryContextBudgetValidationError("memory recall preview request is invalid") from exc\n'
+          new = '        raise MemoryContextBudgetValidationError(\n            "memory recall preview request is invalid"\n        ) from exc\n'
+          if text.count(old) != 1:
+              raise SystemExit("expected IMP-089 lint anchor exactly once")
+          path.write_text(text.replace(old, new, 1), encoding="utf-8")
+          PY
+          uv run ruff check --fix src/doll/memory_context_budget.py tests/test_imp_089_memory_context_budget.py tests/test_imp_089_memory_context_budget_inputs.py
+          uv run ruff format src/doll/memory_context_budget.py tests/test_imp_089_memory_context_budget.py tests/test_imp_089_memory_context_budget_inputs.py
+          uv run ruff check src/doll/memory_context_budget.py tests/test_imp_089_memory_context_budget.py tests/test_imp_089_memory_context_budget_inputs.py
+          uv run ruff format --check src/doll/memory_context_budget.py tests/test_imp_089_memory_context_budget.py tests/test_imp_089_memory_context_budget_inputs.py
+      - name: Commit target branch update
+        shell: bash
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add src/doll/memory_context_budget.py tests/test_imp_089_memory_context_budget.py tests/test_imp_089_memory_context_budget_inputs.py
+          git diff --cached --check
+          git commit -m "IMP-089: apply repository Ruff formatting"
+          git push origin HEAD:agent/imp-089-memory-context-budget-preview
