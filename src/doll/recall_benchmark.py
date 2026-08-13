@@ -288,9 +288,13 @@ def run_recall_benchmark(
     exclusions = tuple(result for result in results if result.classification == "exclusion")
     index_compatible = tuple(result for result in lexical if result.index_compatible)
     reciprocal_rank = sum(
-        (Fraction(1, result.expected_rank) if result.expected_rank is not None else Fraction(0, 1))
+        (
+            Fraction(1, result.expected_rank)
+            if result.expected_rank is not None
+            else Fraction(0, 1)
+        )
         for result in lexical
-    )
+    , Fraction(0, 1))
     index_coverage: str | None = None
     if index_status == "available":
         index_hits = sum(
