@@ -45,8 +45,7 @@ def test_imp_085_weighted_memory_fields_rank_subject_content_and_metadata(
         state_revision_before = repository.status().state_revision
         record_count_before = repository.status().record_count
         authoritative_before = {
-            memory.record_id: memory
-            for memory in (subject_memory, content_memory, metadata_memory)
+            memory.record_id: memory for memory in (subject_memory, content_memory, metadata_memory)
         }
 
     with state.open_state_repository(
