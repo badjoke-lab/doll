@@ -9,7 +9,11 @@ from pathlib import Path
 from typing import Literal, cast
 
 from doll.memory import ConfirmedMemoryService
-from doll.recall_index import RecallIndexError, inspect_memory_lexical_index, query_memory_lexical_index
+from doll.recall_index import (
+    RecallIndexError,
+    inspect_memory_lexical_index,
+    query_memory_lexical_index,
+)
 from doll.recall_state import (
     DEFAULT_RECALL_ALGORITHM_ID,
     RECALL_ALGORITHM_VERSION,
@@ -176,7 +180,9 @@ def load_recall_benchmark_corpus(path: Path) -> RecallBenchmarkCorpus:
     memories = tuple(_parse_memory(item) for item in _require_object_list(root, "memories"))
     cases = tuple(_parse_case(item) for item in _require_object_list(root, "cases"))
     if not memories or not cases:
-        raise RecallBenchmarkValidationError("recall benchmark corpus must contain memories and cases")
+        raise RecallBenchmarkValidationError(
+            "recall benchmark corpus must contain memories and cases"
+        )
     labels = [memory.label for memory in memories]
     if len(labels) != len(set(labels)):
         raise RecallBenchmarkValidationError("recall benchmark memory labels must be unique")
@@ -187,9 +193,13 @@ def load_recall_benchmark_corpus(path: Path) -> RecallBenchmarkCorpus:
     for case in cases:
         if case.classification == "exclusion":
             if case.expected_label is not None:
-                raise RecallBenchmarkValidationError("exclusion cases must not declare an expected label")
+                raise RecallBenchmarkValidationError(
+                    "exclusion cases must not declare an expected label"
+                )
         elif case.expected_label not in label_set:
-            raise RecallBenchmarkValidationError("benchmark case references an unknown memory label")
+            raise RecallBenchmarkValidationError(
+                "benchmark case references an unknown memory label"
+            )
     return RecallBenchmarkCorpus(corpus_id=corpus_id, memories=memories, cases=cases)
 
 
@@ -246,14 +256,18 @@ def run_recall_benchmark(
     for case in corpus.cases:
         scan = derive_memory_recall_state(repository, case.query)
         returned_ids = tuple(state.memory_id for state in scan.states)
-        returned_labels = tuple(id_to_label.get(memory_id, "<unknown>") for memory_id in returned_ids)
+        returned_labels = tuple(
+            id_to_label.get(memory_id, "<unknown>") for memory_id in returned_ids
+        )
         expected_rank = _expected_rank(returned_labels, case.expected_label)
         index_ids: tuple[str, ...] = ()
         index_labels: tuple[str, ...] = ()
         if index_status == "available":
             indexed = query_memory_lexical_index(repository, case.query)
             index_ids = tuple(hit.memory_id for hit in indexed.hits)
-            index_labels = tuple(id_to_label.get(memory_id, "<unknown>") for memory_id in index_ids)
+            index_labels = tuple(
+                id_to_label.get(memory_id, "<unknown>") for memory_id in index_ids
+            )
         results.append(
             RecallBenchmarkCaseResult(
                 case_id=case.case_id,
@@ -383,7 +397,10 @@ def _require_object(value: object, name: str) -> dict[str, object]:
     return cast(dict[str, object], value)
 
 
-def _require_object_list(value: dict[str, object], key: str) -> tuple[dict[str, object], ...]:
+def _require_object_list(
+    value: dict[str, object],
+    key: str,
+) -> tuple[dict[str, object], ...]:
     raw = value.get(key)
     if not isinstance(raw, list):
         raise RecallBenchmarkValidationError(f"benchmark corpus {key} must be a list")
