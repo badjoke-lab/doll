@@ -198,7 +198,7 @@ def test_imp_086_filesystem_and_publication_failures_leave_authoritative_state_u
         original_status = StateRepository.status
         calls = 0
 
-        def advance_on_final_status(self: StateRepository):
+        def advance_on_final_status(self: StateRepository) -> state.StateStatus:
             nonlocal calls
             calls += 1
             current = original_status(self)
@@ -243,7 +243,7 @@ def test_imp_086_repository_identity_and_additional_query_bounds_fail_closed(
     with state.open_state_repository(initialized.root, read_only=True) as repository:
         original_status = StateRepository.status
 
-        def mismatched_status(self: StateRepository):
+        def mismatched_status(self: StateRepository) -> state.StateStatus:
             current = original_status(self)
             if self is repository:
                 return replace(current, state_revision=current.state_revision + 1)
