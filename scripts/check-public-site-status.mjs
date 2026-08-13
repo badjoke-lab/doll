@@ -60,8 +60,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 86,
-  "project-status.json must mark Phase 6 in progress through IMP-085 with IMP-086 next",
+    status.phase?.next_implementation === 88,
+  "project-status.json must mark Phase 6 in progress through IMP-087 with IMP-088 next",
 );
 expect(
   status.model_runtime &&
@@ -70,7 +70,7 @@ expect(
   "project-status.json requires model_runtime.connected and model_runtime.message",
 );
 expect(
-  status.model_runtime.message.includes("through IMP-085") &&
+  status.model_runtime.message.includes("through IMP-087") &&
     status.model_runtime.message.includes("bounded Lite client resource measurement mechanics") &&
     status.model_runtime.message.includes("derived rebuildable RecallState boundary") &&
     status.model_runtime.message.includes("MCON-001/MCON-002") &&
@@ -78,6 +78,13 @@ expect(
     status.model_runtime.message.includes("deterministic weighted lexical scoring") &&
     status.model_runtime.message.includes("active, non-secret IMP-073 candidate surface") &&
     status.model_runtime.message.includes("existing IMP-084 algorithms remain available for rollback") &&
+    status.model_runtime.message.includes("optional rebuildable exact-token SQLite sidecar") &&
+    status.model_runtime.message.includes("temporary/recall-index") &&
+    status.model_runtime.message.includes("fails closed when missing, corrupt, unsupported, wrong-workspace, or stale") &&
+    status.model_runtime.message.includes("versioned fabricated benchmark") &&
+    status.model_runtime.message.includes("six lexical cases at recall@1, recall@3, and MRR of 1") &&
+    status.model_runtime.message.includes("two low-overlap paraphrase cases as explicit semantic opportunities") &&
+    status.model_runtime.message.includes("does not add embeddings, semantic/vector retrieval") &&
     status.model_runtime.message.includes("without a persistent recall record") &&
     status.model_runtime.message.includes("does not define RAM, disk, or latency requirements") &&
     status.model_runtime.message.includes("optional local PDF text extraction") &&
@@ -92,7 +99,7 @@ expect(
     status.model_runtime.message.includes("reported without OCR") &&
     status.model_runtime.message.includes("no source overwrite, output file, persistence") &&
     status.model_runtime.message.includes("passes at both CI and real-machine evidence levels"),
-  "project-status.json must describe IMP-085 while preserving bounded IMP-083/IMP-084 evidence and non-claims",
+  "project-status.json must describe IMP-087 while preserving bounded IMP-083 through IMP-086 evidence and non-claims",
 );
 expect(
   /^\d{4}-\d{2}-\d{2}$/.test(status.last_reviewed || ""),
