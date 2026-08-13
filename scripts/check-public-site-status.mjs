@@ -60,8 +60,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 89,
-  "project-status.json must mark Phase 6 in progress through IMP-088 with IMP-089 next",
+    status.phase?.next_implementation === 90,
+  "project-status.json must mark Phase 6 in progress through IMP-089 with IMP-090 next",
 );
 expect(
   status.model_runtime &&
@@ -70,7 +70,7 @@ expect(
   "project-status.json requires model_runtime.connected and model_runtime.message",
 );
 expect(
-  status.model_runtime.message.includes("through IMP-088") &&
+  status.model_runtime.message.includes("through IMP-089") &&
     status.model_runtime.message.includes("bounded Lite client resource measurement mechanics") &&
     status.model_runtime.message.includes("derived rebuildable RecallState boundary") &&
     status.model_runtime.message.includes("MCON-001/MCON-002") &&
@@ -91,6 +91,12 @@ expect(
     status.model_runtime.message.includes("explicit already-installed non-cloud model name") &&
     status.model_runtime.message.includes("synthetic CI evidence without downloading model weights") &&
     status.model_runtime.message.includes("does not make semantic recall a product default") &&
+    status.model_runtime.message.includes("inspectable lexical memory context-budget preview") &&
+    status.model_runtime.message.includes("explicit UTC validity, sensitivity, item, and character budgets") &&
+    status.model_runtime.message.includes("SelectedWritingContextService planner") &&
+    status.model_runtime.message.includes("does not create InstructionOrigin records") &&
+    status.model_runtime.message.includes("automatic/model-selected context injection") &&
+    status.model_runtime.message.includes("project-aware memory selection") &&
     status.model_runtime.message.includes("accepted real-model semantic embedding dependency evidence") &&
     status.model_runtime.message.includes("without a persistent recall record") &&
     status.model_runtime.message.includes("does not define RAM, disk, or latency requirements") &&
@@ -106,7 +112,7 @@ expect(
     status.model_runtime.message.includes("reported without OCR") &&
     status.model_runtime.message.includes("no source overwrite, output file, persistence") &&
     status.model_runtime.message.includes("passes at both CI and real-machine evidence levels"),
-  "project-status.json must describe IMP-088 while preserving bounded IMP-083 through IMP-087 evidence and non-claims",
+  "project-status.json must describe IMP-089 while preserving bounded IMP-083 through IMP-088 evidence and non-claims",
 );
 expect(
   /^\d{4}-\d{2}-\d{2}$/.test(status.last_reviewed || ""),
