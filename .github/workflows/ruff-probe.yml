@@ -1,0 +1,22 @@
+name: Ruff probe
+
+on:
+  push:
+    branches:
+      - agent/imp-085-ruff-probe
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - name: Show exact Ruff formatting diff
+        run: uv run ruff format --diff tests/test_imp_085_memory_lexical_scoring.py
