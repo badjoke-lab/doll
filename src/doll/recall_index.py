@@ -20,9 +20,7 @@ MEMORY_LEXICAL_INDEX_SCHEMA_VERSION = 1
 MEMORY_LEXICAL_INDEX_ALGORITHM_ID = "memory-exact-token-inverted"
 MEMORY_LEXICAL_INDEX_ALGORITHM_VERSION = "1"
 MEMORY_LEXICAL_INDEX_QUERY_MODE = "unicode-nfkc-casefold-exact-token-and"
-MEMORY_LEXICAL_INDEX_RELATIVE_PATH = Path(
-    "temporary/recall-index/memory-lexical-v1.sqlite3"
-)
+MEMORY_LEXICAL_INDEX_RELATIVE_PATH = Path("temporary/recall-index/memory-lexical-v1.sqlite3")
 
 _MAX_QUERY_CHARS = 240
 _MAX_QUERY_TERMS = 12
@@ -433,9 +431,7 @@ def _text_tokens(value: str) -> tuple[str, ...]:
     if not normalized:
         return ()
     return tuple(
-        dict.fromkeys(
-            term for term in normalized.split(" ") if 0 < len(term) <= _MAX_TOKEN_CHARS
-        )
+        dict.fromkeys(term for term in normalized.split(" ") if 0 < len(term) <= _MAX_TOKEN_CHARS)
     )
 
 
@@ -478,7 +474,9 @@ def _validate_repository_identity(repository: StateRepository) -> None:
         str(repository.workspace.record.workspace_id) != status.workspace_id
         or repository.workspace.record.state_revision != status.state_revision
     ):
-        raise RecallIndexValidationError("workspace identity and Doll State revision are inconsistent")
+        raise RecallIndexValidationError(
+            "workspace identity and Doll State revision are inconsistent"
+        )
 
 
 def _prepare_index_directory(repository: StateRepository) -> Path:
@@ -487,7 +485,9 @@ def _prepare_index_directory(repository: StateRepository) -> Path:
         try:
             index_directory.mkdir(mode=0o700)
         except OSError as exc:
-            raise RecallIndexUnavailableError("memory lexical index directory could not be created") from exc
+            raise RecallIndexUnavailableError(
+                "memory lexical index directory could not be created"
+            ) from exc
     if index_directory.is_symlink() or not index_directory.is_dir():
         raise RecallIndexValidationError("memory lexical index directory is unsafe")
     if os.name != "nt":

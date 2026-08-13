@@ -58,7 +58,7 @@ The sidecar contains three tables:
 ```text
 index_metadata
 indexed_memories
- token_postings
+token_postings
 ```
 
 `index_metadata` records:

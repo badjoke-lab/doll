@@ -112,10 +112,7 @@ def test_imp_086_index_is_disposable_rebuildable_and_excludes_secret_archived_me
                 "indexed_memories",
                 "token_postings",
             }
-            columns = {
-                row[1]
-                for row in connection.execute("PRAGMA table_info(token_postings)")
-            }
+            columns = {row[1] for row in connection.execute("PRAGMA table_info(token_postings)")}
             assert columns == {"token", "memory_id", "field_class"}
             stored_tokens = {
                 row[0] for row in connection.execute("SELECT token FROM token_postings")
