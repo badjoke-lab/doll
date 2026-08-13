@@ -30,7 +30,10 @@ def test_imp_086_build_rejects_directory_at_final_index_path(tmp_path: Path) -> 
         index_path = memory_lexical_index_path(repository)
         index_path.parent.mkdir(mode=0o700)
         index_path.mkdir()
-        with pytest.raises(RecallIndexValidationError, match="existing lexical index path is unsafe"):
+        with pytest.raises(
+            RecallIndexValidationError,
+            match="existing lexical index path is unsafe",
+        ):
             build_memory_lexical_index(repository)
 
 
