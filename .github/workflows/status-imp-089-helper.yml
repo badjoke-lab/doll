@@ -1,0 +1,92 @@
+name: IMP-089 status helper
+
+on:
+  push:
+    branches:
+      - agent/status-imp-089-helper
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/status-after-imp-089
+      - name: Advance IMP-089 public frontier
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          status_path = Path("website/project-status.json")
+          status = json.loads(status_path.read_text(encoding="utf-8"))
+          if status["phase"]["next_implementation"] != 89:
+              raise SystemExit("unexpected public implementation frontier")
+          status["phase"]["next_implementation"] = 90
+          message = status["model_runtime"]["message"]
+          replacements = [
+              ("Phase 6 is in progress through IMP-088.", "Phase 6 is in progress through IMP-089."),
+              (
+                  "a bounded local semantic recall candidate harness are implemented.",
+                  "a bounded local semantic recall candidate harness, and an inspectable lexical memory context-budget preview are implemented.",
+              ),
+              (
+                  "It does not make semantic recall a product default, persist embeddings, add a vector database, enable automatic context injection, install or pull models, add cloud fallback, or establish accepted real-model semantic dependency evidence. PDF OCR/scanned-PDF fallback",
+                  "It does not make semantic recall a product default, persist embeddings, add a vector database, enable automatic context injection, install or pull models, add cloud fallback, or establish accepted real-model semantic dependency evidence. IMP-089 adds a read-only versioned lexical context-budget preview over IMP-085 RecallState. It recommends only confirmed-memory IDs under explicit UTC validity, sensitivity, item, and character budgets, reuses the existing SelectedWritingContextService planner for size and eligibility checks, binds recommendations to MemoryRecord and Doll State revisions, and exposes bounded selection and exclusion evidence. It does not create InstructionOrigin records, materialize context, infer project membership, run a model, persist preview state, or perform automatic or model-selected context injection. PDF OCR/scanned-PDF fallback",
+              ),
+              (
+                  "persistent memory-use signals, default or persistent semantic retrieval, automatic retrieval, accepted real-model semantic embedding dependency evidence,",
+                  "persistent memory-use signals, supported/default semantic retrieval, persistent embeddings, lexical-semantic fusion, automatic/model-selected context injection, accepted real-model semantic embedding dependency evidence, project-aware memory selection,",
+              ),
+          ]
+          for old, new in replacements:
+              if message.count(old) != 1:
+                  raise SystemExit(f"unexpected status anchor: {old}")
+              message = message.replace(old, new, 1)
+          status["model_runtime"]["message"] = message
+          status_path.write_text(json.dumps(status, indent=2) + "\n", encoding="utf-8")
+
+          checker_path = Path("scripts/check-public-site-status.mjs")
+          checker = checker_path.read_text(encoding="utf-8")
+          checker_replacements = [
+              ("status.phase?.next_implementation === 89,", "status.phase?.next_implementation === 90,"),
+              (
+                  '"project-status.json must mark Phase 6 in progress through IMP-088 with IMP-089 next",',
+                  '"project-status.json must mark Phase 6 in progress through IMP-089 with IMP-090 next",',
+              ),
+              ('status.model_runtime.message.includes("through IMP-088") &&', 'status.model_runtime.message.includes("through IMP-089") &&'),
+              (
+                  '    status.model_runtime.message.includes("does not make semantic recall a product default") &&',
+                  '    status.model_runtime.message.includes("does not make semantic recall a product default") &&\n'
+                  '    status.model_runtime.message.includes("inspectable lexical memory context-budget preview") &&\n'
+                  '    status.model_runtime.message.includes("explicit UTC validity, sensitivity, item, and character budgets") &&\n'
+                  '    status.model_runtime.message.includes("SelectedWritingContextService planner") &&\n'
+                  '    status.model_runtime.message.includes("does not create InstructionOrigin records") &&\n'
+                  '    status.model_runtime.message.includes("automatic/model-selected context injection") &&\n'
+                  '    status.model_runtime.message.includes("project-aware memory selection") &&',
+              ),
+              (
+                  '"project-status.json must describe IMP-088 while preserving bounded IMP-083 through IMP-087 evidence and non-claims",',
+                  '"project-status.json must describe IMP-089 while preserving bounded IMP-083 through IMP-088 evidence and non-claims",',
+              ),
+          ]
+          for old, new in checker_replacements:
+              if checker.count(old) != 1:
+                  raise SystemExit(f"unexpected checker anchor: {old}")
+              checker = checker.replace(old, new, 1)
+          checker_path.write_text(checker, encoding="utf-8")
+          PY
+          node scripts/check-public-site-status.mjs
+      - name: Commit target branch update
+        shell: bash
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add website/project-status.json scripts/check-public-site-status.mjs
+          git diff --cached --check
+          git commit -m "Update public status after IMP-089"
+          git push origin HEAD:agent/status-after-imp-089
