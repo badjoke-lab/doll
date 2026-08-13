@@ -24,11 +24,11 @@ def test_imp_090_detects_declared_candidate_classes(tmp_path: Path) -> None:
         exact_a = service.create(subject="Backup Schedule", content="Run the LOCAL backup nightly.")
         exact_b = service.create(subject=" backup   schedule ", content="run the local backup nightly.")
         near_a = service.create(
-            subject="Shutdown verification A",
+            subject="Shutdown verification",
             content="Keep the local backup before every shutdown and verify it.",
         )
         near_b = service.create(
-            subject="Shutdown verification B",
+            subject="Shutdown verification",
             content="Keep the local backup before every shutdown, then verify it.",
         )
         extension_a = service.create(
