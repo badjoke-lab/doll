@@ -56,11 +56,7 @@ class ControlledTransport:
         self.version_response = version or OllamaHttpResponse(200, b'{"version":"0.11.10"}')
         self.tags_response = tags or OllamaHttpResponse(
             200,
-            (
-                b'{"models":[{"name":"embeddinggemma","digest":"'
-                + (b"a" * 64)
-                + b'"}]}'
-            ),
+            (b'{"models":[{"name":"embeddinggemma","digest":"' + (b"a" * 64) + b'"}]}'),
         )
         self.failure = failure
         self.calls: list[str] = []
@@ -277,12 +273,8 @@ def test_imp_088_inconsistent_vector_dimensions_fail_closed() -> None:
                 200,
                 (
                     b'{"models":['
-                    b'{"name":"embeddinggemma","digest":"'
-                    + (b"a" * 64)
-                    + b'"},'
-                    b'{"name":"embeddinggemma","digest":"'
-                    + (b"b" * 64)
-                    + b'"}]}'
+                    b'{"name":"embeddinggemma","digest":"' + (b"a" * 64) + b'"},'
+                    b'{"name":"embeddinggemma","digest":"' + (b"b" * 64) + b'"}]}'
                 ),
             ),
             SemanticCandidateResponseError,
