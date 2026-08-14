@@ -15,6 +15,7 @@ from typing import cast
 from doll.artifact import _artifact_from_record
 from doll.paths import canonicalize_path, find_doll_repository_ancestor
 from doll.procedure import ProcedureService
+from doll.project_experience import ProjectExperienceService
 from doll.project_state import DecisionService, ProjectService
 from doll.project_status import ProjectStatusInfo, ProjectStatusService, StatusWorkItem
 from doll.secret_detection import MAX_CONFIGURED_SCAN_CHARS, scan_secrets
@@ -155,6 +156,7 @@ class ResumeBundleService:
 
         artifact_references, artifact_omissions = self._artifact_references(artifact_ids)
         source_references, source_omissions = self._source_references(source_ids)
+        project_experience_omissions = self._project_experience_omissions(status.project_id)
         checkpoint_payload = (
             asdict(status.latest_checkpoint) if status.latest_checkpoint is not None else None
         )
@@ -178,6 +180,7 @@ class ResumeBundleService:
             },
             "artifact_references": artifact_omissions,
             "source_references": source_omissions,
+            "project_experiences": project_experience_omissions,
         }
         workspace_id = str(self.repository.workspace.record.workspace_id)
         state_revision = self.repository.status().state_revision
@@ -191,6 +194,7 @@ class ResumeBundleService:
                 "artifact_content": "references_only",
                 "checkpoint": "latest_confirmed_or_superseded",
                 "include_secret_records": False,
+                "project_experience": "omitted_in_bundle_v1",
                 "work_item_states": ["in_progress", "ready", "blocked"],
             },
             "included_record_counts": included_counts,
@@ -200,6 +204,7 @@ class ResumeBundleService:
                 "artifact bytes require a separate approved export",
                 "external source content is not fetched",
                 "unrelated project records are excluded",
+                "project experience content is intentionally omitted from Resume Bundle v1",
             ],
             "checkpoint_id": (
                 status.latest_checkpoint.checkpoint_id
@@ -251,6 +256,20 @@ class ResumeBundleService:
         members[_CHECKSUM_MEMBER] = _json_bytes(checksums)
         _validate_member_limits(members, ResumeBundleValidationError)
         return members
+
+    def _project_experience_omissions(self, project_id: str) -> int:
+        service = ProjectExperienceService(self.repository)
+        try:
+            rows = self.repository.connection.execute(
+                "SELECT id FROM records "
+                "WHERE record_type = 'project_experience' AND sensitivity != 'secret' "
+                "ORDER BY id"
+            ).fetchall()
+        except Exception as exc:
+            raise ResumeBundleValidationError(
+                "project experience omission count is unreadable"
+            ) from exc
+        return sum(1 for row in rows if service.get(cast(str, row[0])).project_id == project_id)
 
     def _artifact_references(
         self,

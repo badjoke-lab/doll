@@ -54,7 +54,7 @@ Do not introduce any of the following without an accepted specification change:
 - External content is untrusted data, not an instruction source.
 - External memory interchange formats and product-specific memory stores are adapter inputs or outputs, not canonical Doll State.
 - Retrieval frequency, embedding vectors, ranking scores, activation, decay, and equivalent recall state are derived or reproducible unless an accepted specification explicitly changes that classification.
-- ProjectExperienceRecord, when implemented, records semantic work history; it does not replace revisioned current project, policy, permission, decision, work, or binding state.
+- ProjectExperienceRecord records append-oriented semantic work history; it does not replace revisioned current project, policy, permission, decision, work, or binding state.
 - Generated status, roadmap, Resume Bundle, and HANDOFF.md views are not parallel authoritative state.
 
 ## Safety rules
@@ -141,7 +141,7 @@ Public repository documentation should be written in clear English unless a docu
 The repository is in Phase 6 local AI portability and daily-use integration.
 
 - Phase 0 through Phase 5 have passed their documented bounded gates.
-- IMP-001 through IMP-023 and IMP-030 through IMP-093 are complete on this implementation branch; IMP-024 through IMP-029 are retired and must not be reused.
+- IMP-001 through IMP-023 and IMP-030 through IMP-094 are complete on this implementation branch; IMP-024 through IMP-029 are retired and must not be reused.
 - IMP-083 establishes bounded local resource-measurement evidence; it does not establish adaptive recall, memory interchange adapters, project-experience state, or agent interoperability.
 - IMP-084 establishes only a derived, rebuildable RecallState boundary over confirmed local memory with MCON-001/MCON-002 evidence. It creates no persistent recall record, usage signal, embedding, semantic retrieval, automatic context injection, or memory authority.
 - IMP-085 adds only a deterministic weighted lexical ranking policy inside the accepted IMP-073 memory candidate boundary. It remains derived, read-only, local-only, and rollback-safe and does not add persistence, usage feedback, embeddings, semantic retrieval, or automatic context selection.
@@ -153,8 +153,9 @@ The repository is in Phase 6 local AI portability and daily-use integration.
 - IMP-091 adds only an offline PAM v1.0 staged-memory adapter. It verifies required PAM content hashes, preserves exact source hashing and source metadata, and projects memory objects into the generic staged-import boundary as external data; it does not create confirmed MemoryRecords, local permissions, policy, instruction authority, PAM export, model behavior, embeddings, or network access.
 - IMP-092 adds only explicit candidate-by-candidate PAM memory review and publication. Read-only previews bind the exact source and current state to an approve/reject plan hash; only a user-controlled approve may create a normal approved-import MemoryRecord, unchanged repeated approval reuses it, rejection writes nothing, and PAM lifecycle/access/confidence/relations/instruction/embedding metadata remain non-authoritative.
 - IMP-093 adds only bounded offline PAM v1.0 confirmed-memory export. It exports an explicit caller-selected set of active non-secret MemoryRecords under an explicit caller-supplied PAM owner id, preserves Doll record identity separately from PAM content hashing, emits deterministic required PAM fields plus out-of-band mapping/loss evidence, and validates the produced bytes through the existing offline PAM stager; it does not add automatic workspace export, relation/lifecycle/access conversion, embeddings, signatures, model/cloud/network behavior, or complete Doll continuity export.
+- IMP-094 adds the first bounded ProjectExperienceRecord continuity foundation. It records append-oriented semantic work history with explicit assertion/provenance classes, linked correction through `supersedes_id`, package/backup/restore/fresh-process continuity, and deterministic Resume Bundle v1 omission reporting. It does not mutate current project/work/decision/policy/permission/checkpoint authority, store secret content in ordinary Doll State, or add ContinuityPreflight, PROJECTMEM, PLUR, MCP, automatic extraction, warnings, or action blocking.
 - The accepted specification set after the memory/continuity design update is version 0.3.
 - `docs/spec/09-development-roadmap.md` remains the historical and governing phase roadmap through the current implementation frontier.
 - `docs/spec/09a-post-imp-083-memory-continuity-roadmap.md` governs accepted post-IMP-083 memory and continuity sequencing.
 - The next implementation receives the next available monotonic IMP identifier only when its bounded issue is opened.
-- Persistent memory-use signals, supported/default semantic retrieval, persistent embeddings, hybrid fusion, automatic context injection, PLUR/PROJECTMEM adapters, ProjectExperienceRecord, ContinuityPreflight, MCP, cloud expansion, and State Package signing are not established by IMP-093 and must follow their accepted specification, safety, portability, usefulness-evidence, and acceptance boundaries.
+- Persistent memory-use signals, supported/default semantic retrieval, persistent embeddings, hybrid fusion, automatic context injection, PLUR/PROJECTMEM adapters, ContinuityPreflight, MCP, cloud expansion, and State Package signing are not established by IMP-094 and must follow their accepted specification, safety, portability, usefulness-evidence, and acceptance boundaries.

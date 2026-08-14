@@ -85,6 +85,7 @@ def test_supported_registries_are_explicit_and_immutable() -> None:
         "model_binding",
         "conversation",
         "conversation_event",
+        "project_experience",
     }
     assert version_one.required_member_paths == version_two.required_member_paths
     assert version_two.optional_member_paths - version_one.optional_member_paths == {
@@ -96,6 +97,7 @@ def test_supported_registries_are_explicit_and_immutable() -> None:
         "records/model-bindings.jsonl",
         "records/conversations.jsonl",
         "records/conversation-events.jsonl",
+        "records/project-experiences.jsonl",
     }
     assert package_version_two == AuthoritativeRecordRegistry(
         2,
