@@ -67,9 +67,7 @@ class PamV1PublicationMapping:
             "local_source_type": self.local_source_type,
             "local_sensitivity": self.local_sensitivity,
             "content_transformed": self.content_transformed,
-            "preserved_non_authoritative_fields": list(
-                self.preserved_non_authoritative_fields
-            ),
+            "preserved_non_authoritative_fields": list(self.preserved_non_authoritative_fields),
             "mapping_notes": list(self.mapping_notes),
             "pam_validity_applied": False,
             "pam_confidence_applied": False,
@@ -144,7 +142,7 @@ class PamV1MemoryPublisher:
     ) -> PamV1PublicationPreview:
         if decision not in {"approve", "reject"}:
             raise PamV1PublicationError("PAM publication decision must be approve or reject")
-        staged, source_mapping, pam_memory = _candidate(stage_result, source_memory_id)
+        source_mapping, pam_memory = _candidate(stage_result, source_memory_id)
         source_environment_id = stage_result.generic_stage.import_batch.source_environment_id
         source_reference = _source_reference(
             source_environment_id,
@@ -311,7 +309,7 @@ class PamV1MemoryPublisher:
 def _candidate(
     stage_result: PamV1ImportStageResult,
     source_memory_id: str,
-):
+) -> tuple[PamV1MemoryMapping, dict[str, object]]:
     if not isinstance(stage_result, PamV1ImportStageResult):
         raise PamV1PublicationError("PAM stage result is invalid")
     if not isinstance(source_memory_id, str) or not source_memory_id:
@@ -345,7 +343,10 @@ def _candidate(
         raise PamV1PublicationError("PAM staged candidate payload is invalid") from exc
     if not isinstance(payload, dict):
         raise PamV1PublicationError("PAM staged candidate payload is not an object")
-    if payload.get("authority_class") != "external_data" or payload.get("review_required") is not True:
+    if (
+        payload.get("authority_class") != "external_data"
+        or payload.get("review_required") is not True
+    ):
         raise PamV1PublicationError("PAM staged candidate review boundary is invalid")
     pam_memory = payload.get("pam_memory")
     if not isinstance(pam_memory, dict):
@@ -354,7 +355,7 @@ def _candidate(
         raise PamV1PublicationError("PAM staged memory identity is inconsistent")
     if pam_memory.get("content_hash") != source_mapping.source_content_hash:
         raise PamV1PublicationError("PAM staged content hash is inconsistent")
-    return staged, source_mapping, cast(dict[str, object], pam_memory)
+    return source_mapping, cast(dict[str, object], pam_memory)
 
 
 def _local_subject(pam_type: str) -> str:

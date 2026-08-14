@@ -11,6 +11,7 @@ from doll.memory import ConfirmedMemoryService
 from doll.pam_v1_import import (
     PAM_V1_ENVIRONMENT_CLASS,
     PamV1ImportStager,
+    PamV1ImportStageResult,
     pam_content_hash,
 )
 from doll.pam_v1_publication import (
@@ -83,7 +84,7 @@ def _source(memories: list[dict[str, object]], **extra: object) -> bytes:
 def _stage(
     source_bytes: bytes,
     source_environment: SourceEnvironmentRecord,
-):
+) -> PamV1ImportStageResult:
     return PamV1ImportStager(source_environment).stage(
         source_bytes,
         import_batch_id=str(uuid4()),
@@ -361,7 +362,9 @@ def test_imp_092_reject_of_changed_source_still_does_not_mutate_existing(tmp_pat
         )
         assert result.memory_id is None
         assert repository.status().state_revision == before
-        assert ConfirmedMemoryService(repository).get(memory_id).content == "Original source content."
+        assert (
+            ConfirmedMemoryService(repository).get(memory_id).content == "Original source content."
+        )
 
 
 def test_imp_092_unrepresentable_or_missing_candidate_fails_in_preview(tmp_path: Path) -> None:
