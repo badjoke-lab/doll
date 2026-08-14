@@ -186,7 +186,7 @@ class ProjectExperienceService:
             work_item_id=prior.work_item_id,
             event_kind=event_kind or prior.event_kind,
             summary=summary,
-            outcome=outcome,
+            outcome=prior.outcome if outcome is None else outcome,
             occurred_at=occurred_at,
             assertion_state=assertion_state,
             actor_type=actor_type,
@@ -211,7 +211,11 @@ class ProjectExperienceService:
         include_archived: bool = False,
         limit: int = 100,
     ) -> tuple[ProjectExperienceInfo, ...]:
-        if isinstance(limit, bool) or not isinstance(limit, int) or not 1 <= limit <= MAX_LIST_LIMIT:
+        if (
+            isinstance(limit, bool)
+            or not isinstance(limit, int)
+            or not 1 <= limit <= MAX_LIST_LIMIT
+        ):
             raise ProjectExperienceValidationError("project-experience list limit is invalid")
         safe_project_id = _optional_uuid("project ID", project_id)
         try:
@@ -256,13 +260,16 @@ class ProjectExperienceService:
                 "metadata": record.metadata,
             },
         }
-        return json.dumps(
-            payload,
-            ensure_ascii=False,
-            sort_keys=True,
-            allow_nan=False,
-            separators=(",", ":"),
-        ) + "\n"
+        return (
+            json.dumps(
+                payload,
+                ensure_ascii=False,
+                sort_keys=True,
+                allow_nan=False,
+                separators=(",", ":"),
+            )
+            + "\n"
+        )
 
 
 def _validated_values(
@@ -342,7 +349,9 @@ def _project_experience_from_record(
             MAX_SUMMARY_LENGTH,
         )
         outcome = _outcome(_optional_string(record, "outcome"))
-        occurred_at = _utc("project experience occurred-at", _required_string(record, "occurred_at"))
+        occurred_at = _utc(
+            "project experience occurred-at", _required_string(record, "occurred_at")
+        )
         assertion_state = _assertion_state(_required_string(record, "assertion_state"))
         expected_provenance = _ASSERTION_PROVENANCE[assertion_state]
         if record.provenance != expected_provenance:
@@ -360,11 +369,15 @@ def _project_experience_from_record(
             if work_item_id is not None:
                 _validate_work_item(repository, work_item_id, project_id, record.sensitivity)
             _validate_evidence(repository, evidence_ids, record.sensitivity)
-            _validate_generic_links(repository, related_record_ids, "related record", record.sensitivity)
+            _validate_generic_links(
+                repository, related_record_ids, "related record", record.sensitivity
+            )
             _validate_generic_links(repository, source_ids, "source", record.sensitivity)
             if supersedes_id is not None:
                 if supersedes_id == record.id:
-                    raise ProjectExperienceValidationError("project experience cannot supersede itself")
+                    raise ProjectExperienceValidationError(
+                        "project experience cannot supersede itself"
+                    )
                 _validate_supersedes(repository, supersedes_id, project_id, record.sensitivity)
     except (
         KeyError,
@@ -483,7 +496,9 @@ def _reject_secret_link(
     label: str,
 ) -> None:
     if record.sensitivity == "secret" and sensitivity != "secret":
-        raise ProjectExperienceValidationError(f"non-secret experience cannot reference secret {label}")
+        raise ProjectExperienceValidationError(
+            f"non-secret experience cannot reference secret {label}"
+        )
 
 
 def _required_string(record: RecordEnvelope, key: str) -> str:

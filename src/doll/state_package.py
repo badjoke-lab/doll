@@ -59,6 +59,7 @@ from doll.model_manifest import (
 )
 from doll.paths import canonicalize_path, find_doll_repository_ancestor
 from doll.procedure import ProcedureCorruptError, _procedure_from_record
+from doll.project_experience import _project_experience_from_record
 from doll.project_state import (
     ProjectDecisionCorruptError,
     _decision_from_record,
@@ -196,6 +197,7 @@ _PACKAGE_RECORD_VALIDATORS: dict[str, Callable[[RecordEnvelope], object]] = {
     "inference": _inference_from_record,
     "trust_assessment": _trust_assessment_from_record,
     "instruction_origin": _instruction_origin_from_record,
+    "project_experience": _project_experience_from_record,
     "project": _project_from_record,
     "decision": _decision_from_record,
     "artifact": _artifact_from_record,
@@ -1234,6 +1236,35 @@ def _validate_cross_record_links(records: dict[str, RecordEnvelope]) -> None:
                 if linked is None or linked.status != "active":
                     raise StatePackageValidationError(
                         "work-item source link is missing or inactive"
+                    )
+        elif record.record_type == "project_experience":
+            project_id = _metadata_string(metadata, "project_id")
+            _require_link_type(records, project_id, "project")
+            work_item_id = _metadata_optional_id(metadata, "work_item_id")
+            if work_item_id is not None:
+                _require_link_type(records, work_item_id, "work_item")
+                linked_work = _work_item_from_record(records[work_item_id])
+                if linked_work.project_id != project_id:
+                    raise StatePackageValidationError(
+                        "project experience work item belongs to another project"
+                    )
+            for linked_id in _metadata_id_list(metadata, "evidence_ids"):
+                _require_link_type(records, linked_id, "evidence")
+            for key in ("related_record_ids", "source_ids"):
+                for linked_id in _metadata_id_list(metadata, key):
+                    if linked_id not in records:
+                        raise StatePackageValidationError(
+                            "project experience references a missing package record"
+                        )
+            supersedes_id = _metadata_optional_id(metadata, "supersedes_id")
+            if supersedes_id is not None:
+                if supersedes_id == record.id:
+                    raise StatePackageValidationError("project experience cannot supersede itself")
+                _require_link_type(records, supersedes_id, "project_experience")
+                prior = _project_experience_from_record(records[supersedes_id])
+                if prior.project_id != project_id:
+                    raise StatePackageValidationError(
+                        "project experience supersedes another project"
                     )
         elif record.record_type == "procedure":
             _require_link_type(
