@@ -68,10 +68,12 @@ jobs:
           imp092 = "- IMP-092 adds only explicit candidate-by-candidate PAM memory review and publication. Read-only previews bind the exact source and current state to an approve/reject plan hash; only a user-controlled approve may create a normal approved-import MemoryRecord, unchanged repeated approval reuses it, rejection writes nothing, and PAM lifecycle/access/confidence/relations/instruction/embedding metadata remain non-authoritative."
           once("AGENTS.md", imp091, imp091 + "\n" + imp092)
           once(
+              "AGENTS.md",
               "reviewed PAM publication/export, PLUR/PROJECTMEM adapters",
               "PAM export, PLUR/PROJECTMEM adapters",
           )
           once(
+              "AGENTS.md",
               "are not established by IMP-091 and must follow",
               "are not established by IMP-092 and must follow",
           )
