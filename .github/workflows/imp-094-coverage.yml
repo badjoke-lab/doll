@@ -25,6 +25,21 @@ jobs:
       - name: Format, type-check, focused-test, and measure full coverage
         shell: bash
         run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('tests/test_imp_094_project_experience_validation.py')
+          text = path.read_text(encoding='utf-8')
+          replacements = {
+              'service.list(limit=bad_limit)  # type: ignore[arg-type]': 'service.list(limit=bad_limit)',
+              '_ids("ids", valid_uuid)  # type: ignore[arg-type]': '_ids("ids", valid_uuid)',
+          }
+          for old, new in replacements.items():
+              if text.count(old) != 1:
+                  raise SystemExit(f'typing cleanup anchor count for {old!r}: {text.count(old)}')
+              text = text.replace(old, new)
+          path.write_text(text, encoding='utf-8')
+          PY
           uv run ruff format tests/test_imp_094_project_experience_validation.py
           uv run ruff check --fix tests/test_imp_094_project_experience_validation.py
           uv run mypy tests/test_imp_094_project_experience_validation.py
