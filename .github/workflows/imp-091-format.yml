@@ -24,8 +24,23 @@ jobs:
       - name: Apply repository Ruff rules
         shell: bash
         run: |
-          uv run ruff check --fix src/doll/pam_v1_import.py tests/test_imp_091_pam_v1_import.py
+          uv run ruff check --fix --select I src/doll/pam_v1_import.py tests/test_imp_091_pam_v1_import.py
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("src/doll/pam_v1_import.py")
+          text = path.read_text(encoding="utf-8")
+          old = "        mapping_inputs: list[tuple[str, str, tuple[str, ...], tuple[str, ...], tuple[str, ...]]] = []\n"
+          new = (
+              "        mapping_inputs: list[\n"
+              "            tuple[str, str, tuple[str, ...], tuple[str, ...], tuple[str, ...]]\n"
+              "        ] = []\n"
+          )
+          if text.count(old) != 1:
+              raise SystemExit("expected one mapping_inputs line")
+          path.write_text(text.replace(old, new), encoding="utf-8")
+          PY
           uv run ruff format src/doll/pam_v1_import.py tests/test_imp_091_pam_v1_import.py
+          uv run ruff check src/doll/pam_v1_import.py tests/test_imp_091_pam_v1_import.py
           rm .github/workflows/imp-091-format.yml
           git config user.name badjoke-lab
           git config user.email badjoke.lab@gmail.com
