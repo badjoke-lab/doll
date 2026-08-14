@@ -23,3 +23,5 @@ IMP-091 does not implement reviewed publication into confirmed Doll memory, PAM 
 ## Evidence
 
 Synthetic tests cover deterministic restaging, exact source hashing, PAM v1 content-hash normalization, Unicode normalization collisions without identity collapse, external-data authority, access/instruction non-authority, relation preservation, invalid hashes, unsupported versions, invalid relation references, source-environment validation, and the absence of confirmed-memory or state-write dependencies.
+
+Additional fail-closed coverage exercises malformed bytes and JSON, parser depth and size bounds, source-environment and adapter limits, invalid root, memory, relation, integrity and signature fields, timestamp requirements, incremental and extension metadata handling, and result-contract consistency without weakening the validation rules.
