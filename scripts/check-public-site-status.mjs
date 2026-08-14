@@ -60,8 +60,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 92,
-  "project-status.json must mark Phase 6 in progress through IMP-091 with IMP-092 next",
+    status.phase?.next_implementation === 93,
+  "project-status.json must mark Phase 6 in progress through IMP-092 with IMP-093 next",
 );
 expect(
   status.model_runtime &&
@@ -70,7 +70,7 @@ expect(
   "project-status.json requires model_runtime.connected and model_runtime.message",
 );
 expect(
-  status.model_runtime.message.includes("through IMP-091") &&
+  status.model_runtime.message.includes("through IMP-092") &&
     status.model_runtime.message.includes("bounded Lite client resource measurement mechanics") &&
     status.model_runtime.message.includes("derived rebuildable RecallState boundary") &&
     status.model_runtime.message.includes("MCON-001/MCON-002") &&
@@ -107,7 +107,14 @@ expect(
     status.model_runtime.message.includes("generic staged-import boundary as external_data") &&
     status.model_runtime.message.includes("non-authoritative source metadata") &&
     status.model_runtime.message.includes("does not create confirmed MemoryRecords") &&
-    status.model_runtime.message.includes("reviewed PAM publication/export") &&
+    status.model_runtime.message.includes("candidate-by-candidate reviewed PAM memory publication") &&
+    status.model_runtime.message.includes("explicit approve/reject decision") &&
+    status.model_runtime.message.includes("deterministic plan hash") &&
+    status.model_runtime.message.includes("explicit user-controlled approval") &&
+    status.model_runtime.message.includes("source_type=approved_import") &&
+    status.model_runtime.message.includes("changed source identity fails closed") &&
+    status.model_runtime.message.includes("does not add automatic approval") &&
+    status.model_runtime.message.includes("PAM export") &&
     status.model_runtime.message.includes("automatic/model-selected context injection") &&
     status.model_runtime.message.includes("project-aware memory selection") &&
     status.model_runtime.message.includes("accepted real-model semantic embedding dependency evidence") &&
@@ -125,7 +132,7 @@ expect(
     status.model_runtime.message.includes("reported without OCR") &&
     status.model_runtime.message.includes("no source overwrite, output file, persistence") &&
     status.model_runtime.message.includes("passes at both CI and real-machine evidence levels"),
-  "project-status.json must describe IMP-091 while preserving bounded IMP-083 through IMP-090 evidence and non-claims",
+  "project-status.json must describe IMP-092 while preserving bounded IMP-083 through IMP-091 evidence and non-claims",
 );
 expect(
   /^\d{4}-\d{2}-\d{2}$/.test(status.last_reviewed || ""),
