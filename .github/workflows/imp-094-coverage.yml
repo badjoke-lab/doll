@@ -22,33 +22,51 @@ jobs:
           python-version: "3.12"
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --dev --locked
-      - name: Format, type-check, focused-test, and measure full coverage
+      - name: Fix validation boundary and measure full coverage
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
 
-          path = Path('tests/test_imp_094_project_experience_validation.py')
-          text = path.read_text(encoding='utf-8')
+          source = Path('src/doll/project_experience.py')
+          text = source.read_text(encoding='utf-8')
+          old = '''    _reject_secret_link(record, sensitivity, "superseded experience")
+    prior = _project_experience_from_record(record, None)
+'''
+          new = '''    _reject_secret_link(record, sensitivity, "superseded experience")
+    if record.record_type != "project_experience":
+        raise ProjectExperienceValidationError(
+            "superseded experience points to another record type"
+        )
+    prior = _project_experience_from_record(record, None)
+'''
+          if text.count(old) != 1:
+              raise SystemExit(f'supersedes validation anchor count: {text.count(old)}')
+          source.write_text(text.replace(old, new), encoding='utf-8')
+
+          tests = Path('tests/test_imp_094_project_experience_validation.py')
+          test_text = tests.read_text(encoding='utf-8')
           replacements = {
               'service.list(limit=bad_limit)  # type: ignore[arg-type]': 'service.list(limit=bad_limit)',
               '_ids("ids", valid_uuid)  # type: ignore[arg-type]': '_ids("ids", valid_uuid)',
           }
-          for old, new in replacements.items():
-              if text.count(old) != 1:
-                  raise SystemExit(f'typing cleanup anchor count for {old!r}: {text.count(old)}')
-              text = text.replace(old, new)
-          path.write_text(text, encoding='utf-8')
+          for old_text, new_text in replacements.items():
+              count = test_text.count(old_text)
+              if count == 1:
+                  test_text = test_text.replace(old_text, new_text)
+              elif count != 0:
+                  raise SystemExit(f'typing cleanup anchor count for {old_text!r}: {count}')
+          tests.write_text(test_text, encoding='utf-8')
           PY
-          uv run ruff format tests/test_imp_094_project_experience_validation.py
-          uv run ruff check --fix tests/test_imp_094_project_experience_validation.py
-          uv run mypy tests/test_imp_094_project_experience_validation.py
+          uv run ruff format src/doll/project_experience.py tests/test_imp_094_project_experience_validation.py
+          uv run ruff check --fix src/doll/project_experience.py tests/test_imp_094_project_experience_validation.py
+          uv run mypy src/doll/project_experience.py tests/test_imp_094_project_experience_validation.py
           uv run pytest --no-cov -q tests/test_imp_094_project_experience.py tests/test_imp_094_project_experience_validation.py
           uv run pytest -q
           git config user.name badjoke-lab
           git config user.email badjoke.lab@gmail.com
-          if ! git diff --quiet -- tests/test_imp_094_project_experience_validation.py; then
-            git add tests/test_imp_094_project_experience_validation.py
-            git commit -m 'IMP-094: format ProjectExperienceRecord validation coverage'
+          git add src/doll/project_experience.py tests/test_imp_094_project_experience_validation.py
+          if ! git diff --cached --quiet; then
+            git commit -m 'IMP-094: harden ProjectExperienceRecord validation coverage'
             git push origin HEAD:agent/imp-094
           fi
