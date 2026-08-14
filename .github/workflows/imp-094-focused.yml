@@ -1,0 +1,92 @@
+name: IMP-094 focused validation
+
+on:
+  push:
+    branches:
+      - agent/imp-094
+    paths:
+      - .github/workflows/imp-094-focused.yml
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/imp-094
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - name: Patch and validate IMP-094 focused suite
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: Path, old: str, new: str, label: str) -> None:
+              text = path.read_text(encoding="utf-8")
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"{label}: expected 1 anchor, found {count}")
+              path.write_text(text.replace(old, new), encoding="utf-8")
+
+          package = Path("src/doll/state_package.py")
+          replace_once(
+              package,
+              "from doll.project_experience import _project_experience_from_record\n",
+              "from doll.project_experience import (\n    ProjectExperienceCorruptError,\n    _project_experience_from_record,\n)\n",
+              "project-experience package error import",
+          )
+          replace_once(
+              package,
+              "        ProcedureCorruptError,\n        ProjectDecisionCorruptError,\n",
+              "        ProcedureCorruptError,\n        ProjectExperienceCorruptError,\n        ProjectDecisionCorruptError,\n",
+              "project-experience package error wrapping",
+          )
+
+          tests = Path("tests/test_imp_094_project_experience.py")
+          replace_once(
+              tests,
+              "from doll.project_state import ProjectService\n",
+              "from doll.project_state import ProjectInfo, ProjectService\n",
+              "test project info import",
+          )
+          replace_once(
+              tests,
+              "from doll.work_item import WorkItemService\n",
+              "from doll.state_repository import StateRepository\nfrom doll.work_item import WorkItemInfo, WorkItemService\n",
+              "test repository and work info imports",
+          )
+          replace_once(
+              tests,
+              "def _project(repository: state.StateRepository | object) -> object:\n    return ProjectService(repository).create_v2(  # type: ignore[arg-type]\n",
+              "def _project(repository: StateRepository) -> ProjectInfo:\n    return ProjectService(repository).create_v2(\n",
+              "test project helper typing",
+          )
+          replace_once(
+              tests,
+              "def _project_and_work(repository: object) -> tuple[object, object]:\n    project = _project(repository)\n    work = WorkItemService(repository).create(  # type: ignore[arg-type]\n        project_id=project.project_id,  # type: ignore[attr-defined]\n",
+              "def _project_and_work(repository: StateRepository) -> tuple[ProjectInfo, WorkItemInfo]:\n    project = _project(repository)\n    work = WorkItemService(repository).create(\n        project_id=project.project_id,\n",
+              "test project-work helper typing",
+          )
+          replace_once(
+              tests,
+              "        assert WorkItemService(repository).get(work.work_item_id).status == work_before.status\n",
+              "        assert (\n            WorkItemService(repository).get(work.work_item_id).work_status\n            == work_before.work_status\n        )\n",
+              "test work-status assertion",
+          )
+          PY
+          uv run ruff format src/doll/project_experience.py src/doll/state_package.py src/doll/resume_bundle.py tests/test_imp_094_project_experience.py
+          uv run ruff check --fix src/doll/project_experience.py src/doll/state_package.py src/doll/resume_bundle.py tests/test_imp_094_project_experience.py
+          uv run mypy src/doll/project_experience.py src/doll/state_package.py src/doll/resume_bundle.py tests/test_imp_094_project_experience.py
+          uv run pytest --no-cov -q tests/test_imp_094_project_experience.py tests/test_state_package.py tests/test_backup.py tests/test_restore.py tests/test_resume_bundle.py
+          git config user.name badjoke-lab
+          git config user.email badjoke.lab@gmail.com
+          git add src/doll/state_package.py tests/test_imp_094_project_experience.py src/doll/project_experience.py src/doll/resume_bundle.py
+          git commit -m "IMP-094: validate project experience continuity behavior"
+          git push origin HEAD:agent/imp-094
