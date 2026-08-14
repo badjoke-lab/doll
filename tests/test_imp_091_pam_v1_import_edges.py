@@ -27,12 +27,13 @@ def _environment(**overrides: object) -> SourceEnvironmentRecord:
 
 
 def _memory(**overrides: object) -> dict[str, object]:
-    content = str(overrides.pop("content", "Local memory text."))
+    content = overrides.pop("content", "Local memory text.")
+    hash_content = content if isinstance(content, str) else "Local memory text."
     values: dict[str, object] = {
         "id": "memory-a",
         "type": "fact",
         "content": content,
-        "content_hash": pam.pam_content_hash(content),
+        "content_hash": pam.pam_content_hash(hash_content),
         "temporal": {"created_at": "2026-08-01T00:00:00Z"},
         "provenance": {"platform": "chatgpt"},
     }
