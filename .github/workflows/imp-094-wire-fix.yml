@@ -1,0 +1,38 @@
+name: IMP-094 wiring fix
+
+on:
+  push:
+    branches:
+      - agent/imp-094
+    paths:
+      - .github/workflows/imp-094-wire-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/imp-094
+      - name: Fix formatter order and retrigger wiring
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('.github/workflows/imp-094-wire.yml')
+          text = path.read_text(encoding='utf-8')
+          old = '          uv run ruff check --fix src/doll/project_experience.py src/doll/state_package.py src/doll/resume_bundle.py\n          uv run ruff format src/doll/project_experience.py src/doll/state_package.py src/doll/resume_bundle.py\n'
+          new = '          uv run ruff format src/doll/project_experience.py src/doll/state_package.py src/doll/resume_bundle.py\n          uv run ruff check --fix src/doll/project_experience.py src/doll/state_package.py src/doll/resume_bundle.py\n'
+          if text.count(old) != 1:
+              raise SystemExit(f'formatter-order anchor count: {text.count(old)}')
+          path.write_text(text.replace(old, new), encoding='utf-8')
+          PY
+          rm .github/workflows/imp-094-wire-fix.yml
+          git config user.name badjoke-lab
+          git config user.email badjoke.lab@gmail.com
+          git add .github/workflows/imp-094-wire.yml .github/workflows/imp-094-wire-fix.yml
+          git commit -m "Fix IMP-094 wiring validation order"
+          git push origin HEAD:agent/imp-094
