@@ -1,0 +1,80 @@
+name: IMP-092 status sync
+
+on:
+  push:
+    branches:
+      - agent/imp-092-status
+    paths:
+      - .github/workflows/imp-092-status-sync.yml
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/imp-092-status
+      - name: Sync public status through IMP-092
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          status_path = Path('website/project-status.json')
+          checker_path = Path('scripts/check-public-site-status.mjs')
+          status = status_path.read_text()
+          checker = checker_path.read_text()
+
+          replacements_status = [
+              ('"next_implementation": 92', '"next_implementation": 93'),
+              ('Phase 6 is in progress through IMP-091.', 'Phase 6 is in progress through IMP-092.'),
+              (
+                  'or PAM export. PDF OCR/scanned-PDF fallback',
+                  'or PAM export. IMP-092 adds candidate-by-candidate reviewed PAM memory publication: a read-only preview binds the exact staged source, Doll State revision, explicit approve/reject decision, mapping notes, and deterministic plan hash; only an explicit user-controlled approval can create a normal confirmed MemoryRecord with source_type=approved_import, rejection writes nothing, unchanged re-approval reuses the existing record, and changed source identity fails closed. PAM lifecycle, confidence, access, relations, instruction, embedding, signature, and integrity metadata remain non-authoritative and are not converted into Doll authority. IMP-092 does not add automatic approval, implicit batch approval, PAM export, model behavior, cloud behavior, or network access. PDF OCR/scanned-PDF fallback',
+              ),
+              ('reviewed PAM publication/export', 'PAM export'),
+              ('"last_reviewed": "2026-08-14"', '"last_reviewed": "2026-08-15"'),
+          ]
+          for old, new in replacements_status:
+              if status.count(old) != 1:
+                  raise SystemExit(f'status replacement count for {old!r}: {status.count(old)}')
+              status = status.replace(old, new)
+
+          replacements_checker = [
+              ('status.phase?.next_implementation === 92', 'status.phase?.next_implementation === 93'),
+              ('Phase 6 in progress through IMP-091 with IMP-092 next', 'Phase 6 in progress through IMP-092 with IMP-093 next'),
+              ('status.model_runtime.message.includes("through IMP-091")', 'status.model_runtime.message.includes("through IMP-092")'),
+              ('status.model_runtime.message.includes("reviewed PAM publication/export")', 'status.model_runtime.message.includes("PAM export")'),
+              ('project-status.json must describe IMP-091 while preserving bounded IMP-083 through IMP-090 evidence and non-claims', 'project-status.json must describe IMP-092 while preserving bounded IMP-083 through IMP-091 evidence and non-claims'),
+          ]
+          for old, new in replacements_checker:
+              if checker.count(old) != 1:
+                  raise SystemExit(f'checker replacement count for {old!r}: {checker.count(old)}')
+              checker = checker.replace(old, new)
+
+          anchor = '    status.model_runtime.message.includes("does not create confirmed MemoryRecords") &&\n'
+          addition = (
+              '    status.model_runtime.message.includes("candidate-by-candidate reviewed PAM memory publication") &&\n'
+              '    status.model_runtime.message.includes("explicit approve/reject decision") &&\n'
+              '    status.model_runtime.message.includes("deterministic plan hash") &&\n'
+              '    status.model_runtime.message.includes("explicit user-controlled approval") &&\n'
+              '    status.model_runtime.message.includes("source_type=approved_import") &&\n'
+              '    status.model_runtime.message.includes("changed source identity fails closed") &&\n'
+              '    status.model_runtime.message.includes("does not add automatic approval") &&\n'
+          )
+          if checker.count(anchor) != 1:
+              raise SystemExit(f'checker anchor count: {checker.count(anchor)}')
+          checker = checker.replace(anchor, anchor + addition)
+
+          status_path.write_text(status)
+          checker_path.write_text(checker)
+          PY
+          rm .github/workflows/imp-092-status-sync.yml
+          git config user.name badjoke-lab
+          git config user.email badjoke.lab@gmail.com
+          git add website/project-status.json scripts/check-public-site-status.mjs .github/workflows/imp-092-status-sync.yml
+          git commit -m "Sync public status through IMP-092"
+          git push origin HEAD:agent/imp-092-status
