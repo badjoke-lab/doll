@@ -1,0 +1,76 @@
+name: IMP-091 mypy fix
+
+on:
+  push:
+    branches:
+      - agent/imp-091
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/imp-091
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - name: Apply type-only fixes
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def once(path: str, old: str, new: str) -> None:
+              p = Path(path)
+              text = p.read_text(encoding="utf-8")
+              if text.count(old) != 1:
+                  raise SystemExit(f"{path}: expected one match for {old!r}")
+              p.write_text(text.replace(old, new), encoding="utf-8")
+
+          once(
+              "src/doll/pam_v1_import.py",
+              '                    tuple(item["id"] for item in relations),\n',
+              '                    tuple(cast(str, item["id"]) for item in relations),\n',
+          )
+          once(
+              "tests/test_imp_091_pam_v1_import.py",
+              '    PamV1ImportError,\n    PamV1ImportStager,\n',
+              '    PamV1ImportError,\n    PamV1ImportStageResult,\n    PamV1ImportStager,\n',
+          )
+          once(
+              "tests/test_imp_091_pam_v1_import.py",
+              '    memory = {\n',
+              '    memory: dict[str, object] = {\n',
+          )
+          once(
+              "tests/test_imp_091_pam_v1_import.py",
+              'def _stage(source_bytes: bytes):\n',
+              'def _stage(source_bytes: bytes) -> PamV1ImportStageResult:\n',
+          )
+          once(
+              "tests/test_imp_091_pam_v1_import_edges.py",
+              'def _stage(source: bytes, **limits: int):\n',
+              'def _stage(source: bytes, **limits: int) -> pam.PamV1ImportStageResult:\n',
+          )
+          once(
+              "tests/test_imp_091_pam_v1_import_edges.py",
+              '    invalid_cases = [\n',
+              '    invalid_cases: list[dict[str, object]] = [\n',
+          )
+          PY
+          uv run ruff format src/doll/pam_v1_import.py tests/test_imp_091_pam_v1_import.py tests/test_imp_091_pam_v1_import_edges.py
+          uv run ruff check src/doll/pam_v1_import.py tests/test_imp_091_pam_v1_import.py tests/test_imp_091_pam_v1_import_edges.py
+          uv run mypy src/doll/pam_v1_import.py tests/test_imp_091_pam_v1_import.py tests/test_imp_091_pam_v1_import_edges.py
+          rm .github/workflows/imp-091-mypy-fix.yml
+          git config user.name badjoke-lab
+          git config user.email badjoke.lab@gmail.com
+          git add src/doll/pam_v1_import.py tests/test_imp_091_pam_v1_import.py tests/test_imp_091_pam_v1_import_edges.py .github/workflows/imp-091-mypy-fix.yml
+          git commit -m "IMP-091: satisfy strict type checks"
+          git push origin HEAD:agent/imp-091
