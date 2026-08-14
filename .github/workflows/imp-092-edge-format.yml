@@ -1,0 +1,36 @@
+name: IMP-092 edge formatter
+
+on:
+  push:
+    branches:
+      - agent/imp-092
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/imp-092
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - name: Apply repository formatting
+        shell: bash
+        run: |
+          uv run ruff check --fix --select I tests/test_imp_092_pam_v1_publication_edges.py
+          uv run ruff format tests/test_imp_092_pam_v1_publication_edges.py
+          uv run ruff check tests/test_imp_092_pam_v1_publication_edges.py
+          uv run mypy tests/test_imp_092_pam_v1_publication_edges.py
+          rm .github/workflows/imp-092-edge-format.yml
+          git config user.name badjoke-lab
+          git config user.email badjoke.lab@gmail.com
+          git add tests/test_imp_092_pam_v1_publication_edges.py .github/workflows/imp-092-edge-format.yml
+          git commit -m "IMP-092: format publication edge tests"
+          git push origin HEAD:agent/imp-092
