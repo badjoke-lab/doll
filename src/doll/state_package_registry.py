@@ -172,6 +172,12 @@ _V2_RECORD_CATEGORIES = (
         False,
         "conversation_event",
     ),
+    AuthoritativeRecordCategory(
+        "project_experience",
+        "records/project-experiences.jsonl",
+        False,
+        "project_experience",
+    ),
 )
 
 PACKAGE_RECORD_REGISTRIES: Mapping[int, AuthoritativeRecordRegistry] = MappingProxyType(
