@@ -1,0 +1,62 @@
+name: IMP-094 AGENTS sync
+
+on:
+  push:
+    branches:
+      - agent/imp-094
+    paths:
+      - .github/workflows/imp-094-agents.yml
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/imp-094
+      - name: Sync AGENTS through IMP-094
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('AGENTS.md')
+          text = path.read_text(encoding='utf-8')
+
+          replacements = [
+              (
+                  'ProjectExperienceRecord, when implemented, records semantic work history; it does not replace revisioned current project, policy, permission, decision, work, or binding state.',
+                  'ProjectExperienceRecord records append-oriented semantic work history; it does not replace revisioned current project, policy, permission, decision, work, or binding state.',
+              ),
+              (
+                  'IMP-001 through IMP-023 and IMP-030 through IMP-093 are complete on this implementation branch',
+                  'IMP-001 through IMP-023 and IMP-030 through IMP-094 are complete on this implementation branch',
+              ),
+          ]
+          for old, new in replacements:
+              if text.count(old) != 1:
+                  raise SystemExit(f'AGENTS replacement count for {old!r}: {text.count(old)}')
+              text = text.replace(old, new)
+
+          anchor = '- IMP-093 adds only bounded offline PAM v1.0 confirmed-memory export. It exports an explicit caller-selected set of active non-secret MemoryRecords under an explicit caller-supplied PAM owner id, preserves Doll record identity separately from PAM content hashing, emits deterministic required PAM fields plus out-of-band mapping/loss evidence, and validates the produced bytes through the existing offline PAM stager; it does not add automatic workspace export, relation/lifecycle/access conversion, embeddings, signatures, model/cloud/network behavior, or complete Doll continuity export.\n'
+          addition = '- IMP-094 adds the first bounded ProjectExperienceRecord continuity foundation. It records append-oriented semantic work history with explicit assertion/provenance classes, linked correction through `supersedes_id`, package/backup/restore/fresh-process continuity, and deterministic Resume Bundle v1 omission reporting. It does not mutate current project/work/decision/policy/permission/checkpoint authority, store secret content in ordinary Doll State, or add ContinuityPreflight, PROJECTMEM, PLUR, MCP, automatic extraction, warnings, or action blocking.\n'
+          if text.count(anchor) != 1:
+              raise SystemExit(f'IMP-093 anchor count: {text.count(anchor)}')
+          text = text.replace(anchor, anchor + addition)
+
+          old_tail = '- Persistent memory-use signals, supported/default semantic retrieval, persistent embeddings, hybrid fusion, automatic context injection, PLUR/PROJECTMEM adapters, ProjectExperienceRecord, ContinuityPreflight, MCP, cloud expansion, and State Package signing are not established by IMP-093 and must follow their accepted specification, safety, portability, usefulness-evidence, and acceptance boundaries.\n'
+          new_tail = '- Persistent memory-use signals, supported/default semantic retrieval, persistent embeddings, hybrid fusion, automatic context injection, PLUR/PROJECTMEM adapters, ContinuityPreflight, MCP, cloud expansion, and State Package signing are not established by IMP-094 and must follow their accepted specification, safety, portability, usefulness-evidence, and acceptance boundaries.\n'
+          if text.count(old_tail) != 1:
+              raise SystemExit(f'AGENTS tail replacement count: {text.count(old_tail)}')
+          path.write_text(text.replace(old_tail, new_tail), encoding='utf-8')
+          PY
+          grep -F 'IMP-030 through IMP-094' AGENTS.md
+          grep -F 'IMP-094 adds the first bounded ProjectExperienceRecord continuity foundation' AGENTS.md
+          git config user.name badjoke-lab
+          git config user.email badjoke.lab@gmail.com
+          git add AGENTS.md
+          git commit -m 'IMP-094: advance ProjectExperienceRecord frontier'
+          git push origin HEAD:agent/imp-094
