@@ -1,0 +1,117 @@
+name: IMP-094 wiring
+
+on:
+  push:
+    branches:
+      - agent/imp-094
+    paths:
+      - .github/workflows/imp-094-wire.yml
+
+permissions:
+  contents: write
+
+jobs:
+  wire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/imp-094
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - name: Wire ProjectExperienceRecord continuity surfaces
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: Path, old: str, new: str, label: str) -> None:
+              text = path.read_text(encoding="utf-8")
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"{label}: expected 1 anchor, found {count}")
+              path.write_text(text.replace(old, new), encoding="utf-8")
+
+          experience = Path("src/doll/project_experience.py")
+          replace_once(
+              experience,
+              "            event_kind=event_kind or prior.event_kind,\n            summary=summary,\n            outcome=outcome,\n",
+              "            event_kind=event_kind or prior.event_kind,\n            summary=summary,\n            outcome=prior.outcome if outcome is None else outcome,\n",
+              "preserve correction outcome",
+          )
+
+          package = Path("src/doll/state_package.py")
+          replace_once(
+              package,
+              "from doll.procedure import ProcedureCorruptError, _procedure_from_record\n",
+              "from doll.procedure import ProcedureCorruptError, _procedure_from_record\nfrom doll.project_experience import _project_experience_from_record\n",
+              "state-package project-experience import",
+          )
+          replace_once(
+              package,
+              '    "instruction_origin": _instruction_origin_from_record,\n    "project": _project_from_record,\n',
+              '    "instruction_origin": _instruction_origin_from_record,\n    "project_experience": _project_experience_from_record,\n    "project": _project_from_record,\n',
+              "state-package validator mapping",
+          )
+          work_anchor = '''        elif record.record_type == "procedure":\n'''
+          experience_branch = '''        elif record.record_type == "project_experience":\n            project_id = _metadata_string(metadata, "project_id")\n            _require_link_type(records, project_id, "project")\n            work_item_id = _metadata_optional_id(metadata, "work_item_id")\n            if work_item_id is not None:\n                _require_link_type(records, work_item_id, "work_item")\n                linked_work = _work_item_from_record(records[work_item_id])\n                if linked_work.project_id != project_id:\n                    raise StatePackageValidationError(\n                        "project experience work item belongs to another project"\n                    )\n            for linked_id in _metadata_id_list(metadata, "evidence_ids"):\n                _require_link_type(records, linked_id, "evidence")\n            for key in ("related_record_ids", "source_ids"):\n                for linked_id in _metadata_id_list(metadata, key):\n                    if linked_id not in records:\n                        raise StatePackageValidationError(\n                            "project experience references a missing package record"\n                        )\n            supersedes_id = _metadata_optional_id(metadata, "supersedes_id")\n            if supersedes_id is not None:\n                if supersedes_id == record.id:\n                    raise StatePackageValidationError(\n                        "project experience cannot supersede itself"\n                    )\n                _require_link_type(records, supersedes_id, "project_experience")\n                prior = _project_experience_from_record(records[supersedes_id])\n                if prior.project_id != project_id:\n                    raise StatePackageValidationError(\n                        "project experience supersedes another project"\n                    )\n'''
+          replace_once(
+              package,
+              work_anchor,
+              experience_branch + work_anchor,
+              "state-package project-experience cross links",
+          )
+
+          resume = Path("src/doll/resume_bundle.py")
+          replace_once(
+              resume,
+              "from doll.procedure import ProcedureService\n",
+              "from doll.procedure import ProcedureService\nfrom doll.project_experience import ProjectExperienceService\n",
+              "resume project-experience import",
+          )
+          replace_once(
+              resume,
+              "        artifact_references, artifact_omissions = self._artifact_references(artifact_ids)\n        source_references, source_omissions = self._source_references(source_ids)\n",
+              "        artifact_references, artifact_omissions = self._artifact_references(artifact_ids)\n        source_references, source_omissions = self._source_references(source_ids)\n        project_experience_omissions = self._project_experience_omissions(status.project_id)\n",
+              "resume experience omission count",
+          )
+          replace_once(
+              resume,
+              '            "source_references": source_omissions,\n        }\n',
+              '            "source_references": source_omissions,\n            "project_experiences": project_experience_omissions,\n        }\n',
+              "resume omitted count field",
+          )
+          replace_once(
+              resume,
+              '                "include_secret_records": False,\n                "work_item_states": ["in_progress", "ready", "blocked"],\n',
+              '                "include_secret_records": False,\n                "project_experience": "omitted_in_bundle_v1",\n                "work_item_states": ["in_progress", "ready", "blocked"],\n',
+              "resume selection option",
+          )
+          replace_once(
+              resume,
+              '                "unrelated project records are excluded",\n            ],\n',
+              '                "unrelated project records are excluded",\n                "project experience content is intentionally omitted from Resume Bundle v1",\n            ],\n',
+              "resume omission reason",
+          )
+          method_anchor = '''    def _artifact_references(\n'''
+          method = '''    def _project_experience_omissions(self, project_id: str) -> int:\n        service = ProjectExperienceService(self.repository)\n        try:\n            rows = self.repository.connection.execute(\n                "SELECT id FROM records "\n                "WHERE record_type = 'project_experience' AND sensitivity != 'secret' "\n                "ORDER BY id"\n            ).fetchall()\n        except Exception as exc:\n            raise ResumeBundleValidationError(\n                "project experience omission count is unreadable"\n            ) from exc\n        return sum(\n            1\n            for row in rows\n            if service.get(cast(str, row[0])).project_id == project_id\n        )\n\n'''
+          replace_once(
+              resume,
+              method_anchor,
+              method + method_anchor,
+              "resume omission helper",
+          )
+          PY
+          uv run ruff check --fix src/doll/project_experience.py src/doll/state_package.py src/doll/resume_bundle.py
+          uv run ruff format src/doll/project_experience.py src/doll/state_package.py src/doll/resume_bundle.py
+          uv run mypy src/doll/project_experience.py src/doll/state_package.py src/doll/resume_bundle.py
+          uv run pytest --no-cov -q tests/test_state_package.py tests/test_resume_bundle.py
+          rm .github/workflows/imp-094-wire.yml
+          git config user.name badjoke-lab
+          git config user.email badjoke.lab@gmail.com
+          git add src/doll/project_experience.py src/doll/state_package.py src/doll/resume_bundle.py .github/workflows/imp-094-wire.yml
+          git commit -m "IMP-094: wire project experience continuity surfaces"
+          git push origin HEAD:agent/imp-094
