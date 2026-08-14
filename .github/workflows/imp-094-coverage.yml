@@ -1,0 +1,39 @@
+name: IMP-094 coverage validation
+
+on:
+  push:
+    branches:
+      - agent/imp-094
+    paths:
+      - .github/workflows/imp-094-coverage.yml
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/imp-094
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - name: Format, type-check, focused-test, and measure full coverage
+        shell: bash
+        run: |
+          uv run ruff format tests/test_imp_094_project_experience_validation.py
+          uv run ruff check --fix tests/test_imp_094_project_experience_validation.py
+          uv run mypy tests/test_imp_094_project_experience_validation.py
+          uv run pytest --no-cov -q tests/test_imp_094_project_experience.py tests/test_imp_094_project_experience_validation.py
+          uv run pytest -q
+          git config user.name badjoke-lab
+          git config user.email badjoke.lab@gmail.com
+          if ! git diff --quiet -- tests/test_imp_094_project_experience_validation.py; then
+            git add tests/test_imp_094_project_experience_validation.py
+            git commit -m 'IMP-094: format ProjectExperienceRecord validation coverage'
+            git push origin HEAD:agent/imp-094
+          fi
