@@ -12,8 +12,8 @@ from doll import state, workspace
 from doll.memory import ConfirmedMemoryService
 from doll.pam_v1_import import (
     PAM_V1_ENVIRONMENT_CLASS,
-    PamV1ImportStageResult,
     PamV1ImportStager,
+    PamV1ImportStageResult,
     pam_content_hash,
 )
 from doll.portability import SourceEnvironmentRecord
