@@ -10,7 +10,12 @@ import pytest
 from doll import pam_v1_publication as publication
 from doll import state, workspace
 from doll.memory import ConfirmedMemoryService
-from doll.pam_v1_import import PAM_V1_ENVIRONMENT_CLASS, PamV1ImportStager, pam_content_hash
+from doll.pam_v1_import import (
+    PAM_V1_ENVIRONMENT_CLASS,
+    PamV1ImportStageResult,
+    PamV1ImportStager,
+    pam_content_hash,
+)
 from doll.portability import SourceEnvironmentRecord
 
 STARTED = "2026-08-14T07:30:00Z"
@@ -23,8 +28,8 @@ def _init(root: Path) -> workspace.InitializedWorkspace:
     return initialized
 
 
-def _stage():
-    memory = {
+def _stage() -> tuple[SourceEnvironmentRecord, PamV1ImportStageResult]:
+    memory: dict[str, object] = {
         "id": "memory-a",
         "type": "fact",
         "content": "Portable local memory.",
@@ -142,6 +147,10 @@ def test_imp_092_duplicate_lineage_and_existing_mismatch_fail_closed(tmp_path: P
                 "memory-a",
             )
 
-        mismatched = replace(first, source_reference=preview.mapping.source_reference, content="changed")
+        mismatched = replace(
+            first,
+            source_reference=preview.mapping.source_reference,
+            content="changed",
+        )
         with pytest.raises(publication.PamV1PublicationError, match="no longer matches"):
             publication._validate_existing(mismatched, preview.mapping)
