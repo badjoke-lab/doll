@@ -112,7 +112,7 @@ class PamV1MemoryExporter:
         for memory_id in selected_ids:
             try:
                 memory = service.get(memory_id)
-            except StateError as exc:
+            except (KeyError, StateError) as exc:
                 raise PamV1ExportError("selected confirmed memory is unavailable") from exc
             _validate_exportable_memory(memory)
             memories.append(memory)
