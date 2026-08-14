@@ -92,12 +92,8 @@ def test_imp_090_detects_declared_candidate_classes(tmp_path: Path) -> None:
     assert ("explicit_contradiction", conflict_pair) in pairs
 
     assert all(
-        unrelated.record_id
-        not in {candidate.left_memory_id, candidate.right_memory_id}
+        unrelated.record_id not in {candidate.left_memory_id, candidate.right_memory_id}
         for candidate in first.candidates
     )
-    assert all(
-        candidate.to_dict()["review_required"] is True
-        for candidate in first.candidates
-    )
+    assert all(candidate.to_dict()["review_required"] is True for candidate in first.candidates)
     assert first.to_dict()["automatic_memory_mutation"] is False
