@@ -125,9 +125,7 @@ def test_imp_091_rejects_invalid_source_bytes_and_bounds() -> None:
         ),
     ],
 )
-def test_imp_091_rejects_invalid_root_contract(
-    document: dict[str, object], message: str
-) -> None:
+def test_imp_091_rejects_invalid_root_contract(document: dict[str, object], message: str) -> None:
     with pytest.raises(pam.PamV1ImportError, match=message):
         _stage(_bytes(document))
 
@@ -166,9 +164,7 @@ def test_imp_091_rejects_memory_count_limit() -> None:
         (_memory(embedding_ref=4), "embedding_ref is invalid"),
     ],
 )
-def test_imp_091_rejects_invalid_memory_fields(
-    memory: dict[str, object], message: str
-) -> None:
+def test_imp_091_rejects_invalid_memory_fields(memory: dict[str, object], message: str) -> None:
     with pytest.raises(pam.PamV1ImportError, match=message):
         pam._validate_memory(memory)
 
