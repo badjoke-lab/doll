@@ -14,6 +14,7 @@ from doll.pam_v1_import import (
     PAM_V1_ENVIRONMENT_CLASS,
     PamV1ImportError,
     PamV1ImportStager,
+    PamV1ImportStageResult,
 )
 from doll.portability import SourceEnvironmentRecord
 
@@ -33,7 +34,7 @@ def _memory(
     memory_type: str = "fact",
     **extra: object,
 ) -> dict[str, object]:
-    memory = {
+    memory: dict[str, object] = {
         "id": memory_id,
         "type": memory_type,
         "content": content,
@@ -76,7 +77,7 @@ def _environment() -> SourceEnvironmentRecord:
     )
 
 
-def _stage(source_bytes: bytes):
+def _stage(source_bytes: bytes) -> PamV1ImportStageResult:
     return PamV1ImportStager(_environment()).stage(
         source_bytes,
         import_batch_id=str(uuid4()),

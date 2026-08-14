@@ -260,7 +260,7 @@ class PamV1ImportStager:
                 (
                     memory_id,
                     pam_type,
-                    tuple(item["id"] for item in relations),
+                    tuple(cast(str, item["id"]) for item in relations),
                     preserved_fields,
                     notes,
                 )

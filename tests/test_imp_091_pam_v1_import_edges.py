@@ -56,7 +56,7 @@ def _bytes(document: object) -> bytes:
     return json.dumps(document, separators=(",", ":")).encode("utf-8")
 
 
-def _stage(source: bytes, **limits: int):
+def _stage(source: bytes, **limits: int) -> pam.PamV1ImportStageResult:
     return pam.PamV1ImportStager(_environment(), **limits).stage(
         source,
         import_batch_id=str(uuid4()),
@@ -306,7 +306,7 @@ def test_imp_091_result_contract_rejects_internal_inconsistency() -> None:
     ]
     for changes in invalid_cases:
         with pytest.raises(pam.PamV1ImportError):
-            replace(valid, **changes)
+            replace(valid, **changes)  # type: ignore[arg-type]
 
 
 def test_imp_091_helper_validation_is_fail_closed() -> None:
