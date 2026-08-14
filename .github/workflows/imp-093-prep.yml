@@ -52,7 +52,7 @@ jobs:
           uv run ruff format src/doll/pam_v1_export.py tests/test_imp_093_pam_v1_export.py
           uv run ruff check src/doll/pam_v1_export.py tests/test_imp_093_pam_v1_export.py
           uv run mypy src/doll/pam_v1_export.py tests/test_imp_093_pam_v1_export.py
-          uv run pytest -q tests/test_imp_093_pam_v1_export.py
+          uv run pytest -q --no-cov tests/test_imp_093_pam_v1_export.py
           rm .github/workflows/imp-093-prep.yml
           git config user.name badjoke-lab
           git config user.email badjoke.lab@gmail.com
