@@ -1,0 +1,105 @@
+name: IMP-090 status sync
+
+on:
+  push:
+    branches:
+      - agent/imp-090-status
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/imp-090-status
+          fetch-depth: 0
+      - name: Apply bounded status replacements
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: str, old: str, new: str) -> None:
+              p = Path(path)
+              text = p.read_text(encoding="utf-8")
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"{path}: expected one match, found {count}: {old[:80]!r}")
+              p.write_text(text.replace(old, new), encoding="utf-8")
+
+          replace_once(
+              "AGENTS.md",
+              "IMP-001 through IMP-023 and IMP-030 through IMP-089 are complete on this implementation branch",
+              "IMP-001 through IMP-023 and IMP-030 through IMP-090 are complete on this implementation branch",
+          )
+          imp089 = "- IMP-089 adds only an inspectable read-only context-budget preview over the accepted IMP-085 lexical RecallState. It reuses the existing explicit writing-context planner for size and eligibility checks, returns advisory memory IDs plus ranking/budget evidence, and does not materialize InstructionOrigin records, run a model, persist retrieval state, infer project membership, or perform automatic context injection."
+          imp090 = "- IMP-090 adds only a deterministic read-only consolidation-candidate detector over active non-secret confirmed memories. It reports exact duplicates, lexical near-duplicates, compatible extensions, and existing explicit contradiction links for review; it does not persist candidate state or merge, archive, supersede, update, or otherwise change authoritative MemoryRecord state automatically."
+          replace_once("AGENTS.md", imp089, imp089 + "\n" + imp090)
+          replace_once(
+              "AGENTS.md",
+              "are not established by IMP-089 and must follow",
+              "are not established by IMP-090 and must follow",
+          )
+
+          replace_once(
+              "website/project-status.json",
+              '"next_implementation": 90',
+              '"next_implementation": 91',
+          )
+          replace_once(
+              "website/project-status.json",
+              "Phase 6 is in progress through IMP-089.",
+              "Phase 6 is in progress through IMP-090.",
+          )
+          replace_once(
+              "website/project-status.json",
+              "and an inspectable lexical memory context-budget preview are implemented.",
+              "an inspectable lexical memory context-budget preview, and a review-only memory consolidation candidate detector are implemented.",
+          )
+          imp089_status = "IMP-089 adds a read-only versioned lexical context-budget preview over IMP-085 RecallState. It recommends only confirmed-memory IDs under explicit UTC validity, sensitivity, item, and character budgets, reuses the existing SelectedWritingContextService planner for size and eligibility checks, binds recommendations to MemoryRecord and Doll State revisions, and exposes bounded selection and exclusion evidence. It does not create InstructionOrigin records, materialize context, infer project membership, run a model, persist preview state, or perform automatic or model-selected context injection."
+          imp090_status = "IMP-090 adds a deterministic read-only consolidation-candidate detector over active non-secret confirmed memories. It reports exact duplicates, lexical near-duplicates, compatible extensions, and existing explicit contradiction links for review using versioned normalization and lexical overlap rules. Candidate output is advisory and non-persistent, and detection does not merge, archive, supersede, update, or otherwise change authoritative MemoryRecord state automatically."
+          replace_once(
+              "website/project-status.json",
+              imp089_status,
+              imp089_status + " " + imp090_status,
+          )
+
+          replace_once(
+              "scripts/check-public-site-status.mjs",
+              "status.phase?.next_implementation === 90,",
+              "status.phase?.next_implementation === 91,",
+          )
+          replace_once(
+              "scripts/check-public-site-status.mjs",
+              '"project-status.json must mark Phase 6 in progress through IMP-089 with IMP-090 next"',
+              '"project-status.json must mark Phase 6 in progress through IMP-090 with IMP-091 next"',
+          )
+          replace_once(
+              "scripts/check-public-site-status.mjs",
+              'status.model_runtime.message.includes("through IMP-089") &&',
+              'status.model_runtime.message.includes("through IMP-090") &&',
+          )
+          anchor = '    status.model_runtime.message.includes("does not create InstructionOrigin records") &&\n'
+          added = (
+              '    status.model_runtime.message.includes("review-only memory consolidation candidate detector") &&\n'
+              '    status.model_runtime.message.includes("exact duplicates, lexical near-duplicates, compatible extensions") &&\n'
+              '    status.model_runtime.message.includes("existing explicit contradiction links for review") &&\n'
+              '    status.model_runtime.message.includes("advisory and non-persistent") &&\n'
+              '    status.model_runtime.message.includes("does not merge, archive, supersede, update") &&\n'
+          )
+          replace_once("scripts/check-public-site-status.mjs", anchor, anchor + added)
+          replace_once(
+              "scripts/check-public-site-status.mjs",
+              '"project-status.json must describe IMP-089 while preserving bounded IMP-083 through IMP-088 evidence and non-claims"',
+              '"project-status.json must describe IMP-090 while preserving bounded IMP-083 through IMP-089 evidence and non-claims"',
+          )
+          PY
+          rm .github/workflows/imp-090-status-sync.yml
+          git config user.name badjoke-lab
+          git config user.email badjoke.lab@gmail.com
+          git add AGENTS.md website/project-status.json scripts/check-public-site-status.mjs .github/workflows/imp-090-status-sync.yml
+          git commit -m "Sync public status through IMP-090"
+          git push origin HEAD:agent/imp-090-status
