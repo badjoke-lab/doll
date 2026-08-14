@@ -243,6 +243,7 @@ def convert_package_to_v1(v2_package: Path, v1_package: Path) -> None:
         "records/model-bindings.jsonl",
         "records/conversations.jsonl",
         "records/conversation-events.jsonl",
+        "records/project-experiences.jsonl",
     ):
         members.pop(f"{package.PACKAGE_ROOT}/{member}")
     manifest_name = f"{package.PACKAGE_ROOT}/manifest.json"
@@ -258,6 +259,7 @@ def convert_package_to_v1(v2_package: Path, v1_package: Path) -> None:
         "model_binding",
         "conversation",
         "conversation_event",
+        "project_experience",
     ):
         included.remove(category)
         cast(dict[str, int], manifest["record_counts"]).pop(category)
