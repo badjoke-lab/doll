@@ -20,6 +20,8 @@ PAM lifecycle state and validity, confidence, access grants, relation graph, ins
 
 Approved results are ordinary `MemoryRecord` state, so they use the existing package, backup, restore, migration, and fresh-process memory path. IMP-092 adds direct reopen/idempotency evidence for the imported result and does not add a new authoritative record type or schema migration.
 
+Cross-platform coverage also exercises read-only approval denial, malformed plan hashes, invalid private helper inputs, source-reference bounds, duplicate source lineage, and existing-memory mapping mismatch so the repository's 95% coverage gate does not depend on platform-specific optional code paths.
+
 ## Non-claims
 
 IMP-092 does not add automatic approval, batch-wide implicit approval, PAM export, PAM relation-to-Doll-relation conversion, PAM lifecycle conversion, PAM access-to-permission conversion, model-selected context, embeddings, cloud behavior, or network access. PAM export remains required before the complete PAM import/export profile and MCON-005/MCON-007 can be claimed complete.
