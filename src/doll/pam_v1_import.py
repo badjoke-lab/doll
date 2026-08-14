@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import cast
 
-from doll.generic_import import GenericImportStageResult, GenericImportStager
+from doll.generic_import import GenericImportStager, GenericImportStageResult
 from doll.portability import (
     AdapterResourceLimits,
     PortabilityContractError,
@@ -99,9 +99,7 @@ class PamV1MemoryMapping:
             "source_content_hash": self.source_content_hash,
             "generic_source_hash": self.generic_source_hash,
             "relation_ids": list(self.relation_ids),
-            "preserved_non_authoritative_fields": list(
-                self.preserved_non_authoritative_fields
-            ),
+            "preserved_non_authoritative_fields": list(self.preserved_non_authoritative_fields),
             "mapping_notes": list(self.mapping_notes),
             "review_required": self.review_required,
             "authority_class": self.authority_class,
@@ -240,7 +238,9 @@ class PamV1ImportStager:
         _validate_root_optional_blocks(document, len(memories))
 
         generic_objects: list[dict[str, object]] = []
-        mapping_inputs: list[tuple[str, str, tuple[str, ...], tuple[str, ...], tuple[str, ...]]] = []
+        mapping_inputs: list[
+            tuple[str, str, tuple[str, ...], tuple[str, ...], tuple[str, ...]]
+        ] = []
         for memory in memories:
             memory_id = cast(str, memory["id"])
             pam_type = cast(str, memory["type"])
