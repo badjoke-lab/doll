@@ -65,6 +65,7 @@ jobs:
               '    invalid_cases: list[dict[str, object]] = [\n',
           )
           PY
+          uv run ruff check --fix --select I src/doll/pam_v1_import.py tests/test_imp_091_pam_v1_import.py tests/test_imp_091_pam_v1_import_edges.py
           uv run ruff format src/doll/pam_v1_import.py tests/test_imp_091_pam_v1_import.py tests/test_imp_091_pam_v1_import_edges.py
           uv run ruff check src/doll/pam_v1_import.py tests/test_imp_091_pam_v1_import.py tests/test_imp_091_pam_v1_import_edges.py
           uv run mypy src/doll/pam_v1_import.py tests/test_imp_091_pam_v1_import.py tests/test_imp_091_pam_v1_import_edges.py
