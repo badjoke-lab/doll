@@ -59,7 +59,10 @@ from doll.model_manifest import (
 )
 from doll.paths import canonicalize_path, find_doll_repository_ancestor
 from doll.procedure import ProcedureCorruptError, _procedure_from_record
-from doll.project_experience import _project_experience_from_record
+from doll.project_experience import (
+    ProjectExperienceCorruptError,
+    _project_experience_from_record,
+)
 from doll.project_state import (
     ProjectDecisionCorruptError,
     _decision_from_record,
@@ -1103,6 +1106,7 @@ def _envelope_from_payload(
         ModelManifestCorruptError,
         PortabilityPackageCorruptError,
         ProcedureCorruptError,
+        ProjectExperienceCorruptError,
         ProjectDecisionCorruptError,
         SettingsCorruptError,
         StateCorruptError,

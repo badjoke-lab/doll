@@ -300,6 +300,10 @@ def _validated_values(
     safe_sources = _ids("source IDs", source_ids)
     safe_supersedes = _optional_uuid("supersedes experience ID", supersedes_id)
 
+    if sensitivity == "secret":
+        raise ProjectExperienceValidationError(
+            "secret project experience content must use the existing SecretReference boundary"
+        )
     if safe_kind == "outcome" and safe_outcome is None:
         raise ProjectExperienceValidationError("outcome events require an outcome value")
     _validate_project(repository, safe_project_id, sensitivity)

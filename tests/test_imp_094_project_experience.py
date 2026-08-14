@@ -14,10 +14,14 @@ import doll.restore as restore
 from doll import state, workspace
 from doll.memory import ConfirmedMemoryService
 from doll.project_experience import (
+    ProjectExperienceActor,
+    ProjectExperienceAssertionState,
+    ProjectExperienceEventKind,
+    ProjectExperienceOutcome,
     ProjectExperienceService,
     ProjectExperienceValidationError,
 )
-from doll.project_state import ProjectService
+from doll.project_state import ProjectInfo, ProjectService
 from doll.resume_bundle import BUNDLE_ROOT, ResumeBundleService, verify_resume_bundle
 from doll.state_package import (
     StatePackageValidationError,
@@ -26,7 +30,8 @@ from doll.state_package import (
     import_state_package,
     verify_state_package,
 )
-from doll.work_item import WorkItemService
+from doll.state_repository import StateRepository
+from doll.work_item import WorkItemInfo, WorkItemService
 
 
 def _workspace(tmp_path: Path, name: str = "workspace") -> workspace.InitializedWorkspace:
@@ -36,8 +41,8 @@ def _workspace(tmp_path: Path, name: str = "workspace") -> workspace.Initialized
     return initialized
 
 
-def _project(repository: state.StateRepository | object) -> object:
-    return ProjectService(repository).create_v2(  # type: ignore[arg-type]
+def _project(repository: StateRepository) -> ProjectInfo:
+    return ProjectService(repository).create_v2(
         name="Project experience continuity",
         description="Synthetic ProjectExperienceRecord fixture.",
         objective="Preserve semantic work history without mutating current project state.",
@@ -49,10 +54,10 @@ def _project(repository: state.StateRepository | object) -> object:
     )
 
 
-def _project_and_work(repository: object) -> tuple[object, object]:
+def _project_and_work(repository: StateRepository) -> tuple[ProjectInfo, WorkItemInfo]:
     project = _project(repository)
-    work = WorkItemService(repository).create(  # type: ignore[arg-type]
-        project_id=project.project_id,  # type: ignore[attr-defined]
+    work = WorkItemService(repository).create(
+        project_id=project.project_id,
         kind="investigation",
         title="Investigate continuity behavior",
         description="Synthetic work item for ProjectExperienceRecord links.",
@@ -70,7 +75,15 @@ def test_imp_094_records_supported_semantic_history_without_current_state_author
         project_before = ProjectService(repository).get(project.project_id)
         work_before = WorkItemService(repository).get(work.work_item_id)
         service = ProjectExperienceService(repository)
-        specifications = (
+        specifications: tuple[
+            tuple[
+                ProjectExperienceEventKind,
+                ProjectExperienceOutcome | None,
+                ProjectExperienceAssertionState,
+                ProjectExperienceActor,
+            ],
+            ...,
+        ] = (
             ("observation", None, "user_recorded", "user"),
             ("hypothesis", None, "model_proposed", "model"),
             ("attempt", None, "imported_external", "importer"),
@@ -111,12 +124,17 @@ def test_imp_094_records_supported_semantic_history_without_current_state_author
         }
         assert created[3].outcome == "failed"
         assert created[4].outcome == "worked"
-        assert ProjectService(repository).get(project.project_id).revision == project_before.revision
+        assert (
+            ProjectService(repository).get(project.project_id).revision == project_before.revision
+        )
         assert ProjectService(repository).get(project.project_id).project_status == (
             project_before.project_status
         )
         assert WorkItemService(repository).get(work.work_item_id).revision == work_before.revision
-        assert WorkItemService(repository).get(work.work_item_id).status == work_before.status
+        assert (
+            WorkItemService(repository).get(work.work_item_id).work_status
+            == work_before.work_status
+        )
 
         with pytest.raises(ProjectExperienceValidationError, match="producing actor"):
             service.record(
@@ -191,17 +209,16 @@ def test_imp_094_sensitivity_and_private_host_boundaries_fail_closed(tmp_path: P
                 assertion_state="user_recorded",
                 actor_type="user",
             )
-        secret_experience = service.record(
-            project_id=project.project_id,
-            event_kind="lesson",
-            summary="Synthetic secret experience content.",
-            occurred_at="2026-08-15T03:02:00Z",
-            assertion_state="user_recorded",
-            actor_type="user",
-            sensitivity="secret",
-        )
-        with pytest.raises(ProjectExperienceValidationError, match="excluded from normal export"):
-            service.export_json(secret_experience.experience_id)
+        with pytest.raises(ProjectExperienceValidationError, match="SecretReference"):
+            service.record(
+                project_id=project.project_id,
+                event_kind="lesson",
+                summary="Synthetic secret experience content.",
+                occurred_at="2026-08-15T03:02:00Z",
+                assertion_state="user_recorded",
+                actor_type="user",
+                sensitivity="secret",
+            )
 
 
 def test_imp_094_state_package_round_trip_and_cross_link_validation(tmp_path: Path) -> None:
@@ -331,22 +348,22 @@ def test_imp_094_resume_bundle_v1_explicitly_omits_non_secret_experience_content
         service.record(
             project_id=project.project_id,
             event_kind="lesson",
-            summary="Secret experience must not be counted or exposed.",
+            summary="Sensitive experience is also omitted from Resume Bundle v1.",
             occurred_at="2026-08-15T06:01:00Z",
             assertion_state="user_recorded",
             actor_type="user",
-            sensitivity="secret",
+            sensitivity="sensitive",
         )
 
     output = tmp_path / "resume.zip"
     with state.open_state_repository(initialized.root, read_only=True) as repository:
         inspection = ResumeBundleService(repository).export(project.project_id, output)
-    assert inspection.omitted_record_counts["project_experiences"] == 1
+    assert inspection.omitted_record_counts["project_experiences"] == 2
     assert verify_resume_bundle(output) == inspection
     with zipfile.ZipFile(output, "r") as archive:
         manifest = json.loads(archive.read(f"{BUNDLE_ROOT}/manifest.json"))
         bundle_bytes = b"".join(archive.read(name) for name in archive.namelist())
     assert manifest["selection_options"]["project_experience"] == "omitted_in_bundle_v1"
-    assert manifest["omitted_record_counts"]["project_experiences"] == 1
+    assert manifest["omitted_record_counts"]["project_experiences"] == 2
     assert b"Visible experience intentionally omitted" not in bundle_bytes
-    assert b"Secret experience must not be counted" not in bundle_bytes
+    assert b"Sensitive experience is also omitted" not in bundle_bytes
