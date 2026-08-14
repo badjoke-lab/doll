@@ -79,7 +79,7 @@ def test_imp_094_service_export_list_and_missing_lookup_paths(tmp_path: Path) ->
 
         for bad_limit in (0, 501, True):
             with pytest.raises(ProjectExperienceValidationError, match="list limit"):
-                service.list(limit=bad_limit)  # type: ignore[arg-type]
+                service.list(limit=bad_limit)
         with pytest.raises(ProjectExperienceValidationError, match="does not exist"):
             service.get(str(uuid4()))
         with pytest.raises(ProjectExperienceValidationError, match="experience ID is invalid"):
@@ -145,7 +145,9 @@ def test_imp_094_link_validation_rejects_missing_wrong_type_and_cross_project(
                 assertion_state="user_recorded",
                 actor_type="user",
             )
-        with pytest.raises(ProjectExperienceValidationError, match="linked work item does not exist"):
+        with pytest.raises(
+            ProjectExperienceValidationError, match="linked work item does not exist"
+        ):
             record(work_item_id=missing)
         with pytest.raises(ProjectExperienceValidationError, match="work-item link"):
             record(work_item_id=memory.record_id)
@@ -153,13 +155,17 @@ def test_imp_094_link_validation_rejects_missing_wrong_type_and_cross_project(
             record(work_item_id=second_work.work_item_id)
         with pytest.raises(ProjectExperienceValidationError, match="evidence link"):
             record(evidence_ids=(memory.record_id,))
-        with pytest.raises(ProjectExperienceValidationError, match="linked evidence does not exist"):
+        with pytest.raises(
+            ProjectExperienceValidationError, match="linked evidence does not exist"
+        ):
             record(evidence_ids=(missing,))
         with pytest.raises(ProjectExperienceValidationError, match="related record does not exist"):
             record(related_record_ids=(missing,))
         with pytest.raises(ProjectExperienceValidationError, match="source does not exist"):
             record(source_ids=(missing,))
-        with pytest.raises(ProjectExperienceValidationError, match="superseded experience does not exist"):
+        with pytest.raises(
+            ProjectExperienceValidationError, match="superseded experience does not exist"
+        ):
             record(supersedes_id=missing)
         with pytest.raises(ProjectExperienceValidationError, match="another record type"):
             record(supersedes_id=memory.record_id)
@@ -217,7 +223,7 @@ def test_imp_094_value_validators_cover_fail_closed_inputs() -> None:
     with pytest.raises(ProjectExperienceValidationError, match="absolute paths"):
         _text("summary", r"Observed C:\\Users\\example\\private.txt", 100)
     with pytest.raises(ProjectExperienceValidationError, match="must be a sequence"):
-        _ids("ids", valid_uuid)  # type: ignore[arg-type]
+        _ids("ids", valid_uuid)
     with pytest.raises(ProjectExperienceValidationError, match="exceeds"):
         _ids("ids", tuple(str(uuid4()) for _ in range(MAX_LINKS + 1)))
     with pytest.raises(ProjectExperienceValidationError, match="duplicates"):

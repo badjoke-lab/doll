@@ -489,6 +489,10 @@ def _validate_supersedes(
     except KeyError as exc:
         raise ProjectExperienceValidationError("superseded experience does not exist") from exc
     _reject_secret_link(record, sensitivity, "superseded experience")
+    if record.record_type != "project_experience":
+        raise ProjectExperienceValidationError(
+            "superseded experience points to another record type"
+        )
     prior = _project_experience_from_record(record, None)
     if prior.project_id != project_id:
         raise ProjectExperienceValidationError("superseded experience belongs to another project")
