@@ -8,7 +8,12 @@ export const OFFICIAL_NOTES = Object.freeze([
     summary: "Why portable memory, retrieval state, project experience, and continuity authority should interoperate without collapsing into one memory model.",
     published: "2026-08-16",
     related: Object.freeze(["ai-memory-portability-continuity", "access-is-not-continuity", "frontier-ai-infrastructure"]),
-    externalVersions: Object.freeze([]),
+    externalVersions: Object.freeze([
+      Object.freeze({
+        publisher: "DEV Community",
+        url: "https://dev.to/badjoke-lab/portable-memory-is-not-ai-continuity-pam-plur-projectmem-and-doll-1ijh",
+      }),
+    ]),
   }),
   Object.freeze({
     id: "ai-memory-portability-continuity",
