@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Portable Memory Is Not AI Continuity: PAM, PLUR, PROJECTMEM, and doll — doll</title>
+  <meta name="description" content="PAM, PLUR, PROJECTMEM, and doll all address parts of persistent AI memory and continuity, but at different layers. A design comparison of interchange, retrieval, project experience, authority, and pre-action continuity checks.">
+  <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+  <p><a href="../../">Back to doll</a></p>
+
+  <main>
+    <article>
+      <h1>Portable Memory Is Not AI Continuity: PAM, PLUR, PROJECTMEM, and doll</h1>
+
+      <h2>Interchange, recall, project experience, and continuity are related problems. They are not the same layer.</h2>
+
+      <p><time datetime="2026-08-16">August 16, 2026</time></p>
+
+      <p>
+        A few days ago I wrote that AI memory is becoming more portable, but portability is still not the same thing as continuity.
+        The obvious next question is whether that distinction already exists elsewhere in more concrete technical form.
+      </p>
+
+      <p>It does.</p>
+
+      <p>
+        Three projects are especially useful to compare with doll: Portable AI Memory (PAM), PLUR's Engram specification, and PROJECTMEM.
+        They overlap with parts of what doll is trying to do, but they start from different problems and make different things canonical.
+      </p>
+
+      <p>
+        This is not a ranking and it is not a competitor roundup. The useful question is narrower:
+        <strong>which ideas should doll adopt, which boundaries should remain separate, and where should interoperability replace another private format?</strong>
+      </p>
+
+      <h2>The Short Version</h2>
+
+      <p>The four systems are easiest to understand as different layers:</p>
+
+      <ul>
+        <li><strong>PAM:</strong> how memory can cross system boundaries in a vendor-neutral interchange format.</li>
+        <li><strong>PLUR / Engram:</strong> how persistent memories can be retrieved, activated, reinforced, and allowed to decay over time.</li>
+        <li><strong>PROJECTMEM:</strong> how project experience can be recorded as local event history and used to warn an agent before it repeats a known failure.</li>
+        <li><strong>doll:</strong> how memory, projects, decisions, work state, provenance, permissions, recovery, and model-independent execution state can remain resumable when the model or provider changes.</li>
+      </ul>
+
+      <p>
+        Those are not mutually exclusive answers. In fact, the most useful result of comparing them is that doll should <strong>not</strong> try to turn all four jobs into one record type or one proprietary memory format.
+      </p>
+
+      <h2>PAM: Standardize What Crosses the Boundary</h2>
+
+      <p>
+        Portable AI Memory is the clearest answer to the interchange problem. PAM v1.0 was published on February 17, 2026 and defines a vendor-neutral JSON format for moving user memories between systems.
+        Its specification includes provenance, lifecycle state, confidence, relations, access metadata, integrity information, optional conversation files, and optional embeddings.
+        <sup><a href="#source-1">[1]</a></sup>
+      </p>
+
+      <p>The most important line in the PAM specification may be the scope boundary:</p>
+
+      <p><strong>PAM is an interchange format, not a storage format.</strong></p>
+
+      <p>
+        That distinction fits doll unusually well. A portable format does not need to become the internal database schema. The internal system can preserve richer local semantics while importing and exporting a stable external contract at the boundary.
+      </p>
+
+      <p>
+        That is the approach doll now takes. PAM is treated as an adapter target rather than as Doll State itself. The implemented PAM path is deliberately staged: external data is parsed and mapped, ambiguous or unsupported semantics stay visible, imported memories require explicit review before becoming normal confirmed MemoryRecords, and confirmed non-secret memories can be exported back to bounded PAM v1.0 output.
+        <sup><a href="#source-6">[6]</a></sup>
+      </p>
+
+      <p>
+        This matters because a field that exists in two systems is not necessarily authoritative in the same way. An imported lifecycle label, confidence score, relation, or access declaration may be useful evidence without automatically becoming a Doll permission, decision, or policy.
+      </p>
+
+      <p>
+        PAM therefore answers an important part of the portability problem without needing to answer the entire continuity problem.
+      </p>
+
+      <h2>PLUR: Memory Is Not Just Stored or Retrieved</h2>
+
+      <p>
+        PLUR's Engram specification starts from a different question. Its v2.1 specification describes an engram as an atomic unit of learned knowledge that is individually addressable, activation-weighted, and decay-aware.
+        It specifies activation, decay, reinforcement, associations, usage feedback, and a search pipeline, with BM25 as the default lexical retrieval mechanism and optional local indexing.
+        <sup><a href="#source-2">[2]</a></sup>
+      </p>
+
+      <p>
+        The useful idea here is not merely “store more metadata.” It is that <strong>what a memory says</strong> and <strong>how useful it is to retrieve right now</strong> are different kinds of state.
+      </p>
+
+      <p>Consider a durable memory:</p>
+
+      <blockquote>
+        <p>The user prefers local-first tools when the core workflow can remain complete offline.</p>
+      </blockquote>
+
+      <p>
+        The content of that memory should not silently change because it was retrieved ten times this week, ignored for a month, or ranked lower by a new search algorithm.
+      </p>
+
+      <p>
+        That observation sharpened an important boundary in doll: confirmed MemoryRecord content remains authoritative memory, while recall state is derived and rebuildable. Ranking, activation-like signals, retrieval scores, and future usage signals belong to the recall layer, not to the truth of the memory itself.
+        <sup><a href="#source-6">[6]</a></sup>
+      </p>
+
+      <p>
+        This also means doll does not need to copy PLUR's engine-specific state into its canonical memory schema. A future PLUR adapter can preserve and translate what is meaningful without pretending that every activation or decay parameter is universal memory truth.
+      </p>
+
+      <h2>PROJECTMEM: Project History Can Act Before the Next Mistake</h2>
+
+      <p>
+        PROJECTMEM is closer to a different part of doll. Its paper describes a local-first, event-sourced memory and judgment layer for coding agents. Development history is recorded as append-only typed events such as issues, attempts, fixes, decisions, and notes. The system then projects that history into compact summaries and includes a deterministic pre-action gate that can warn before a previously failed fix is repeated or a known-fragile file is edited.
+        <sup><a href="#source-3">[3]</a></sup>
+      </p>
+
+      <p>
+        The current project repository describes the same basic direction while extending the tool with MCP integration, workspace views, code relationships, failure history, and a separate <code>plan.md</code> intent file.
+        <sup><a href="#source-4">[4]</a></sup>
+      </p>
+
+      <p>
+        The key insight is that project memory is not only something an agent searches after it gets confused. Prior experience can be checked <em>before</em> an action is repeated.
+      </p>
+
+      <p>
+        doll now has a related but deliberately separated pair of concepts. ProjectExperienceRecord stores append-oriented semantic work history such as observations, hypotheses, attempts, outcomes, resolutions, and lessons. ContinuityPreflight reads accepted project state before a proposed action and can surface a directly relevant prior failure as an evidence-linked warning.
+        <sup><a href="#source-7">[7]</a></sup>
+        <sup><a href="#source-8">[8]</a></sup>
+      </p>
+
+      <p>But there is an important authority boundary.</p>
+
+      <p>
+        A past failed attempt is not automatically a permanent prohibition. Imported project history is not automatically trusted. A model-proposed lesson does not become a policy. A remembered claim that work is complete does not complete the WorkItem.
+      </p>
+
+      <p>
+        In doll, prior experience can warn. Hard blocking still comes from existing authoritative state such as an applicable policy denial, a blocked or incomplete WorkItem dependency, an unapproved required procedure, a permission decision, or a capability safety boundary.
+      </p>
+
+      <p>
+        That separation is intentional: <strong>experience can inform authority without quietly becoming authority.</strong>
+      </p>
+
+      <h2>One Word, Several Kinds of State</h2>
+
+      <p>The comparison makes “memory” look too broad to be a useful architecture by itself.</p>
+
+      <p>At least five different layers appear:</p>
+
+      <h3>1. Canonical durable state</h3>
+
+      <p>
+        Things the system is expected to preserve as authoritative user-owned state: confirmed memory, project scope, accepted decisions, work state, permissions, policies, artifacts, and their provenance.
+      </p>
+
+      <h3>2. Derived recall state</h3>
+
+      <p>
+        Search indexes, ranking scores, activation-like values, retrieval candidates, and other state that can be rebuilt from authoritative data.
+      </p>
+
+      <h3>3. Experience history</h3>
+
+      <p>
+        What was tried, what failed, what worked, what was later corrected, and which evidence supports that history.
+      </p>
+
+      <h3>4. Interchange formats</h3>
+
+      <p>
+        External contracts such as PAM that let some of those semantics cross system boundaries without dictating the local storage engine.
+      </p>
+
+      <h3>5. Pre-action continuity checks</h3>
+
+      <p>
+        Deterministic checks that ask whether accepted state already contains a blocker, confirmation requirement, incomplete dependency, required procedure, or relevant failure before another action begins.
+      </p>
+
+      <p>
+        Combining all five into a single “memory object” would make portability look simpler while making authority harder to reason about.
+      </p>
+
+      <h2>The Hard Part Is Not Mapping Fields. It Is Mapping Meaning.</h2>
+
+      <p>
+        Suppose two systems both have a field called <code>confidence</code>. One may mean model-estimated extraction confidence. Another may mean a user-reviewed trust state. Treating those as interchangeable because the field names look similar would create semantic loss while claiming successful migration.
+      </p>
+
+      <p>The same problem appears with:</p>
+
+      <ul>
+        <li>active versus authoritative;</li>
+        <li>remembered versus confirmed;</li>
+        <li>decision versus historical note;</li>
+        <li>permission versus imported access metadata;</li>
+        <li>failed attempt versus permanent prohibition;</li>
+        <li>retrieval score versus memory truth;</li>
+        <li>conversation history versus current project state.</li>
+      </ul>
+
+      <p>
+        A continuity system therefore needs to preserve loss and uncertainty, not hide them. When an external format cannot express a Doll semantic exactly, the safer result is an explicit partial mapping, preserved original evidence, or quarantine—not a fabricated equivalence.
+      </p>
+
+      <h2>Why doll Should Prefer Adapters Over Another Universal Format</h2>
+
+      <p>
+        It would be easy for doll to define its own grand interchange format for memory, projects, decisions, experiences, permissions, conversations, and everything else.
+      </p>
+
+      <p>That would also be an easy way to create another island.</p>
+
+      <p>
+        Where a useful external contract exists, the better default is to adapt to it. PAM is already the first general memory-interchange target in doll. PLUR and PROJECTMEM are later interoperability candidates where their semantics match a real boundary. MCP is also later work rather than something that should be smuggled into the core state model just because several adjacent projects use it.
+        <sup><a href="#source-5">[5]</a></sup>
+      </p>
+
+      <p>
+        The canonical Doll State can remain richer than any one interchange format while still avoiding gratuitous proprietary formats at the edges.
+      </p>
+
+      <h2>These Projects Are More Complementary Than Competitive</h2>
+
+      <p>
+        PAM is strongest as a portable contract. PLUR is useful for thinking about retrieval dynamics and memory-use state. PROJECTMEM demonstrates how local project history can become deterministic pre-action judgment. doll needs pieces of all three problem areas because its target is broader continuity across models, runtimes, providers, interfaces, and machines.
+      </p>
+
+      <p>
+        That does not make doll a superset of those projects. It means its architecture has to decide where their ideas belong without collapsing their different semantics into one internal abstraction.
+      </p>
+
+      <p>The resulting rule is simple:</p>
+
+      <p><strong>Standardize interchange. Derive recall. Preserve experience. Keep authority explicit.</strong></p>
+
+      <p>
+        That is a much more useful foundation for continuity than treating every persistent fact, score, event, and permission as “memory.”
+      </p>
+
+      <h2>What Comes Next</h2>
+
+      <p>
+        The comparison has already changed concrete boundaries in doll: MemoryRecord is separated from derived RecallState; PAM is an adapter instead of the canonical store; ProjectExperienceRecord is append-oriented history rather than current project authority; and ContinuityPreflight can use prior failures as warnings without allowing imported or model-proposed experience to manufacture a hard denial.
+        <sup><a href="#source-6">[6]</a></sup>
+        <sup><a href="#source-7">[7]</a></sup>
+        <sup><a href="#source-8">[8]</a></sup>
+      </p>
+
+      <p>
+        The next article in this series will focus on those design changes themselves: what was changed, what was deliberately not adopted, and which interoperability work remains later.
+      </p>
+
+      <p>
+        The larger goal remains the same: the model can change, the provider can change, and the interface can change without forcing the user's durable AI environment to start over.
+      </p>
+
+      <hr>
+
+      <h2>Notes and Sources</h2>
+
+      <ol>
+        <li id="source-1">
+          <a href="https://portable-ai-memory.org/spec/v1.0/">Portable AI Memory — Specification v1.0</a>
+        </li>
+        <li id="source-2">
+          <a href="https://plur.ai/spec.html">PLUR — The Engram Specification v2.1</a>
+        </li>
+        <li id="source-3">
+          <a href="https://arxiv.org/abs/2606.12329">Malo and Qiu — PROJECTMEM: A Local-First, Event-Sourced Memory and Judgment Layer for AI Coding Agents</a>
+        </li>
+        <li id="source-4">
+          <a href="https://github.com/riponcm/projectmem">PROJECTMEM source repository</a>
+        </li>
+        <li id="source-5">
+          <a href="https://github.com/badjoke-lab/doll/blob/main/docs/spec/09a-post-imp-083-memory-continuity-roadmap.md">doll — Post-IMP-083 Memory &amp; Continuity Roadmap</a>
+        </li>
+        <li id="source-6">
+          <a href="https://github.com/badjoke-lab/doll/blob/main/docs/spec/03c-memory-interoperability-recall-and-project-experience.md">doll — Memory Interoperability, Recall, and Project Experience specification</a>
+        </li>
+        <li id="source-7">
+          <a href="https://github.com/badjoke-lab/doll/blob/main/src/doll/project_experience.py">doll — ProjectExperienceRecord implementation</a>
+        </li>
+        <li id="source-8">
+          <a href="https://github.com/badjoke-lab/doll/blob/main/src/doll/continuity_preflight.py">doll — ContinuityPreflight implementation</a>
+        </li>
+      </ol>
+
+      <p>
+        External specifications, paper metadata, and current project descriptions were checked on August 16, 2026. PAM claims above refer to the published v1.0 specification; PLUR claims refer to the Engram v2.1 specification; PROJECTMEM architecture claims are separated between the cited research paper and the current source repository. Product and repository behavior may change after this date. Statements about how these ideas should map into doll are doll's design analysis, not claims made by the external projects.
+      </p>
+    </article>
+  </main>
+</body>
+</html>
