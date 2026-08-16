@@ -1,5 +1,16 @@
 export const OFFICIAL_NOTES = Object.freeze([
   Object.freeze({
+    id: "pam-plur-projectmem-changed-doll-design",
+    kind: "official",
+    title: "How Comparing PAM, PLUR, and PROJECTMEM Changed doll's Design",
+    path: "/notes/pam-plur-projectmem-changed-doll-design/",
+    description: "Five concrete design changes in doll that became clearer after comparing PAM, PLUR, and PROJECTMEM: derived recall, adapter boundaries, project experience, authority, and deterministic continuity preflight.",
+    summary: "How comparing adjacent memory systems sharpened doll's boundaries between canonical memory, derived recall, imported state, project experience, and execution authority.",
+    published: "2026-08-17",
+    related: Object.freeze(["portable-memory-not-ai-continuity", "ai-memory-portability-continuity", "access-is-not-continuity"]),
+    externalVersions: Object.freeze([]),
+  }),
+  Object.freeze({
     id: "portable-memory-not-ai-continuity",
     kind: "official",
     title: "Portable Memory Is Not AI Continuity: PAM, PLUR, PROJECTMEM, and doll",
