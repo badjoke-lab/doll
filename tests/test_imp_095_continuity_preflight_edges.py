@@ -90,7 +90,7 @@ def test_imp_095_project_and_work_lifecycle_errors_fail_closed(
             )
 
         monkeypatch.setattr(
-            preflight.ProjectService,
+            ProjectService,
             "get",
             lambda _self, _record_id: replace(project, lifecycle_status="archived"),
         )
@@ -99,7 +99,7 @@ def test_imp_095_project_and_work_lifecycle_errors_fail_closed(
         monkeypatch.undo()
 
         monkeypatch.setattr(
-            preflight.WorkItemService,
+            WorkItemService,
             "get",
             lambda _self, _record_id: replace(work, lifecycle_status="archived"),
         )
@@ -171,14 +171,14 @@ def test_imp_095_dependency_lookup_and_cross_project_fail_closed(
         synthetic = replace(selected, depends_on_ids=(_MISSING_ID,))
 
     with state.open_state_repository(initialized.root, read_only=True) as repository:
-        original_get = preflight.WorkItemService.get
+        original_get = WorkItemService.get
 
         def missing_dependency(self: WorkItemService, record_id: str) -> WorkItemInfo:
             if record_id == selected.work_item_id:
                 return synthetic
             return original_get(self, record_id)
 
-        monkeypatch.setattr(preflight.WorkItemService, "get", missing_dependency)
+        monkeypatch.setattr(WorkItemService, "get", missing_dependency)
         with pytest.raises(ContinuityPreflightValidationError, match="dependency is invalid"):
             _service(repository).check(
                 project_id=first.project_id,
@@ -194,7 +194,7 @@ def test_imp_095_dependency_lookup_and_cross_project_fail_closed(
                 return synthetic_cross
             return original_get(self, record_id)
 
-        monkeypatch.setattr(preflight.WorkItemService, "get", cross_dependency)
+        monkeypatch.setattr(WorkItemService, "get", cross_dependency)
         with pytest.raises(ContinuityPreflightValidationError, match="dependency belongs"):
             _service(repository).check(
                 project_id=first.project_id,
@@ -286,7 +286,7 @@ def test_imp_095_inactive_procedure_fails_closed(
 
     with state.open_state_repository(initialized.root, read_only=True) as repository:
         monkeypatch.setattr(
-            preflight.ProcedureService,
+            ProcedureService,
             "get",
             lambda _self, _record_id: replace(procedure, lifecycle_status="archived"),
         )
@@ -389,7 +389,7 @@ def test_imp_095_permission_resolution_errors_and_denied_record(
     initialized = _workspace(tmp_path)
     with state.open_state_repository(initialized.root) as repository:
         project = _project(repository)
-        scope = {"kind": "record", "record_id": project.project_id}
+        scope: dict[str, object] = {"kind": "record", "record_id": project.project_id}
         denied_permission = PermissionService(repository).create(
             capability_id="state.read",
             scope=scope,
@@ -416,7 +416,7 @@ def test_imp_095_permission_resolution_errors_and_denied_record(
             del capability_id, scope
             raise SettingsError("synthetic permission failure")
 
-        monkeypatch.setattr(preflight.PermissionService, "resolve", fail_resolve)
+        monkeypatch.setattr(PermissionService, "resolve", fail_resolve)
         with pytest.raises(ContinuityPreflightValidationError, match="could not be resolved"):
             _service(repository).check(
                 project_id=project.project_id,
@@ -447,7 +447,7 @@ def test_imp_095_project_experience_read_failures_are_fail_closed(
             del project_id, include_archived, limit
             raise ProjectExperienceValidationError("synthetic experience failure")
 
-        monkeypatch.setattr(preflight.ProjectExperienceService, "list", fail_list)
+        monkeypatch.setattr(ProjectExperienceService, "list", fail_list)
         with pytest.raises(ContinuityPreflightValidationError, match="could not be inspected"):
             _service(repository).check(
                 project_id=project.project_id,
@@ -482,7 +482,7 @@ def test_imp_095_corrupt_experience_count_fails_closed(
 
     with state.open_state_repository(initialized.root, read_only=True) as repository:
         monkeypatch.setattr(
-            preflight.ProjectService,
+            ProjectService,
             "get",
             lambda _self, _record_id: project,
         )

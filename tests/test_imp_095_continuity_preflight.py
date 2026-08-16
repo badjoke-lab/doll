@@ -297,7 +297,7 @@ def test_imp_095_permission_denial_and_scoped_permission_are_not_grants(
     with state.open_state_repository(initialized.root) as repository:
         project = _project(repository)
 
-    record_scope = {"kind": "record", "record_id": project.project_id}
+    record_scope: dict[str, object] = {"kind": "record", "record_id": project.project_id}
     with state.open_state_repository(initialized.root, read_only=True) as repository:
         denied = _service(repository).check(
             project_id=project.project_id,
