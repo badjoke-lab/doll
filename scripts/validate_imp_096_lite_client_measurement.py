@@ -142,7 +142,9 @@ def validate_evidence(payload: object, *, expected_commit_sha: str) -> dict[str,
     _equal(root, "operating_system", "Darwin")
     architecture = _string(root, "architecture")
     if architecture.casefold() not in {"x86_64", "amd64"}:
-        raise Imp096EvidenceValidationError("evidence architecture is not supported primary Intel Mac")
+        raise Imp096EvidenceValidationError(
+            "evidence architecture is not supported primary Intel Mac"
+        )
     python_version = _string(root, "python_version")
     if _VERSION.fullmatch(python_version) is None:
         raise Imp096EvidenceValidationError("evidence Python version is invalid")

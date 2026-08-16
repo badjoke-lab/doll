@@ -315,7 +315,9 @@ def test_imp_096_validates_rss_disk_and_state_measurements() -> None:
         validator.validate_evidence(payload, expected_commit_sha=_SHA)
 
     payload = _payload()
-    disk = cast(dict[str, object], cast(dict[str, object], payload["measurement"])["workspace_disk"])
+    disk = cast(
+        dict[str, object], cast(dict[str, object], payload["measurement"])["workspace_disk"]
+    )
     disk["total_bytes"] = 0
     with pytest.raises(_error(validator), match="outside the accepted range"):
         validator.validate_evidence(payload, expected_commit_sha=_SHA)
@@ -331,10 +333,13 @@ def test_imp_096_file_loader_is_bounded_strict_and_symlink_safe(tmp_path: Path) 
     validator = _load_validator()
     evidence = tmp_path / "evidence.json"
     evidence.write_text(json.dumps(_payload(), sort_keys=True), encoding="utf-8")
-    assert validator.load_and_validate_evidence(
-        evidence,
-        expected_commit_sha=_SHA,
-    )["result"] == "pass"
+    assert (
+        validator.load_and_validate_evidence(
+            evidence,
+            expected_commit_sha=_SHA,
+        )["result"]
+        == "pass"
+    )
 
     malformed = tmp_path / "malformed.json"
     malformed.write_text("{", encoding="utf-8")
