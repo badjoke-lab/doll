@@ -15,6 +15,7 @@ Official resources:
 - Roadmap: https://github.com/badjoke-lab/doll/blob/main/docs/spec/09-development-roadmap.md
 - Writing index: https://doll.badjoke-lab.com/writing/
 - Notes index: https://doll.badjoke-lab.com/notes/
+- Official note: https://doll.badjoke-lab.com/notes/portable-memory-not-ai-continuity/
 - Official note: https://doll.badjoke-lab.com/notes/ai-memory-portability-continuity/
 - Official note: https://doll.badjoke-lab.com/notes/frontier-ai-infrastructure/
 - Official note: https://doll.badjoke-lab.com/notes/ai-access-national-policy/
