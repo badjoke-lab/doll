@@ -60,8 +60,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 95,
-  "project-status.json must mark Phase 6 in progress through IMP-094 with IMP-095 next",
+    status.phase?.next_implementation === 96,
+  "project-status.json must mark Phase 6 in progress through IMP-095 with IMP-096 next",
 );
 expect(
   status.model_runtime &&
@@ -70,7 +70,7 @@ expect(
   "project-status.json requires model_runtime.connected and model_runtime.message",
 );
 expect(
-  status.model_runtime.message.includes("through IMP-094") &&
+  status.model_runtime.message.includes("through IMP-095") &&
     status.model_runtime.message.includes("bounded Lite client resource measurement mechanics") &&
     status.model_runtime.message.includes("derived rebuildable RecallState boundary") &&
     status.model_runtime.message.includes("MCON-001/MCON-002") &&
@@ -132,6 +132,17 @@ expect(
     status.model_runtime.message.includes("does not change ProjectRecord scope") &&
     status.model_runtime.message.includes("MCON-009") &&
     status.model_runtime.message.includes("experience-aware action blocking remains out of scope until ContinuityPreflight") &&
+    status.model_runtime.message.includes("bounded deterministic ContinuityPreflight read model") &&
+    status.model_runtime.message.includes("read-only repository") &&
+    status.model_runtime.message.includes("caller-classified active policy denials") &&
+    status.model_runtime.message.includes("WorkItem blockers and incomplete dependencies") &&
+    status.model_runtime.message.includes("explicitly required Procedure state") &&
+    status.model_runtime.message.includes("immutable capability risk/release metadata") &&
+    status.model_runtime.message.includes("PermissionRecord resolution") &&
+    status.model_runtime.message.includes("unsuperseded failed ProjectExperienceRecord warnings") &&
+    status.model_runtime.message.includes("does not interpret PolicyRecord prose") &&
+    status.model_runtime.message.includes("existing Capability Broker remains the execution authorization boundary") &&
+    status.model_runtime.message.includes("MCON-011 through MCON-013") &&
     status.model_runtime.message.includes("automatic/model-selected context injection") &&
     status.model_runtime.message.includes("project-aware memory selection") &&
     status.model_runtime.message.includes("accepted real-model semantic embedding dependency evidence") &&
@@ -149,7 +160,7 @@ expect(
     status.model_runtime.message.includes("reported without OCR") &&
     status.model_runtime.message.includes("no source overwrite, output file, persistence") &&
     status.model_runtime.message.includes("passes at both CI and real-machine evidence levels"),
-  "project-status.json must describe IMP-094 while preserving bounded IMP-083 through IMP-093 evidence and non-claims",
+  "project-status.json must describe IMP-095 while preserving bounded IMP-083 through IMP-094 evidence and non-claims",
 );
 expect(
   /^\d{4}-\d{2}-\d{2}$/.test(status.last_reviewed || ""),
