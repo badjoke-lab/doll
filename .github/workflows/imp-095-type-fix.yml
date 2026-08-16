@@ -1,0 +1,69 @@
+name: IMP-095 type fix
+
+on:
+  push:
+    branches:
+      - agent/imp-095
+    paths:
+      - .github/workflows/imp-095-type-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/imp-095
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - name: Fix test typing and validate repository
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          edge = Path("tests/test_imp_095_continuity_preflight_edges.py")
+          text = edge.read_text(encoding="utf-8")
+          replacements = {
+              "preflight.ProjectService": "ProjectService",
+              "preflight.WorkItemService": "WorkItemService",
+              "preflight.ProcedureService": "ProcedureService",
+              "preflight.PermissionService": "PermissionService",
+              "preflight.ProjectExperienceService": "ProjectExperienceService",
+          }
+          for old, new in replacements.items():
+              if old not in text:
+                  raise SystemExit(f"missing edge-test anchor: {old}")
+              text = text.replace(old, new)
+          old_scope = '        scope = {"kind": "record", "record_id": project.project_id}\n'
+          new_scope = '        scope: dict[str, object] = {"kind": "record", "record_id": project.project_id}\n'
+          if text.count(old_scope) != 1:
+              raise SystemExit(f"edge scope anchor count: {text.count(old_scope)}")
+          text = text.replace(old_scope, new_scope)
+          edge.write_text(text, encoding="utf-8")
+
+          core = Path("tests/test_imp_095_continuity_preflight.py")
+          text = core.read_text(encoding="utf-8")
+          old_record_scope = '    record_scope = {"kind": "record", "record_id": project.project_id}\n'
+          new_record_scope = '    record_scope: dict[str, object] = {"kind": "record", "record_id": project.project_id}\n'
+          if text.count(old_record_scope) != 1:
+              raise SystemExit(f"core scope anchor count: {text.count(old_record_scope)}")
+          text = text.replace(old_record_scope, new_record_scope)
+          core.write_text(text, encoding="utf-8")
+          PY
+          uv run ruff check tests/test_imp_095_continuity_preflight.py tests/test_imp_095_continuity_preflight_edges.py
+          uv run ruff format --check tests/test_imp_095_continuity_preflight.py tests/test_imp_095_continuity_preflight_edges.py
+          uv run mypy src tests
+          uv run pytest --no-cov -q tests/test_imp_095_continuity_preflight.py tests/test_imp_095_continuity_preflight_edges.py tests/test_imp_094_project_experience.py tests/test_capabilities.py
+          rm .github/workflows/imp-095-type-fix.yml
+          git config user.name badjoke-lab
+          git config user.email badjoke.lab@gmail.com
+          git add tests/test_imp_095_continuity_preflight.py tests/test_imp_095_continuity_preflight_edges.py .github/workflows/imp-095-type-fix.yml
+          git commit -m "Fix IMP-095 repository type checks"
+          git push origin HEAD:agent/imp-095
