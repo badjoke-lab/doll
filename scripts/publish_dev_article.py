@@ -8,6 +8,7 @@ import os
 import re
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -56,7 +57,44 @@ def _api_key() -> str:
     return value
 
 
+def _request_json(request: urllib.request.Request) -> object:
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")
+        raise DevPublishError(f"DEV API HTTP {exc.code}: {detail}") from exc
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
+        raise DevPublishError(f"DEV API request failed: {exc}") from exc
+
+
+def find_existing_article(api_key: str) -> dict[str, object] | None:
+    query = urllib.parse.urlencode({"page": 1, "per_page": 100})
+    request = urllib.request.Request(
+        f"{API_URL}/me/all?{query}",
+        method="GET",
+        headers={
+            "api-key": api_key,
+            "user-agent": "badjoke-lab-doll-web-013",
+        },
+    )
+    data = _request_json(request)
+    if not isinstance(data, list):
+        raise DevPublishError("DEV API article listing returned a non-list response")
+    for item in data:
+        if not isinstance(item, dict):
+            continue
+        if item.get("canonical_url") == CANONICAL_URL or item.get("title") == TITLE:
+            return item
+    return None
+
+
 def create_article(*, publish: bool) -> dict[str, object]:
+    api_key = _api_key()
+    existing = find_existing_article(api_key)
+    if existing is not None:
+        return existing
+
     payload = {
         "article": {
             "title": TITLE,
@@ -73,19 +111,12 @@ def create_article(*, publish: bool) -> dict[str, object]:
         data=json.dumps(payload).encode("utf-8"),
         method="POST",
         headers={
-            "api-key": _api_key(),
+            "api-key": api_key,
             "content-type": "application/json",
             "user-agent": "badjoke-lab-doll-web-013",
         },
     )
-    try:
-        with urllib.request.urlopen(request, timeout=30) as response:
-            data = json.loads(response.read().decode("utf-8"))
-    except urllib.error.HTTPError as exc:
-        detail = exc.read().decode("utf-8", errors="replace")
-        raise DevPublishError(f"DEV API HTTP {exc.code}: {detail}") from exc
-    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
-        raise DevPublishError(f"DEV API request failed: {exc}") from exc
+    data = _request_json(request)
     if not isinstance(data, dict):
         raise DevPublishError("DEV API returned a non-object response")
     return data
@@ -102,7 +133,7 @@ def main() -> int:
         "id": result.get("id"),
         "published": result.get("published"),
         "url": result.get("url"),
-        "canonical_url": CANONICAL_URL,
+        "canonical_url": result.get("canonical_url", CANONICAL_URL),
     }
     print(json.dumps(summary, sort_keys=True))
     return 0
