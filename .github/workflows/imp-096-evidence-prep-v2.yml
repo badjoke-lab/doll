@@ -25,8 +25,8 @@ jobs:
       - name: Validate IMP-096 evidence tooling
         shell: bash
         run: |
-          uv run ruff check --fix scripts/validate_imp_096_lite_client_measurement.py tests/test_imp_096_lite_client_measurement_evidence.py
           uv run ruff format scripts/validate_imp_096_lite_client_measurement.py tests/test_imp_096_lite_client_measurement_evidence.py
+          uv run ruff check --fix scripts/validate_imp_096_lite_client_measurement.py tests/test_imp_096_lite_client_measurement_evidence.py
           uv run ruff check scripts/validate_imp_096_lite_client_measurement.py tests/test_imp_096_lite_client_measurement_evidence.py
           uv run ruff format --check scripts/validate_imp_096_lite_client_measurement.py tests/test_imp_096_lite_client_measurement_evidence.py
           uv run mypy scripts/validate_imp_096_lite_client_measurement.py tests/test_imp_096_lite_client_measurement_evidence.py
