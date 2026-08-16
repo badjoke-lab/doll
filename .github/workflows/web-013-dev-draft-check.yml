@@ -1,0 +1,26 @@
+name: WEB-013 DEV draft check
+
+on:
+  push:
+    branches:
+      - agent/web-013-dev-syndication
+    paths:
+      - .github/workflows/web-013-dev-draft-check.yml
+
+permissions:
+  contents: read
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/web-013-dev-syndication
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Create or find DEV draft
+        env:
+          DEVTO_API_KEY: ${{ secrets.DEVTO_API_KEY }}
+        run: python scripts/publish_dev_article.py

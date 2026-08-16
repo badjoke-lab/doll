@@ -1,0 +1,42 @@
+name: Publish DEV article
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish immediately instead of creating a draft
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  dev:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Require DEV API key
+        shell: bash
+        env:
+          DEVTO_API_KEY: ${{ secrets.DEVTO_API_KEY }}
+        run: |
+          test -n "$DEVTO_API_KEY" || {
+            echo 'DEVTO_API_KEY repository secret is required.' >&2
+            exit 2
+          }
+      - name: Create DEV article
+        shell: bash
+        env:
+          DEVTO_API_KEY: ${{ secrets.DEVTO_API_KEY }}
+          PUBLISH_NOW: ${{ inputs.publish }}
+        run: |
+          args=()
+          if [[ "$PUBLISH_NOW" == "true" ]]; then
+            args+=(--publish)
+          fi
+          python scripts/publish_dev_article.py "${args[@]}"
