@@ -1,6 +1,6 @@
 # IMP-095 — Bounded deterministic ContinuityPreflight
 
-Status: implementation candidate for Issue #288
+Status: validated implementation candidate in PR #295 for Issue #288
 
 ## Purpose
 
