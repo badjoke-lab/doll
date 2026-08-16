@@ -1,0 +1,40 @@
+name: WEB-012 clean copy
+
+on:
+  push:
+    branches:
+      - agent/web-012-memory-comparison-clean
+    paths:
+      - .github/workflows/web-012-clean-copy.yml
+
+permissions:
+  contents: write
+
+jobs:
+  copy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/web-012-memory-comparison-clean
+          fetch-depth: 0
+      - name: Copy validated WEB-012 files only
+        shell: bash
+        run: |
+          git fetch origin agent/web-012-memory-comparison
+          git checkout origin/agent/web-012-memory-comparison -- \
+            website/notes/portable-memory-not-ai-continuity/index.html \
+            website/src/writing-catalog.js \
+            website/writing/index.html \
+            website/notes/index.html \
+            website/llms.txt \
+            website/ai.txt \
+            website/sitemap.xml
+          node scripts/check-public-writing.mjs
+          node scripts/check-public-site-status.mjs
+          rm .github/workflows/web-012-clean-copy.yml
+          git config user.name badjoke-lab
+          git config user.email badjoke.lab@gmail.com
+          git add website/notes/portable-memory-not-ai-continuity/index.html website/src/writing-catalog.js website/writing/index.html website/notes/index.html website/llms.txt website/ai.txt website/sitemap.xml .github/workflows/web-012-clean-copy.yml
+          git commit -m "WEB-012: publish continuity comparison note"
+          git push origin HEAD:agent/web-012-memory-comparison-clean
