@@ -1,0 +1,39 @@
+name: IMP-096 evidence preparation validation v2
+
+on:
+  push:
+    branches:
+      - agent/imp-096-evidence-prep
+    paths:
+      - .github/workflows/imp-096-evidence-prep-v2.yml
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/imp-096-evidence-prep
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - name: Validate IMP-096 evidence tooling
+        shell: bash
+        run: |
+          uv run ruff check --fix scripts/validate_imp_096_lite_client_measurement.py tests/test_imp_096_lite_client_measurement_evidence.py
+          uv run ruff format scripts/validate_imp_096_lite_client_measurement.py tests/test_imp_096_lite_client_measurement_evidence.py
+          uv run ruff check scripts/validate_imp_096_lite_client_measurement.py tests/test_imp_096_lite_client_measurement_evidence.py
+          uv run ruff format --check scripts/validate_imp_096_lite_client_measurement.py tests/test_imp_096_lite_client_measurement_evidence.py
+          uv run mypy scripts/validate_imp_096_lite_client_measurement.py tests/test_imp_096_lite_client_measurement_evidence.py
+          uv run pytest --no-cov -q tests/test_imp_083_lite_client_measurement.py tests/test_imp_096_lite_client_measurement_evidence.py
+          rm .github/workflows/imp-096-evidence-prep.yml .github/workflows/imp-096-evidence-prep-v2.yml
+          git config user.name badjoke-lab
+          git config user.email badjoke.lab@gmail.com
+          git add scripts/validate_imp_096_lite_client_measurement.py tests/test_imp_096_lite_client_measurement_evidence.py .github/workflows/imp-096-evidence-prep.yml .github/workflows/imp-096-evidence-prep-v2.yml
+          git commit -m "Validate IMP-096 measurement evidence tooling"
+          git push origin HEAD:agent/imp-096-evidence-prep
