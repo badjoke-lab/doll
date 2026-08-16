@@ -1,5 +1,16 @@
 export const OFFICIAL_NOTES = Object.freeze([
   Object.freeze({
+    id: "portable-memory-not-ai-continuity",
+    kind: "official",
+    title: "Portable Memory Is Not AI Continuity: PAM, PLUR, PROJECTMEM, and doll",
+    path: "/notes/portable-memory-not-ai-continuity/",
+    description: "A design comparison of PAM, PLUR, PROJECTMEM, and doll across memory interchange, retrieval dynamics, project experience, authority, and deterministic pre-action continuity checks.",
+    summary: "Why portable memory, retrieval state, project experience, and continuity authority should interoperate without collapsing into one memory model.",
+    published: "2026-08-16",
+    related: Object.freeze(["ai-memory-portability-continuity", "access-is-not-continuity", "frontier-ai-infrastructure"]),
+    externalVersions: Object.freeze([]),
+  }),
+  Object.freeze({
     id: "ai-memory-portability-continuity",
     kind: "official",
     title: "AI Memory Is Becoming Portable. Continuity Still Isn't.",
@@ -7,7 +18,7 @@ export const OFFICIAL_NOTES = Object.freeze([
     description: "AI services are getting better at exporting, importing, and reusing memory and chat history. Why portability is real progress, but still not the same as user-owned AI continuity.",
     summary: "Why exportability, importability, portability, and continuity are different layers—and why durable AI state should remain outside any one provider.",
     published: "2026-08-12",
-    related: Object.freeze(["frontier-ai-infrastructure", "access-is-not-continuity", "ai-access-national-policy", "permissioned-ai-access", "ai-will-remain"]),
+    related: Object.freeze(["portable-memory-not-ai-continuity", "frontier-ai-infrastructure", "access-is-not-continuity", "ai-access-national-policy", "permissioned-ai-access", "ai-will-remain"]),
     externalVersions: Object.freeze([]),
   }),
   Object.freeze({
