@@ -155,9 +155,7 @@ class ContinuityPreflightService:
             try:
                 procedure = ProcedureService(self.repository).get(procedure_id)
             except (KeyError, ProcedureError) as exc:
-                raise ContinuityPreflightValidationError(
-                    "required procedure is invalid"
-                ) from exc
+                raise ContinuityPreflightValidationError("required procedure is invalid") from exc
             if procedure.project_id != project.project_id:
                 raise ContinuityPreflightValidationError(
                     "required procedure belongs to another project"
@@ -179,17 +177,13 @@ class ContinuityPreflightService:
             )
         if capability_id is None:
             if permission_scope is not None:
-                raise ContinuityPreflightValidationError(
-                    "permission scope requires a capability"
-                )
+                raise ContinuityPreflightValidationError("permission scope requires a capability")
         else:
             definition = self.capability_registry.get(capability_id, capability_version or "")
             if definition is None:
                 raise ContinuityPreflightValidationError(
                     "preflight capability is not registered at the requested version"
                 )
-            if not definition.release_available:
-                warnings.add("capability.release_excluded")
             if definition.risk_tier is CapabilityRiskTier.HIGH_RISK:
                 requires_confirmation = True
                 warnings.add("capability.high_risk_confirmation_required")
@@ -226,7 +220,7 @@ class ContinuityPreflightService:
                         blockers.add(permission.record_id)
                     warnings.add(f"permission.denied.{permission.reason}")
             if not definition.release_available:
-                warnings.add("capability.not_release_available")
+                warnings.add("capability.release_excluded")
 
         self._add_failed_experience_warnings(
             project_id=project.project_id,
@@ -236,7 +230,7 @@ class ContinuityPreflightService:
         )
 
         blocked_without_record = any(
-            code.startswith("permission.denied.") or code == "capability.not_release_available"
+            code.startswith("permission.denied.") or code == "capability.release_excluded"
             for code in warnings
         )
         if blockers or blocked_without_record:

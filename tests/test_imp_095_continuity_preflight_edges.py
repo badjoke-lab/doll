@@ -25,7 +25,6 @@ from doll.state import StateCorruptError
 from doll.state_repository import StateRepository
 from doll.work_item import WorkItemInfo, WorkItemService
 
-
 _MISSING_ID = "00000000-0000-0000-0000-000000000001"
 
 
@@ -336,7 +335,15 @@ def test_imp_095_capability_scope_confirmation_and_release_boundaries(
                 capability_version="1.0",
                 permission_scope={"kind": "project", "project_id": project.project_id},
             )
-        confirmation = service.check(
+        tier3_definition = next(
+            item
+            for item in built_in_capability_registry().definitions()
+            if item.capability_id == "adapter.fixed_process.example"
+        )
+        confirmation = ContinuityPreflightService(
+            repository,
+            CapabilityRegistry((replace(tier3_definition, release_available=True),)),
+        ).check(
             project_id=project.project_id,
             proposed_action_class="edge.high-risk",
             capability_id="adapter.fixed_process.example",
@@ -429,6 +436,7 @@ def test_imp_095_project_experience_read_failures_are_fail_closed(
         project = _project(repository)
 
     with state.open_state_repository(initialized.root, read_only=True) as repository:
+
         def fail_list(
             _self: ProjectExperienceService,
             *,
