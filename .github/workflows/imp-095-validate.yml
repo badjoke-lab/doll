@@ -57,19 +57,29 @@ jobs:
           )
 
           module = Path("src/doll/continuity_preflight.py")
-          duplicate_release = '''            if not definition.release_available:\n                warnings.add("capability.release_excluded")\n'''
           replace_once(
               module,
-              duplicate_release,
+              '''            if not definition.release_available:\n                warnings.add("capability.release_excluded")\n''',
               "",
               "remove duplicate release warning",
           )
           replace_once(
               module,
-              '            code.startswith("permission.denied.") or code == "capability.not_release_available"\n',
-              '            code.startswith("permission.denied.") or code == "capability.not_release_available"\n',
-              "release blocker anchor",
+              '                warnings.add("capability.not_release_available")\n',
+              '                warnings.add("capability.release_excluded")\n',
+              "canonical release warning",
           )
+          replace_once(
+              module,
+              '            code.startswith("permission.denied.") or code == "capability.not_release_available"\n',
+              '            code.startswith("permission.denied.") or code == "capability.release_excluded"\n',
+              "release blocker code",
+          )
+
+          edge = Path("tests/test_imp_095_continuity_preflight_edges.py")
+          old_confirmation = '''        confirmation = service.check(\n            project_id=project.project_id,\n            proposed_action_class="edge.high-risk",\n            capability_id="adapter.fixed_process.example",\n            capability_version="1.0",\n            permission_scope={"kind": "project", "project_id": project.project_id},\n        )\n'''
+          new_confirmation = '''        tier3_definition = next(\n            item\n            for item in built_in_capability_registry().definitions()\n            if item.capability_id == "adapter.fixed_process.example"\n        )\n        confirmation = ContinuityPreflightService(\n            repository,\n            CapabilityRegistry((replace(tier3_definition, release_available=True),)),\n        ).check(\n            project_id=project.project_id,\n            proposed_action_class="edge.high-risk",\n            capability_id="adapter.fixed_process.example",\n            capability_version="1.0",\n            permission_scope={"kind": "project", "project_id": project.project_id},\n        )\n'''
+          replace_once(edge, old_confirmation, new_confirmation, "tier3 confirmation fixture")
           PY
           uv run ruff check --fix src/doll/continuity_preflight.py tests/test_imp_095_continuity_preflight.py tests/test_imp_095_continuity_preflight_edges.py
           uv run ruff format src/doll/continuity_preflight.py tests/test_imp_095_continuity_preflight.py tests/test_imp_095_continuity_preflight_edges.py
