@@ -1,0 +1,30 @@
+name: WEB-014 canonical live check
+
+on:
+  push:
+    branches:
+      - agent/web-014-live-check
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify canonical article is live
+        shell: bash
+        run: |
+          set -euo pipefail
+          url='https://doll.badjoke-lab.com/notes/pam-plur-projectmem-changed-doll-design/'
+          for attempt in $(seq 1 18); do
+            code="$(curl -L --silent --show-error --output article.html --write-out '%{http_code}' "$url" || true)"
+            echo "attempt=$attempt http=$code"
+            if [ "$code" = '200' ] \
+              && grep -Fq "How Comparing PAM, PLUR, and PROJECTMEM Changed doll's Design" article.html \
+              && grep -Fq 'MemoryRecord' article.html \
+              && grep -Fq 'ContinuityPreflight' article.html; then
+              echo 'WEB-014_CANONICAL_LIVE=1'
+              exit 0
+            fi
+            sleep 10
+          done
+          echo 'WEB-014_CANONICAL_LIVE=0'
+          exit 1
