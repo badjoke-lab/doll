@@ -17,6 +17,7 @@ https://github.com/badjoke-lab/doll/tree/main/docs/spec
 https://github.com/badjoke-lab/doll/blob/main/docs/spec/09-development-roadmap.md
 https://doll.badjoke-lab.com/writing/
 https://doll.badjoke-lab.com/notes/
+https://doll.badjoke-lab.com/notes/pam-plur-projectmem-changed-doll-design/
 https://doll.badjoke-lab.com/notes/portable-memory-not-ai-continuity/
 https://doll.badjoke-lab.com/notes/ai-memory-portability-continuity/
 https://doll.badjoke-lab.com/notes/frontier-ai-infrastructure/
