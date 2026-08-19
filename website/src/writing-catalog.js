@@ -8,7 +8,12 @@ export const OFFICIAL_NOTES = Object.freeze([
     summary: "How comparing adjacent memory systems sharpened doll's boundaries between canonical memory, derived recall, imported state, project experience, and execution authority.",
     published: "2026-08-17",
     related: Object.freeze(["portable-memory-not-ai-continuity", "ai-memory-portability-continuity", "access-is-not-continuity"]),
-    externalVersions: Object.freeze([]),
+    externalVersions: Object.freeze([
+      Object.freeze({
+        publisher: "DEV Community",
+        url: "https://dev.to/badjoke-lab/how-comparing-pam-plur-and-projectmem-changed-dolls-design-2efo",
+      }),
+    ]),
   }),
   Object.freeze({
     id: "portable-memory-not-ai-continuity",
