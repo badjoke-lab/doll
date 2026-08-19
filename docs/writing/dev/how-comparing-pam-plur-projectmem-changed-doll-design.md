@@ -1,10 +1,11 @@
 ---
 title: How Comparing PAM, PLUR, and PROJECTMEM Changed doll's Design
-published: false
+published: true
 description: Five concrete design changes in doll that became clearer after comparing PAM, PLUR, and PROJECTMEM: derived recall, adapter boundaries, project experience, authority, and deterministic continuity preflight.
 tags: ai, opensource, architecture, localfirst
 series: doll
 canonical_url: https://doll.badjoke-lab.com/notes/pam-plur-projectmem-changed-doll-design/
+dev_url: https://dev.to/badjoke-lab/how-comparing-pam-plur-and-projectmem-changed-dolls-design-2efo
 ---
 
 The previous article compared Portable AI Memory (PAM), PLUR's Engram specification, PROJECTMEM, and doll.
