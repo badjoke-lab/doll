@@ -8,7 +8,6 @@ import json
 import platform
 import re
 import subprocess
-import sys
 import time
 from pathlib import Path
 from typing import cast
@@ -16,8 +15,6 @@ from typing import cast
 from doll.lite_measurement import ProcessRssSnapshot, read_process_rss
 from doll.ollama_adapter import (
     MAX_OLLAMA_JSON_BYTES,
-    OLLAMA_ADAPTER_ID,
-    OLLAMA_ADAPTER_VERSION,
     LoopbackOllamaTransport,
     OllamaAdapterConfig,
     OllamaEndpoint,
@@ -414,13 +411,22 @@ def _checks(observation: dict[str, object], *, machine: bool) -> dict[str, bool]
         "runtime_process_rss_sample_count_is_fixed": isinstance(runtime_rss, list)
         and len(runtime_rss) == REPEAT_COUNT + 1,
         "runtime_process_rss_samples_positive": isinstance(runtime_rss, list)
-        and all(isinstance(value, int) and not isinstance(value, bool) and value > 0 for value in runtime_rss),
+        and all(
+            isinstance(value, int) and not isinstance(value, bool) and value > 0
+            for value in runtime_rss
+        ),
         "runtime_process_count_samples_positive": isinstance(process_counts, list)
         and len(process_counts) == REPEAT_COUNT + 1
-        and all(isinstance(value, int) and not isinstance(value, bool) and value > 0 for value in process_counts),
+        and all(
+            isinstance(value, int) and not isinstance(value, bool) and value > 0
+            for value in process_counts
+        ),
         "generation_output_count_is_fixed": isinstance(output_counts, list)
         and len(output_counts) == REPEAT_COUNT
-        and all(isinstance(value, int) and not isinstance(value, bool) and value > 0 for value in output_counts),
+        and all(
+            isinstance(value, int) and not isinstance(value, bool) and value > 0
+            for value in output_counts
+        ),
         "generation_duration_summary_present": isinstance(duration, dict)
         and duration.get("maximum_ns") is not None,
         "opaque_model_identity_present": isinstance(model, dict)
@@ -432,8 +438,7 @@ def _checks(observation: dict[str, object], *, machine: bool) -> dict[str, bool]
         and isinstance(model.get("provider_reported_installed_size_bytes"), int)
         and not isinstance(model.get("provider_reported_installed_size_bytes"), bool)
         and cast(int, model["provider_reported_installed_size_bytes"]) > 0,
-        "real_machine_flag_matches_evidence_level": machine
-        or not machine,
+        "real_machine_flag_matches_evidence_level": machine or not machine,
     }
 
 
