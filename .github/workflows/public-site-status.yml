@@ -6,6 +6,7 @@ on:
       - "README.md"
       - "website/**"
       - "scripts/check-public-site-status.mjs"
+      - "scripts/check-public-site-status-frontier.mjs"
       - "scripts/check-public-writing.mjs"
       - ".github/workflows/public-site-status.yml"
       - "docs/spec/09-development-roadmap.md"
@@ -16,6 +17,7 @@ on:
       - "README.md"
       - "website/**"
       - "scripts/check-public-site-status.mjs"
+      - "scripts/check-public-site-status-frontier.mjs"
       - "scripts/check-public-writing.mjs"
       - ".github/workflows/public-site-status.yml"
       - "docs/spec/09-development-roadmap.md"
@@ -36,7 +38,7 @@ jobs:
           node-version: 22
 
       - name: Validate public status sources
-        run: node scripts/check-public-site-status.mjs
+        run: node scripts/check-public-site-status-frontier.mjs
 
       - name: Validate public writing sources
         run: node scripts/check-public-writing.mjs
