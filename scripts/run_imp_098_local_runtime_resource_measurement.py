@@ -120,9 +120,7 @@ def _validate_environment(arguments: argparse.Namespace) -> bool:
             arguments.model,
         )
     ):
-        raise Imp098MeasurementError(
-            "CI evidence cannot accept real-machine confirmations"
-        )
+        raise Imp098MeasurementError("CI evidence cannot accept real-machine confirmations")
     return machine
 
 
@@ -305,8 +303,7 @@ def _rss_payload(snapshot: ProcessRssSnapshot) -> dict[str, object]:
 
 def _summarize(values: list[int]) -> dict[str, object]:
     if len(values) != REPEAT_COUNT or any(
-        isinstance(value, bool) or not isinstance(value, int) or value <= 0
-        for value in values
+        isinstance(value, bool) or not isinstance(value, int) or value <= 0 for value in values
     ):
         raise Imp098MeasurementError("invalid repeated measurement values")
     return {
