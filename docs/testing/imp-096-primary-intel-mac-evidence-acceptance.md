@@ -1,108 +1,79 @@
 # IMP-096 primary Intel Mac evidence acceptance
 
-Status: preparation for Issue #297; this document does not contain or claim real-machine evidence.
+Status: accepted real-machine evidence for Issue #297.
 
 ## Purpose
 
-IMP-096 accepts one privacy-reviewed primary Intel Mac result from the already-implemented IMP-083 Lite client measurement harness. The validator added in this preparation slice makes the evidence contract deterministic before the physical-machine run occurs.
+IMP-096 accepts one privacy-reviewed primary Intel Mac result from the already-implemented IMP-083 Lite client measurement harness. The evidence contract was prepared first so the later physical run could bind to one exact main commit and be checked deterministically.
 
-This preparation must be merged **before** the accepted measurement is collected. The later measurement therefore binds to one exact main commit that already contains both the runner and its evidence validator.
+## Accepted evidence
 
-## Sequence
+Measured commit:
 
-### 1. Merge the preparation slice
+`b57ebe6fb4a7620901b95b49f6743b71ae1026f7`
 
-Merge the validator and its tests without closing Issue #297. No real-machine evidence exists at this point.
+Accepted evidence file:
 
-### 2. On the primary Intel Mac, update to the exact accepted main commit
+`docs/testing/results/IMP-096-primary-intel-mac-lite-client-resource-measurement.json`
 
-Use the existing repository and verify that the tracked checkout is clean. Do not make local source edits for the measurement.
+The physical run satisfied the runbook conditions:
 
-Record the commit that will be measured:
+- clean tracked checkout at the exact measured commit;
+- `Darwin` on `x86_64`;
+- CPython `3.14.6`;
+- network manually disabled before measurement and recorded as `offline-confirmed`;
+- local-only execution explicitly confirmed;
+- no Ollama/model runtime started for the measurement;
+- no cloud credentials required;
+- evidence runner exited zero.
 
-```sh
-COMMIT_SHA="$(git rev-parse HEAD)"
-printf '%s\n' "$COMMIT_SHA"
-```
+## Privacy review
 
-The runner independently verifies that the supplied SHA is the current `HEAD` and that the tracked index/worktree is clean.
+The complete raw JSON was manually reviewed before repository acceptance. It contains no absolute local paths, usernames, hostnames, model names, request/prompt/response/source text, credentials or secret values, or workspace identifiers/private machine identifiers.
 
-### 3. Establish the runbook environment manually
+The fixed report privacy flags are all `false`. This manual review remains part of the acceptance record; validator checks do not replace it.
 
-Before running the measurement:
+## Deterministic validation
 
-- confirm `uname -s` is `Darwin`;
-- confirm `uname -m` is `x86_64` or `amd64`;
-- manually disable network connectivity;
-- do not provide cloud credentials;
-- do not start Ollama or another model/runtime for this measurement;
-- keep the output path outside tracked repository content.
-
-These are operator facts. A command-line flag records the confirmation but cannot prove that the physical network was actually disabled.
-
-### 4. Run the existing IMP-083 measurement once
-
-From the clean measured checkout:
+The acceptance PR adds a CI regression test that invokes:
 
 ```sh
-uv run python scripts/run_imp_083_lite_client_measurement.py \
-  --commit-sha "$COMMIT_SHA" \
-  --evidence-level real-machine \
-  --offline-confirmed \
-  --local-only-confirmed \
-  > ../imp096-lite-client-measurement.json
+python scripts/validate_imp_096_lite_client_measurement.py \
+  docs/testing/results/IMP-096-primary-intel-mac-lite-client-resource-measurement.json \
+  --expected-commit-sha b57ebe6fb4a7620901b95b49f6743b71ae1026f7
 ```
 
-A non-zero exit is not accepted evidence. Do not edit a failed result into a passing result.
-
-### 5. Manually inspect the raw JSON for privacy
-
-Before copying any result into the repository, inspect the complete JSON and confirm that it contains no:
-
-- absolute local paths;
-- usernames;
-- hostnames;
-- model names;
-- request, prompt, response, or source text;
-- credentials or secret values;
-- workspace identifiers or other private machine identifiers.
-
-The validator checks the fixed privacy flags and exact bounded schema, but it does **not** replace this manual review.
-
-If unexpected private content exists, do not commit the file. Fix the measurement/reporting boundary in a separate reviewed change and rerun the measurement.
-
-### 6. Validate the reviewed result against the measured commit
-
-Run:
-
-```sh
-uv run python scripts/validate_imp_096_lite_client_measurement.py \
-  ../imp096-lite-client-measurement.json \
-  --expected-commit-sha "$COMMIT_SHA"
-```
-
-Accepted validator output is a small derived summary with:
+Accepted validator output must retain:
 
 - `result = pass`;
-- the validated measured commit SHA;
+- exact validated measured commit SHA;
 - `evidence_level = real-machine`;
 - `measurement_scope = doll-lite-client-only`;
-- performance thresholds still undefined;
-- Phase 6 still incomplete;
-- Lite v1 still incomplete;
+- performance thresholds undefined;
+- Phase 6 incomplete;
+- Lite v1 incomplete;
 - `manual_privacy_review_required = true`.
 
-The validator fails closed on unknown/missing fields, wrong machine/evidence class, commit mismatch, false checks, reordered steps, negative/invalid measurements, network/process attempts, privacy flags, or release/performance overclaims.
+The validator fails closed on unknown/missing fields, wrong machine/evidence class, commit mismatch, false checks, reordered steps, invalid measurements, network/process attempts, privacy flags, or release/performance overclaims.
 
-### 7. Only then prepare the evidence acceptance PR
+## Accepted measured values
 
-The acceptance PR may add the reviewed JSON to the repository's testing-results area and update the evidence/status documentation required by Issue #297.
+The bounded Lite-client-only workload reports:
 
-The PR must keep the measured commit SHA unchanged. The acceptance PR's own head SHA will naturally be newer because adding the evidence file is a later repository mutation.
+- total duration: `256372493 ns`;
+- peak process RSS: `41291776 bytes` (`resource-ru_maxrss`);
+- workspace disk bytes: `86369`;
+- workspace file count: `2`;
+- workspace directory count: `7`;
+- measured-workload network attempts: `0`;
+- measured-workload process-launch attempts: `0`;
+- doctor status: `pass`.
 
-## Non-claims after a passing measurement
+These are evidence values from one accepted physical Intel Mac run, not product requirements.
 
-A passing IMP-096 measurement does **not** establish:
+## Non-claims after acceptance
+
+IMP-096 does **not** establish:
 
 - minimum RAM;
 - maximum disk footprint;
