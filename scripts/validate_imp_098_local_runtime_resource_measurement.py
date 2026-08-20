@@ -190,9 +190,7 @@ def load_and_validate_evidence(
         if isinstance(value, dict):
             for key, child in value.items():
                 if key in forbidden_keys:
-                    raise Imp098EvidenceValidationError(
-                        f"forbidden shareable evidence key: {key}"
-                    )
+                    raise Imp098EvidenceValidationError(f"forbidden shareable evidence key: {key}")
                 inspect_keys(child)
         elif isinstance(value, list):
             for child in value:
