@@ -5,10 +5,15 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE = (
-    "docs/testing/results/"
-    "IMP-096-primary-intel-mac-lite-client-resource-measurement.json"
+    ROOT
+    / "docs"
+    / "testing"
+    / "results"
+    / "IMP-096-primary-intel-mac-lite-client-resource-measurement.json"
 )
 MEASURED_SHA = "b57ebe6fb4a7620901b95b49f6743b71ae1026f7"
 
@@ -18,11 +23,11 @@ def test_imp_096_primary_intel_mac_evidence_passes_deterministic_validator() -> 
         [
             sys.executable,
             "scripts/validate_imp_096_lite_client_measurement.py",
-            EVIDENCE,
+            str(EVIDENCE),
             "--expected-commit-sha",
             MEASURED_SHA,
         ],
-        cwd=".",
+        cwd=ROOT,
         capture_output=True,
         text=True,
         check=True,
