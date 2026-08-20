@@ -8,13 +8,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-EVIDENCE = ROOT / (
-    "docs/testing/results/"
-    "IMP-096-primary-intel-mac-lite-client-resource-measurement.json"
-)
-EXPECTED = ROOT / (
-    "docs/testing/results/IMP-097-lite-client-performance-interpretation.json"
-)
+RESULTS = ROOT / "docs" / "testing" / "results"
+EVIDENCE = RESULTS / "IMP-096-primary-intel-mac-lite-client-resource-measurement.json"
+EXPECTED = RESULTS / "IMP-097-lite-client-performance-interpretation.json"
 SCRIPT = ROOT / "scripts/interpret_imp_097_lite_client_performance.py"
 
 
