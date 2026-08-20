@@ -6,6 +6,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from typing import cast
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNNER = ROOT / "scripts/run_imp_098_local_runtime_resource_measurement.py"
@@ -173,7 +174,9 @@ def test_imp_098_validator_rejects_wrong_scope(tmp_path: Path) -> None:
 
 def test_imp_098_validator_rejects_invalid_model_identity(tmp_path: Path) -> None:
     path, payload, commit_sha = _real_like_fixture(tmp_path)
-    payload["observation"]["model"]["model_id"] = "native-model-name"
+    observation = cast(dict[str, object], payload["observation"])
+    model = cast(dict[str, object], observation["model"])
+    model["model_id"] = "native-model-name"
     _write(path, payload)
 
     completed = _run_validator(path, commit_sha)
@@ -186,7 +189,8 @@ def test_imp_098_validator_rejects_invalid_model_identity(tmp_path: Path) -> Non
 
 def test_imp_098_validator_rejects_release_overclaim(tmp_path: Path) -> None:
     path, payload, commit_sha = _real_like_fixture(tmp_path)
-    payload["claims"]["minimum_system_ram_requirement_defined"] = True
+    claims = cast(dict[str, object], payload["claims"])
+    claims["minimum_system_ram_requirement_defined"] = True
     _write(path, payload)
 
     completed = _run_validator(path, commit_sha)
@@ -199,7 +203,9 @@ def test_imp_098_validator_rejects_release_overclaim(tmp_path: Path) -> None:
 
 def test_imp_098_validator_rejects_private_model_name_key(tmp_path: Path) -> None:
     path, payload, commit_sha = _real_like_fixture(tmp_path)
-    payload["observation"]["model"]["native_model_name"] = "private-model"
+    observation = cast(dict[str, object], payload["observation"])
+    model = cast(dict[str, object], observation["model"])
+    model["native_model_name"] = "private-model"
     _write(path, payload)
 
     completed = _run_validator(path, commit_sha)
@@ -212,7 +218,8 @@ def test_imp_098_validator_rejects_private_model_name_key(tmp_path: Path) -> Non
 
 def test_imp_098_validator_rejects_inconsistent_runtime_rss(tmp_path: Path) -> None:
     path, payload, commit_sha = _real_like_fixture(tmp_path)
-    payload["observation"]["maximum_sampled_runtime_process_tree_rss_bytes"] = 1
+    observation = cast(dict[str, object], payload["observation"])
+    observation["maximum_sampled_runtime_process_tree_rss_bytes"] = 1
     _write(path, payload)
 
     completed = _run_validator(path, commit_sha)
