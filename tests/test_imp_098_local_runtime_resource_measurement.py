@@ -22,7 +22,7 @@ def _head() -> str:
     ).stdout.strip()
 
 
-def _run_runner() -> subprocess.CompletedProcess[str]:
+def _run_runner(*extra: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [
             sys.executable,
@@ -31,6 +31,7 @@ def _run_runner() -> subprocess.CompletedProcess[str]:
             _head(),
             "--evidence-level",
             "ci",
+            *extra,
         ],
         cwd=ROOT,
         capture_output=True,
@@ -76,6 +77,10 @@ def _real_like_fixture(tmp_path: Path) -> tuple[Path, dict[str, object], str]:
     return path, payload, _head()
 
 
+def _write(path: Path, payload: dict[str, object]) -> None:
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+
 def test_imp_098_ci_runner_is_synthetic_and_conservative() -> None:
     completed = _run_runner()
 
@@ -99,6 +104,15 @@ def test_imp_098_ci_runner_is_synthetic_and_conservative() -> None:
     assert len(runtime_rss) == 4
 
 
+def test_imp_098_ci_runner_rejects_machine_confirmation() -> None:
+    completed = _run_runner("--offline-confirmed")
+
+    assert completed.returncode == 2
+    failure = json.loads(completed.stdout)
+    assert failure["result"] == "fail"
+    assert failure["stage"] == "environment"
+
+
 def test_imp_098_validator_accepts_bounded_real_machine_shape(tmp_path: Path) -> None:
     path, _, commit_sha = _real_like_fixture(tmp_path)
 
@@ -120,10 +134,60 @@ def test_imp_098_validator_accepts_bounded_real_machine_shape(tmp_path: Path) ->
     }
 
 
+def test_imp_098_validator_rejects_wrong_commit(tmp_path: Path) -> None:
+    path, _, _ = _real_like_fixture(tmp_path)
+
+    completed = _run_validator(path, "0" * 40)
+
+    assert completed.returncode == 2
+    failure = json.loads(completed.stdout)
+    assert failure["result"] == "fail"
+    assert failure["message"] == "invalid commit_sha"
+
+
+def test_imp_098_validator_rejects_wrong_machine_class(tmp_path: Path) -> None:
+    path, payload, commit_sha = _real_like_fixture(tmp_path)
+    payload["architecture"] = "arm64"
+    _write(path, payload)
+
+    completed = _run_validator(path, commit_sha)
+
+    assert completed.returncode == 2
+    failure = json.loads(completed.stdout)
+    assert failure["result"] == "fail"
+    assert "primary Intel Mac architecture" in failure["message"]
+
+
+def test_imp_098_validator_rejects_wrong_scope(tmp_path: Path) -> None:
+    path, payload, commit_sha = _real_like_fixture(tmp_path)
+    payload["measurement_scope"] = "full-system"
+    _write(path, payload)
+
+    completed = _run_validator(path, commit_sha)
+
+    assert completed.returncode == 2
+    failure = json.loads(completed.stdout)
+    assert failure["result"] == "fail"
+    assert failure["message"] == "invalid measurement_scope"
+
+
+def test_imp_098_validator_rejects_invalid_model_identity(tmp_path: Path) -> None:
+    path, payload, commit_sha = _real_like_fixture(tmp_path)
+    payload["observation"]["model"]["model_id"] = "native-model-name"
+    _write(path, payload)
+
+    completed = _run_validator(path, commit_sha)
+
+    assert completed.returncode == 2
+    failure = json.loads(completed.stdout)
+    assert failure["result"] == "fail"
+    assert failure["message"] == "opaque model identity is invalid"
+
+
 def test_imp_098_validator_rejects_release_overclaim(tmp_path: Path) -> None:
     path, payload, commit_sha = _real_like_fixture(tmp_path)
     payload["claims"]["minimum_system_ram_requirement_defined"] = True
-    path.write_text(json.dumps(payload), encoding="utf-8")
+    _write(path, payload)
 
     completed = _run_validator(path, commit_sha)
 
@@ -136,7 +200,7 @@ def test_imp_098_validator_rejects_release_overclaim(tmp_path: Path) -> None:
 def test_imp_098_validator_rejects_private_model_name_key(tmp_path: Path) -> None:
     path, payload, commit_sha = _real_like_fixture(tmp_path)
     payload["observation"]["model"]["native_model_name"] = "private-model"
-    path.write_text(json.dumps(payload), encoding="utf-8")
+    _write(path, payload)
 
     completed = _run_validator(path, commit_sha)
 
@@ -149,7 +213,7 @@ def test_imp_098_validator_rejects_private_model_name_key(tmp_path: Path) -> Non
 def test_imp_098_validator_rejects_inconsistent_runtime_rss(tmp_path: Path) -> None:
     path, payload, commit_sha = _real_like_fixture(tmp_path)
     payload["observation"]["maximum_sampled_runtime_process_tree_rss_bytes"] = 1
-    path.write_text(json.dumps(payload), encoding="utf-8")
+    _write(path, payload)
 
     completed = _run_validator(path, commit_sha)
 
