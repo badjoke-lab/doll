@@ -60,8 +60,8 @@ expect(
     status.phase?.name === "Local AI portability and daily-use integration" &&
     status.phase?.state === "in_progress" &&
     status.phase?.started_by_implementation === 55 &&
-    status.phase?.next_implementation === 96,
-  "project-status.json must mark Phase 6 in progress through IMP-095 with IMP-096 next",
+    status.phase?.next_implementation === 97,
+  "project-status.json must mark Phase 6 in progress through IMP-096 with IMP-097 next",
 );
 expect(
   status.model_runtime &&
@@ -70,7 +70,7 @@ expect(
   "project-status.json requires model_runtime.connected and model_runtime.message",
 );
 expect(
-  status.model_runtime.message.includes("through IMP-095") &&
+  status.model_runtime.message.includes("through IMP-096") &&
     status.model_runtime.message.includes("bounded Lite client resource measurement mechanics") &&
     status.model_runtime.message.includes("derived rebuildable RecallState boundary") &&
     status.model_runtime.message.includes("MCON-001/MCON-002") &&
@@ -159,8 +159,18 @@ expect(
     status.model_runtime.message.includes("invocation-only in-process pypdf adapter") &&
     status.model_runtime.message.includes("reported without OCR") &&
     status.model_runtime.message.includes("no source overwrite, output file, persistence") &&
-    status.model_runtime.message.includes("passes at both CI and real-machine evidence levels"),
-  "project-status.json must describe IMP-095 while preserving bounded IMP-083 through IMP-094 evidence and non-claims",
+    status.model_runtime.message.includes("passes at both CI and real-machine evidence levels") &&
+    status.model_runtime.message.includes(
+      "IMP-096 accepts one privacy-reviewed primary Intel Mac real-machine Lite-client-only measurement",
+    ) &&
+    status.model_runtime.message.includes("256372493 ns") &&
+    status.model_runtime.message.includes("41291776 bytes") &&
+    status.model_runtime.message.includes("workspace 86369 bytes") &&
+    status.model_runtime.message.includes("zero measured-workload network attempts") &&
+    status.model_runtime.message.includes(
+      "does not complete Lite performance, Phase 6, or Lite v1.0",
+    ),
+  "project-status.json must describe IMP-096 while preserving bounded IMP-083 through IMP-095 evidence and non-claims",
 );
 expect(
   /^\d{4}-\d{2}-\d{2}$/.test(status.last_reviewed || ""),
