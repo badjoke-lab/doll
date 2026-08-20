@@ -1,0 +1,44 @@
+{
+  "architecture": "x86_64",
+  "claims": {
+    "accessibility_gate_complete": false,
+    "bounded_client_workload_observed_on_primary_intel_mac": true,
+    "client_only_evidence_interpretation_complete": true,
+    "cross_machine_generalization_supported": false,
+    "external_runtime_memory_requirement_defined": false,
+    "full_install_disk_requirement_defined": false,
+    "full_lite_performance_thresholds_defined": false,
+    "gpu_memory_requirement_defined": false,
+    "lite_performance_gate_complete": false,
+    "lite_v1_complete": false,
+    "minimum_ram_requirement_defined": false,
+    "model_memory_requirement_defined": false,
+    "phase6_gate_complete": false,
+    "release_candidate_soak_complete": false,
+    "total_system_resource_requirement_defined": false,
+    "user_visible_latency_requirement_defined": false
+  },
+  "measurement_scope": "doll-lite-client-only",
+  "observed_measurement": {
+    "process_peak_rss_bytes": 41291776,
+    "total_duration_ns": 256372493,
+    "workspace_directory_count": 7,
+    "workspace_file_count": 2,
+    "workspace_total_bytes": 86369
+  },
+  "operating_system": "Darwin",
+  "python_version": "3.14.6",
+  "required_future_evidence": [
+    "representative-local-runtime-and-model-resource-measurement",
+    "repeatability-and-variance-evidence",
+    "full-install-and-model-storage-measurement",
+    "user-visible-latency-workload-measurement",
+    "release-candidate-soak-disk-growth-evidence"
+  ],
+  "result": "pass",
+  "schema_version": 1,
+  "source_commit_sha": "b57ebe6fb4a7620901b95b49f6743b71ae1026f7",
+  "source_evidence_level": "real-machine",
+  "source_test_id": "IMP-083-LITE-CLIENT-MEASUREMENT",
+  "test_id": "IMP-097-LITE-CLIENT-PERFORMANCE-INTERPRETATION"
+}
