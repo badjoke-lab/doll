@@ -1,6 +1,9 @@
 name: Temporary IMP-097 public status sync
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - agent/imp-097-public-status-sync
