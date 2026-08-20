@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   quality:
@@ -16,118 +16,6 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
-
-      - name: Apply bounded IMP-097 public status sync
-        if: github.event_name == 'pull_request' && github.head_ref == 'agent/imp-097-public-status-sync' && github.actor != 'github-actions[bot]'
-        shell: bash
-        run: |
-          python - <<'PY'
-          import json
-          from pathlib import Path
-
-          status_path = Path('website/project-status.json')
-          status = json.loads(status_path.read_text(encoding='utf-8'))
-          phase = status['phase']
-          message = status['model_runtime']['message']
-
-          if phase.get('next_implementation') == 98 and 'through IMP-097' in message:
-              raise SystemExit(0)
-          if phase.get('next_implementation') != 97 or 'through IMP-096' not in message:
-              raise SystemExit('unexpected public status frontier')
-
-          phase['next_implementation'] = 98
-          status['last_reviewed'] = '2026-08-20'
-          message = message.replace('through IMP-096', 'through IMP-097', 1)
-
-          old_boundary = (
-              'PDF OCR/scanned-PDF fallback, accessibility presentation, '
-              'performance threshold interpretation, the release soak gate,'
-          )
-          if old_boundary not in message:
-              raise SystemExit('missing old performance interpretation boundary')
-
-          imp097 = (
-              'IMP-097 adds a deterministic conservative interpretation layer over the '
-              'accepted IMP-096 evidence. It preserves the observed duration, peak process '
-              'RSS, and workspace values as measurements rather than release requirements, '
-              'records successful execution only for the bounded primary Intel Mac client '
-              'workload, and keeps minimum RAM, full-install disk, user-visible latency, '
-              'external-runtime/model/GPU/total-system resource requirements, cross-machine '
-              'generalization, full Lite performance thresholds, accessibility, release soak, '
-              'Phase 6, and Lite v1.0 incomplete. The interpretation identifies representative '
-              'local-runtime/model resource measurement, repeatability/variance, '
-              'full-install/model-storage measurement, user-visible latency workload '
-              'measurement, and release-candidate soak disk-growth evidence as still required '
-              'before broader performance claims. '
-          )
-          new_boundary = (
-              imp097
-              + 'PDF OCR/scanned-PDF fallback, accessibility presentation, '
-              + 'representative local-runtime/model resource evidence, repeatability/variance '
-              + 'evidence, full-install/model-storage measurement, user-visible latency '
-              + 'measurement, the release soak gate,'
-          )
-          status['model_runtime']['message'] = message.replace(old_boundary, new_boundary, 1)
-          status_path.write_text(
-              json.dumps(status, ensure_ascii=False, indent=2) + '\n',
-              encoding='utf-8',
-          )
-
-          checker_path = Path('scripts/check-public-site-status.mjs')
-          checker = checker_path.read_text(encoding='utf-8')
-          replacements = {
-              'status.phase?.next_implementation === 97':
-                  'status.phase?.next_implementation === 98',
-              'project-status.json must mark Phase 6 in progress through IMP-096 with IMP-097 next':
-                  'project-status.json must mark Phase 6 in progress through IMP-097 with IMP-098 next',
-              'status.model_runtime.message.includes("through IMP-096") &&':
-                  'status.model_runtime.message.includes("through IMP-097") &&',
-              'project-status.json must describe IMP-096 while preserving bounded IMP-083 through IMP-095 evidence and non-claims':
-                  'project-status.json must describe IMP-097 while preserving bounded IMP-083 through IMP-096 evidence and non-claims',
-          }
-          for old, new in replacements.items():
-              if old not in checker:
-                  raise SystemExit(f'missing checker boundary: {old}')
-              checker = checker.replace(old, new, 1)
-
-          anchor = '''    status.model_runtime.message.includes(
-      "does not complete Lite performance, Phase 6, or Lite v1.0",
-    ),'''
-          expanded = '''    status.model_runtime.message.includes(
-      "does not complete Lite performance, Phase 6, or Lite v1.0",
-    ) &&
-    status.model_runtime.message.includes(
-      "IMP-097 adds a deterministic conservative interpretation layer over the accepted IMP-096 evidence",
-    ) &&
-    status.model_runtime.message.includes(
-      "measurements rather than release requirements",
-    ) &&
-    status.model_runtime.message.includes(
-      "full Lite performance thresholds, accessibility, release soak, Phase 6, and Lite v1.0 incomplete",
-    ) &&
-    status.model_runtime.message.includes(
-      "representative local-runtime/model resource measurement",
-    ) &&
-    status.model_runtime.message.includes("repeatability/variance") &&
-    status.model_runtime.message.includes("full-install/model-storage measurement") &&
-    status.model_runtime.message.includes("user-visible latency workload measurement") &&
-    status.model_runtime.message.includes("release-candidate soak disk-growth evidence"),'''
-          if anchor not in checker:
-              raise SystemExit('missing checker IMP-096 anchor')
-          checker_path.write_text(checker.replace(anchor, expanded, 1), encoding='utf-8')
-          PY
-
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add website/project-status.json scripts/check-public-site-status.mjs
-          if git diff --cached --quiet; then
-            exit 0
-          fi
-          git diff --cached --check
-          git commit -m 'Sync public status through IMP-097'
-          git push origin HEAD:agent/imp-097-public-status-sync
 
       - name: Set up Python
         uses: actions/setup-python@v5
