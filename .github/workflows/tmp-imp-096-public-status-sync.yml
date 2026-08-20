@@ -1,0 +1,112 @@
+name: Temporary IMP-096 public status sync
+
+on:
+  push:
+    branches:
+      - agent/imp-096-public-status-sync
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/imp-096-public-status-sync
+
+      - name: Update public status and checker
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          status_path = Path('website/project-status.json')
+          status = json.loads(status_path.read_text(encoding='utf-8'))
+          phase = status['phase']
+          if phase.get('next_implementation') != 96:
+              raise SystemExit('unexpected next_implementation')
+          phase['next_implementation'] = 97
+          status['last_reviewed'] = '2026-08-20'
+
+          message = status['model_runtime']['message']
+          if 'through IMP-095' not in message:
+              raise SystemExit('missing IMP-095 frontier text')
+          message = message.replace('through IMP-095', 'through IMP-096')
+
+          old_incomplete = (
+              'PDF OCR/scanned-PDF fallback, accessibility presentation, '
+              'primary Intel Mac Lite resource measurement, performance threshold interpretation'
+          )
+          new_incomplete = (
+              'PDF OCR/scanned-PDF fallback, accessibility presentation, '
+              'performance threshold interpretation'
+          )
+          if old_incomplete not in message:
+              raise SystemExit('missing old incomplete-list boundary')
+
+          accepted = (
+              'IMP-096 accepts one privacy-reviewed primary Intel Mac real-machine '
+              'Lite-client-only measurement bound to commit '
+              'b57ebe6fb4a7620901b95b49f6743b71ae1026f7: Darwin x86_64 with CPython '
+              '3.14.6, deterministic result pass, total bounded workload duration '
+              '256372493 ns, peak process RSS 41291776 bytes, workspace 86369 bytes, '
+              'zero measured-workload network attempts, and zero measured-workload '
+              'process-launch attempts. It does not define RAM, disk, or latency '
+              'requirements, does not measure model/Ollama/GPU or total-system resource '
+              'use, and does not complete Lite performance, Phase 6, or Lite v1.0. '
+          )
+          message = message.replace(old_incomplete, accepted + new_incomplete, 1)
+          status['model_runtime']['message'] = message
+          status_path.write_text(
+              json.dumps(status, ensure_ascii=False, indent=2) + '\n',
+              encoding='utf-8',
+          )
+
+          checker_path = Path('scripts/check-public-site-status.mjs')
+          checker = checker_path.read_text(encoding='utf-8')
+          replacements = {
+              'status.phase?.next_implementation === 96':
+                  'status.phase?.next_implementation === 97',
+              'project-status.json must mark Phase 6 in progress through IMP-095 with IMP-096 next':
+                  'project-status.json must mark Phase 6 in progress through IMP-096 with IMP-097 next',
+              'status.model_runtime.message.includes("through IMP-095") &&':
+                  'status.model_runtime.message.includes("through IMP-096") &&',
+              'project-status.json must describe IMP-095 while preserving bounded IMP-083 through IMP-094 evidence and non-claims':
+                  'project-status.json must describe IMP-096 while preserving bounded IMP-083 through IMP-095 evidence and non-claims',
+          }
+          for old, new in replacements.items():
+              if old not in checker:
+                  raise SystemExit(f'missing checker boundary: {old}')
+              checker = checker.replace(old, new, 1)
+
+          anchor = '    status.model_runtime.message.includes("passes at both CI and real-machine evidence levels"),'
+          expanded = '''    status.model_runtime.message.includes("passes at both CI and real-machine evidence levels") &&
+              status.model_runtime.message.includes(
+                "IMP-096 accepts one privacy-reviewed primary Intel Mac real-machine Lite-client-only measurement",
+              ) &&
+              status.model_runtime.message.includes("256372493 ns") &&
+              status.model_runtime.message.includes("41291776 bytes") &&
+              status.model_runtime.message.includes("workspace 86369 bytes") &&
+              status.model_runtime.message.includes("zero measured-workload network attempts") &&
+              status.model_runtime.message.includes(
+                "does not complete Lite performance, Phase 6, or Lite v1.0",
+              ),'''
+          if anchor not in checker:
+              raise SystemExit('missing checker message anchor')
+          checker = checker.replace(anchor, expanded, 1)
+          checker_path.write_text(checker, encoding='utf-8')
+          PY
+
+      - name: Commit status sync
+        shell: bash
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add website/project-status.json scripts/check-public-site-status.mjs
+          git diff --cached --check
+          git commit -m 'IMP-096: sync public project status'
+          git push origin HEAD:agent/imp-096-public-status-sync
