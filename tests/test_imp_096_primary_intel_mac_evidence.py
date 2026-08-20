@@ -1,9 +1,10 @@
+"""Acceptance test for IMP-096 real-machine evidence."""
+
 from __future__ import annotations
 
 import json
 import subprocess
 import sys
-
 
 EVIDENCE = (
     "docs/testing/results/"
