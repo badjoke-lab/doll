@@ -51,9 +51,7 @@ def _validate_summary(value: object, expected_values: list[int], label: str) -> 
     }
     for key, expected_value in expected.items():
         if summary.get(key) != expected_value:
-            raise Imp100RepeatabilityValidationError(
-                f"{label} {key} is inconsistent"
-            )
+            raise Imp100RepeatabilityValidationError(f"{label} {key} is inconsistent")
     if set(summary) != {"values", "minimum", "maximum", "mean_floor", "spread"}:
         raise Imp100RepeatabilityValidationError(f"{label} has unexpected fields")
 
@@ -68,9 +66,7 @@ def load_and_validate_repeatability_evidence(
     try:
         payload = json.loads(path.read_text(encoding="utf-8", errors="strict"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise Imp100RepeatabilityValidationError(
-            "evidence file is not valid UTF-8 JSON"
-        ) from exc
+        raise Imp100RepeatabilityValidationError("evidence file is not valid UTF-8 JSON") from exc
     document = _object(payload, "evidence")
 
     expected = {
@@ -135,9 +131,7 @@ def load_and_validate_repeatability_evidence(
             "generation_duration_values_ns",
             "generation_output_char_counts",
         }:
-            raise Imp100RepeatabilityValidationError(
-                f"session {ordinal} has unexpected fields"
-            )
+            raise Imp100RepeatabilityValidationError(f"session {ordinal} has unexpected fields")
         if session.get("session_ordinal") != ordinal:
             raise Imp100RepeatabilityValidationError("session ordinals are inconsistent")
         source_hash = session.get("source_sha256")
@@ -230,9 +224,7 @@ def load_and_validate_repeatability_evidence(
         "lite_v1_complete",
     }
     if set(claims) != required_false_claims or any(claims.values()):
-        raise Imp100RepeatabilityValidationError(
-            "forbidden performance or release claim detected"
-        )
+        raise Imp100RepeatabilityValidationError("forbidden performance or release claim detected")
     privacy = _object(document.get("privacy"), "privacy")
     required_privacy_flags = {
         "source_file_paths_in_report",
