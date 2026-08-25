@@ -115,9 +115,7 @@ def _run_builder(
     for source in sources:
         command.extend(["--source", str(source)])
     if confirmations:
-        command.extend(
-            ["--independent-sessions-confirmed", "--source-privacy-reviewed"]
-        )
+        command.extend(["--independent-sessions-confirmed", "--source-privacy-reviewed"])
     return subprocess.run(
         command,
         cwd=ROOT,
@@ -154,18 +152,14 @@ def test_imp_100_builder_aggregates_three_distinct_sessions(tmp_path: Path) -> N
     payload = json.loads(completed.stdout)
     assert payload["result"] == "pass"
     assert payload["evidence_level"] == "real-machine"
-    assert payload["measurement_scope"] == (
-        "doll-local-runtime-single-model-repeatability"
-    )
+    assert payload["measurement_scope"] == ("doll-local-runtime-single-model-repeatability")
     assert payload["session_count"] == 3
     assert payload["real_machine_repeatability_collected"] is True
     assert payload["real_machine_repeatability_accepted"] is False
     assert payload["separate_measurement_session_invocations_confirmed"] is True
     assert payload["source_manual_privacy_review_confirmed"] is True
     assert len({session["source_sha256"] for session in payload["sessions"]}) == 3
-    runtime_summary = payload["variance"][
-        "maximum_sampled_runtime_process_tree_rss_bytes"
-    ]
+    runtime_summary = payload["variance"]["maximum_sampled_runtime_process_tree_rss_bytes"]
     assert runtime_summary["values"] == [921_000_000, 922_000_000, 923_000_000]
     assert runtime_summary["spread"] == 2_000_000
     first_generation = payload["variance"]["generation_duration_by_position_ns"][0]
