@@ -8,6 +8,10 @@ const interpretationPath = path.join(
   root,
   "docs/testing/results/IMP-097-lite-client-performance-interpretation.json",
 );
+const runtimeEvidencePath = path.join(
+  root,
+  "docs/testing/results/IMP-099-primary-intel-mac-local-runtime-resource-measurement.json",
+);
 const baselineChecker = path.join(root, "scripts/check-public-site-status.mjs");
 
 function fail(message) {
@@ -24,43 +28,54 @@ function expect(condition, message) {
 const originalStatusText = fs.readFileSync(statusPath, "utf8");
 const status = JSON.parse(originalStatusText);
 const interpretation = JSON.parse(fs.readFileSync(interpretationPath, "utf8"));
+const runtimeEvidence = JSON.parse(fs.readFileSync(runtimeEvidencePath, "utf8"));
 const message = status.model_runtime?.message || "";
 
 expect(
   status.phase?.id === "6" &&
     status.phase?.state === "in_progress" &&
-    status.phase?.next_implementation === 98,
-  "Phase 6 must be in progress through IMP-097 with IMP-098 next",
+    status.phase?.next_implementation === 100,
+  "Phase 6 must be in progress through IMP-099 with IMP-100 next",
 );
 expect(
-  message.includes("Phase 6 is in progress through IMP-097"),
-  "public message must advance through IMP-097",
+  message.includes("Phase 6 is in progress through IMP-099"),
+  "public message must advance through IMP-099",
 );
 expect(
   message.includes(
-    "IMP-097 adds a deterministic conservative interpretation layer over the accepted IMP-096 evidence",
+    "IMP-098 adds the bounded collection and validation path for one representative local Ollama runtime/model resource observation",
   ),
-  "public message must describe the bounded IMP-097 interpretation",
+  "public message must describe the bounded IMP-098 collection path",
 );
 expect(
-  message.includes("measurements rather than release requirements") &&
-    message.includes(
-      "full Lite performance thresholds, accessibility, release soak, Phase 6, and Lite v1.0 incomplete",
-    ),
-  "IMP-097 observations must not become release requirements or completion claims",
+  message.includes(
+    "IMP-099 accepts one privacy-reviewed real-machine IMP-098 result bound to commit 7e99fadbf0e9d6c4ed9c5f200de9be8b79ce1b6c",
+  ),
+  "public message must describe the accepted IMP-099 evidence",
 );
 for (const required of [
-  "representative local-runtime/model resource measurement",
-  "repeatability/variance",
+  "provider-reported model size 986061892 bytes",
+  "maximum sampled runtime process-tree RSS 1252057088 bytes",
+  "doll-process peak RSS 36093952 bytes",
+  "6763389867 ns, 129910556 ns, and 147618618 ns",
+  "repeatability/variance evidence",
   "full-install/model-storage measurement",
-  "user-visible latency workload measurement",
-  "release-candidate soak disk-growth evidence",
+  "user-visible latency measurement",
+  "the release soak gate",
 ]) {
   expect(message.includes(required), `public message must retain ${required}`);
 }
 expect(
-  !message.includes("performance threshold interpretation, the release soak gate"),
-  "stale generic performance-interpretation blocker must be replaced",
+  !message.includes(
+    "PDF OCR/scanned-PDF fallback, accessibility presentation, representative local-runtime/model resource evidence",
+  ),
+  "accepted representative runtime/model evidence must not remain in the incomplete frontier",
+);
+expect(
+  message.includes(
+    "Minimum RAM, total-system/GPU/Metal memory, full-install/model-storage requirements, final user-visible latency, cold-start performance, cross-machine performance, supported/default model selection, full Lite performance thresholds, accessibility, release soak, Phase 6, and Lite v1.0 remain incomplete",
+  ),
+  "IMP-099 measurements must not become broader release requirements or completion claims",
 );
 
 expect(
@@ -86,6 +101,47 @@ expect(
   "IMP-097 machine-readable non-claims must remain conservative",
 );
 
+expect(
+  runtimeEvidence.test_id === "IMP-098-LOCAL-RUNTIME-RESOURCE-MEASUREMENT" &&
+    runtimeEvidence.result === "pass" &&
+    runtimeEvidence.commit_sha ===
+      "7e99fadbf0e9d6c4ed9c5f200de9be8b79ce1b6c" &&
+    runtimeEvidence.evidence_level === "real-machine" &&
+    runtimeEvidence.operating_system === "Darwin" &&
+    runtimeEvidence.architecture === "x86_64" &&
+    runtimeEvidence.measurement_scope === "doll-local-runtime-single-model" &&
+    runtimeEvidence.repeat_count === 3 &&
+    runtimeEvidence.real_machine_measurement_collected === true &&
+    runtimeEvidence.real_machine_measurement_accepted === false &&
+    runtimeEvidence.synthetic_observations === false,
+  "IMP-099 accepted evidence must remain the exact bounded real-machine collection",
+);
+expect(
+  Object.values(runtimeEvidence.checks || {}).length > 0 &&
+    Object.values(runtimeEvidence.checks || {}).every((value) => value === true),
+  "IMP-099 accepted evidence checks must all remain true",
+);
+expect(
+  Object.values(runtimeEvidence.privacy || {}).length > 0 &&
+    Object.values(runtimeEvidence.privacy || {}).every((value) => value === false),
+  "IMP-099 accepted evidence privacy flags must all remain false",
+);
+expect(
+  Object.values(runtimeEvidence.claims || {}).length > 0 &&
+    Object.values(runtimeEvidence.claims || {}).every((value) => value === false),
+  "IMP-099 accepted evidence broader claims must all remain false",
+);
+const observation = runtimeEvidence.observation || {};
+expect(
+  observation.runtime_version === "0.32.15" &&
+    observation.model?.provider_reported_installed_size_bytes === 986061892 &&
+    observation.maximum_sampled_runtime_process_tree_rss_bytes === 1252057088 &&
+    observation.doll_process_rss?.peak_bytes === 36093952 &&
+    JSON.stringify(observation.generation_duration?.values_ns) ===
+      JSON.stringify([6763389867, 129910556, 147618618]),
+  "IMP-099 accepted measurements must remain exact",
+);
+
 const imp097Paragraph =
   "IMP-097 adds a deterministic conservative interpretation layer over the accepted IMP-096 evidence. " +
   "It preserves the observed duration, peak process RSS, and workspace values as measurements rather than release requirements, " +
@@ -95,23 +151,32 @@ const imp097Paragraph =
   "representative local-runtime/model resource measurement, repeatability/variance, full-install/model-storage measurement, " +
   "user-visible latency workload measurement, and release-candidate soak disk-growth evidence as still required before broader " +
   "performance claims. ";
+const imp098Paragraph =
+  "IMP-098 adds the bounded collection and validation path for one representative local Ollama runtime/model resource observation on the primary Intel Mac. " +
+  "It uses an explicit already-installed non-cloud local model through the fixed loopback adapter, records provider-reported model bytes, four runtime process-tree RSS samples, doll-process RSS, and three generation durations without publishing native model names, prompts, responses, PIDs, command lines, paths, usernames, hostnames, credentials, or secrets; it does not install, pull, start, stop, or select a product default model and does not define Lite hardware thresholds. ";
+const imp099Paragraph =
+  "IMP-099 accepts one privacy-reviewed real-machine IMP-098 result bound to commit 7e99fadbf0e9d6c4ed9c5f200de9be8b79ce1b6c: Darwin x86_64 with CPython 3.14.6 and Ollama 0.32.15, provider-reported model size 986061892 bytes, maximum sampled runtime process-tree RSS 1252057088 bytes, doll-process peak RSS 36093952 bytes, and three generation durations of 6763389867 ns, 129910556 ns, and 147618618 ns. " +
+  "The first generation is much slower than the repeats, so these values remain measurements rather than a user-visible latency threshold. Minimum RAM, total-system/GPU/Metal memory, full-install/model-storage requirements, final user-visible latency, cold-start performance, cross-machine performance, supported/default model selection, full Lite performance thresholds, accessibility, release soak, Phase 6, and Lite v1.0 remain incomplete. ";
 const currentIncomplete =
-  "PDF OCR/scanned-PDF fallback, accessibility presentation, representative local-runtime/model resource evidence, " +
-  "repeatability/variance evidence, full-install/model-storage measurement, user-visible latency measurement, the release soak gate,";
+  "PDF OCR/scanned-PDF fallback, accessibility presentation, repeatability/variance evidence, full-install/model-storage measurement, user-visible latency measurement, the release soak gate,";
 const baselineIncomplete =
   "PDF OCR/scanned-PDF fallback, accessibility presentation, performance threshold interpretation, the release soak gate,";
 
 const baselineStatus = structuredClone(status);
 baselineStatus.phase.next_implementation = 97;
 baselineStatus.model_runtime.message = message
-  .replace("Phase 6 is in progress through IMP-097", "Phase 6 is in progress through IMP-096")
+  .replace("Phase 6 is in progress through IMP-099", "Phase 6 is in progress through IMP-096")
   .replace(imp097Paragraph, "")
+  .replace(imp098Paragraph, "")
+  .replace(imp099Paragraph, "")
   .replace(currentIncomplete, baselineIncomplete);
 
 expect(
   baselineStatus.model_runtime.message !== message &&
-    !baselineStatus.model_runtime.message.includes("IMP-097 adds"),
-  "IMP-097 compatibility projection must be deterministic",
+    !baselineStatus.model_runtime.message.includes("IMP-097 adds") &&
+    !baselineStatus.model_runtime.message.includes("IMP-098 adds") &&
+    !baselineStatus.model_runtime.message.includes("IMP-099 accepts"),
+  "IMP-099 compatibility projection must be deterministic",
 );
 
 try {
