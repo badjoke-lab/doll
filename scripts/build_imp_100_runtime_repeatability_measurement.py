@@ -86,9 +86,7 @@ def build_repeatability_report(
     if SHA.fullmatch(expected_commit_sha) is None:
         raise Imp100RepeatabilityBuildError("expected commit SHA is invalid")
     if len(source_paths) != SESSION_COUNT:
-        raise Imp100RepeatabilityBuildError(
-            f"exactly {SESSION_COUNT} source sessions are required"
-        )
+        raise Imp100RepeatabilityBuildError(f"exactly {SESSION_COUNT} source sessions are required")
     if not independent_sessions_confirmed:
         raise Imp100RepeatabilityBuildError(
             "separate measurement-session invocation confirmation is required"
