@@ -1,0 +1,21 @@
+name: TEMP IMP-100 formatter diff
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  diff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --dev --locked
+      - name: Print formatter diff
+        run: |
+          uv run ruff format --diff scripts/build_imp_100_runtime_repeatability_measurement.py scripts/validate_imp_100_runtime_repeatability_measurement.py tests/test_imp_100_runtime_repeatability_measurement.py
