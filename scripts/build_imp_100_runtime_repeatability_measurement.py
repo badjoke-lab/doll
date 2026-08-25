@@ -58,7 +58,9 @@ def _canonical_architecture(value: object) -> str:
     return "x86_64"
 
 
-def _load_source(path: Path, *, expected_commit_sha: str, ordinal: int) -> tuple[dict[str, object], str]:
+def _load_source(
+    path: Path, *, expected_commit_sha: str, ordinal: int
+) -> tuple[dict[str, object], str]:
     try:
         load_and_validate_evidence(path, expected_commit_sha=expected_commit_sha)
         raw = path.read_bytes()
@@ -138,18 +140,26 @@ def build_repeatability_report(
         if source.get("commit_sha") != expected_commit_sha:
             raise Imp100RepeatabilityBuildError(f"source session {ordinal} has mixed commit")
         if source.get("operating_system") != "Darwin":
-            raise Imp100RepeatabilityBuildError(f"source session {ordinal} has mixed operating system")
+            raise Imp100RepeatabilityBuildError(
+                f"source session {ordinal} has mixed operating system"
+            )
         if _canonical_architecture(source.get("architecture")) != "x86_64":
             raise Imp100RepeatabilityBuildError(f"source session {ordinal} has mixed architecture")
         if source.get("python_version") != python_version:
-            raise Imp100RepeatabilityBuildError(f"source session {ordinal} has mixed Python version")
+            raise Imp100RepeatabilityBuildError(
+                f"source session {ordinal} has mixed Python version"
+            )
 
         observation = _object(source.get("observation"), f"source session {ordinal} observation")
         model = _object(observation.get("model"), f"source session {ordinal} model")
         if observation.get("runtime_version") != runtime_version:
-            raise Imp100RepeatabilityBuildError(f"source session {ordinal} has mixed runtime version")
+            raise Imp100RepeatabilityBuildError(
+                f"source session {ordinal} has mixed runtime version"
+            )
         if model.get("model_id") != model_id or model.get("revision") != revision:
-            raise Imp100RepeatabilityBuildError(f"source session {ordinal} has mixed model identity")
+            raise Imp100RepeatabilityBuildError(
+                f"source session {ordinal} has mixed model identity"
+            )
         if model.get("provider_reported_installed_size_bytes") != model_size:
             raise Imp100RepeatabilityBuildError(f"source session {ordinal} has mixed model size")
 
