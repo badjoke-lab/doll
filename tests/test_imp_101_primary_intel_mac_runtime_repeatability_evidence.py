@@ -61,9 +61,11 @@ def test_imp_101_committed_repeatability_values_remain_exact() -> None:
     assert [session["source_sha256"] for session in sessions] == SOURCE_HASHES
     assert payload["identity"]["runtime_version"] == "0.33.1"
     assert payload["identity"]["provider_reported_installed_size_bytes"] == 986_061_892
-    assert [
-        session["maximum_sampled_runtime_process_tree_rss_bytes"] for session in sessions
-    ] == [1_202_470_912, 1_203_814_400, 1_137_139_712]
+    assert [session["maximum_sampled_runtime_process_tree_rss_bytes"] for session in sessions] == [
+        1_202_470_912,
+        1_203_814_400,
+        1_137_139_712,
+    ]
     assert [session["doll_process_peak_rss_bytes"] for session in sessions] == [
         34_045_952,
         35_110_912,
