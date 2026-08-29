@@ -51,13 +51,16 @@ def test_imp_103_primary_intel_mac_lite_storage_evidence_passes_validator() -> N
 
 
 def test_imp_103_committed_lite_storage_values_remain_exact() -> None:
-    evidence_bytes = EVIDENCE.read_bytes()
-    payload = json.loads(evidence_bytes)
+    evidence_text = EVIDENCE.read_text(encoding="utf-8")
+    canonical_evidence_bytes = evidence_text.encode("utf-8")
+    payload = json.loads(evidence_text)
     installation = payload["observation"]["lite_python_installation"]
     tree = installation["tree"]
     model = payload["observation"]["model"]
 
-    assert hashlib.sha256(evidence_bytes).hexdigest() == EVIDENCE_SHA256
+    # Text-mode reading normalizes a Windows checkout's CRLF back to the
+    # repository/upload LF representation before checking the source digest.
+    assert hashlib.sha256(canonical_evidence_bytes).hexdigest() == EVIDENCE_SHA256
     assert payload["commit_sha"] == MEASURED_SHA
     assert payload["operating_system"] == "Darwin"
     assert payload["architecture"] == "x86_64"
