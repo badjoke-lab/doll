@@ -31,6 +31,9 @@ SHA = re.compile(r"^[0-9a-f]{40}$")
 MODEL_REVISION = re.compile(r"^(?:sha256:)?([0-9a-fA-F]{64})$")
 RUNTIME_VERSION = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._+\-]{0,127}$")
 UV_VERSION = re.compile(r"^uv [0-9][A-Za-z0-9._+\-]{0,63}$")
+UV_VERSION_OUTPUT = re.compile(
+    r"^(uv [0-9][A-Za-z0-9._+\-]{0,63})(?: \([A-Za-z0-9][A-Za-z0-9._+\- ]{0,191}\))?$"
+)
 MAX_TREE_ENTRIES = 250_000
 MAX_TREE_LOGICAL_BYTES = 100 * 1024 * 1024 * 1024
 TIMEOUT_SECONDS = 600
@@ -293,6 +296,16 @@ def _tree_measurement(root: Path) -> dict[str, object]:
     }
 
 
+def _normalize_uv_version_output(value: str) -> str:
+    match = UV_VERSION_OUTPUT.fullmatch(value)
+    if match is None:
+        raise Imp102MeasurementError("unexpected uv version output")
+    canonical = match.group(1)
+    if UV_VERSION.fullmatch(canonical) is None:
+        raise Imp102MeasurementError("unexpected uv version output")
+    return canonical
+
+
 def _uv_version() -> str:
     try:
         completed = subprocess.run(
@@ -305,10 +318,7 @@ def _uv_version() -> str:
         )
     except (OSError, subprocess.SubprocessError) as exc:
         raise Imp102MeasurementError("uv is unavailable") from exc
-    value = completed.stdout.strip()
-    if UV_VERSION.fullmatch(value) is None:
-        raise Imp102MeasurementError("unexpected uv version output")
-    return value
+    return _normalize_uv_version_output(completed.stdout.strip())
 
 
 def _install_command() -> list[str]:
