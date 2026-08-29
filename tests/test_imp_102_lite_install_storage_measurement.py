@@ -169,9 +169,32 @@ def test_imp_102_validator_rejects_dev_dependency_scope(tmp_path: Path) -> None:
     assert completed.returncode == 2
 
 
+def test_imp_102_validator_rejects_missing_optional_extra(tmp_path: Path) -> None:
+    payload = _real_like_payload()
+    payload["observation"]["lite_python_installation"]["optional_extras"] = ["pdf"]
+    completed = _validate(tmp_path, payload)
+    assert completed.returncode == 2
+
+
 def test_imp_102_validator_rejects_zero_install_bytes(tmp_path: Path) -> None:
     payload = _real_like_payload()
     payload["observation"]["lite_python_installation"]["tree"]["logical_bytes"] = 0
+    completed = _validate(tmp_path, payload)
+    assert completed.returncode == 2
+
+
+def test_imp_102_validator_rejects_missing_primary_mac_allocated_bytes(tmp_path: Path) -> None:
+    payload = _real_like_payload()
+    tree = payload["observation"]["lite_python_installation"]["tree"]
+    tree["allocated_bytes"] = None
+    tree["allocated_bytes_source"] = None
+    completed = _validate(tmp_path, payload)
+    assert completed.returncode == 2
+
+
+def test_imp_102_validator_rejects_invalid_model_id(tmp_path: Path) -> None:
+    payload = _real_like_payload()
+    payload["observation"]["model"]["model_id"] = "ollama.model.invalid"
     completed = _validate(tmp_path, payload)
     assert completed.returncode == 2
 
