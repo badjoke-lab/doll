@@ -173,9 +173,7 @@ def load_and_validate_evidence(
     ):
         raise Imp102EvidenceValidationError("Lite installation verification failed")
 
-    runtime_installation = _object(
-        observation.get("runtime_installation"), "runtime installation"
-    )
+    runtime_installation = _object(observation.get("runtime_installation"), "runtime installation")
     measured = runtime_installation.get("measured")
     if measured is False:
         if set(runtime_installation) != {"measured"}:
@@ -235,7 +233,9 @@ def load_and_validate_evidence(
         "lite_v1_complete",
     }
     if set(claims) != required_false_claims or any(claims.values()):
-        raise Imp102EvidenceValidationError("forbidden disk, performance, or release claim detected")
+        raise Imp102EvidenceValidationError(
+            "forbidden disk, performance, or release claim detected"
+        )
 
     privacy = _object(document.get("privacy"), "privacy")
     required_privacy_flags = {
@@ -283,9 +283,7 @@ def load_and_validate_evidence(
         if isinstance(value, dict):
             for key, child in value.items():
                 if key in forbidden_keys:
-                    raise Imp102EvidenceValidationError(
-                        f"forbidden shareable evidence key: {key}"
-                    )
+                    raise Imp102EvidenceValidationError(f"forbidden shareable evidence key: {key}")
                 inspect_keys(child)
         elif isinstance(value, list):
             for child in value:

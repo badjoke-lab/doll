@@ -463,9 +463,7 @@ def _real_observation(arguments: argparse.Namespace) -> dict[str, object]:
         "uv_version": uv_version,
         "lite_python_installation": installation,
         "runtime_version": _runtime_version(transport),
-        "runtime_installation": _runtime_installation_measurement(
-            arguments.runtime_install_root
-        ),
+        "runtime_installation": _runtime_installation_measurement(arguments.runtime_install_root),
         "model": metadata,
     }
 
