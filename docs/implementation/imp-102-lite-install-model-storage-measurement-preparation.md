@@ -37,6 +37,8 @@ The runner measures bounded filesystem aggregates only. It records:
 
 Traversal does not follow symlinks and is bounded by entry and byte limits. The primary Intel Mac evidence validator requires positive allocated-byte observations in addition to logical bytes.
 
+The measured installation tree is the temporary Lite Python environment only; the repository checkout and uv dependency cache are installation inputs and are not included in that tree measurement.
+
 These values describe the measured temporary environment. They are not automatically the size of a future installer, package-manager cache, Python distribution, operating-system frameworks, user workspace, or complete local AI stack.
 
 ## Local runtime and model boundary
