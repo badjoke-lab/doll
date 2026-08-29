@@ -123,6 +123,33 @@ def test_imp_102_install_command_is_locked_offline_non_dev_and_non_editable() ->
     ]
 
 
+def test_imp_102_uv_version_output_normalizes_current_build_metadata() -> None:
+    namespace = runpy.run_path(str(RUNNER))
+    normalize = namespace["_normalize_uv_version_output"]
+    current_output = "uv 0.11.21 (5aa65dd7a 2026-06-11 x86_64-apple-darwin)"
+    assert normalize("uv 0.11.21") == "uv 0.11.21"
+    assert normalize(current_output) == "uv 0.11.21"
+
+
+def test_imp_102_uv_version_output_rejects_unbounded_or_pathlike_metadata() -> None:
+    namespace = runpy.run_path(str(RUNNER))
+    normalize = namespace["_normalize_uv_version_output"]
+    error_type = namespace["Imp102MeasurementError"]
+    overlong_metadata = f"uv 0.11.21 ({'a' * 193})"
+    rejected = [
+        "uv 0.11.21 (/Users/example/private)",
+        "uv 0.11.21 (build@example.invalid)",
+        overlong_metadata,
+        "uv 0.11.21\nunexpected",
+    ]
+    for value in rejected:
+        try:
+            normalize(value)
+        except error_type:
+            continue
+        raise AssertionError(f"unexpectedly accepted uv version output: {value!r}")
+
+
 def test_imp_102_validator_accepts_bounded_real_like_evidence(tmp_path: Path) -> None:
     completed = _validate(tmp_path, _real_like_payload())
     assert completed.returncode == 0, completed.stdout
