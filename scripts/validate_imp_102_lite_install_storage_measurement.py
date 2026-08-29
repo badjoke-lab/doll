@@ -38,7 +38,7 @@ def _nonnegative_int(value: object, label: str) -> int:
     return value
 
 
-def _validate_tree(value: object, label: str) -> None:
+def _validate_tree(value: object, label: str, *, require_allocated_bytes: bool) -> None:
     tree = _object(value, label)
     expected_fields = {
         "regular_file_count",
@@ -59,7 +59,11 @@ def _validate_tree(value: object, label: str) -> None:
     _positive_int(tree.get("logical_bytes"), f"{label} logical bytes")
     allocated = tree.get("allocated_bytes")
     source = tree.get("allocated_bytes_source")
-    if allocated is None:
+    if require_allocated_bytes:
+        _positive_int(allocated, f"{label} allocated bytes")
+        if source != "stat-st_blocks-times-512":
+            raise Imp102EvidenceValidationError(f"{label} allocated-byte source is invalid")
+    elif allocated is None:
         if source is not None:
             raise Imp102EvidenceValidationError(f"{label} allocated-byte source is inconsistent")
     else:
@@ -152,7 +156,11 @@ def load_and_validate_evidence(
         raise Imp102EvidenceValidationError("editable installation is not accepted")
     if installation.get("dev_dependencies_included") is not False:
         raise Imp102EvidenceValidationError("dev dependencies are not accepted")
-    _validate_tree(installation.get("tree"), "Lite installation tree")
+    _validate_tree(
+        installation.get("tree"),
+        "Lite installation tree",
+        require_allocated_bytes=True,
+    )
     verification = _object(installation.get("verification"), "Lite installation verification")
     required_verification = {
         "doll_importable",
@@ -175,7 +183,11 @@ def load_and_validate_evidence(
     elif measured is True:
         if set(runtime_installation) != {"measured", "tree"}:
             raise Imp102EvidenceValidationError("runtime installation has unexpected fields")
-        _validate_tree(runtime_installation.get("tree"), "runtime installation tree")
+        _validate_tree(
+            runtime_installation.get("tree"),
+            "runtime installation tree",
+            require_allocated_bytes=True,
+        )
     else:
         raise Imp102EvidenceValidationError("runtime installation measurement flag is invalid")
 
