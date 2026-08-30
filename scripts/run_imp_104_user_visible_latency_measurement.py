@@ -30,11 +30,7 @@ from imp_064_local_writing_probe import (
 
 from doll import state, workspace
 from doll.local_conversation import LocalConversationService
-from doll.local_writing import (
-    LocalWritingWorkflowResult,
-    LocalWritingWorkflowService,
-    WritingMode,
-)
+from doll.local_writing import LocalWritingWorkflowResult, LocalWritingWorkflowService, WritingMode
 from doll.ollama_adapter import (
     LoopbackOllamaTransport,
     OllamaAdapterConfig,
