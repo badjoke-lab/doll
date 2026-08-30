@@ -297,8 +297,7 @@ def _checks(observation: dict[str, object], *, machine: bool) -> dict[str, bool]
         "runtime_requests_are_bounded": isinstance(observation.get("runtime_request_count"), int)
         and cast(int, observation["runtime_request_count"]) > 0,
         "no_rejected_socket_attempt": observation.get("rejected_socket_attempts") == 0,
-        "ci_uses_no_socket": machine
-        or observation.get("allowed_loopback_socket_attempts") == 0,
+        "ci_uses_no_socket": machine or observation.get("allowed_loopback_socket_attempts") == 0,
         "real_machine_uses_loopback": (not machine)
         or (
             isinstance(observation.get("allowed_loopback_socket_attempts"), int)
