@@ -13,19 +13,6 @@ from pathlib import Path
 from typing import cast
 from uuid import uuid4
 
-from doll import state, workspace
-from doll.local_conversation import LocalConversationService
-from doll.local_writing import LocalWritingWorkflowResult, LocalWritingWorkflowService
-from doll.ollama_adapter import (
-    LoopbackOllamaTransport,
-    OllamaAdapterConfig,
-    OllamaEndpoint,
-    OllamaRuntimeAdapter,
-    is_ollama_cloud_model,
-    ollama_model_id,
-)
-from doll.runtime_adapter import LocalRuntimeBoundary, RuntimeAdapterRegistry
-from doll.state import ConversationRecord
 from imp_064_local_writing_probe import (
     DRAFT_REQUEST,
     REVISE_REQUEST,
@@ -40,6 +27,24 @@ from imp_064_local_writing_probe import (
     _activate_binding,
     _context,
 )
+
+from doll import state, workspace
+from doll.local_conversation import LocalConversationService
+from doll.local_writing import (
+    LocalWritingWorkflowResult,
+    LocalWritingWorkflowService,
+    WritingMode,
+)
+from doll.ollama_adapter import (
+    LoopbackOllamaTransport,
+    OllamaAdapterConfig,
+    OllamaEndpoint,
+    OllamaRuntimeAdapter,
+    is_ollama_cloud_model,
+    ollama_model_id,
+)
+from doll.runtime_adapter import LocalRuntimeBoundary, RuntimeAdapterRegistry
+from doll.state import ConversationRecord
 
 TEST_ID = "IMP-104-USER-VISIBLE-LOCAL-WRITING-LATENCY-MEASUREMENT"
 ROOT = Path(__file__).resolve().parents[1]
@@ -136,7 +141,7 @@ def _validate_environment(arguments: argparse.Namespace) -> bool:
 def _measure(
     workflow: LocalWritingWorkflowService,
     *,
-    mode: str,
+    mode: WritingMode,
     conversation_id: str,
     operation_id: str,
     request_text: str,
@@ -145,7 +150,7 @@ def _measure(
 ) -> tuple[LocalWritingWorkflowResult, int]:
     started = time.perf_counter_ns()
     result = workflow.execute(
-        mode=cast(object, mode),  # type: ignore[arg-type]
+        mode=mode,
         conversation_id=conversation_id,
         scope_type="conversation",
         scope_key=TARGET_SCOPE_KEY,
