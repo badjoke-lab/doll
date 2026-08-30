@@ -227,7 +227,10 @@ def _validate(payload: dict[str, Any], expected_commit_sha: str) -> dict[str, ob
         raise Imp104ValidationError("runtime_version is invalid")
     model = _object(observation["model"], "model")
     _exact_keys(model, MODEL_KEYS, "model")
-    if not isinstance(model["model_id"], str) or OPAQUE_MODEL_ID.fullmatch(model["model_id"]) is None:
+    if (
+        not isinstance(model["model_id"], str)
+        or OPAQUE_MODEL_ID.fullmatch(model["model_id"]) is None
+    ):
         raise Imp104ValidationError("model_id must be opaque")
     if not isinstance(model["revision"], str) or REVISION.fullmatch(model["revision"]) is None:
         raise Imp104ValidationError("model revision is invalid")
