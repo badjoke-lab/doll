@@ -2,6 +2,7 @@ import fs from "node:fs";
 
 const IMPLEMENTATION_TITLE = /^IMP-(\d+)\s*:/i;
 const RETIRED = new Set([24, 25, 26, 27, 28, 29]);
+const NON_COMPLETION_STATE_REASONS = new Set(["not_planned", "duplicate"]);
 const BASELINE = 31;
 const PAGE_SIZE = 100;
 const MAX_PAGES = 10;
@@ -84,7 +85,7 @@ const completedIssueNumbers = issues
     (issue) =>
       !issue.pull_request &&
       Boolean(issue.closed_at) &&
-      issue.state_reason !== "not_planned",
+      !NON_COMPLETION_STATE_REASONS.has(issue.state_reason),
   )
   .map((issue) => implementationNumber(issue.title))
   .filter((number) => number !== null);
