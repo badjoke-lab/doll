@@ -58,7 +58,7 @@ for (const required of [
   "Ollama 0.33.2",
   "64426153 logical bytes",
   "69378048 allocated bytes",
-  "provider-reported selected-model size 986061892 bytes",
+  "provider-reported selected-model size was 986061892 bytes",
   "runtime installation itself was not measured",
   "user-visible latency measurement",
   "the release soak gate",
