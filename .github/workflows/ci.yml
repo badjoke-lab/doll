@@ -36,8 +36,8 @@ jobs:
       - name: Lint
         run: uv run ruff check .
 
-      - name: Check formatting
-        run: uv run ruff format --check .
+      - name: Show formatting diff
+        run: uv run ruff format --diff .
 
       - name: Type check
         run: uv run mypy src tests
