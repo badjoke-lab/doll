@@ -1,11 +1,11 @@
-name: Imported context replay real-machine acceptance
+name: Imported context replay synthetic acceptance
 
 on:
   push:
     branches:
       - main
     paths:
-      - .github/workflows/imported-context-replay-real-machine-acceptance.yml
+      - .github/workflows/imported-context-replay-synthetic-acceptance.yml
       - scripts/imp_062_imported_context_replay_probe.py
       - scripts/run_imp_062_imported_context_replay.py
       - src/doll/chatgpt_export_import.py
@@ -19,7 +19,7 @@ on:
       - tests/test_imp_062_imported_context_replay_acceptance.py
   pull_request:
     paths:
-      - .github/workflows/imported-context-replay-real-machine-acceptance.yml
+      - .github/workflows/imported-context-replay-synthetic-acceptance.yml
       - scripts/imp_062_imported_context_replay_probe.py
       - scripts/run_imp_062_imported_context_replay.py
       - src/doll/chatgpt_export_import.py

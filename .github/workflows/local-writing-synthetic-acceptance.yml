@@ -1,11 +1,11 @@
-name: Local writing real-machine acceptance
+name: Local writing synthetic acceptance
 
 on:
   push:
     branches:
       - main
     paths:
-      - .github/workflows/local-writing-real-machine-acceptance.yml
+      - .github/workflows/local-writing-synthetic-acceptance.yml
       - scripts/imp_064_local_writing_probe.py
       - scripts/run_imp_064_local_writing.py
       - src/doll/instruction_origin.py
@@ -18,7 +18,7 @@ on:
       - tests/test_imp_064_local_writing_acceptance.py
   pull_request:
     paths:
-      - .github/workflows/local-writing-real-machine-acceptance.yml
+      - .github/workflows/local-writing-synthetic-acceptance.yml
       - scripts/imp_064_local_writing_probe.py
       - scripts/run_imp_064_local_writing.py
       - src/doll/instruction_origin.py
