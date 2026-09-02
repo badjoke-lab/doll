@@ -5,8 +5,6 @@ on:
     paths:
       - "README.md"
       - "website/**"
-      - "scripts/check-public-site-status.mjs"
-      - "scripts/check-public-site-status-frontier.mjs"
       - "scripts/check-public-site-status-imp103.mjs"
       - "scripts/check-public-writing.mjs"
       - ".github/workflows/public-site-status.yml"
@@ -17,8 +15,6 @@ on:
     paths:
       - "README.md"
       - "website/**"
-      - "scripts/check-public-site-status.mjs"
-      - "scripts/check-public-site-status-frontier.mjs"
       - "scripts/check-public-site-status-imp103.mjs"
       - "scripts/check-public-writing.mjs"
       - ".github/workflows/public-site-status.yml"
