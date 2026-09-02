@@ -1,0 +1,90 @@
+name: ChatGPT acceptance
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/chatgpt-acceptance-combined.yml
+      - docs/testing/phase-6-chatgpt-history-matrix.json
+      - docs/testing/imp-059-private-manual-runbook.md
+      - scripts/imp_059_chatgpt_export_probe.py
+      - scripts/run_imp_059_chatgpt_export.py
+      - scripts/run_imp_059_private_manual.py
+      - scripts/run_imp_060_private_manual.py
+      - src/doll/chatgpt_export_import.py
+      - src/doll/chatgpt_numbered_aggregation.py
+      - src/doll/chatgpt_numbered_projection.py
+      - tests/test_chatgpt_export_import.py
+      - tests/test_chatgpt_export_acceptance.py
+      - tests/test_chatgpt_private_manual_acceptance.py
+      - tests/test_chatgpt_numbered_aggregation.py
+      - tests/test_chatgpt_numbered_projection.py
+      - tests/test_chatgpt_numbered_identity_quarantine.py
+      - tests/test_chatgpt_numbered_private_manual_acceptance.py
+  pull_request:
+    paths:
+      - .github/workflows/chatgpt-acceptance-combined.yml
+      - docs/testing/phase-6-chatgpt-history-matrix.json
+      - docs/testing/imp-059-private-manual-runbook.md
+      - scripts/imp_059_chatgpt_export_probe.py
+      - scripts/run_imp_059_chatgpt_export.py
+      - scripts/run_imp_059_private_manual.py
+      - scripts/run_imp_060_private_manual.py
+      - src/doll/chatgpt_export_import.py
+      - src/doll/chatgpt_numbered_aggregation.py
+      - src/doll/chatgpt_numbered_projection.py
+      - tests/test_chatgpt_export_import.py
+      - tests/test_chatgpt_export_acceptance.py
+      - tests/test_chatgpt_private_manual_acceptance.py
+      - tests/test_chatgpt_numbered_aggregation.py
+      - tests/test_chatgpt_numbered_projection.py
+      - tests/test_chatgpt_numbered_identity_quarantine.py
+      - tests/test_chatgpt_numbered_private_manual_acceptance.py
+
+permissions:
+  contents: read
+
+jobs:
+  acceptance:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked --all-extras
+      - name: Run ChatGPT acceptance tests
+        shell: bash
+        run: |
+          set -o pipefail
+          uv run pytest -q --no-cov \
+            tests/test_chatgpt_export_import.py \
+            tests/test_chatgpt_export_acceptance.py \
+            tests/test_chatgpt_private_manual_acceptance.py \
+            tests/test_chatgpt_numbered_aggregation.py \
+            tests/test_chatgpt_numbered_projection.py \
+            tests/test_chatgpt_numbered_identity_quarantine.py \
+            tests/test_chatgpt_numbered_private_manual_acceptance.py \
+            2>&1 | tee chatgpt-acceptance-pytest.txt
+      - name: Run IMP-059 bounded acceptance report
+        shell: bash
+        run: |
+          uv run python scripts/run_imp_059_chatgpt_export.py \
+            --commit-sha "$(git rev-parse HEAD)" \
+            > imp059-chatgpt-export-ci.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chatgpt-acceptance-${{ matrix.os }}
+          path: |
+            imp059-chatgpt-export-ci.json
+            chatgpt-acceptance-pytest.txt
