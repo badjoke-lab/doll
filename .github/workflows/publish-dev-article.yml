@@ -13,11 +13,6 @@ on:
         required: true
         default: false
         type: boolean
-  push:
-    branches:
-      - main
-    paths:
-      - docs/writing/dev/three-ai-outages-multi-provider-not-continuity.md
 
 permissions:
   contents: read
@@ -43,8 +38,8 @@ jobs:
         shell: bash
         env:
           DEVTO_API_KEY: ${{ secrets.DEVTO_API_KEY }}
-          ARTICLE_PATH: ${{ github.event_name == 'push' && 'docs/writing/dev/three-ai-outages-multi-provider-not-continuity.md' || inputs.article }}
-          PUBLISH_NOW: ${{ github.event_name == 'push' && 'true' || inputs.publish }}
+          ARTICLE_PATH: ${{ inputs.article }}
+          PUBLISH_NOW: ${{ inputs.publish }}
         run: |
           args=(--article "$ARTICLE_PATH")
           if [[ "$PUBLISH_NOW" == "true" ]]; then
