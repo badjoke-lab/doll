@@ -1,37 +1,46 @@
-"""Create or publish the WEB-013 DEV syndication article via the official Forem API."""
+"""Create or publish a DEV syndication article via the official Forem API."""
 
 from __future__ import annotations
 
 import argparse
 import json
 import os
-import re
 import sys
 import urllib.error
 import urllib.parse
 import urllib.request
+from dataclasses import dataclass
 from pathlib import Path
 
 API_URL = "https://dev.to/api/articles"
-ARTICLE_PATH = Path("docs/writing/dev/portable-memory-not-ai-continuity.md")
-TITLE = "Portable Memory Is Not AI Continuity: PAM, PLUR, PROJECTMEM, and doll"
-CANONICAL_URL = "https://doll.badjoke-lab.com/notes/portable-memory-not-ai-continuity/"
-DESCRIPTION = (
-    "PAM, PLUR, PROJECTMEM, and doll address different layers of persistent AI "
-    "memory and continuity. Why interchange, recall, project experience, and authority "
-    "should stay separate."
-)
-TAGS = ["ai", "opensource", "architecture", "localfirst"]
-SERIES = "doll"
-_FRONT_MATTER = re.compile(r"\A---\n.*?\n---\n+", re.DOTALL)
+DEFAULT_ARTICLE_PATH = Path("docs/writing/dev/portable-memory-not-ai-continuity.md")
+DEV_ARTICLE_ROOT = Path("docs/writing/dev")
 
 
 class DevPublishError(RuntimeError):
     """Raised when a DEV publication request cannot be completed safely."""
 
 
+@dataclass(frozen=True)
+class Article:
+    """Validated metadata and body for one DEV syndication article."""
+
+    title: str
+    description: str
+    tags: list[str]
+    series: str | None
+    canonical_url: str
+    body_markdown: str
+
+
 def _arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--article",
+        type=Path,
+        default=DEFAULT_ARTICLE_PATH,
+        help="Markdown article under docs/writing/dev",
+    )
     parser.add_argument(
         "--publish",
         action="store_true",
@@ -40,12 +49,64 @@ def _arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _body_markdown() -> str:
-    text = ARTICLE_PATH.read_text(encoding="utf-8")
-    body = _FRONT_MATTER.sub("", text, count=1).strip()
+def _safe_article_path(path: Path) -> Path:
+    root = DEV_ARTICLE_ROOT.resolve()
+    resolved = path.resolve()
+    if resolved.suffix.lower() != ".md" or root not in resolved.parents:
+        raise DevPublishError("DEV article must be a Markdown file under docs/writing/dev")
+    return resolved
+
+
+def _front_matter_and_body(path: Path) -> tuple[dict[str, str], str]:
+    text = _safe_article_path(path).read_text(encoding="utf-8")
+    if not text.startswith("---\n"):
+        raise DevPublishError("DEV article front matter is missing")
+    remainder = text[4:]
+    marker = "\n---\n"
+    if marker not in remainder:
+        raise DevPublishError("DEV article front matter is not terminated")
+    front_matter_text, body = remainder.split(marker, 1)
+
+    metadata: dict[str, str] = {}
+    for line in front_matter_text.splitlines():
+        if not line.strip():
+            continue
+        key, separator, value = line.partition(":")
+        if not separator:
+            raise DevPublishError(f"invalid DEV front matter line: {line}")
+        metadata[key.strip()] = value.strip()
+
+    body = body.strip()
     if not body:
         raise DevPublishError("DEV article body is empty")
-    return body
+    return metadata, body
+
+
+def load_article(path: Path) -> Article:
+    """Load and validate one article without performing network access."""
+
+    metadata, body = _front_matter_and_body(path)
+    required = ("title", "description", "tags", "canonical_url")
+    missing = [key for key in required if not metadata.get(key)]
+    if missing:
+        raise DevPublishError(
+            "DEV article front matter is missing required fields: " + ", ".join(missing)
+        )
+
+    tags = [tag.strip() for tag in metadata["tags"].split(",") if tag.strip()]
+    if not tags:
+        raise DevPublishError("DEV article must define at least one tag")
+    if len(tags) > 4:
+        raise DevPublishError("DEV supports at most four article tags")
+
+    return Article(
+        title=metadata["title"],
+        description=metadata["description"],
+        tags=tags,
+        series=metadata.get("series") or None,
+        canonical_url=metadata["canonical_url"],
+        body_markdown=body,
+    )
 
 
 def _api_key() -> str:
@@ -68,14 +129,16 @@ def _request_json(request: urllib.request.Request) -> object:
         raise DevPublishError(f"DEV API request failed: {exc}") from exc
 
 
-def find_existing_article(api_key: str) -> dict[str, object] | None:
+def find_existing_article(
+    api_key: str, *, title: str, canonical_url: str
+) -> dict[str, object] | None:
     query = urllib.parse.urlencode({"page": 1, "per_page": 100})
     request = urllib.request.Request(
         f"{API_URL}/me/all?{query}",
         method="GET",
         headers={
             "api-key": api_key,
-            "user-agent": "badjoke-lab-doll-web-013",
+            "user-agent": "badjoke-lab-doll-dev-publisher",
         },
     )
     data = _request_json(request)
@@ -84,26 +147,31 @@ def find_existing_article(api_key: str) -> dict[str, object] | None:
     for item in data:
         if not isinstance(item, dict):
             continue
-        if item.get("canonical_url") == CANONICAL_URL or item.get("title") == TITLE:
+        if item.get("canonical_url") == canonical_url or item.get("title") == title:
             return item
     return None
 
 
-def create_article(*, publish: bool) -> dict[str, object]:
+def create_article(*, article_path: Path, publish: bool) -> dict[str, object]:
+    article = load_article(article_path)
     api_key = _api_key()
-    existing = find_existing_article(api_key)
+    existing = find_existing_article(
+        api_key,
+        title=article.title,
+        canonical_url=article.canonical_url,
+    )
     if existing is not None:
         return existing
 
     payload = {
         "article": {
-            "title": TITLE,
+            "title": article.title,
             "published": publish,
-            "body_markdown": _body_markdown(),
-            "tags": TAGS,
-            "series": SERIES,
-            "canonical_url": CANONICAL_URL,
-            "description": DESCRIPTION,
+            "body_markdown": article.body_markdown,
+            "tags": article.tags,
+            "series": article.series,
+            "canonical_url": article.canonical_url,
+            "description": article.description,
         }
     }
     request = urllib.request.Request(
@@ -113,7 +181,7 @@ def create_article(*, publish: bool) -> dict[str, object]:
         headers={
             "api-key": api_key,
             "content-type": "application/json",
-            "user-agent": "badjoke-lab-doll-web-013",
+            "user-agent": "badjoke-lab-doll-dev-publisher",
         },
     )
     data = _request_json(request)
@@ -125,7 +193,10 @@ def create_article(*, publish: bool) -> dict[str, object]:
 def main() -> int:
     arguments = _arguments()
     try:
-        result = create_article(publish=arguments.publish)
+        result = create_article(
+            article_path=arguments.article,
+            publish=arguments.publish,
+        )
     except (DevPublishError, OSError) as exc:
         print(str(exc), file=sys.stderr)
         return 2
@@ -133,7 +204,7 @@ def main() -> int:
         "id": result.get("id"),
         "published": result.get("published"),
         "url": result.get("url"),
-        "canonical_url": result.get("canonical_url", CANONICAL_URL),
+        "canonical_url": result.get("canonical_url"),
     }
     print(json.dumps(summary, sort_keys=True))
     return 0
