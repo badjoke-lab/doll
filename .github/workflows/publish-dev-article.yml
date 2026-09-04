@@ -3,11 +3,21 @@ name: Publish DEV article
 on:
   workflow_dispatch:
     inputs:
+      article:
+        description: Markdown article under docs/writing/dev
+        required: true
+        default: docs/writing/dev/portable-memory-not-ai-continuity.md
+        type: string
       publish:
         description: Publish immediately instead of creating a draft
         required: true
         default: false
         type: boolean
+  push:
+    branches:
+      - main
+    paths:
+      - docs/writing/dev/three-ai-outages-multi-provider-not-continuity.md
 
 permissions:
   contents: read
@@ -33,9 +43,10 @@ jobs:
         shell: bash
         env:
           DEVTO_API_KEY: ${{ secrets.DEVTO_API_KEY }}
-          PUBLISH_NOW: ${{ inputs.publish }}
+          ARTICLE_PATH: ${{ github.event_name == 'push' && 'docs/writing/dev/three-ai-outages-multi-provider-not-continuity.md' || inputs.article }}
+          PUBLISH_NOW: ${{ github.event_name == 'push' && 'true' || inputs.publish }}
         run: |
-          args=()
+          args=(--article "$ARTICLE_PATH")
           if [[ "$PUBLISH_NOW" == "true" ]]; then
             args+=(--publish)
           fi
