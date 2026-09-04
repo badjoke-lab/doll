@@ -27,8 +27,7 @@ def test_dev_publisher_accepts_selected_valid_article_before_api_key_check(
     article = tmp_path / "docs" / "writing" / "dev" / "test.md"
     article.parent.mkdir(parents=True)
     article.write_text(
-        """---
-"
+        "---\n"
         "title: Test article\n"
         "published: false\n"
         "description: Test description\n"
@@ -36,8 +35,7 @@ def test_dev_publisher_accepts_selected_valid_article_before_api_key_check(
         "series: doll\n"
         "canonical_url: https://example.com/test/\n"
         "---\n\n"
-        "Body.\n"
-        """,
+        "Body.\n",
         encoding="utf-8",
     )
 
